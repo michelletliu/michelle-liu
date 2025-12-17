@@ -1,6 +1,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --font-sans: 'Figtree', sans-serif;
+  --default-font-family: 'Figtree', sans-serif;
   --font-size: 16px;
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
@@ -126,9 +128,24 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Figtree', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+}
+
+/* Custom cursor */
+body, a {
+  cursor: url('../assets/Cursor Default.svg') 20 20, auto;
+}
+
+a:hover,
+button:hover,
+[role="button"]:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+.cursor-pointer:hover {
+  cursor: url('../assets/Cursor Hover.svg') 23 23, auto;
 }
 
 /**
@@ -182,4 +199,109 @@
 
 html {
   font-size: var(--font-size);
+  font-family: 'Figtree', sans-serif;
+}
+
+/* Animated gradient for header */
+@keyframes gradient-bg {
+  0% {
+    background-position: 0% 48%;
+  }
+  50% {
+    background-position: 100% 52%;
+  }
+  100% {
+    background-position: 0% 48%;
+  }
+}
+
+.header-gradient {
+  background: linear-gradient(190deg, #9AE2F4, #9AE2F4, #C0DDFE, #F3DAFF, #FDE3F9, #FFF2FB, #FFFEFF, #FFFEFF, #FFFEFF, #ffffff, #ffffff, #ffffff, #ffffff, #ffffff);
+  background-size: 120% 120%;
+  animation: gradient-bg 8s ease infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ensure Figtree is applied to all elements */
+*, *::before, *::after {
+  font-family: 'Figtree', sans-serif;
+}
+
+/* Override any inline font styles from components */
+[class*="font-["] {
+  font-family: 'Figtree', sans-serif !important;
+}
+
+/* Animated gradient text effect */
+@keyframes gradient-intro {
+  0% {
+    background-position: 50% 50%;
+  }
+  50% {
+    background-position: 80% 50%;
+  }
+  100% {
+    background-position: 50% 50%;
+  }
+}
+
+.gradient-text-animated {
+  transition: 0.1s;
+  background: linear-gradient(-60deg, violet, violet, violet, #23a6d5, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af);
+  background-size: 125% 125%;
+  animation: gradient-intro 6s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Custom Highlight Color */
+::-moz-selection {
+  color: #3b82f6; /* blue-500 */
+  background: #dbeafe; /* blue-100 */
+}
+
+::selection {
+  color: #3b82f6; /* blue-500 */
+  background: #dbeafe; /* blue-100 */
+}
+
+/* Paragraph link hover */
+p a {
+  transition: color 0.2s ease;
+}
+
+p a:hover {
+  color: #3b82f6; /* blue-500 */
+}
+
+/* Social link icon hover gradient */
+@keyframes social-gradient {
+  0% {
+    --gradient-angle: 0deg;
+  }
+  50% {
+    --gradient-angle: 180deg;
+  }
+  100% {
+    --gradient-angle: 360deg;
+  }
+}
+
+.social-link {
+  transition: transform 0.1s ease;
+}
+
+.social-link:hover svg path {
+  fill: url(#socialGradient) !important;
+  stroke: none !important;
+  transition: fill 0.1s linear;
+}
+
+/* LinkedIn icon needs stroke to maintain its weight */
+.social-link-linkedin:hover svg path {
+  fill: url(#socialGradient) !important;
+  stroke: url(#socialGradient) !important;
+  transition: fill 0.1s linear, stroke 0.1s linear;
 }
