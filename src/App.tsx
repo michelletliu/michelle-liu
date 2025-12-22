@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import svgPaths from "./imports/svg-2tsxp86msm";
 import clsx from "clsx";
-import Hls from "hls.js";
 import imgFinalSealLogo1 from "./assets/logo.png";
 import grainTexture from "./assets/Rectangle Grain 1.png";
 import { imgGroup } from "./imports/svg-poktt";
+import VideoPlayer from "./components/VideoPlayer";
 
 // Text Scramble Component
 type TextScrambleProps = {
@@ -14,9 +14,9 @@ type TextScrambleProps = {
 
 function TextScramble({ text, className }: TextScrambleProps) {
   const elementRef = useRef<HTMLParagraphElement>(null);
-  const hasAnimatedRef = useRef(false);
   const isAnimatingRef = useRef(false);
   const textRef = useRef(text);
+  const isVisibleRef = useRef(false);
   
   const chars = '!@#$%^&*()_+-;:,.<>?ADELPSTUadelpstu0123456789';
 
@@ -101,21 +101,21 @@ function TextScramble({ text, className }: TextScrambleProps) {
     // Set initial scrambled text
     el.innerText = generateScrambledText(text);
     
-    const triggerAnimation = () => {
-      if (!hasAnimatedRef.current) {
-        hasAnimatedRef.current = true;
-        setTimeout(() => {
-          runScrambleAnimation();
-        }, 300);
-      }
-    };
-    
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            triggerAnimation();
-            observer.disconnect();
+          if (entry.isIntersecting && !isVisibleRef.current) {
+            // Element just became visible - trigger unscramble animation
+            isVisibleRef.current = true;
+            setTimeout(() => {
+              runScrambleAnimation();
+            }, 300);
+          } else if (!entry.isIntersecting && isVisibleRef.current) {
+            // Element left the viewport - reset to scrambled state
+            isVisibleRef.current = false;
+            if (!isAnimatingRef.current) {
+              el.innerText = generateScrambledText(text);
+            }
           }
         });
       },
@@ -131,8 +131,15 @@ function TextScramble({ text, className }: TextScrambleProps) {
 
   // Handle hover to re-trigger animation
   const handleMouseEnter = () => {
-    if (hasAnimatedRef.current && !isAnimatingRef.current) {
-      runScrambleAnimation();
+    if (!isAnimatingRef.current) {
+      // Re-scramble first, then animate to unscrambled
+      const el = elementRef.current;
+      if (el) {
+        el.innerText = generateScrambledText(text);
+        setTimeout(() => {
+          runScrambleAnimation();
+        }, 50);
+      }
     }
   };
 
@@ -154,6 +161,7 @@ type Project = {
   description: string;
   imageSrc: string;
   videoSrc?: string; // Optional HLS video URL
+  xLink?: string; // Optional X (Twitter) link
 };
 
 // Project data
@@ -197,6 +205,7 @@ const projects: Project[] = [
     description: "A digital way to customize your own polaroid.",
     imageSrc: "https://image.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w/thumbnail.png",
     videoSrc: "https://stream.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w.m3u8",
+    xLink: "https://x.com/michelletliu/status/1991201412072734777",
   },
   {
     id: "screentime",
@@ -205,6 +214,7 @@ const projects: Project[] = [
     description: "A receipt for your daily or weekly screentime.",
     imageSrc: "https://image.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI/thumbnail.png",
     videoSrc: "https://stream.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI.m3u8",
+    xLink: "https://x.com/michelletliu/status/2000987498550383032",
   },
   {
     id: "sketchbook",
@@ -221,6 +231,7 @@ const projects: Project[] = [
     description: "My dream digital bookshelf",
     imageSrc: "https://image.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo/thumbnail.png",
     videoSrc: "https://stream.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo.m3u8",
+    xLink: "https://x.com/michelletliu/status/1981030966044061894",
   },
 ];
 
@@ -230,61 +241,71 @@ type ProjectMediaProps = {
 };
 
 function ProjectMedia({ imageSrc, videoSrc }: ProjectMediaProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const hlsRef = useRef<Hls | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
 
+  // Intersection Observer to detect when card is visible
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !videoSrc) return;
+    const container = containerRef.current;
+    if (!container) return;
 
-    if (Hls.isSupported()) {
-      const hls = new Hls({
-        enableWorker: true,
-        lowLatencyMode: false,
-      });
-      hlsRef.current = hls;
-      hls.loadSource(videoSrc);
-      hls.attachMedia(video);
-      
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.play().catch(() => {});
-      });
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = videoSrc;
-      video.play().catch(() => {});
-    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            // Delay video loading slightly for smoother experience
+            setTimeout(() => setVideoReady(true), 100);
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
 
-    return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-    };
-  }, [videoSrc]);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
-  // If there's a video, show video only
+  // If there's a video, show thumbnail with actual video playing
   if (videoSrc) {
     return (
-      <div className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full">
-        <video
-          ref={videoRef}
+      <div 
+        ref={containerRef}
+        className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full overflow-hidden"
+      >
+        {/* Static thumbnail - visible as base layer while video loads */}
+        <img
+          alt=""
           className="absolute max-w-none object-cover rounded-[26px] size-full"
-          muted
-          loop
-          playsInline
-          poster={imageSrc}
+          src={imageSrc}
+          loading="lazy"
         />
+        {/* Actual video - plays full duration when visible */}
+        {isVisible && videoReady && (
+          <VideoPlayer
+            src={videoSrc}
+            className="absolute max-w-none object-cover rounded-[26px] size-full"
+            autoPlay
+            muted
+            loop
+            controls={false}
+            muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+          />
+        )}
       </div>
     );
   }
 
   // Otherwise show image
   return (
-    <div className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full">
+    <div ref={containerRef} className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full">
       <img
         alt=""
         className="absolute max-w-none object-cover rounded-[26px] size-full"
         src={imageSrc}
+        loading="lazy"
       />
     </div>
   );
@@ -323,7 +344,7 @@ function TagBackgroundImageAndText({ text, active = false }: TagBackgroundImageA
   return (
     <button
       className={clsx(
-        "content-stretch flex items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-gray-100 transition-colors",
+        "content-stretch flex items-center justify-center px-4 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-gray-100 transition-colors",
         active && "bg-[rgba(107,114,128,0.1)]"
       )}
     >
@@ -419,6 +440,7 @@ type ProjectModalProps = {
 function ProjectModal({ project, onClose }: ProjectModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
 
   // Trigger enter animation on mount
   useEffect(() => {
@@ -426,6 +448,11 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
     requestAnimationFrame(() => {
       setIsVisible(true);
     });
+    // Delay video loading until after modal animation
+    const timer = setTimeout(() => {
+      setVideoReady(true);
+    }, 350);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleClose = () => {
@@ -455,7 +482,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               : 'opacity-0 translate-y-8'
         }`}
       >
-        <div className="content-stretch flex flex-col gap-1.5 items-start relative shrink-0 w-full">
+        <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
           <div className="content-stretch flex items-start justify-between relative shrink-0 w-full">
             <div className="content-stretch flex gap-1.5 items-center relative shrink-0 text-nowrap">
               <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
@@ -470,15 +497,15 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
             </div>
             <button
               onClick={handleClose}
-              className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer hover:opacity-70 transition-opacity"
+              className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-full hover:bg-[#F3F4F6] transition-colors duration-200 ease-out"
             >
               <div className="overflow-clip relative shrink-0 size-5">
                 <div className="absolute inset-1/4">
-                  <div className="absolute inset-0" style={{ "--fill-0": "rgba(75, 85, 99, 1)" } as React.CSSProperties}>
+                  <div className="absolute inset-0" style={{ "--fill-0": "#6B7280" } as React.CSSProperties}>
                     <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 10">
                       <path
                         d="M9.76256 1.17736C10.0791 0.860788 10.0791 0.347859 9.76256 0.031284C9.44599 -0.285291 8.93306 -0.285291 8.61648 0.031284L5 3.64776L1.38352 0.031284C1.06694 -0.285291 0.554014 -0.285291 0.237439 0.031284C-0.0791362 0.347859 -0.0791362 0.860788 0.237439 1.17736L3.85392 4.79384L0.237439 8.41032C-0.0791362 8.7269 -0.0791362 9.23982 0.237439 9.5564C0.554014 9.87297 1.06694 9.87297 1.38352 9.5564L5 5.93992L8.61648 9.5564C8.93306 9.87297 9.44599 9.87297 9.76256 9.5564C10.0791 9.23982 10.0791 8.7269 9.76256 8.41032L6.14608 4.79384L9.76256 1.17736Z"
-                        fill="var(--fill-0, #4B5563)"
+                        fill="var(--fill-0, #6B7280)"
                       />
                     </svg>
                   </div>
@@ -486,16 +513,55 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               </div>
             </button>
           </div>
-          <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-gray-400 text-base w-full">
-            {project.description}
-          </p>
+          <div className="flex flex-col gap-1 w-full flex-wrap">
+            <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#6b7280] text-base">
+              {project.description}
+            </p>
+            {project.xLink && (
+              <a
+                href={project.xLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group/xlink flex gap-1 items-center shrink-0 transition-colors"
+              >
+                <div className="flex gap-1 items-center">
+                  <span className="font-['Figtree',sans-serif] font-normal leading-5 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
+                    View on
+                  </span>
+                  {/* X logo */}
+                  <div className="flex items-center justify-center relative size-[14px]">
+                    <svg className="block size-full fill-[#9ca3af] group-hover/xlink:fill-blue-500 transition-colors" viewBox="0 0 19 18">
+                      <path d={svgPaths.p16308a80} />
+                    </svg>
+                  </div>
+                  <span className="font-['Figtree',sans-serif] font-normal leading-5 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
+                  ↗
+                  </span>
+                </div>
+              </a>
+            )}
+          </div>
         </div>
-        <div className="relative rounded-[16px] w-full aspect-[16/9]">
+        <div className="relative rounded-[16px] w-full aspect-[16/9] overflow-hidden bg-gray-100">
+          {/* Always show poster/thumbnail as background */}
           <img
             alt=""
             className="absolute object-cover size-full rounded-[16px]"
             src={project.imageSrc}
           />
+          {/* Overlay video once ready */}
+          {project.videoSrc && videoReady && (
+            <VideoPlayer
+              key={project.id}
+              src={project.videoSrc}
+              className="absolute object-cover size-full rounded-[16px]"
+              autoPlay
+              muted
+              loop
+              controls={false}
+              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+            />
+          )}
         </div>
       </div>
     </div>
@@ -504,6 +570,22 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
 
 export default function App() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [badgeHovered, setBadgeHovered] = useState(false);
+  const badgeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleBadgeMouseEnter = () => {
+    if (badgeTimeoutRef.current) {
+      clearTimeout(badgeTimeoutRef.current);
+      badgeTimeoutRef.current = null;
+    }
+    setBadgeHovered(true);
+  };
+
+  const handleBadgeMouseLeave = () => {
+    badgeTimeoutRef.current = setTimeout(() => {
+      setBadgeHovered(false);
+    }, 600);
+  };
 
   return (
     <div className="bg-white content-stretch flex flex-col items-center relative size-full min-h-screen">
@@ -540,7 +622,7 @@ export default function App() {
         {/* Logo */}
         <div className="relative shrink-0 w-full" style={{ zIndex: 2 }}>
           <div className="size-full">
-            <div className="content-stretch flex flex-col items-start p-8 max-md:p-4 relative w-full">
+            <div className="content-stretch flex flex-col items-start px-16 pt-8 pb-8 max-md:px-8 max-md:pt-4 max-md:pb-4 relative w-full">
               <div className="content-stretch flex items-start justify-between relative shrink-0 w-full">
                 <div className="relative shrink-0 size-11">
                   <FinalSealLogoBackgroundImage additionalClassNames="size-full" />
@@ -553,15 +635,15 @@ export default function App() {
         {/* Hero Text */}
         <div className="relative shrink-0 w-full" style={{ zIndex: 2 }}>
           <div className="size-full">
-            <div className="content-stretch flex flex-col gap-6 items-start pb-8 pt-11 px-8 max-md:px-4 relative w-full">
+            <div className="content-stretch flex flex-col gap-4 items-start pb-6 pt-11 px-16 max-md:px-8 relative w-full">
               <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
-                <p className="font-['Figtree',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-[64px] w-full max-md:text-5xl">
+                <p className="font-['Figtree',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-6xl w-full max-md:text-5xl">
                   michelle liu
                 </p>
-                <p className="font-['Figtree',sans-serif] font-normal leading-7 not-italic relative shrink-0 text-[#6b7280] text-xl w-full max-md:text-lg -mt-2">
+                <p className="font-['Figtree',sans-serif] font-normal leading-7 max-md:leading-6 tracking-wide not-italic relative shrink-0 text-[#6b7280] text-[1.2rem] w-full max-md:text-[1.13rem] -mt-2 max-md:mt-1">
                   <span className="font-['Figtree',sans-serif] text-[#9ca3af]">
-                    Designing useful products to spark moments of{" "}
-                  </span>
+                    Designing useful products to spark moments of{" "}</span>
+                    <br className="md:hidden" />
                   <span className="font-['Figtree',sans-serif] text-[#9ca3af]">delight</span>
                   <span className="font-['Figtree',sans-serif] text-[#9ca3af]">{` & `}</span>
                   <span className="font-['Figtree',sans-serif] gradient-text-animated">human connection. ⟡˙⋆</span>
@@ -581,6 +663,36 @@ export default function App() {
                   <span className="font-['Figtree',sans-serif] text-[#9ca3af]">{`, & `}</span>
                   <span className="font-['Figtree',sans-serif] text-[#374151]">NASA</span>
                   <span className="font-['Figtree',sans-serif] text-[#9ca3af]">.</span>
+                  <br className="md:hidden" />
+                  <span 
+                    className={clsx(
+                      "relative inline-flex items-center justify-center rounded-[999px] align-middle -translate-y-[2px] transition-all duration-300 ease-in-out [cursor:inherit] before:content-[''] before:absolute before:-inset-[2px] before:rounded-[999px] before:pointer-events-none",
+                      "max-md:ml-0 max-md:mt-4",
+                      "max-md:gap-2 max-md:bg-[#ecfdf5] max-md:pr-4 max-md:pl-2 max-md:py-0",
+                      badgeHovered ? "gap-2 bg-[#ecfdf5] pl-1.5 pr-3.5 py-0.5 -my-0.5 md:ml-1" : "md:gap-0 md:bg-transparent md:p-0 md:ml-2"
+                    )}
+                    onMouseEnter={handleBadgeMouseEnter}
+                    onMouseLeave={handleBadgeMouseLeave}
+                  >
+                    <span className="relative shrink-0 size-[16px] overflow-visible">
+                      {/* Pulsing ring behind the badge */}
+                      <span className={badgeHovered ? "green-pulse-ring-off" : "green-pulse-ring"} />
+                      <svg className="block size-full relative z-10" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
+                        <g id="Background">
+                          <rect fill="var(--fill-0, #A7F3D0)" height="16" rx="8" width="16" />
+                          <circle cx="8" cy="8" fill="var(--fill-0, #10B981)" id="Ellipse 1" r="4" />
+                        </g>
+                      </svg>
+                    </span>
+                    <span className={clsx(
+                      "font-['Figtree:Medium',sans-serif] font-normal text-[#10b981] text-base text-nowrap max-md:text-base overflow-hidden transition-all duration-300 ease-in-out",
+                      "max-md:max-w-[500px] max-md:opacity-100",
+                      badgeHovered ? "max-w-[500px] opacity-100" : "md:max-w-0 md:opacity-0"
+                    )}>
+                      <span>Working on something cool? Get in</span>{" "}
+                      <a href="mailto:michelletheresaliu@gmail.com" className="[text-decoration-skip-ink:none] [text-underline-position:from-font] decoration-solid underline hover:!text-emerald-600 transition-colors">touch</a>!
+                    </span>
+                  </span>
                 </p>
               </div>
             </div>
@@ -592,8 +704,8 @@ export default function App() {
       <div className="content-stretch flex flex-col items-center pb-4 pt-0 px-0 relative shrink-0 w-full">
         <div className="relative shrink-0 w-full">
           <div className="size-full">
-            <div className="content-stretch flex flex-col gap-3 items-start pb-0 pt-4 px-8 max-md:px-4 relative w-full">
-              <div className="content-stretch flex gap-3 items-start relative shrink-0">
+            <div className="content-stretch flex flex-col gap-3 items-start pb-0 pt-4 px-16 max-md:px-8 relative w-full">
+              <div className="content-stretch flex gap-1 items-start relative shrink-0">
                 <TagBackgroundImageAndText text="Work" active />
                 <TagBackgroundImageAndText text="Art" />
                 <TagBackgroundImageAndText text="About" />
@@ -602,8 +714,13 @@ export default function App() {
           </div>
         </div>
 
+        {/* Divider line */}
+        <div className="px-17 max-md:px-8 w-full pt-3">
+          <div className="bg-zinc-100 h-px shrink-0 w-full" />
+        </div>
+
         {/* Projects Grid - Desktop (2 columns) */}
-        <div className="hidden md:grid gap-6 grid-cols-2 px-8 py-4 max-md:px-4 relative shrink-0 w-full">
+        <div className="hidden md:grid gap-4 grid-cols-2 px-16 py-4 pt-6 relative shrink-0 w-full">
           {projects.map((project, index) => (
             <div key={project.id} className="w-full">
               <ProjectCard 
@@ -616,7 +733,7 @@ export default function App() {
         </div>
 
         {/* Projects Grid - Mobile (1 column) */}
-        <div className="md:hidden flex flex-col gap-8 px-8 max-md:px-4 py-4 relative shrink-0 w-full">
+        <div className="md:hidden flex flex-col gap-8 px-8 py-4 relative shrink-0 w-full">
           {projects.map((project) => (
             <ProjectCard key={project.id} project={project} onClick={() => setSelectedProject(project)} />
           ))}
@@ -626,7 +743,7 @@ export default function App() {
       {/* Footer */}
       <div className="relative shrink-0 w-full">
         <div className="flex flex-col items-center size-full">
-          <div className="content-stretch flex flex-col gap-16 items-center px-8 max-md:px-4 py-8 max-md:pb-16 max-md:pt-4 relative w-full">
+          <div className="content-stretch flex flex-col gap-16 items-center px-16 max-md:px-8 pt-8 pb-8 max-md:pb-16 max-md:pt-4 relative w-full">
             <div className="content-stretch flex flex-col gap-5 items-start relative shrink-0 w-full">
               <div className="bg-[#e5e7eb] h-px shrink-0 w-full" />
               
@@ -646,18 +763,6 @@ export default function App() {
                       michelle liu
                     </p>
                   </div>
-                  <p className="font-['Figtree',sans-serif] font-normal relative shrink-0 text-[#9ca3af] text-base text-nowrap">
-                    <span>{`Built with Next.js & `}</span>
-                    <a
-                      className="[text-underline-position:from-font] cursor-pointer decoration-solid underline hover:opacity-70 transition-opacity"
-                      href="https://www.rockysmatcha.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      rocky's matcha
-                    </a>
-                    <span>{` lattes.`}</span>
-                  </p>
                 </div>
                 
                 {/* Column 3: Nav Links */}
@@ -668,25 +773,25 @@ export default function App() {
                 </div>
                 
                 {/* Column 4: Contact + Social */}
-                <div className="[grid-area:1_/_4] content-stretch flex flex-col gap-10 items-start relative shrink-0">
+                <div className="[grid-area:1_/_4] content-stretch flex flex-col gap-4 items-start relative shrink-0">
                   <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start relative shrink-0 text-gray-400 w-full">
                     <p className="leading-6 min-w-full relative shrink-0 text-base w-[min-content]">Let's work together!</p>
-                    <p className="leading-6 relative shrink-0 text-base text-nowrap">
+                    <p className="leading-6 relative shrink-0 text-base break-all">
                       <a href="mailto:michelletheresaliu@gmail.com" className="hover:text-blue-500 text-gray-500 transition-colors duration-200">
                         <span>{`michelletheresaliu@gmail.com `}</span>
                         <span className="font-['Figtree',sans-serif] font-bold">↗</span>
                       </a>
                     </p>
                   </div>
-                  <div className="content-stretch flex flex-col gap-5 items-start relative shrink-0 w-[326px]">
-                    <div className="content-stretch flex gap-11 items-start relative shrink-0">
+                  <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0">
+                    <div className="content-stretch flex gap-6 items-start relative shrink-0">
                       <a href="https://www.instagram.com/https.croissant/?hl=en" target="_blank" rel="noopener noreferrer" className="social-link">
                         <SocialLinksBackgroundImage>
-                          <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #9ca3af)" id="Vector" />
+                          <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #c4c9d0)" id="Vector" />
                         </SocialLinksBackgroundImage>
                       </a>
                       <a href="https://x.com/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link">
-                        <div className="content-stretch flex items-center justify-center p-2.5 relative shrink-0 size-6">
+                        <div className="content-stretch flex items-center justify-center relative shrink-0 size-6">
                           <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0">
                             <div
                               className="[grid-area:1_/_1] h-[17.219px] mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0px_-0.89px] mask-size-[19px_19px] ml-0 mt-[4.69%] relative w-[19px]"
@@ -694,7 +799,7 @@ export default function App() {
                             >
                               <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 19 18">
                                 <g id="Group">
-                                  <path d={svgPaths.p16308a80} fill="var(--fill-0, #9ca3af)" id="Vector" />
+                                  <path d={svgPaths.p16308a80} fill="var(--fill-0, #c4c9d0)" id="Vector" />
                                 </g>
                               </svg>
                             </div>
@@ -702,9 +807,9 @@ export default function App() {
                         </div>
                       </a>
                       <a href="https://www.linkedin.com/in/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link social-link-linkedin">
-                        <div className="content-stretch flex items-center justify-center p-2.5 relative shrink-0 size-6">
+                        <div className="content-stretch flex items-center justify-center relative shrink-0 size-6">
                           <SocialLinksBackgroundImage>
-                            <path d={svgPaths.p1e086000} fill="var(--fill-0, #9ca3af)" id="Vector" stroke="var(--stroke-0, #9ca3af)" />
+                            <path d={svgPaths.p1e086000} fill="var(--fill-0, #c4c9d0)" id="Vector" stroke="var(--stroke-0, #c4c9d0)" />
                           </SocialLinksBackgroundImage>
                         </div>
                       </a>
@@ -729,37 +834,25 @@ export default function App() {
                       michelle liu
                     </p>
                   </div>
-                  <p className="font-['Figtree',sans-serif] font-normal leading-7 relative shrink-0 text-[#9ca3af] text-base text-nowrap">
-                    <span>{`Built with Next.js & `}</span>
-                    <a
-                      className="[text-underline-position:from-font] cursor-pointer decoration-solid underline hover:opacity-70 transition-opacity"
-                      href="https://www.rockysmatcha.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      rocky's matcha
-                    </a>
-                    <span>{` lattes.`}</span>
-                  </p>
                 </div>
                 
                 {/* Contact + Social + Nav */}
                 <div className="content-stretch flex flex-col gap-10 items-start relative shrink-0">
-                  <div className="content-stretch flex flex-col gap-11 items-start relative shrink-0">
-                    <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start relative shrink-0 text-[#9ca3af] w-[326px]">
+                  <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0">
+                    <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start relative shrink-0 text-gray-400 w-[326px]">
                       <p className="leading-6 relative shrink-0 text-base w-full">Let's work together!</p>
-                      <p className="leading-6 relative shrink-0 text-base w-full">
+                      <p className="leading-6 relative shrink-0 text-base w-full break-all">
                         <a href="mailto:michelletheresaliu@gmail.com" className="hover:text-blue-500 text-gray-500 transition-colors duration-200">
                           <span>{`michelletheresaliu@gmail.com `}</span>
                           <span className="font-['Figtree',sans-serif] font-bold">↗</span>
                         </a>
                       </p>
                     </div>
-                    <div className="content-stretch flex flex-col gap-5 items-start relative shrink-0 w-[326px]">
+                    <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0 w-[326px]">
                       <div className="content-stretch flex gap-11 items-start relative shrink-0">
                         <a href="https://www.instagram.com/https.croissant/?hl=en" target="_blank" rel="noopener noreferrer" className="social-link">
                           <SocialLinksBackgroundImage>
-                            <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #9ca3af)" id="Vector" />
+                            <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #c4c9d0)" id="Vector" />
                           </SocialLinksBackgroundImage>
                         </a>
                         <a href="https://x.com/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link">
@@ -771,7 +864,7 @@ export default function App() {
                               >
                                 <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 19 18">
                                   <g id="Group">
-                                    <path d={svgPaths.p16308a80} fill="var(--fill-0, #9ca3af)" id="Vector" />
+                                    <path d={svgPaths.p16308a80} fill="var(--fill-0, #c4c9d0)" id="Vector" />
                                   </g>
                                 </svg>
                               </div>
@@ -781,7 +874,7 @@ export default function App() {
                         <a href="https://www.linkedin.com/in/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link social-link-linkedin">
                           <div className="content-stretch flex items-center justify-center p-2.5 relative shrink-0 size-6">
                             <SocialLinksBackgroundImage>
-                              <path d={svgPaths.p1e086000} fill="var(--fill-0, #9ca3af)" id="Vector" stroke="var(--stroke-0, #9ca3af)" />
+                              <path d={svgPaths.p1e086000} fill="var(--fill-0, #c4c9d0)" id="Vector" stroke="var(--stroke-0, #c4c9d0)" />
                             </SocialLinksBackgroundImage>
                           </div>
                         </a>
@@ -796,10 +889,27 @@ export default function App() {
                 </div>
               </div>
             </div>
-            <TextScramble 
-              text="CHANGELOG: 12-17-25"
-              className="font-['Figtree',sans-serif] font-normal leading-5 tracking-wider relative shrink-0 text-[#9ca3af] text-xs text-nowrap"
-            />
+            <div className="content-stretch flex flex-col gap-0.5 items-center relative shrink-0">
+              <p className="font-['Figtree',sans-serif] font-normal leading-7 relative shrink-0 text-gray-500 text-sm">
+                <span>{`Built with Next.js & `}</span>
+                <span className="group">
+                  <a
+                    className="[text-underline-position:from-font] cursor-pointer decoration-solid underline group-hover:!text-emerald-600 transition-colors"
+                    href="https://www.rockysmatcha.com/blogs/matcha-guide/how-to-make-matcha-guide"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    rocky's matcha
+                  </a>
+                  <span>{` lattes.`}</span>
+                  <span className="text-gray-400">{` ☕︎`}</span>
+                </span>
+              </p>
+              <TextScramble 
+                text="CHANGELOG: 12-21-25"
+                className="font-['Figtree',sans-serif] font-normal leading-5 tracking-wider relative shrink-0 text-[#9ca3af] text-xs text-nowrap"
+              />
+            </div>
           </div>
         </div>
       </div>

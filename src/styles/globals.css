@@ -248,7 +248,7 @@ html {
 
 .gradient-text-animated {
   transition: 0.1s;
-  background: linear-gradient(-60deg, violet, violet, violet, #23a6d5, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af);
+  background: linear-gradient(-60deg, violet, #FFD2F2, #ECCBFF, #AADBFD, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af);
   background-size: 125% 125%;
   animation: gradient-intro 6s ease infinite;
   -webkit-background-clip: text;
@@ -318,4 +318,51 @@ p a:hover {
   fill: url(#socialGradient) !important;
   stroke: url(#socialGradient) !important;
   transition: fill 0.1s linear, stroke 0.1s linear;
+}
+
+/* Green availability badge pulse ring animation */
+@keyframes pulse-ring {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.8;
+  }
+  75% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+
+.green-pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  background-color: #dcfce7;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Only animate on desktop */
+@media (min-width: 768px) {
+  .green-pulse-ring {
+    animation: pulse-ring 1.6s ease-out infinite;
+  }
+}
+
+/* No pulse on mobile */
+@media (max-width: 767px) {
+  .green-pulse-ring {
+    display: none;
+  }
+}
+
+.green-pulse-ring-off {
+  display: none !important;
 }

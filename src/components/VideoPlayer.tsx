@@ -50,6 +50,11 @@ export default function VideoPlayer({
     const video = videoRef.current;
     if (!video) return;
 
+    // IMPORTANT: Set muted state immediately and programmatically for autoplay to work
+    if (muted) {
+      video.muted = true;
+    }
+
     const isHlsSource = src.includes(".m3u8");
 
     // Function to initialize Mux monitoring
@@ -81,21 +86,34 @@ export default function VideoPlayer({
       // HLS.js streaming
       if (Hls.isSupported()) {
         const hls = new Hls({
-          // Enable for better quality
           enableWorker: true,
           lowLatencyMode: false,
+          startLevel: -1, // Will be set manually in MANIFEST_PARSED
         });
 
         hlsRef.current = hls;
         hls.loadSource(src);
         hls.attachMedia(video);
 
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
+          // Debug: see what levels are available
+          console.log('Available quality levels:', data.levels.map(l => `${l.height}p`));
+
+          // Lock to highest quality
+          const highestLevel = data.levels.length - 1;
+          hls.currentLevel = highestLevel;
+          hls.loadLevel = highestLevel; // Locks which level gets loaded
+
+          console.log(`Locked to level ${highestLevel}: ${data.levels[highestLevel]?.height}p`);
+
           initMuxMonitoring(hls);
           if (autoPlay) {
-            video.play().catch(() => {
-              // Autoplay was prevented, user needs to interact
-              console.log("Autoplay prevented by browser");
+            // Ensure muted is set right before play for autoplay to work
+            if (muted) {
+              video.muted = true;
+            }
+            video.play().catch((err) => {
+              console.log("Autoplay prevented by browser:", err);
             });
           }
         });
@@ -138,7 +156,7 @@ export default function VideoPlayer({
         hlsRef.current = null;
       }
     };
-  }, [src, muxEnvKey, playerName, muxMetadata, autoPlay]);
+  }, [src, muxEnvKey, playerName, muxMetadata, autoPlay, muted]);
 
   return (
     <video
@@ -153,3 +171,4 @@ export default function VideoPlayer({
     />
   );
 }
+
