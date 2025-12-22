@@ -4,6 +4,7 @@ import clsx from "clsx";
 type MetadataItem = {
   label: string;
   value: string | string[];
+  subValue?: string;
 };
 
 type ProjectHeroHeaderProps = {
@@ -101,6 +102,12 @@ export default function ProjectHeroHeader({
                   ))
                 ) : (
                   item.value
+                )}
+                {item.subValue && (
+                  <>
+                    <br />
+                    <span className="italic">{item.subValue}</span>
+                  </>
                 )}
               </p>
             </div>

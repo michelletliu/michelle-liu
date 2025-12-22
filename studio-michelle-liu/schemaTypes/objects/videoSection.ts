@@ -1,0 +1,82 @@
+import {defineType, defineField} from 'sanity'
+import {PlayIcon} from '@sanity/icons'
+
+export const videoSection = defineType({
+  name: 'videoSection',
+  title: 'Video Section',
+  type: 'object',
+  icon: PlayIcon,
+  fields: [
+    defineField({
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+    }),
+    defineField({
+      name: 'videoType',
+      title: 'Video Type',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Mux', value: 'mux'},
+          {title: 'YouTube', value: 'youtube'},
+          {title: 'Vimeo', value: 'vimeo'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'mux',
+    }),
+    defineField({
+      name: 'muxPlaybackId',
+      title: 'Mux Playback ID',
+      type: 'string',
+      hidden: ({parent}) => parent?.videoType !== 'mux',
+    }),
+    defineField({
+      name: 'youtubeUrl',
+      title: 'YouTube URL',
+      type: 'url',
+      hidden: ({parent}) => parent?.videoType !== 'youtube',
+    }),
+    defineField({
+      name: 'vimeoUrl',
+      title: 'Vimeo URL',
+      type: 'url',
+      hidden: ({parent}) => parent?.videoType !== 'vimeo',
+    }),
+    defineField({
+      name: 'posterImage',
+      title: 'Poster Image',
+      description: 'Thumbnail shown before video plays',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+    }),
+    defineField({
+      name: 'caption',
+      title: 'Caption',
+      type: 'string',
+    }),
+    defineField({
+      name: 'autoplay',
+      title: 'Autoplay (muted)',
+      type: 'boolean',
+      initialValue: false,
+    }),
+  ],
+  preview: {
+    select: {
+      title: 'title',
+      videoType: 'videoType',
+      media: 'posterImage',
+    },
+    prepare({title, videoType, media}) {
+      return {
+        title: title || 'Video Section',
+        subtitle: videoType ? `${videoType} video` : 'Video',
+        media,
+      }
+    },
+  },
+})

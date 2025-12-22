@@ -5,3 +5,5 @@ export { default as Gallery } from "./Gallery";
 export { default as ProjectHeroHeader } from "./ProjectHeroHeader";
 export { default as Testimonial } from "./Testimonial";
 export { default as AlsoCheckOut } from "./AlsoCheckOut";
+export { default as AppleProjectModal } from "./AppleProjectModal";
+export { default as ProjectModal } from "./ProjectModal";

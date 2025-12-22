@@ -1,42 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import clsx from "clsx";
+import quoteGraphic from "../../assets/quote gray 200.png";
 
-// Quote mark SVG
+// Quote mark using the quote.png asset
 const QuoteMark = ({ className }: { className?: string }) => (
-  <div className={clsx("absolute", className)}>
-    <svg
-      className="block size-full opacity-10"
-      viewBox="0 0 121 120"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M0 60C0 26.8629 26.8629 0 60 0C93.1371 0 120 26.8629 120 60C120 93.1371 93.1371 120 60 120C26.8629 120 0 93.1371 0 60Z"
-        fill="#E5E7EB"
-      />
-      <path
-        d="M55.5 47.5H35.5L25.5 72.5H45.5V92.5H25.5V72.5L35.5 47.5H45.5L55.5 27.5V47.5Z M95.5 47.5H75.5L65.5 72.5H85.5V92.5H65.5V72.5L75.5 47.5H85.5L95.5 27.5V47.5Z"
-        fill="#9CA3AF"
-      />
-    </svg>
+  <div className={clsx("absolute pointer-events-none", className)}>
+    <img
+      src={quoteGraphic}
+      alt=""
+      className="w-full h-full object-contain"
+    />
   </div>
 );
 
-// Collapse/Expand arrow icon
-const CollapseIcon = ({ expanded }: { expanded: boolean }) => (
+// Collapse arrow icon (diagonal arrow pointing up-left) - for desktop expanded
+const CollapseArrowIcon = () => (
   <svg
-    className={clsx(
-      "block size-full transition-transform",
-      expanded ? "rotate-0" : "rotate-180"
-    )}
-    viewBox="0 0 10 10"
+    className="block size-full"
+    viewBox="0 0 20 20"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
     <path
       fillRule="evenodd"
       clipRule="evenodd"
-      d="M1.46967 6.53033C1.17678 6.23744 1.17678 5.76256 1.46967 5.46967L4.46967 2.46967C4.76256 2.17678 5.23744 2.17678 5.53033 2.46967L8.53033 5.46967C8.82322 5.76256 8.82322 6.23744 8.53033 6.53033C8.23744 6.82322 7.76256 6.82322 7.46967 6.53033L5 4.06066L2.53033 6.53033C2.23744 6.82322 1.76256 6.82322 1.46967 6.53033Z"
+      d="M14.7803 14.7803C14.4874 15.0732 14.0126 15.0732 13.7197 14.7803L6.5 7.56066V13.25C6.5 13.6642 6.16421 14 5.75 14C5.33579 14 5 13.6642 5 13.25V5.75C5 5.33579 5.33579 5 5.75 5H13.25C13.6642 5 14 5.33579 14 5.75C14 6.16421 13.6642 6.5 13.25 6.5H7.56066L14.7803 13.7197C15.0732 14.0126 15.0732 14.4874 14.7803 14.7803Z"
+      fill="#9CA3AF"
+    />
+  </svg>
+);
+
+// Expand arrow icon (diagonal arrow pointing down-right) - for mobile expanded
+const ExpandArrowIcon = () => (
+  <svg
+    className="block size-full rotate-180"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M14.7803 14.7803C14.4874 15.0732 14.0126 15.0732 13.7197 14.7803L6.5 7.56066V13.25C6.5 13.6642 6.16421 14 5.75 14C5.33579 14 5 13.6642 5 13.25V5.75C5 5.33579 5.33579 5 5.75 5H13.25C13.6642 5 14 5.33579 14 5.75C14 6.16421 13.6642 6.5 13.25 6.5H7.56066L14.7803 13.7197C15.0732 14.0126 15.0732 14.4874 14.7803 14.7803Z"
       fill="#9CA3AF"
     />
   </svg>
@@ -79,16 +84,29 @@ export default function Testimonial({
   onExpandedChange,
 }: TestimonialProps) {
   const [internalExpanded, setInternalExpanded] = useState(state === "Expanded");
+  const sectionRef = useRef<HTMLDivElement>(null);
   
   // Use controlled state if provided, otherwise use internal state
   const isExpanded = controlledExpanded !== undefined ? controlledExpanded : internalExpanded;
   
   const toggleExpanded = () => {
+    const wasExpanded = isExpanded;
     const newValue = !isExpanded;
+    
     if (onExpandedChange) {
       onExpandedChange(newValue);
     } else {
       setInternalExpanded(newValue);
+    }
+    
+    // If collapsing, scroll to the section after a short delay
+    if (wasExpanded && sectionRef.current) {
+      setTimeout(() => {
+        sectionRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 50);
     }
   };
 
@@ -97,15 +115,16 @@ export default function Testimonial({
 
   return (
     <div
+      ref={sectionRef}
       className={clsx(
-        "content-stretch flex flex-col items-start justify-center py-16 relative",
+        "content-stretch flex flex-col items-start justify-center py-16 relative scroll-mt-8",
         isDesktop && "px-[175px] w-[1440px]",
         isMobile && "px-8 w-[640px]"
       )}
     >
       <div
         className={clsx(
-          "content-stretch flex flex-col relative shrink-0 w-full",
+          "content-stretch flex flex-col relative shrink-0 w-full transition-all duration-400 ease-out",
           isDesktop && "gap-[100px] items-start",
           isMobile && "gap-16 items-center justify-center"
         )}
@@ -123,7 +142,7 @@ export default function Testimonial({
         {/* Quote Section */}
         <div
           className={clsx(
-            "content-stretch flex items-start relative shrink-0",
+            "content-stretch flex items-start relative shrink-0 transition-all duration-400 ease-out",
             isDesktop && "justify-between px-[111px] py-0 w-full",
             isMobile && "flex-col gap-16 w-[378px]"
           )}
@@ -131,7 +150,7 @@ export default function Testimonial({
           {/* Author Info */}
           <div
             className={clsx(
-              "content-stretch flex relative shrink-0",
+              "content-stretch flex relative shrink-0 transition-all duration-400 ease-out",
               isDesktop && "flex-col gap-6 items-start w-[202px]",
               isMobile && "gap-8 items-center w-[264px]"
             )}
@@ -160,69 +179,81 @@ export default function Testimonial({
           {/* Quote Content */}
           <div
             className={clsx(
-              "content-stretch flex flex-col gap-6 relative shrink-0",
+              "content-stretch flex flex-col gap-6 relative shrink-0 transition-all duration-400 ease-out",
               isDesktop && isExpanded && "items-end justify-end",
-              isDesktop && !isExpanded && "items-start justify-center whitespace-pre-wrap",
+              isDesktop && !isExpanded && "items-start justify-center",
               isMobile && "items-start justify-center w-full"
             )}
           >
-            {!isExpanded ? (
-              <>
-                {/* Short Quote */}
-                <p
-                  className={clsx(
-                    "leading-[26px] relative shrink-0 text-[#1f2937] text-xl",
-                    isDesktop && "w-[424px]",
-                    isMobile && "min-w-full whitespace-pre-wrap"
-                  )}
-                >
+            {/* Quote Text Container with smooth height transition */}
+            <div
+              className={clsx(
+                "relative overflow-hidden",
+                isDesktop && "w-[424px]",
+                isMobile && "min-w-full w-full"
+              )}
+            >
+              {/* Short Quote */}
+              <div
+                className={clsx(
+                  "transition-all duration-400 ease-out",
+                  isExpanded
+                    ? "opacity-0 max-h-0 pointer-events-none"
+                    : "opacity-100 max-h-[500px]"
+                )}
+              >
+                <p className="leading-[26px] text-[#1f2937] text-xl whitespace-pre-wrap">
                   {shortQuote}
                 </p>
-                {/* Read More Button */}
-                <button
-                  onClick={toggleExpanded}
-                  className={clsx(
-                    "leading-5 relative shrink-0 text-[#9ca3af] text-base hover:text-[#6b7280] transition-colors cursor-pointer",
-                    isDesktop && "w-[424px]"
-                  )}
-                >
-                  Read more
-                </button>
-              </>
-            ) : (
-              <>
-                {/* Full Quote */}
-                <div
-                  className={clsx(
-                    "font-normal leading-[26px] relative shrink-0 text-[#1f2937] text-xl whitespace-pre-wrap",
-                    isDesktop && "w-[424px]",
-                    isMobile && "min-w-full"
-                  )}
-                >
+              </div>
+
+              {/* Full Quote */}
+              <div
+                className={clsx(
+                  "transition-all duration-400 ease-out",
+                  isExpanded
+                    ? "opacity-100 max-h-[2000px]"
+                    : "opacity-0 max-h-0 pointer-events-none absolute top-0 left-0"
+                )}
+              >
+                <div className="leading-[26px] text-[#1f2937] text-xl whitespace-pre-wrap">
                   {fullQuote.map((paragraph, index) => (
-                    <p key={index} className={index < fullQuote.length - 1 ? "mb-4" : ""}>
+                    <p key={index} className={index < fullQuote.length - 1 ? "mb-6" : ""}>
                       {paragraph}
                     </p>
                   ))}
                 </div>
-                {/* Collapse Button */}
-                <button
-                  onClick={toggleExpanded}
-                  className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer hover:opacity-70 transition-opacity"
-                >
-                  <div className="relative shrink-0 size-5">
-                    <CollapseIcon expanded={isExpanded} />
-                  </div>
-                </button>
-              </>
-            )}
+              </div>
+            </div>
+
+            {/* Action Button - Read More or Collapse */}
+            <button
+              onClick={toggleExpanded}
+              className={clsx(
+                "relative shrink-0 cursor-pointer transition-all duration-300 ease-out",
+                isExpanded
+                  ? "size-6 hover:opacity-70"
+                  : "leading-5 text-[#9ca3af] text-base hover:text-[#6b7280] text-left",
+                isDesktop && !isExpanded && "w-[424px]"
+              )}
+            >
+              {!isExpanded ? (
+                "Read more"
+              ) : (
+                <div className="relative shrink-0 size-5">
+                  {/* Desktop: up-left arrow, Mobile: down-right arrow */}
+                  {isDesktop ? <CollapseArrowIcon /> : <ExpandArrowIcon />}
+                </div>
+              )}
+            </button>
           </div>
 
           {/* Quote Mark */}
           <QuoteMark
             className={clsx(
+              "transition-all duration-400 ease-out",
               isDesktop && "h-[120px] left-[-77px] top-[-77px] w-[121px]",
-              isMobile && "h-[100px] left-[-79px] top-[124px] w-[101px]"
+              isMobile && "h-[100px] left-[-40px] top-[124px] w-[101px]"
             )}
           />
         </div>

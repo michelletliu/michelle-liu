@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Routes, Route, useParams, useNavigate, useLocation } from "react-router-dom";
 import svgPaths from "./imports/svg-2tsxp86msm";
 import clsx from "clsx";
 import imgFinalSealLogo1 from "./assets/logo.png";
 import grainTexture from "./assets/Rectangle Grain 1.png";
 import { imgGroup } from "./imports/svg-poktt";
 import VideoPlayer from "./components/VideoPlayer";
+import AppleProjectModal from "./components/project/AppleProjectModal";
+import Footer from "./components/Footer";
+import { ProjectModal as SanityProjectModal } from "./components/project";
 
 // Text Scramble Component
 type TextScrambleProps = {
@@ -437,6 +441,25 @@ type ProjectModalProps = {
   onClose: () => void;
 };
 
+// Close icon for popup modal (matches Figma design)
+const PopupCloseIcon = () => (
+  <svg className="block size-full" fill="none" viewBox="0 0 10 10">
+    <path
+      d="M9.76256 1.17736C10.0791 0.860788 10.0791 0.347859 9.76256 0.031284C9.44599 -0.285291 8.93306 -0.285291 8.61648 0.031284L5 3.64776L1.38352 0.031284C1.06694 -0.285291 0.554014 -0.285291 0.237439 0.031284C-0.0791362 0.347859 -0.0791362 0.860788 0.237439 1.17736L3.85392 4.79384L0.237439 8.41032C-0.0791362 8.7269 -0.0791362 9.23982 0.237439 9.5564C0.554014 9.87297 1.06694 9.87297 1.38352 9.5564L5 5.93992L8.61648 9.5564C8.93306 9.87297 9.44599 9.87297 9.76256 9.5564C10.0791 9.23982 10.0791 8.7269 9.76256 8.41032L6.14608 4.79384L9.76256 1.17736Z"
+      fill="#4B5563"
+    />
+  </svg>
+);
+
+// Horizontal divider line for popup modal
+function PopupLine() {
+  return (
+    <div className="h-px relative shrink-0 w-full">
+      <div className="absolute bg-[#e5e7eb] inset-0" />
+    </div>
+  );
+}
+
 function ProjectModal({ project, onClose }: ProjectModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -465,113 +488,138 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-8 max-md:px-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-8">
       {/* Overlay */}
       <div 
         className={`absolute inset-0 bg-black/20 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`} 
         onClick={handleClose} 
       />
       
-      {/* Modal - 8 of 12 columns width */}
+      {/* Modal - matches Figma PopUpCard design */}
       <div 
-        className={`relative bg-white rounded-[26px] p-6 flex flex-col gap-5 w-[calc(100%*8/12)] max-md:w-full max-h-[90vh] overflow-auto transition-all duration-300 ease-out ${
+        className={clsx(
+          "relative bg-white rounded-[26px] flex flex-col w-[calc(100%*10/12)] max-md:w-full max-h-[83.33vh] overflow-auto transition-all duration-300 ease-out",
           isVisible 
             ? 'opacity-100 translate-y-0' 
             : isClosing 
               ? 'opacity-0 translate-y-4' 
               : 'opacity-0 translate-y-8'
-        }`}
+        )}
       >
-        <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
-          <div className="content-stretch flex items-start justify-between relative shrink-0 w-full">
-            <div className="content-stretch flex gap-1.5 items-center relative shrink-0 text-nowrap">
-              <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
-                {project.title}
-              </p>
-              <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
-                •
-              </p>
-              <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-xl">
-                {project.year}
+        {/* Close button row - sticky at top right */}
+        <div className="content-stretch flex items-start justify-end px-6 pt-6 pb-0 max-md:px-4 max-md:pt-4 sticky top-0 z-10 bg-white shrink-0 w-full">
+          <button
+            onClick={handleClose}
+            className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-full hover:bg-[#F3F4F6] transition-colors duration-200 ease-out"
+          >
+            <div className="overflow-clip relative shrink-0 size-[10px]">
+              <PopupCloseIcon />
+            </div>
+          </button>
+        </div>
+
+        {/* Content area with horizontal padding */}
+        <div className="content-stretch flex flex-col gap-3 items-start px-44 max-md:px-8 pt-16 max-md:pt-0 pb-16 max-md:pb-8 relative shrink-0 w-full">
+          {/* Title and Description section */}
+          <div className="content-stretch flex flex-col gap-1 items-start relative shrink-0 w-full">
+            {/* Title row: Project Title • Year */}
+            <div className="content-stretch flex items-start relative shrink-0 w-full">
+              <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
+                <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
+                  {project.title}
+                </p>
+                <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
+                  •
+                </p>
+                <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-xl">
+                  {project.year}
+                </p>
+              </div>
+            </div>
+            
+            {/* Description */}
+            <div className="content-stretch flex gap-2 items-start relative shrink-0 w-full">
+              <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#6b7280] text-base">
+                {project.description}
               </p>
             </div>
-            <button
-              onClick={handleClose}
-              className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-full hover:bg-[#F3F4F6] transition-colors duration-200 ease-out"
-            >
-              <div className="overflow-clip relative shrink-0 size-5">
-                <div className="absolute inset-1/4">
-                  <div className="absolute inset-0" style={{ "--fill-0": "#6B7280" } as React.CSSProperties}>
-                    <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 10">
-                      <path
-                        d="M9.76256 1.17736C10.0791 0.860788 10.0791 0.347859 9.76256 0.031284C9.44599 -0.285291 8.93306 -0.285291 8.61648 0.031284L5 3.64776L1.38352 0.031284C1.06694 -0.285291 0.554014 -0.285291 0.237439 0.031284C-0.0791362 0.347859 -0.0791362 0.860788 0.237439 1.17736L3.85392 4.79384L0.237439 8.41032C-0.0791362 8.7269 -0.0791362 9.23982 0.237439 9.5564C0.554014 9.87297 1.06694 9.87297 1.38352 9.5564L5 5.93992L8.61648 9.5564C8.93306 9.87297 9.44599 9.87297 9.76256 9.5564C10.0791 9.23982 10.0791 8.7269 9.76256 8.41032L6.14608 4.79384L9.76256 1.17736Z"
-                        fill="var(--fill-0, #6B7280)"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </button>
           </div>
-          <div className="flex flex-col gap-1 w-full flex-wrap">
-            <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#6b7280] text-base">
-              {project.description}
-            </p>
-            {project.xLink && (
-              <a
-                href={project.xLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group/xlink flex gap-1 items-center shrink-0 transition-colors"
-              >
-                <div className="flex gap-1 items-center">
-                  <span className="font-['Figtree',sans-serif] font-normal leading-5 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
-                    View on
-                  </span>
-                  {/* X logo */}
-                  <div className="flex items-center justify-center relative size-[14px]">
-                    <svg className="block size-full fill-[#9ca3af] group-hover/xlink:fill-blue-500 transition-colors" viewBox="0 0 19 18">
-                      <path d={svgPaths.p16308a80} />
-                    </svg>
-                  </div>
-                  <span className="font-['Figtree',sans-serif] font-normal leading-5 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
-                  ↗
-                  </span>
+
+          {/* Divider line */}
+          <PopupLine />
+
+          {/* View on X link - only shown if xLink exists */}
+          {project.xLink && (
+            <a
+              href={project.xLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="content-stretch flex items-center relative shrink-0 group/xlink -mt-1"
+            >
+              <div className="content-stretch flex gap-[2px] items-center relative shrink-0">
+                <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
+                  View on
+                </p>
+                {/* X logo - small icon */}
+                <div className="content-stretch flex items-center justify-center p-[6.667px] relative shrink-0 size-[24px]">
+                  <svg 
+                    className="block w-[12px] h-[11px] fill-[#9ca3af] group-hover/xlink:fill-blue-500 transition-colors" 
+                    viewBox="0 0 19 18"
+                  >
+                    <path d={svgPaths.p16308a80} />
+                  </svg>
                 </div>
-              </a>
+                <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
+                  ↗
+                </p>
+              </div>
+            </a>
+          )}
+
+          {/* Video/Image content area with rounded corners */}
+          <div className="relative rounded-[16px] w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 my-4">
+            {/* Always show poster/thumbnail as background */}
+            <img
+              alt=""
+              className="absolute object-cover size-full rounded-[16px]"
+              src={project.imageSrc}
+            />
+            {/* Overlay video once ready */}
+            {project.videoSrc && videoReady && (
+              <VideoPlayer
+                key={project.id}
+                src={project.videoSrc}
+                className="absolute object-cover size-full rounded-[16px]"
+                autoPlay
+                muted
+                loop
+                controls={false}
+                muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+              />
             )}
           </div>
-        </div>
-        <div className="relative rounded-[16px] w-full aspect-[16/9] overflow-hidden bg-gray-100">
-          {/* Always show poster/thumbnail as background */}
-          <img
-            alt=""
-            className="absolute object-cover size-full rounded-[16px]"
-            src={project.imageSrc}
-          />
-          {/* Overlay video once ready */}
-          {project.videoSrc && videoReady && (
-            <VideoPlayer
-              key={project.id}
-              src={project.videoSrc}
-              className="absolute object-cover size-full rounded-[16px]"
-              autoPlay
-              muted
-              loop
-              controls={false}
-              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
-            />
-          )}
         </div>
       </div>
     </div>
   );
 }
 
-export default function App() {
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+// Side project IDs that use the simple modal
+const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library"];
+
+// Main HomePage component that handles the portfolio display and modal routing
+function HomePage() {
+  const navigate = useNavigate();
+  const { slug, mode } = useParams<{ slug?: string; mode?: string }>();
+  
   const [badgeHovered, setBadgeHovered] = useState(false);
   const badgeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Find project based on URL slug
+  const selectedProject = slug ? projects.find(p => p.id === slug) || null : null;
+  
+  // Determine if we're in fullscreen mode based on URL
+  const isFullscreenFromUrl = mode === "full";
 
   const handleBadgeMouseEnter = () => {
     if (badgeTimeoutRef.current) {
@@ -585,6 +633,42 @@ export default function App() {
     badgeTimeoutRef.current = setTimeout(() => {
       setBadgeHovered(false);
     }, 600);
+  };
+
+  const handleProjectClick = (project: Project) => {
+    // Navigate to the project overlay URL
+    navigate(`/project/${project.id}`);
+  };
+
+  const handleModalClose = () => {
+    // Navigate back to home
+    navigate("/");
+  };
+
+  const handleExpandToFullscreen = () => {
+    if (slug) {
+      navigate(`/project/${slug}/full`);
+    }
+  };
+
+  const handleCollapseFromFullscreen = () => {
+    if (slug) {
+      navigate(`/project/${slug}`);
+    }
+  };
+
+  const handleProjectSwitch = (projectId: string) => {
+    // When switching projects, maintain the current view mode
+    const newPath = isFullscreenFromUrl 
+      ? `/project/${projectId}/full` 
+      : `/project/${projectId}`;
+    navigate(newPath);
+  };
+
+  const handleViewAllProjects = () => {
+    // Navigate to home and scroll to top
+    navigate("/");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -622,7 +706,7 @@ export default function App() {
         {/* Logo */}
         <div className="relative shrink-0 w-full" style={{ zIndex: 2 }}>
           <div className="size-full">
-            <div className="content-stretch flex flex-col items-start px-16 pt-8 pb-8 max-md:px-8 max-md:pt-4 max-md:pb-4 relative w-full">
+            <div className="content-stretch flex flex-col items-start px-16 pt-8 pb-8 max-md:px-8 max-md:pt-8 max-md:pb-4 relative w-full">
               <div className="content-stretch flex items-start justify-between relative shrink-0 w-full">
                 <div className="relative shrink-0 size-11">
                   <FinalSealLogoBackgroundImage additionalClassNames="size-full" />
@@ -725,7 +809,7 @@ export default function App() {
             <div key={project.id} className="w-full">
               <ProjectCard 
                 project={project} 
-                onClick={() => setSelectedProject(project)} 
+                onClick={() => handleProjectClick(project)} 
                 featured={index < 4} // First 4 cards use featured style on desktop
               />
             </div>
@@ -735,187 +819,55 @@ export default function App() {
         {/* Projects Grid - Mobile (1 column) */}
         <div className="md:hidden flex flex-col gap-8 px-8 py-4 relative shrink-0 w-full">
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} onClick={() => setSelectedProject(project)} />
+            <ProjectCard key={project.id} project={project} onClick={() => handleProjectClick(project)} />
           ))}
         </div>
       </div>
 
       {/* Footer */}
-      <div className="relative shrink-0 w-full">
-        <div className="flex flex-col items-center size-full">
-          <div className="content-stretch flex flex-col gap-16 items-center px-16 max-md:px-8 pt-8 pb-8 max-md:pb-16 max-md:pt-4 relative w-full">
-            <div className="content-stretch flex flex-col gap-5 items-start relative shrink-0 w-full">
-              <div className="bg-[#e5e7eb] h-px shrink-0 w-full" />
-              
-              {/* Desktop Grid (4 columns) */}
-              <div className="hidden md:grid gap-5 grid-cols-[repeat(4,_minmax(0px,_1fr))] grid-rows-[repeat(1,_fit-content(100%))] relative shrink-0 w-full">
-                {/* Column 1: Logo */}
-                <div className="[grid-area:1_/_1] content-stretch flex flex-col items-start relative shrink-0">
-                  <div className="content-stretch flex gap-3 items-center justify-center relative shrink-0">
-                    <div className="relative shrink-0 size-7">
-                      <img
-                        alt="Michelle Liu Logo"
-                        className="object-contain size-full"
-                        src={imgFinalSealLogo1}
-                      />
-                    </div>
-                    <p className="font-['Figtree',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-[32px] w-[212px]">
-                      michelle liu
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Column 3: Nav Links */}
-                <div className="[grid-area:1_/_3] content-stretch flex flex-col gap-2 items-start relative shrink-0">
-                  <LinksBackgroundImageAndText text="Work" />
-                  <LinksBackgroundImageAndText text="Art" />
-                  <LinksBackgroundImageAndText text="About" />
-                </div>
-                
-                {/* Column 4: Contact + Social */}
-                <div className="[grid-area:1_/_4] content-stretch flex flex-col gap-4 items-start relative shrink-0">
-                  <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start relative shrink-0 text-gray-400 w-full">
-                    <p className="leading-6 min-w-full relative shrink-0 text-base w-[min-content]">Let's work together!</p>
-                    <p className="leading-6 relative shrink-0 text-base break-all">
-                      <a href="mailto:michelletheresaliu@gmail.com" className="hover:text-blue-500 text-gray-500 transition-colors duration-200">
-                        <span>{`michelletheresaliu@gmail.com `}</span>
-                        <span className="font-['Figtree',sans-serif] font-bold">↗</span>
-                      </a>
-                    </p>
-                  </div>
-                  <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0">
-                    <div className="content-stretch flex gap-6 items-start relative shrink-0">
-                      <a href="https://www.instagram.com/https.croissant/?hl=en" target="_blank" rel="noopener noreferrer" className="social-link">
-                        <SocialLinksBackgroundImage>
-                          <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #c4c9d0)" id="Vector" />
-                        </SocialLinksBackgroundImage>
-                      </a>
-                      <a href="https://x.com/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link">
-                        <div className="content-stretch flex items-center justify-center relative shrink-0 size-6">
-                          <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0">
-                            <div
-                              className="[grid-area:1_/_1] h-[17.219px] mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0px_-0.89px] mask-size-[19px_19px] ml-0 mt-[4.69%] relative w-[19px]"
-                              style={{ maskImage: `url('${imgGroup}')` }}
-                            >
-                              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 19 18">
-                                <g id="Group">
-                                  <path d={svgPaths.p16308a80} fill="var(--fill-0, #c4c9d0)" id="Vector" />
-                                </g>
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-                      </a>
-                      <a href="https://www.linkedin.com/in/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link social-link-linkedin">
-                        <div className="content-stretch flex items-center justify-center relative shrink-0 size-6">
-                          <SocialLinksBackgroundImage>
-                            <path d={svgPaths.p1e086000} fill="var(--fill-0, #c4c9d0)" id="Vector" stroke="var(--stroke-0, #c4c9d0)" />
-                          </SocialLinksBackgroundImage>
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Mobile Layout (Vertical Stack) */}
-              <div className="md:hidden content-stretch flex flex-col gap-10 items-start relative shrink-0 w-full">
-                {/* Logo Section */}
-                <div className="content-stretch flex flex-col gap-1.5 items-start relative shrink-0">
-                  <div className="content-stretch flex gap-2 items-center justify-center relative shrink-0">
-                    <div className="relative shrink-0 size-7">
-                      <img
-                        alt="Michelle Liu Logo"
-                        className="object-contain size-full"
-                        src={imgFinalSealLogo1}
-                      />
-                    </div>
-                    <p className="font-['Figtree',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-[32px] w-[212px]">
-                      michelle liu
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Contact + Social + Nav */}
-                <div className="content-stretch flex flex-col gap-10 items-start relative shrink-0">
-                  <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0">
-                    <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start relative shrink-0 text-gray-400 w-[326px]">
-                      <p className="leading-6 relative shrink-0 text-base w-full">Let's work together!</p>
-                      <p className="leading-6 relative shrink-0 text-base w-full break-all">
-                        <a href="mailto:michelletheresaliu@gmail.com" className="hover:text-blue-500 text-gray-500 transition-colors duration-200">
-                          <span>{`michelletheresaliu@gmail.com `}</span>
-                          <span className="font-['Figtree',sans-serif] font-bold">↗</span>
-                        </a>
-                      </p>
-                    </div>
-                    <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0 w-[326px]">
-                      <div className="content-stretch flex gap-11 items-start relative shrink-0">
-                        <a href="https://www.instagram.com/https.croissant/?hl=en" target="_blank" rel="noopener noreferrer" className="social-link">
-                          <SocialLinksBackgroundImage>
-                            <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #c4c9d0)" id="Vector" />
-                          </SocialLinksBackgroundImage>
-                        </a>
-                        <a href="https://x.com/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link">
-                          <div className="content-stretch flex items-center justify-center p-2.5 relative shrink-0 size-6">
-                            <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0">
-                              <div
-                                className="[grid-area:1_/_1] h-[17.219px] mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0px_-0.89px] mask-size-[19px_19px] ml-0 mt-[4.69%] relative w-[19px]"
-                                style={{ maskImage: `url('${imgGroup}')` }}
-                              >
-                                <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 19 18">
-                                  <g id="Group">
-                                    <path d={svgPaths.p16308a80} fill="var(--fill-0, #c4c9d0)" id="Vector" />
-                                  </g>
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-                        </a>
-                        <a href="https://www.linkedin.com/in/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link social-link-linkedin">
-                          <div className="content-stretch flex items-center justify-center p-2.5 relative shrink-0 size-6">
-                            <SocialLinksBackgroundImage>
-                              <path d={svgPaths.p1e086000} fill="var(--fill-0, #c4c9d0)" id="Vector" stroke="var(--stroke-0, #c4c9d0)" />
-                            </SocialLinksBackgroundImage>
-                          </div>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0 w-[338px]">
-                    <LinksBackgroundImageAndText text="WORK" />
-                    <LinksBackgroundImageAndText text="ART" />
-                    <LinksBackgroundImageAndText text="ABOUT" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="content-stretch flex flex-col gap-0.5 items-center relative shrink-0">
-              <p className="font-['Figtree',sans-serif] font-normal leading-7 relative shrink-0 text-gray-500 text-sm">
-                <span>{`Built with Next.js & `}</span>
-                <span className="group">
-                  <a
-                    className="[text-underline-position:from-font] cursor-pointer decoration-solid underline group-hover:!text-emerald-600 transition-colors"
-                    href="https://www.rockysmatcha.com/blogs/matcha-guide/how-to-make-matcha-guide"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    rocky's matcha
-                  </a>
-                  <span>{` lattes.`}</span>
-                  <span className="text-gray-400">{` ☕︎`}</span>
-                </span>
-              </p>
-              <TextScramble 
-                text="CHANGELOG: 12-21-25"
-                className="font-['Figtree',sans-serif] font-normal leading-5 tracking-wider relative shrink-0 text-[#9ca3af] text-xs text-nowrap"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      <Footer />
 
-      {/* Project Modal */}
-      {selectedProject && <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />}
+      {/* Project Modal - Simple modal for side projects, Sanity modal for main work */}
+      {selectedProject && (
+        // Side projects (polaroid, screentime, sketchbook, library) use simple modal
+        SIDE_PROJECT_IDS.includes(selectedProject.id) ? (
+          <ProjectModal 
+            project={selectedProject} 
+            onClose={handleModalClose} 
+          />
+        ) : (
+          // Main work projects (apple, roblox, adobe, nasa) use Sanity-powered modal
+          // key prop forces React to create a new component instance when project changes
+          <SanityProjectModal
+            key={selectedProject.id}
+            projectId={selectedProject.id}
+            onClose={handleModalClose}
+            onBack={isFullscreenFromUrl ? handleCollapseFromFullscreen : handleModalClose}
+            onExpandToFullscreen={handleExpandToFullscreen}
+            onCollapseFromFullscreen={handleCollapseFromFullscreen}
+            initialFullscreen={isFullscreenFromUrl}
+            onProjectClick={(projectId) => {
+              handleProjectSwitch(projectId);
+            }}
+            onViewAllProjects={handleViewAllProjects}
+          />
+        )
+      )}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      {/* Home page - no modal */}
+      <Route path="/" element={<HomePage />} />
+      
+      {/* Project overlay modal */}
+      <Route path="/project/:slug" element={<HomePage />} />
+      
+      {/* Project fullscreen/expanded view */}
+      <Route path="/project/:slug/:mode" element={<HomePage />} />
+    </Routes>
   );
 }
