@@ -18,9 +18,14 @@ type ProjectCardProps = {
 function ProjectCard({ project, className, onClick }: ProjectCardProps) {
   return (
     <button
-      onClick={onClick}
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        onClick?.();
+      }}
       className={clsx(
-        "content-stretch flex flex-col gap-3 items-start relative shrink-0 cursor-pointer group text-left",
+        "content-stretch flex flex-col gap-3 items-start relative shrink-0 cursor-pointer group text-left z-10",
         className
       )}
     >
@@ -85,7 +90,7 @@ export default function AlsoCheckOut({
         {/* Projects Grid */}
         <div
           className={clsx(
-            "content-stretch flex gap-8 relative shrink-0 w-full",
+            "content-stretch flex gap-4 relative shrink-0 w-full",
             isDesktop && "items-center",
             isMobile && "flex-col items-start justify-center"
           )}
@@ -107,8 +112,12 @@ export default function AlsoCheckOut({
       {/* View All Button */}
       <div className="content-stretch flex flex-col items-center relative shrink-0 w-full">
         <button
-          onClick={onViewAll}
-          className="bg-[#f9fafb] border border-[#e5e7eb] border-solid content-stretch flex items-center justify-center px-5 py-2.5 relative rounded-full shrink-0 hover:bg-[#f3f4f6] transition-colors cursor-pointer"
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewAll?.();
+          }}
+          className="bg-[#f9fafb] border border-[#e5e7eb] border-solid content-stretch flex items-center justify-center px-5 py-2.5 relative rounded-full shrink-0 hover:bg-[#f3f4f6] transition-colors cursor-pointer z-10"
         >
           <span className="font-semibold leading-normal relative shrink-0 text-[#4b5563] text-base tracking-[0.16px]">
             View all projects

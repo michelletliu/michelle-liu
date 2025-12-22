@@ -1,19 +1,15 @@
 import React, { useState } from "react";
 import clsx from "clsx";
+import lockIcon from "../../assets/lock.svg";
 
-// Lock icon SVG
+// Lock icon with circular background and shadow (matches Figma exactly)
 const LockIcon = () => (
-  <svg
-    className="block size-full"
-    viewBox="0 0 76 84"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M38 0C24.2 0 13 11.2 13 25V35H10C4.5 35 0 39.5 0 45V74C0 79.5 4.5 84 10 84H66C71.5 84 76 79.5 76 74V45C76 39.5 71.5 35 66 35H63V25C63 11.2 51.8 0 38 0ZM23 25C23 16.7 29.7 10 38 10C46.3 10 53 16.7 53 25V35H23V25ZM42 61.5V69H34V61.5C31.5 60.2 30 57.7 30 55C30 50.6 33.6 47 38 47C42.4 47 46 50.6 46 55C46 57.7 44.5 60.2 42 61.5Z"
-      fill="#9CA3AF"
-    />
-  </svg>
+  <div className="relative shrink-0 size-[60px]">
+    {/* Circle with subtle shadow */}
+    <div className="absolute inset-0 rounded-full bg-white shadow-[0px_1px_3px_0px_rgba(0,0,0,0.08),0px_1px_2px_-1px_rgba(0,0,0,0.08)] flex items-center justify-center">
+      <img src={lockIcon} alt="" className="w-[19px] h-[28px]" />
+    </div>
+  </div>
 );
 
 // Arrow right icon SVG
@@ -38,21 +34,28 @@ type ProtectedContentProps = {
   device?: "Default" | "Mobile";
   /** Email address for contact link */
   email?: string;
+  /** Whether a password is set in Sanity - controls if password input is shown */
+  hasPassword?: boolean;
   /** Callback when password is submitted */
   onPasswordSubmit?: (password: string) => void;
+  /** Whether to show error state */
+  error?: boolean;
 };
 
 export default function ProtectedContent({
   type = "Password",
   device = "Default",
   email = "michelletheresaliu@gmail.com",
+  hasPassword = false,
   onPasswordSubmit,
+  error = false,
 }: ProtectedContentProps) {
   const [passwordValue, setPasswordValue] = useState("");
   const isDesktop = device === "Default";
   const isMobile = device === "Mobile";
   const isPassword = type === "Password";
   const isEmail = type === "Email";
+  const showPasswordInput = hasPassword;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,25 +74,21 @@ export default function ProtectedContent({
         <div
           className={clsx(
             "content-stretch flex flex-col items-start relative shrink-0",
-            isPassword && "gap-8",
-            isDesktop && "w-[868px]",
+            showPasswordInput && "gap-8",
+            isDesktop && "w-full",
             isMobile && "w-full"
           )}
         >
           <div className="content-stretch flex flex-col gap-8 items-start justify-center relative shrink-0">
             {/* Lock Icon */}
-            <div className="relative shrink-0 size-[60px]">
-              <div className="absolute inset-[-10%_-13.33%_-16.67%_-13.33%]">
-                <LockIcon />
-              </div>
-            </div>
+            <LockIcon />
 
             {/* Text Content */}
-            <div className="content-stretch flex flex-col gap-2 items-start opacity-60 relative shrink-0 w-[424px] whitespace-pre-wrap">
-              <p className="leading-7 relative shrink-0 text-2xl text-black w-full">
-                {isPassword ? "This case study is password protected." : "Confidential"}
+            <div className="content-stretch flex flex-col gap-2 items-start opacity-60 relative shrink-0 w-full">
+              <p className="leading-7 relative shrink-0 text-2xl text-black">
+                {isPassword ? "This case study is password-protected." : "Confidential"}
               </p>
-              <p className="leading-6 relative shrink-0 text-[#6b7280] text-xl">
+              <p className="leading-6 relative shrink-0 text-[#6b7280] text-lg">
                 {isPassword ? (
                   <>
                     Curious? Feel free to{" "}
@@ -117,10 +116,15 @@ export default function ProtectedContent({
             </div>
           </div>
 
-          {/* Password Input (Password type only) */}
-          {isPassword && (
-            <form onSubmit={handleSubmit} className="w-[313px]">
-              <div className="bg-white border border-[#f3f4f6] border-solid content-stretch flex items-center justify-between pl-4 pr-3 py-2 relative rounded-full shrink-0 w-full">
+          {/* Password Input - shown when hasPassword is true (password is set in Sanity) */}
+          {showPasswordInput && (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-[313px]">
+              <div 
+                className={clsx(
+                  "bg-white border border-solid content-stretch flex items-center justify-between pl-4 pr-3 py-2 relative rounded-full shrink-0 w-full transition-colors duration-200",
+                  error ? "border-[#f87171]" : "border-[#e5e7eb]"
+                )}
+              >
                 <input
                   type="password"
                   placeholder="Enter"
@@ -130,10 +134,21 @@ export default function ProtectedContent({
                 />
                 <button
                   type="submit"
-                  className="relative shrink-0 size-5 rotate-[-90deg] hover:opacity-70 transition-opacity"
+                  className="relative shrink-0 size-[14px] rotate-[-90deg] hover:opacity-70 transition-opacity"
                 >
                   <ArrowRightIcon />
                 </button>
+              </div>
+              {/* Error Message with smooth animation */}
+              <div 
+                className={clsx(
+                  "overflow-hidden transition-all duration-300 ease-out",
+                  error ? "max-h-6 opacity-100" : "max-h-0 opacity-0"
+                )}
+              >
+                <p className="text-[#f87171] text-sm leading-5 px-2">
+                  Please try again!
+                </p>
               </div>
             </form>
           )}

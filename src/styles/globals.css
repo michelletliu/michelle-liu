@@ -136,7 +136,7 @@
 
 /* Custom cursor */
 body, a {
-  cursor: url('../assets/Cursor Default.svg') 20 20, auto;
+  cursor: url("../assets/cursor-default.svg") 20 20, auto;
 }
 
 a:hover,
@@ -145,7 +145,7 @@ button:hover,
 input[type="submit"]:hover,
 input[type="button"]:hover,
 .cursor-pointer:hover {
-  cursor: url('../assets/Cursor Hover.svg') 23 23, auto;
+  cursor: url("../assets/cursor-hover.svg") 23 23, auto;
 }
 
 /**
@@ -365,4 +365,9 @@ p a:hover {
 
 .green-pulse-ring-off {
   display: none !important;
+}
+
+/* Custom transition duration for testimonial animations */
+.duration-400 {
+  transition-duration: 400ms;
 }
