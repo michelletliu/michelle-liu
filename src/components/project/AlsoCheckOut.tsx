@@ -29,10 +29,10 @@ function ProjectCard({ project, className, onClick }: ProjectCardProps) {
         className
       )}
     >
-      <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full transition-transform duration-300 group-hover:scale-[0.99]">
-        <div className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full">
+      <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-xl shrink-0 w-full transition-transform duration-300 group-hover:scale-[0.99]">
+        <div className="aspect-[678/367.625] relative rounded-xl shrink-0 w-full">
           <img
-            className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full"
+            className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-xl size-full"
             alt=""
             src={project.imageSrc}
           />

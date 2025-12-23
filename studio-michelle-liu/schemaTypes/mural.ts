@@ -14,6 +14,12 @@ export const mural = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'sidebarLabel',
+      title: 'Sidebar Label',
+      description: 'How this gallery appears in the sidebar (e.g., "DOWNTOWN", "SF")',
+      type: 'string',
+    }),
+    defineField({
       name: 'location',
       title: 'Location',
       description: 'e.g., Downtown Los Angeles, San Francisco',

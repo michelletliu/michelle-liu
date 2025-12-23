@@ -91,11 +91,13 @@ function transformSketchbooks(sanityData: Sketchbook[]): SketchbookData[] {
   return sanityData.map((sketchbook) => ({
     id: sketchbook._id,
     title: sketchbook.title,
+    sidebarLabel: sketchbook.sidebarLabel,
     date: sketchbook.date,
-    images: sketchbook.images?.map((img) => ({
-      id: img._key,
-      imageSrc: img.asset ? urlFor(img).width(450).height(600).url() : "",
-    })) || [],
+    images:
+      sketchbook.images?.map((img) => ({
+        id: img._key,
+        imageSrc: img.asset ? urlFor(img).height(600).url() : "",
+      })) || [],
   }));
 }
 
@@ -103,13 +105,15 @@ function transformMurals(sanityData: Mural[]): MuralData[] {
   return sanityData.map((mural) => ({
     id: mural._id,
     title: mural.title,
+    sidebarLabel: mural.sidebarLabel,
     location: mural.location,
     date: mural.date,
     description: mural.description,
-    images: mural.images?.map((img) => ({
-      id: img._key,
-      imageSrc: img.asset ? urlFor(img).width(450).height(600).url() : "",
-    })) || [],
+    images:
+      mural.images?.map((img) => ({
+        id: img._key,
+        imageSrc: img.asset ? urlFor(img).height(600).url() : "",
+      })) || [],
   }));
 }
 
@@ -258,50 +262,84 @@ export default function ArtPage() {
         { id: "murals" as ArtCategory, ref: muralsRef },
       ];
 
-      const scrollPosition = window.scrollY + 200; // Offset for header
+      // Use a threshold from the top of the viewport
+      const viewportThreshold = 250; // pixels from top of viewport
 
+      // Find the section that has scrolled past the threshold (from bottom to top order)
+      // This selects the "topmost" section that's currently at or above the threshold
+      let activeSection: ArtCategory | null = null;
+      
+      // Iterate from last section to first - find the last one that's above the threshold
       for (let i = sections.length - 1; i >= 0; i--) {
         const section = sections[i];
         if (section.ref.current) {
-          const offsetTop = section.ref.current.offsetTop;
-          if (scrollPosition >= offsetTop) {
-            setActiveCategory(section.id);
-            
-            // If in sketchbook section, determine which sketchbook is active
-            if (section.id === "sketchbook") {
-              let foundSketchbookIndex = 0;
-              for (let j = sketchbookRefs.current.length - 1; j >= 0; j--) {
-                const sketchbookEl = sketchbookRefs.current[j];
-                if (sketchbookEl && scrollPosition >= sketchbookEl.offsetTop) {
-                  foundSketchbookIndex = j;
-                  break;
-                }
-              }
-              setActiveSketchbookIndex(foundSketchbookIndex);
-              setActiveMuralIndex(undefined);
-            } else if (section.id === "murals") {
-              // If in murals section, determine which mural is active
-              let foundMuralIndex = 0;
-              for (let j = muralRefs.current.length - 1; j >= 0; j--) {
-                const muralEl = muralRefs.current[j];
-                if (muralEl && scrollPosition >= muralEl.offsetTop) {
-                  foundMuralIndex = j;
-                  break;
-                }
-              }
-              setActiveMuralIndex(foundMuralIndex);
-              setActiveSketchbookIndex(undefined);
-            } else {
-              setActiveSketchbookIndex(undefined);
-              setActiveMuralIndex(undefined);
-            }
+          const rect = section.ref.current.getBoundingClientRect();
+          if (rect.top <= viewportThreshold) {
+            activeSection = section.id;
             break;
           }
+        }
+      }
+      
+      // If no section has scrolled past threshold (we're at the very top), 
+      // select the first visible section
+      if (!activeSection) {
+        for (const section of sections) {
+          if (section.ref.current) {
+            const rect = section.ref.current.getBoundingClientRect();
+            // Select the first section that's visible in the viewport
+            if (rect.top < window.innerHeight && rect.bottom > 0) {
+              activeSection = section.id;
+              break;
+            }
+          }
+        }
+      }
+
+      // Update the state if we found an active section
+      if (activeSection) {
+        setActiveCategory(activeSection);
+        
+        // If in sketchbook section, determine which sketchbook is active
+        if (activeSection === "sketchbook") {
+          let foundSketchbookIndex = 0;
+          for (let j = sketchbookRefs.current.length - 1; j >= 0; j--) {
+            const sketchbookEl = sketchbookRefs.current[j];
+            if (sketchbookEl) {
+              const rect = sketchbookEl.getBoundingClientRect();
+              if (rect.top <= viewportThreshold) {
+                foundSketchbookIndex = j;
+                break;
+              }
+            }
+          }
+          setActiveSketchbookIndex(foundSketchbookIndex);
+          setActiveMuralIndex(undefined);
+        } else if (activeSection === "murals") {
+          // If in murals section, determine which mural is active
+          let foundMuralIndex = 0;
+          for (let j = muralRefs.current.length - 1; j >= 0; j--) {
+            const muralEl = muralRefs.current[j];
+            if (muralEl) {
+              const rect = muralEl.getBoundingClientRect();
+              if (rect.top <= viewportThreshold) {
+                foundMuralIndex = j;
+                break;
+              }
+            }
+          }
+          setActiveMuralIndex(foundMuralIndex);
+          setActiveSketchbookIndex(undefined);
+        } else {
+          setActiveSketchbookIndex(undefined);
+          setActiveMuralIndex(undefined);
         }
       }
     };
 
     window.addEventListener("scroll", handleScroll);
+    // Run once on mount to set initial state
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, [sketchbooks.length, murals.length]);
 
@@ -407,19 +445,22 @@ export default function ArtPage() {
             activeCategory={activeCategory}
             onCategoryClick={handleCategoryClick}
             counts={categoryCounts}
-            sketchbookTitles={sketchbooks.map((s) => s.title)}
+            sketchbookLabels={sketchbooks.map((s) => 
+              s.sidebarLabel || s.title.split(" ")[0].toUpperCase()
+            )}
             sketchbookImageCounts={sketchbooks.map((s) => s.images.length)}
             activeSketchbookIndex={activeSketchbookIndex}
             onSketchbookClick={handleSketchbookClick}
-            muralTitles={murals.map((m) => m.title)}
-            muralImageCounts={murals.map((m) => m.images.length)}
+            muralLabels={murals.map((m) => 
+              m.sidebarLabel || m.title.split(" ")[0].toUpperCase()
+            )}
             activeMuralIndex={activeMuralIndex}
             onMuralClick={handleMuralClick}
           />
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col gap-12 items-start justify-center pb-8 min-w-0">
+        <div className="flex-1 flex flex-col gap-12 items-start justify-center pb-8 min-w-0 w-full">
           
           {/* Loading State */}
           {isLoading && (
@@ -489,8 +530,8 @@ export default function ArtPage() {
               </section>
 
               {/* Sketchbook Section */}
-              <section ref={sketchbookRef} className="flex flex-col gap-4 items-start w-full overflow-clip">
-                <HeaderBreakpoint text="Sketchbook" />
+              <section ref={sketchbookRef} className="flex flex-col gap-4 items-start w-full">
+               <HeaderBreakpoint text="Sketchbook" />
                 {sketchbooks.length > 0 ? (
                   <div className="flex flex-col gap-8 py-8 w-full">
                     {sketchbooks.map((sketchbook, index) => (
@@ -510,15 +551,21 @@ export default function ArtPage() {
               </section>
 
               {/* Murals Section */}
-              <section ref={muralsRef} className="flex flex-col gap-4 items-start w-full overflow-clip">
-                <HeaderBreakpoint text="Murals" />
+              <section ref={muralsRef} className="flex flex-col gap-4 items-start w-full">
+              <HeaderBreakpoint text="Murals" />
                 {murals.length > 0 ? (
                   <div className="flex flex-col gap-8 py-8 w-full">
-                    {murals.map((mural) => (
-                      <MuralGallery
+                    {murals.map((mural, index) => (
+                      <div
                         key={mural.id}
-                        data={mural}
-                      />
+                        ref={(el) => {
+                          muralRefs.current[index] = el;
+                        }}
+                      >
+                        <MuralGallery
+                          data={mural}
+                        />
+                      </div>
                     ))}
                   </div>
                 ) : (
@@ -535,3 +582,4 @@ export default function ArtPage() {
     </div>
   );
 }
+

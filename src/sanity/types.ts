@@ -39,6 +39,7 @@ export interface ArtPiece {
 export interface Sketchbook {
   _id: string;
   title: string;
+  sidebarLabel?: string;
   date: string;
   description?: string;
   images: SanityImageWithKey[];
@@ -47,6 +48,7 @@ export interface Sketchbook {
 export interface Mural {
   _id: string;
   title: string;
+  sidebarLabel?: string;
   location: string;
   date: string;
   description?: string;

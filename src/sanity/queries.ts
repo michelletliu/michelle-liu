@@ -52,6 +52,7 @@ export const SKETCHBOOKS_QUERY = `
   *[_type == "sketchbook" && isPublished == true] | order(order asc) {
     _id,
     title,
+    sidebarLabel,
     date,
     description,
     images[] {
@@ -67,6 +68,7 @@ export const MURALS_QUERY = `
   *[_type == "mural" && isPublished == true] | order(order asc) {
     _id,
     title,
+    sidebarLabel,
     location,
     date,
     description,

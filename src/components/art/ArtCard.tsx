@@ -23,16 +23,14 @@ export default function ArtCard({ className, data, onClick }: ArtCardProps) {
         className
       )}
     >
-      {/* Image container - keeps margin while constraining height on mobile */}
-      <div className="w-full overflow-hidden rounded-xl bg-white">
-        <img
-          src={data.imageSrc}
-          alt={data.title}
-          className="block w-full h-auto max-h-[78vh] sm:max-h-[70vh] object-contain rounded-xl"
-        />
-      </div>
+      {/* Image - fills width, height scales to maintain aspect ratio */}
+      <img
+        src={data.imageSrc}
+        alt={data.title}
+        className="w-full h-auto rounded-xl max-h-[70vh]"
+      />
       {/* Caption */}
-      <p className="font-medium leading-[1.4] px-3 py-0 text-base">
+      <p className="font-medium leading-[1.4] px-3 py-0 text-sm">
         <span className="text-gray-600">{data.title}</span>
         {data.metadata && (
           <>

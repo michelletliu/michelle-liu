@@ -46,7 +46,7 @@ export default function Gallery({
           <div
             key={index}
             className={clsx(
-              "aspect-[200/300] content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shadow-[0px_2px_8px_0px_#eaeaea] shrink-0",
+              "aspect-[200/300] content-stretch flex flex-col items-start overflow-clip relative rounded-xl shadow-[0px_2px_8px_0px_#eaeaea] shrink-0",
               isDesktop && "flex-[1_0_0] min-h-px min-w-px",
               isMobile && index < 2 && "row-[1]",
               isMobile && index >= 2 && "row-[2]",
@@ -54,9 +54,9 @@ export default function Gallery({
               isMobile && index % 2 === 1 && "col-[2] justify-self-stretch"
             )}
           >
-            <div className="flex-[1_0_0] min-h-px min-w-px relative rounded-[26px] shrink-0 w-full">
+            <div className="flex-[1_0_0] min-h-px min-w-px relative rounded-xl shrink-0 w-full">
               <img
-                className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full"
+                className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-xl size-full"
                 alt={image.alt || ""}
                 src={image.src}
               />

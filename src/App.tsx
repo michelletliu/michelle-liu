@@ -411,14 +411,14 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
     return (
       <button
         onClick={onClick}
-        className="content-stretch flex flex-col gap-2 items-start relative shrink-0 w-full cursor-pointer group"
+        className="content-stretch flex flex-col gap-2 items-start relative shrink-0 w-full cursor-pointer group project-card"
       >
         <div 
           className="content-stretch flex flex-col items-start justify-end overflow-clip relative rounded-[26px] shrink-0 w-full transition-transform duration-300 group-hover:scale-[0.99]"
         >
           <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
           {/* Floating title pill inside the card */}
-          <div className="absolute bottom-0 left-0 p-3 project-card-text">
+          <div className="absolute bottom-0 left-0 p-3">
             <div className="bg-white border border-[#f3f4f6] border-solid flex items-center justify-center px-3 py-1.5 rounded-full">
               <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] text-[#111827] text-base">
                 <span>{project.title} </span>
@@ -428,7 +428,7 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
           </div>
         </div>
         <div className="content-stretch flex flex-col items-start px-[13px] py-0 relative shrink-0">
-          <p className="font-['Figtree',sans-serif] font-normal leading-[1] text-[#9ca3af] text-base w-full text-left project-card-text">{project.description}</p>
+          <p className="font-['Figtree',sans-serif] font-normal leading-[1] text-[#9ca3af] text-base w-full text-left project-hover-text">{project.description}</p>
         </div>
       </button>
     );
@@ -438,7 +438,7 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
   return (
     <button
       onClick={onClick}
-      className="content-stretch flex flex-col gap-3 items-start relative shrink-0 w-full cursor-pointer group"
+      className="content-stretch flex flex-col gap-3 items-start relative shrink-0 w-full cursor-pointer group project-card"
     >
       <div 
         className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full transition-transform duration-300 group-hover:scale-[0.99]"
@@ -446,7 +446,7 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
         <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
       </div>
       <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base">
-        <p className="relative shrink-0 text-[#111827] w-full text-left project-card-text">
+        <p className="relative shrink-0 text-[#111827] w-full text-left project-hover-text">
           <span>{project.title} </span>
           <span className="text-[#9ca3af]">• {project.year}</span>
         </p>

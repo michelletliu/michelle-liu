@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { ChevronLeftIcon, ChevronRightIcon } from "./ChevronIcons";
 
@@ -10,6 +10,7 @@ export type SketchbookItem = {
 export type SketchbookData = {
   id: string;
   title: string;
+  sidebarLabel?: string;
   date: string;
   images: SketchbookItem[];
 };
@@ -31,31 +32,52 @@ export default function SketchbookGallery({
   onImageClick 
 }: SketchbookGalleryProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [canScrollLeft, setCanScrollLeft] = useState(data.images.length > 1);
+  const [canScrollRight, setCanScrollRight] = useState(data.images.length > 1);
 
-  const checkScrollability = () => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    setCanScrollLeft(container.scrollLeft > 0);
-    setCanScrollRight(
-      container.scrollLeft < container.scrollWidth - container.clientWidth - 1
-    );
-  };
+  const loopedImages = useMemo(() => {
+    if (data.images.length <= 1) return data.images;
+    return [...data.images, ...data.images, ...data.images];
+  }, [data.images]);
 
   useEffect(() => {
-    checkScrollability();
+    const hasMultipleImages = data.images.length > 1;
+    setCanScrollLeft(hasMultipleImages);
+    setCanScrollRight(hasMultipleImages);
+  }, [data.images.length]);
+
+  useEffect(() => {
     const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener("scroll", checkScrollability);
-      window.addEventListener("resize", checkScrollability);
-      return () => {
-        container.removeEventListener("scroll", checkScrollability);
-        window.removeEventListener("resize", checkScrollability);
-      };
-    }
-  }, []);
+    if (!container || loopedImages.length <= data.images.length) return;
+
+    const recenter = () => {
+      const totalWidth = container.scrollWidth;
+      if (!totalWidth) return;
+      container.scrollLeft = totalWidth / 3;
+    };
+
+    const handleScroll = () => {
+      const totalWidth = container.scrollWidth;
+      if (!totalWidth) return;
+      const third = totalWidth / 3;
+
+      if (container.scrollLeft <= third * 0.1) {
+        container.scrollLeft += third;
+      } else if (container.scrollLeft >= third * 1.9) {
+        container.scrollLeft -= third;
+      }
+    };
+
+    // Recenters after the layout stabilizes so the user starts in the middle copy
+    requestAnimationFrame(recenter);
+
+    container.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", recenter);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", recenter);
+    };
+  }, [data.images.length, loopedImages.length]);
 
   const scroll = (direction: "left" | "right") => {
     const container = scrollContainerRef.current;
@@ -92,65 +114,61 @@ export default function SketchbookGallery({
         {/* Scroll container */}
         <div
           ref={scrollContainerRef}
-          className="flex gap-4 items-center justify-start overflow-x-auto w-full scrollbar-hide pb-1"
+          className="flex gap-4 items-center justify-start overflow-x-auto w-full scrollbar-hide pb-1 px-5 sm:px-8"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {data.images.map((image) => (
+          {loopedImages.map((image, index) => (
             <button
-              key={image.id}
+              key={`${image.id}-${index}`}
               onClick={() => onImageClick?.(image)}
-              className="flex-shrink-0 w-[82vw] max-w-[20rem] min-w-[14rem] md:w-72 rounded-xl overflow-hidden cursor-pointer"
+              className="flex-none inline-flex h-[200px] md:h-[300px] lg:h-96 rounded-xl overflow-hidden cursor-pointer bg-[#e3dff4] items-center justify-center"
+              style={{ width: "auto" }}
             >
-              <div className="relative w-full aspect-[3/4]">
-                <img
-                  src={image.imageSrc}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover rounded-xl bg-[#e3dff4]"
-                />
-              </div>
+              <img
+                src={image.imageSrc}
+                alt=""
+                className="block h-[200px] md:h-[300px] lg:h-96 w-auto max-w-none object-contain"
+                style={{ maxWidth: "unset" }}
+              />
             </button>
           ))}
         </div>
 
         {/* Left navigation button */}
         <div
-          className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-0 pr-12"
-          style={{
-            backgroundImage: "linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0.95) 20%, rgba(255,255,255,0.7) 45%, rgba(255,255,255,0.35) 70%, rgba(255,255,255,0.1) 88%, rgba(255,255,255,0) 100%)",
-          }}
+          className="pointer-events-none absolute inset-y-0 left-5 sm:left-8 flex items-center z-10 -translate-x-1/2"
         >
           <button
             onClick={() => scroll("left")}
             disabled={!canScrollLeft}
             className={clsx(
-              "pointer-events-auto size-6 flex items-center justify-center transition-colors",
-              canScrollLeft ? "text-gray-500 hover:text-gray-600" : "text-gray-300 cursor-default"
+              "pointer-events-auto size-9 flex items-center justify-center rounded-full border border-gray-200 bg-white/95 shadow-sm transition-colors",
+              canScrollLeft ? "text-gray-600 hover:text-gray-800" : "text-gray-300 cursor-default"
             )}
             aria-label="Scroll left"
           >
-            <ChevronLeftIcon className="size-6" />
+            <ChevronLeftIcon className="size-5" />
           </button>
         </div>
 
         {/* Right navigation button */}
         <div
-          className="pointer-events-none absolute inset-y-0 right-0 flex items-center pl-12 pr-0"
-          style={{
-            backgroundImage: "linear-gradient(to left, rgba(255,255,255,1) 0%, rgba(255,255,255,0.95) 20%, rgba(255,255,255,0.7) 45%, rgba(255,255,255,0.35) 70%, rgba(255,255,255,0.1) 88%, rgba(255,255,255,0) 100%)",
-          }}
+          className="pointer-events-none absolute inset-y-0 right-5 sm:right-8 flex items-center z-10 translate-x-1/2"
         >
           <button
             onClick={() => scroll("right")}
             disabled={!canScrollRight}
             className={clsx(
-              "pointer-events-auto size-6 flex items-center justify-center transition-colors text-gray-500 hover:text-gray-600 cursor-default"
+              "pointer-events-auto size-9 flex items-center justify-center rounded-full border border-gray-200 bg-white/95 shadow-sm transition-colors",
+              canScrollRight ? "text-gray-600 hover:text-gray-800" : "text-gray-300 cursor-default"
             )}
             aria-label="Scroll right"
           >
-            <ChevronRightIcon className="size-6" />
+            <ChevronRightIcon className="size-5" />
           </button>
         </div>
       </div>
     </div>
   );
 }
+

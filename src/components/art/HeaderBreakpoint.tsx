@@ -16,10 +16,10 @@ export default function HeaderBreakpoint({
 }: HeaderBreakpointProps) {
   return (
     <div className={clsx("flex flex-col w-full gap-2", className)}>
-      <div className="flex items-center justify-center px-2 py-0 w-full">
+      <div className="flex items-center justify-center px-0 py-0 w-full">
         <p 
           className={clsx(
-            "flex-1 font-normal leading-5 text-lg whitespace-pre-wrap",
+            "flex-1 font-normal leading-5 text-base whitespace-pre-wrap",
             active ? "text-gray-600" : "text-gray-400"
           )}
         >

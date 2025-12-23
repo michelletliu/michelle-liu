@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+/* Prevent horizontal scrolling on the page - use clip instead of hidden to preserve sticky */
+body {
+  overflow-x: clip;
+  max-width: 100vw;
+}

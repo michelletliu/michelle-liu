@@ -14,6 +14,12 @@ export const sketchbook = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'sidebarLabel',
+      title: 'Sidebar Label',
+      description: 'How this gallery appears in the sidebar (e.g., "AIRPORT", "UCLA")',
+      type: 'string',
+    }),
+    defineField({
       name: 'date',
       title: 'Date',
       description: 'e.g., Summer 2024, 2023-2024',

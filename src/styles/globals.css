@@ -276,15 +276,16 @@ p a:hover {
   color: #3b82f6; /* blue-500 */
 }
 
-/* Project card hover effect for title and description */
+/* Project card hover effect for title and description (desktop) */
 @media (min-width: 768px) {
-  .project-card-text {
+  .project-card .project-hover-text {
     opacity: 0;
     transform: translateY(8px);
     transition: opacity 0.3s ease-out, transform 0.3s ease-out;
   }
-  
-  .group:hover .project-card-text {
+
+  .project-card:hover .project-hover-text,
+  .project-card:focus-visible .project-hover-text {
     opacity: 1;
     transform: translateY(0);
   }

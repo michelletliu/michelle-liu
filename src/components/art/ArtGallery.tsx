@@ -10,11 +10,10 @@ type ArtGalleryProps = {
 };
 
 /**
- * Art Gallery component - displays a masonry layout of art cards
- * Each image preserves its natural aspect ratio
- * - Desktop (lg): 3 columns
+ * Art Gallery component - displays a responsive layout of art cards
+ * - Mobile: Single column, images fill width with natural aspect ratio
  * - Medium (md): 2 columns
- * - Mobile: 1 column
+ * - Desktop (lg): 3 columns masonry
  */
 export default function ArtGallery({ 
   className, 
@@ -24,20 +23,20 @@ export default function ArtGallery({
   return (
     <div 
       className={clsx(
-        "w-full",
+        "w-full max-w-full",
+        // Single column on mobile, masonry on larger screens
+        "flex flex-col gap-4",
+        "md:block md:columns-2 lg:columns-3 md:gap-4",
         className
       )}
     >
-      {/* Masonry layout using CSS columns */}
-      <div className="columns-1 md:columns-2 lg:columns-3 gap-4 w-full">
-        {items.map((item) => (
-          <ArtCard
-            key={item.id}
-            data={item}
-            onClick={() => onItemClick?.(item)}
-          />
-        ))}
-      </div>
+      {items.map((item) => (
+        <ArtCard
+          key={item.id}
+          data={item}
+          onClick={() => onItemClick?.(item)}
+        />
+      ))}
     </div>
   );
 }

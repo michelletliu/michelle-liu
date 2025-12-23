@@ -8,18 +8,16 @@ type ArtSidebarProps = {
   onCategoryClick: (category: ArtCategory) => void;
   /** Counts for each category (optional) */
   counts?: Partial<Record<ArtCategory, number>>;
-  /** Sketchbook titles for subcategories */
-  sketchbookTitles?: string[];
+  /** Sketchbook labels for subcategories (from sidebarLabel field or first word of title) */
+  sketchbookLabels?: string[];
   /** Image counts for each sketchbook */
   sketchbookImageCounts?: number[];
   /** Active sketchbook index (when sketchbook category is active) */
   activeSketchbookIndex?: number;
   /** Callback when a specific sketchbook is clicked */
   onSketchbookClick?: (index: number) => void;
-  /** Mural titles for subcategories */
-  muralTitles?: string[];
-  /** Image counts for each mural */
-  muralImageCounts?: number[];
+  /** Mural labels for subcategories (from sidebarLabel field or first word of title) */
+  muralLabels?: string[];
   /** Active mural index (when murals category is active) */
   activeMuralIndex?: number;
   /** Callback when a specific mural is clicked */
@@ -38,12 +36,11 @@ export default function ArtSidebar({
   activeCategory,
   onCategoryClick,
   counts,
-  sketchbookTitles = [],
+  sketchbookLabels = [],
   sketchbookImageCounts = [],
   activeSketchbookIndex,
   onSketchbookClick,
-  muralTitles = [],
-  muralImageCounts = [],
+  muralLabels = [],
   activeMuralIndex,
   onMuralClick,
 }: ArtSidebarProps) {
@@ -57,9 +54,6 @@ export default function ArtSidebar({
   
   // Check if murals is active
   const isMuralsActive = activeCategory === "murals";
-
-  // Get first word from title for sketchbook subcategories
-  const getFirstWord = (title: string) => title.split(" ")[0].toUpperCase();
 
   const renderCategoryButton = (
     category: { id: ArtCategory; label: string },
@@ -146,7 +140,7 @@ export default function ArtSidebar({
           isSketchbookActive ? "max-h-96 opacity-100 mt-0" : "max-h-0 opacity-0 -mt-4"
         )}
       >
-        {sketchbookTitles.map((title, index) => {
+        {sketchbookLabels.map((label, index) => {
           const imageCount = sketchbookImageCounts[index];
           return (
             <button
@@ -160,7 +154,7 @@ export default function ArtSidebar({
                   activeSketchbookIndex === index ? "text-blue-500" : "text-gray-400 hover:text-gray-500"
                 )}
               >
-                {getFirstWord(title)}
+                {label}
                 {imageCount !== undefined && imageCount > 0 && (
                   <span className="text-gray-300 ml-1">({imageCount})</span>
                 )}
@@ -192,28 +186,22 @@ export default function ArtSidebar({
           isMuralsActive ? "max-h-96 opacity-100 mt-0" : "max-h-0 opacity-0 -mt-4"
         )}
       >
-        {muralTitles.map((title, index) => {
-          const imageCount = muralImageCounts[index];
-          return (
-            <button
-              key={index}
-              onClick={() => onMuralClick?.(index)}
-              className="flex items-center px-0.5 py-0 rounded-full cursor-pointer transition-colors pl-3"
+        {muralLabels.map((label, index) => (
+          <button
+            key={index}
+            onClick={() => onMuralClick?.(index)}
+            className="flex items-center px-0.5 py-0 rounded-full cursor-pointer transition-colors pl-3"
+          >
+            <span
+              className={clsx(
+                "font-semibold leading-5 text-base letter-spacing-[0.01em] text-left transition-colors",
+                activeMuralIndex === index ? "text-blue-500" : "text-gray-400 hover:text-gray-500"
+              )}
             >
-              <span
-                className={clsx(
-                  "font-semibold leading-5 text-base letter-spacing-[0.01em] text-left transition-colors",
-                  activeMuralIndex === index ? "text-blue-500" : "text-gray-400 hover:text-gray-500"
-                )}
-              >
-                {getFirstWord(title)}
-                {imageCount !== undefined && imageCount > 0 && (
-                  <span className="text-gray-300 ml-1">({imageCount})</span>
-                )}
-              </span>
-            </button>
-          );
-        })}
+              {label}
+            </span>
+          </button>
+        ))}
       </div>
     </div>
   );
