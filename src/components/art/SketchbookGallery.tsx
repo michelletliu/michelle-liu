@@ -111,10 +111,10 @@ export default function SketchbookGallery({
 
       {/* Scrollable gallery container */}
       <div className="relative w-full">
-        {/* Scroll container */}
+        {/* Scroll container - images have no padding, they touch container edges */}
         <div
           ref={scrollContainerRef}
-          className="flex gap-4 items-center justify-start overflow-x-auto w-full scrollbar-hide pb-1 px-5 sm:px-8"
+          className="flex gap-4 items-center justify-start overflow-x-auto w-full scrollbar-hide pb-1"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {loopedImages.map((image, index) => (
@@ -134,39 +134,31 @@ export default function SketchbookGallery({
           ))}
         </div>
 
-        {/* Left navigation button */}
-        <div
-          className="pointer-events-none absolute inset-y-0 left-5 sm:left-8 flex items-center z-10 -translate-x-1/2"
+        {/* Left navigation button - centered on left edge of first image */}
+        <button
+          onClick={() => scroll("left")}
+          disabled={!canScrollLeft}
+          className={clsx(
+            "absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 z-10 size-9 flex items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm transition-colors",
+            canScrollLeft ? "text-gray-600 hover:text-gray-800" : "text-gray-300 cursor-default"
+          )}
+          aria-label="Scroll left"
         >
-          <button
-            onClick={() => scroll("left")}
-            disabled={!canScrollLeft}
-            className={clsx(
-              "pointer-events-auto size-9 flex items-center justify-center rounded-full border border-gray-200 bg-white/95 shadow-sm transition-colors",
-              canScrollLeft ? "text-gray-600 hover:text-gray-800" : "text-gray-300 cursor-default"
-            )}
-            aria-label="Scroll left"
-          >
-            <ChevronLeftIcon className="size-5" />
-          </button>
-        </div>
+          <ChevronLeftIcon className="size-5" />
+        </button>
 
-        {/* Right navigation button */}
-        <div
-          className="pointer-events-none absolute inset-y-0 right-5 sm:right-8 flex items-center z-10 translate-x-1/2"
+        {/* Right navigation button - centered on right edge of last visible image */}
+        <button
+          onClick={() => scroll("right")}
+          disabled={!canScrollRight}
+          className={clsx(
+            "absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 z-10 size-9 flex items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm transition-colors",
+            canScrollRight ? "text-gray-600 hover:text-gray-800" : "text-gray-300 cursor-default"
+          )}
+          aria-label="Scroll right"
         >
-          <button
-            onClick={() => scroll("right")}
-            disabled={!canScrollRight}
-            className={clsx(
-              "pointer-events-auto size-9 flex items-center justify-center rounded-full border border-gray-200 bg-white/95 shadow-sm transition-colors",
-              canScrollRight ? "text-gray-600 hover:text-gray-800" : "text-gray-300 cursor-default"
-            )}
-            aria-label="Scroll right"
-          >
-            <ChevronRightIcon className="size-5" />
-          </button>
-        </div>
+          <ChevronRightIcon className="size-5" />
+        </button>
       </div>
     </div>
   );

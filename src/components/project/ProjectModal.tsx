@@ -6,6 +6,8 @@ import { PROJECT_BY_COMPANY_QUERY } from "../../sanity/queries";
 import type { Project, ContentSection } from "../../sanity/types";
 import Footer from "../Footer";
 import VideoPlayer from "../VideoPlayer";
+import ViewAllProjectsButton from "./ViewAllProjectsButton";
+import { ScrollReveal } from "../ScrollReveal";
 import lockIcon from "../../assets/lock.svg";
 import expandIcon from "../../assets/Expand.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
@@ -243,7 +245,7 @@ export default function ProjectModal({
           "relative bg-white flex flex-col overflow-hidden transition-all duration-500 ease-out",
           isFullscreen
             ? "w-full h-full rounded-none"
-            : "rounded-[26px] w-[calc(100%*10/12)] max-md:w-full max-h-[83.33vh]",
+            : "rounded-[26px] w-[calc(100%*10/12)] max-md:w-full max-h-[90vh]",
           isVisible
             ? "opacity-100 translate-y-0"
             : isClosing
@@ -251,34 +253,39 @@ export default function ProjectModal({
             : "opacity-0 translate-y-8"
         )}
       >
-        {/* Non-fullscreen header stays outside scroll container */}
-        {!isFullscreen && (
-          /* Modal header with back and close buttons */
-          <div className="content-stretch flex items-start justify-between px-7 py-6 relative shrink-0 w-full bg-white z-10">
-            {/* Back/Expand button */}
-            <button
-              onClick={handleExpandToFullscreen}
-              className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-sm hover:bg-[#F3F4F6] transition-colors duration-200 ease-out text-[#4b5563]"
-            >
-              <div className="relative shrink-0 size-[18px]">
-                <BackArrowIcon />
-              </div>
-            </button>
+        {/* Inner container that provides padding to keep scrollbar away from rounded corners */}
+        <div className={clsx(
+          "flex flex-col flex-1 min-h-0",
+          !isFullscreen && "pt-[26px]"
+        )}>
+          {/* Non-fullscreen header stays outside scroll container */}
+          {!isFullscreen && (
+            /* Modal header with back and close buttons */
+            <div className="content-stretch flex items-start justify-between px-7 py-6 -mt-[26px] relative shrink-0 w-full bg-white z-10">
+              {/* Back/Expand button */}
+              <button
+                onClick={handleExpandToFullscreen}
+                className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-sm hover:bg-gray-200 transition-colors duration-200 ease-out text-[#4b5563]"
+              >
+                <div className="relative shrink-0 size-[18px]">
+                  <BackArrowIcon />
+                </div>
+              </button>
 
-            {/* Close button */}
-            <button
-              onClick={handleClose}
-              className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-full hover:bg-[#F3F4F6] transition-colors duration-200 ease-out text-[#4b5563]"
-            >
-              <div className="overflow-clip relative shrink-0 size-2.5">
-                <CloseIcon />
-              </div>
-            </button>
-          </div>
-        )}
+              {/* Close button */}
+              <button
+                onClick={handleClose}
+                className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-full hover:bg-gray-200 transition-colors duration-200 ease-out text-[#4b5563]"
+              >
+                <div className="overflow-clip relative shrink-0 size-2.5">
+                  <CloseIcon />
+                </div>
+              </button>
+            </div>
+          )}
 
-        {/* Scrollable content */}
-        <div ref={scrollContainerRef} className="overflow-y-auto flex-1">
+          {/* Scrollable content */}
+          <div ref={scrollContainerRef} className="overflow-y-auto flex-1">
           {/* Fullscreen header - INSIDE scroll container so sticky works and gradient fades content */}
           {isFullscreen && (
             <div 
@@ -325,96 +332,107 @@ export default function ProjectModal({
               <div className="content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
                 {/* Logo */}
                 {project.logo && (
-                  <div className="relative shrink-0 size-20 rounded-[16px] overflow-hidden">
-                    <img
-                      className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
-                      alt=""
-                      src={urlFor(project.logo).width(160).height(160).url()}
-                    />
-                  </div>
+                  <ScrollReveal variant="fade" rootMargin="0px">
+                    <div className="relative shrink-0 size-20 rounded-[16px] overflow-hidden">
+                      <img
+                        className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
+                        alt=""
+                        src={urlFor(project.logo).width(160).height(160).url()}
+                      />
+                    </div>
+                  </ScrollReveal>
                 )}
 
                 {/* Title and Metadata */}
                 <div className="content-stretch flex flex-col gap-10 items-start relative shrink-0 w-full">
                   {/* Title */}
-                  <p className="font-normal leading-5 relative shrink-0 text-4xl text-black">
-                    {project.title}
-                  </p>
+                  <ScrollReveal variant="fade" delay={80} rootMargin="0px">
+                    <p className="font-normal leading-5 relative shrink-0 text-4xl text-black">
+                      {project.title}
+                    </p>
+                  </ScrollReveal>
 
                   {/* Metadata Grid */}
                   {project.metadata && project.metadata.length > 0 && (
                     <div className="content-stretch flex gap-5 items-start relative shrink-0 w-full max-md:grid max-md:grid-cols-2 max-md:gap-4">
                       {project.metadata.map((item) => (
-                        <div
-                          key={item._key}
-                          className="content-stretch flex flex-col gap-3 items-start leading-5 relative shrink-0 text-base flex-[1_0_0] min-h-px min-w-px whitespace-pre-wrap"
-                        >
-                          <p className="font-semibold relative shrink-0 text-[#9ca3af]">
-                            {item.label}
-                          </p>
-                          <p className="font-normal relative shrink-0 text-black">
-                            {item.value.map((v, i) => (
-                              <React.Fragment key={i}>
-                                {v}
-                                {i < item.value.length - 1 && <br />}
-                              </React.Fragment>
-                            ))}
-                            {item.subValue && (
-                              <>
-                                <br />
-                                <span className="italic text-gray-600">{item.subValue}</span>
-                              </>
-                            )}
-                          </p>
-                        </div>
+                        <ScrollReveal key={item._key} variant="fade" delay={160} rootMargin="0px" className="flex-[1_0_0] min-h-px min-w-px">
+                          <div className="content-stretch flex flex-col gap-3 items-start leading-5 relative shrink-0 text-base whitespace-pre-wrap">
+                            <p className="font-semibold relative shrink-0 text-[#9ca3af]">
+                              {item.label}
+                            </p>
+                            <p className="font-normal relative shrink-0 text-black">
+                              {item.value.map((v, i) => (
+                                <React.Fragment key={i}>
+                                  {v}
+                                  {i < item.value.length - 1 && <br />}
+                                </React.Fragment>
+                              ))}
+                              {item.subValue && (
+                                <>
+                                  <br />
+                                  <span className="italic text-gray-600">{item.subValue}</span>
+                                </>
+                              )}
+                            </p>
+                          </div>
+                        </ScrollReveal>
                       ))}
                     </div>
                   )}
                 </div>
 
                 {/* Separator Line */}
-                <Line />
+                <ScrollReveal variant="fade" delay={400} rootMargin="0px" className="w-full">
+                  <Line />
+                </ScrollReveal>
 
                 {/* Hero Video or Image */}
                 {project.heroVideo ? (
-                  <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
-                    <div className="aspect-[1090/591] relative rounded-[26px] shrink-0 w-full overflow-hidden bg-gray-100">
-                      {/* Fallback image while video loads */}
-                      {project.heroImage && (
+                  <ScrollReveal delay={480} rootMargin="0px" className="w-full">
+                    <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
+                      <div className="aspect-[1090/591] relative rounded-[26px] shrink-0 w-full overflow-hidden bg-gray-100">
+                        {/* Fallback image while video loads */}
+                        {project.heroImage && (
+                          <img
+                            className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full"
+                            alt=""
+                            src={urlFor(project.heroImage).width(1200).url()}
+                          />
+                        )}
+                        {/* Hero video */}
+                        <VideoPlayer
+                          src={`https://stream.mux.com/${project.heroVideo}.m3u8`}
+                          className="absolute inset-0 max-w-none object-cover rounded-[26px] size-full"
+                          autoPlay
+                          muted
+                          loop
+                          controls={false}
+                          poster={project.heroImage ? urlFor(project.heroImage).width(1200).url() : undefined}
+                        />
+                      </div>
+                    </div>
+                  </ScrollReveal>
+                ) : project.heroImage ? (
+                  <ScrollReveal delay={480} rootMargin="0px" className="w-full">
+                    <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
+                      <div className="aspect-[1090/591] relative rounded-[26px] shrink-0 w-full">
                         <img
                           className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full"
                           alt=""
                           src={urlFor(project.heroImage).width(1200).url()}
                         />
-                      )}
-                      {/* Hero video */}
-                      <VideoPlayer
-                        src={`https://stream.mux.com/${project.heroVideo}.m3u8`}
-                        className="absolute inset-0 max-w-none object-cover rounded-[26px] size-full"
-                        autoPlay
-                        muted
-                        loop
-                        controls={false}
-                        poster={project.heroImage ? urlFor(project.heroImage).width(1200).url() : undefined}
-                      />
+                      </div>
                     </div>
-                  </div>
-                ) : project.heroImage ? (
-                  <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
-                    <div className="aspect-[1090/591] relative rounded-[26px] shrink-0 w-full">
-                      <img
-                        className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full"
-                        alt=""
-                        src={urlFor(project.heroImage).width(1200).url()}
-                      />
-                    </div>
-                  </div>
+                  </ScrollReveal>
                 ) : null}
               </div>
 
               {/* Dynamic Content Sections */}
               {project.content?.map((section) => (
-                <ContentBlock key={section._key} section={section} isFullscreen={isFullscreen} />
+                <ScrollReveal key={section._key}>
+                  <ContentBlock section={section} isFullscreen={isFullscreen} />
+                </ScrollReveal>
               ))}
 
               {/* Also Check Out Section */}
@@ -422,63 +440,55 @@ export default function ProjectModal({
                 <div className="content-stretch flex flex-col gap-16 items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
                   <div className="content-stretch flex flex-col gap-8 items-start relative shrink-0 w-full">
                     {/* Section Title */}
-                    <p className="font-normal leading-7 relative shrink-0 text-[#6b7280] text-xl w-full whitespace-pre-wrap">
-                      Also check out...
-                    </p>
+                    <ScrollReveal variant="fade">
+                      <p className="font-normal leading-7 relative shrink-0 text-[#6b7280] text-xl w-full whitespace-pre-wrap">
+                        Also check out...
+                      </p>
+                    </ScrollReveal>
 
                     {/* Projects Grid */}
                     <div className="content-stretch flex gap-4 items-center relative shrink-0 w-full max-md:flex-col">
                       {project.relatedProjects.map((related) => (
-                        <button
-                          type="button"
-                          key={related._id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            handleProjectClick(related.company);
-                          }}
-                          className="content-stretch flex flex-[1_0_0] flex-col gap-3 items-start min-h-px min-w-px relative shrink-0 cursor-pointer group text-left max-md:w-full max-md:flex-none z-10"
-                        >
-                          {related.heroImage && (
-                            <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full transition-transform duration-300 group-hover:scale-[0.99]">
-                              <div className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full">
-                                <img
-                                  className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full"
-                                  alt=""
-                                  src={urlFor(related.heroImage).width(800).height(434).url()}
-                                />
+                        <ScrollReveal key={related._id} className="flex-[1_0_0] min-h-px min-w-px max-md:w-full">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleProjectClick(related.company);
+                            }}
+                            className="content-stretch flex flex-col gap-3 items-start relative shrink-0 cursor-pointer group text-left w-full z-10"
+                          >
+                            {related.heroImage && (
+                              <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full transition-transform duration-300 group-hover:scale-[0.99]">
+                                <div className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full">
+                                  <img
+                                    className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full"
+                                    alt=""
+                                    src={urlFor(related.heroImage).width(800).height(434).url()}
+                                  />
+                                </div>
                               </div>
+                            )}
+                            <div className="content-stretch flex flex-col font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base whitespace-pre-wrap w-full">
+                              <p className="relative shrink-0 text-[#111827] w-full">
+                                <span>{related.title} </span>
+                                <span className="text-[#9ca3af]">• {related.year}</span>
+                              </p>
+                              <p className="relative shrink-0 text-[#9ca3af] w-full font-normal project-card-text opacity-0 translate-y-1 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:translate-y-0">
+                                {related.shortDescription}
+                              </p>
                             </div>
-                          )}
-                          <div className="content-stretch flex flex-col font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base whitespace-pre-wrap w-full">
-                            <p className="relative shrink-0 text-[#111827] w-full">
-                              <span>{related.title} </span>
-                              <span className="text-[#9ca3af]">• {related.year}</span>
-                            </p>
-                            <p className="relative shrink-0 text-[#9ca3af] w-full font-normal project-card-text">
-                              {related.shortDescription}
-                            </p>
-                          </div>
-                        </button>
+                          </button>
+                        </ScrollReveal>
                       ))}
                     </div>
                   </div>
 
                   {/* View All Button */}
-                  <div className="content-stretch flex flex-col items-center relative shrink-0 w-full">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onViewAllProjects?.();
-                      }}
-                      className="bg-[#f9fafb] border border-[#e5e7eb] border-solid content-stretch flex items-center justify-center px-5 py-2.5 relative rounded-full shrink-0 hover:bg-[#f3f4f6] transition-colors cursor-pointer z-10"
-                    >
-                      <span className="font-semibold leading-normal relative shrink-0 text-[#4b5563] text-base tracking-[0.16px]">
-                        View all projects
-                      </span>
-                    </button>
-                  </div>
+                  <ScrollReveal variant="fade" delay={200} className="w-full">
+                    <ViewAllProjectsButton onClick={onViewAllProjects} />
+                  </ScrollReveal>
                 </div>
               )}
             </>
@@ -492,6 +502,7 @@ export default function ProjectModal({
 
           {/* Footer - only shown in fullscreen mode */}
           {isFullscreen && <Footer />}
+        </div>
         </div>
       </div>
     </div>
@@ -738,8 +749,9 @@ function TestimonialBlock({
 
 // Content section renderer component
 function ContentBlock({ section, isFullscreen = false }: { section: ContentSection; isFullscreen?: boolean }) {
-  switch (section._type) {
-    case "missionSection":
+  const renderContent = () => {
+    switch (section._type) {
+      case "missionSection":
       // Check if there's description content and image
       const hasDescription = section.missionDescription && section.missionDescription.length > 0;
       const hasImage = !!section.missionImage;
@@ -859,7 +871,7 @@ function ContentBlock({ section, isFullscreen = false }: { section: ContentSecti
       const hasPassword = !!(section.showPasswordProtection && section.password);
       return (
         <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
-          <div className="bg-[#f9fafb] content-stretch flex flex-col items-center justify-center overflow-clip p-16 max-md:p-8 relative rounded-[26px] shrink-0 w-full">
+          <div className="bg-gray-100 content-stretch flex flex-col items-center justify-center overflow-clip p-16 max-md:p-8 relative rounded-[26px] shrink-0 w-full">
             <div className={clsx(
               "content-stretch flex flex-col items-start relative shrink-0 w-full",
               hasPassword && "gap-8"
@@ -1033,22 +1045,33 @@ function ContentBlock({ section, isFullscreen = false }: { section: ContentSecti
         </div>
       );
 
-    case "testimonialSection":
-      return (
-        <TestimonialBlock
-          sectionLabel={section.sectionLabel}
-          sectionTitle={section.sectionTitle}
-          quote={section.quote}
-          fullQuote={section.fullQuote}
-          authorName={section.authorName}
-          authorTitle={section.authorTitle}
-          authorCompany={section.authorCompany}
-          authorImage={section.authorImage}
-          isFullscreen={isFullscreen}
-        />
-      );
+      case "testimonialSection":
+        return (
+          <TestimonialBlock
+            sectionLabel={section.sectionLabel}
+            sectionTitle={section.sectionTitle}
+            quote={section.quote}
+            fullQuote={section.fullQuote}
+            authorName={section.authorName}
+            authorTitle={section.authorTitle}
+            authorCompany={section.authorCompany}
+            authorImage={section.authorImage}
+            isFullscreen={isFullscreen}
+          />
+        );
 
-    default:
-      return null;
-  }
+      default:
+        return null;
+    }
+  };
+
+  const content = renderContent();
+  if (!content) return null;
+  
+  return (
+    <ScrollReveal>
+      {content}
+    </ScrollReveal>
+  );
 }
+

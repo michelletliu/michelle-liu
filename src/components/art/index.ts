@@ -10,3 +10,4 @@ export type { SketchbookData, SketchbookItem } from "./SketchbookGallery";
 export { default as MuralGallery } from "./MuralGallery";
 export type { MuralData, MuralImage } from "./MuralGallery";
 export { ChevronLeftIcon, ChevronRightIcon } from "./ChevronIcons";
+

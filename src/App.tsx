@@ -6,10 +6,11 @@ import imgFinalSealLogo1 from "./assets/logo.png";
 import grainTexture from "./assets/Rectangle Grain 1.png";
 import { imgGroup } from "./imports/svg-poktt";
 import VideoPlayer from "./components/VideoPlayer";
-import AppleProjectModal from "./components/project/AppleProjectModal";
 import Footer from "./components/Footer";
 import { ProjectModal as SanityProjectModal } from "./components/project";
 import ArtPage from "./components/art/ArtPage";
+import { AboutPage } from "./components/about";
+import { ScrollReveal } from "./components/ScrollReveal";
 
 // CSS for fade up animation
 const fadeUpStyles = `
@@ -450,7 +451,7 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
           <span>{project.title} </span>
           <span className="text-[#9ca3af]">• {project.year}</span>
         </p>
-        <p className="relative shrink-0 text-[#9ca3af] w-full text-left font-normal md:hidden">{project.description}</p>
+        <p className="relative shrink-0 text-[#9ca3af] w-full text-left font-normal hidden">{project.description}</p>
       </div>
     </button>
   );
@@ -518,7 +519,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
       {/* Modal - matches Figma PopUpCard design */}
       <div 
         className={clsx(
-          "relative bg-white rounded-[26px] flex flex-col w-[calc(100%*10/12)] max-md:w-full max-h-[83.33vh] overflow-auto transition-all duration-300 ease-out",
+          "relative bg-white rounded-[26px] flex flex-col w-[calc(100%*10/12)] max-md:w-full max-h-[90vh] overflow-auto transition-all duration-300 ease-out",
           isVisible 
             ? 'opacity-100 translate-y-0' 
             : isClosing 
@@ -539,7 +540,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
         </div>
 
         {/* Content area with horizontal padding */}
-        <div className="content-stretch flex flex-col gap-3 items-start px-44 max-md:px-8 pt-16 max-md:pt-0 pb-16 max-md:pb-8 relative shrink-0 w-full">
+        <div className="content-stretch flex flex-col gap-3 items-start px-44 max-md:px-8 pt-16 max-md:pt-0 pb-8 max-md:pb-6 relative shrink-0 w-full">
           {/* Title and Description section */}
           <div className="content-stretch flex flex-col gap-1 items-start relative shrink-0 w-full">
             {/* Title row: Project Title • Year */}
@@ -634,6 +635,22 @@ function HomePage() {
   
   const [badgeHovered, setBadgeHovered] = useState(false);
   const badgeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Track if hero animation has been played this session to prevent re-animation on tab switches
+  const [heroAnimationPlayed, setHeroAnimationPlayed] = useState(() => {
+    return sessionStorage.getItem('heroAnimationPlayed') === 'true';
+  });
+  
+  useEffect(() => {
+    if (!heroAnimationPlayed) {
+      // Mark as played after a short delay to let the animation complete
+      const timer = setTimeout(() => {
+        sessionStorage.setItem('heroAnimationPlayed', 'true');
+        setHeroAnimationPlayed(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [heroAnimationPlayed]);
 
   // Find project based on URL slug
   const selectedProject = slug ? projects.find(p => p.id === slug) || null : null;
@@ -744,10 +761,13 @@ function HomePage() {
           <div className="size-full">
             <div className="content-stretch flex flex-col gap-4 items-start pb-6 pt-11 px-16 max-md:px-8 relative w-full">
               <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
-                <p className="font-['Figtree',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-6xl w-full max-md:text-5xl">
-                  michelle liu
-                </p>
-                <p className="font-['Figtree',sans-serif] font-normal leading-7 max-md:leading-6 tracking-wide not-italic relative shrink-0 text-[#6b7280] text-[1.2rem] w-full max-md:text-[1.13rem] -mt-2 max-md:mt-1 animate-fade-up">
+                <ScrollReveal variant="fade" rootMargin="0px" disabled={heroAnimationPlayed}>
+                  <p className="font-['Figtree',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-6xl w-full max-md:text-5xl">
+                    michelle liu
+                  </p>
+                </ScrollReveal>
+                <ScrollReveal variant="fade" delay={150} rootMargin="0px">
+                  <p className="font-['Figtree',sans-serif] font-normal leading-7 max-md:leading-6 tracking-wide not-italic relative shrink-0 text-[#6b7280] text-[1.2rem] w-full max-md:text-[1.13rem] -mt-2 max-md:mt-1">
                   <span className="font-['Figtree',sans-serif] text-[#9ca3af]">
                     Designing useful products to spark moments of{" "}</span>
                     <br className="md:hidden" />
@@ -770,12 +790,10 @@ function HomePage() {
                   <span className="font-['Figtree',sans-serif] text-[#9ca3af]">{`, & `}</span>
                   <span className="font-['Figtree',sans-serif] text-[#374151]">NASA</span>
                   <span className="font-['Figtree',sans-serif] text-[#9ca3af]">.</span>
-                  <br className="md:hidden" />
                   <span 
                     className={clsx(
                       "relative inline-flex items-center justify-center rounded-[999px] align-middle -translate-y-[2px] transition-all duration-300 ease-in-out [cursor:inherit] before:content-[''] before:absolute before:-inset-[2px] before:rounded-[999px] before:pointer-events-none",
-                      "max-md:ml-0 max-md:mt-4",
-                      "max-md:gap-2 max-md:bg-[#ecfdf5] max-md:pr-4 max-md:pl-2 max-md:py-0",
+                      "max-md:hidden",
                       badgeHovered ? "gap-2 bg-[#ecfdf5] pl-1.5 pr-3.5 py-0.5 -my-0.5 md:ml-1" : "md:gap-0 md:bg-transparent md:p-0 md:ml-2"
                     )}
                     onMouseEnter={handleBadgeMouseEnter}
@@ -792,15 +810,15 @@ function HomePage() {
                       </svg>
                     </span>
                     <span className={clsx(
-                      "font-['Figtree:Medium',sans-serif] font-normal text-[#10b981] text-base text-nowrap max-md:text-base overflow-hidden transition-all duration-300 ease-in-out",
-                      "max-md:max-w-[500px] max-md:opacity-100",
-                      badgeHovered ? "max-w-[500px] opacity-100" : "md:max-w-0 md:opacity-0"
+                      "font-['Figtree:Medium',sans-serif] font-normal text-[#10b981] text-base text-nowrap overflow-hidden transition-all duration-300 ease-in-out",
+                      badgeHovered ? "max-w-[500px] opacity-100" : "max-w-0 opacity-0"
                     )}>
                       <span>Working on something cool? Get in</span>{" "}
                       <a href="mailto:michelletheresaliu@gmail.com" className="[text-decoration-skip-ink:none] [text-underline-position:from-font] decoration-solid underline hover:!text-emerald-600 transition-colors">touch</a>!
                     </span>
                   </span>
                 </p>
+                </ScrollReveal>
               </div>
             </div>
           </div>
@@ -809,17 +827,17 @@ function HomePage() {
 
       {/* Navigation */}
       <div className="content-stretch flex flex-col items-center pb-4 pt-0 px-0 relative shrink-0 w-full">
-        <div className="relative shrink-0 w-full">
+        <ScrollReveal variant="fade" delay={280} rootMargin="0px" className="relative shrink-0 w-full" disabled={heroAnimationPlayed}>
           <div className="size-full">
             <div className="content-stretch flex flex-col gap-3 items-start pb-0 pt-4 px-16 max-md:px-8 relative w-full">
               <div className="content-stretch flex gap-1 items-start relative shrink-0">
                 <TagBackgroundImageAndText text="Work" active />
                 <TagBackgroundImageAndText text="Art" onClick={() => navigate("/art")} />
-                <TagBackgroundImageAndText text="About" />
+                <TagBackgroundImageAndText text="About" onClick={() => navigate("/about")} />
               </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Divider line */}
         <div className="px-17 max-md:px-8 w-full pt-3">
@@ -829,20 +847,31 @@ function HomePage() {
         {/* Projects Grid - Desktop (2 columns) */}
         <div className="hidden md:grid gap-4 grid-cols-2 px-16 py-4 pt-6 relative shrink-0 w-full">
           {projects.map((project, index) => (
-            <div key={project.id} className="w-full">
+            <ScrollReveal 
+              key={project.id} 
+              delay={Math.min(Math.floor(index / 2) * 80, 320)} 
+              className="w-full"
+              rootMargin="0px 0px -100px 0px"
+            >
               <ProjectCard 
                 project={project} 
                 onClick={() => handleProjectClick(project)} 
                 featured={index < 4} // First 4 cards use featured style on desktop
               />
-            </div>
+            </ScrollReveal>
           ))}
         </div>
 
         {/* Projects Grid - Mobile (1 column) */}
         <div className="md:hidden flex flex-col gap-8 px-8 py-4 relative shrink-0 w-full">
-          {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} onClick={() => handleProjectClick(project)} />
+          {projects.map((project, index) => (
+            <ScrollReveal 
+              key={project.id} 
+              delay={Math.min(index * 60, 300)}
+              rootMargin="0px 0px -50px 0px"
+            >
+              <ProjectCard project={project} onClick={() => handleProjectClick(project)} />
+            </ScrollReveal>
           ))}
         </div>
       </div>
@@ -894,6 +923,9 @@ export default function App() {
       
       {/* Art page */}
       <Route path="/art" element={<ArtPage />} />
+      
+      {/* About page */}
+      <Route path="/about" element={<AboutPage />} />
     </Routes>
   );
 }

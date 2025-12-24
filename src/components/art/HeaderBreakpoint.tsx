@@ -19,7 +19,7 @@ export default function HeaderBreakpoint({
       <div className="flex items-center justify-center px-0 py-0 w-full">
         <p 
           className={clsx(
-            "flex-1 font-normal leading-5 text-base whitespace-pre-wrap",
+            "flex-1 font-normal leading-5 tracking-wide text-base whitespace-pre-wrap",
             active ? "text-gray-600" : "text-gray-400"
           )}
         >
@@ -30,3 +30,4 @@ export default function HeaderBreakpoint({
     </div>
   );
 }
+

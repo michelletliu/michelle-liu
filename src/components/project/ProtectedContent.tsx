@@ -70,7 +70,7 @@ export default function ProtectedContent({
         isMobile && "px-8 w-[640px]"
       )}
     >
-      <div className="bg-[#f9fafb] content-stretch flex flex-col items-center justify-center overflow-clip p-16 relative rounded-[26px] shrink-0 w-full">
+      <div className="bg-gray-200 content-stretch flex flex-col items-center justify-center overflow-clip p-16 relative rounded-[26px] shrink-0 w-full">
         <div
           className={clsx(
             "content-stretch flex flex-col items-start relative shrink-0",
@@ -157,3 +157,4 @@ export default function ProtectedContent({
     </div>
   );
 }
+

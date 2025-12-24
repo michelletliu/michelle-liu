@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
+import { ScrollReveal } from "../ScrollReveal";
 
 // CSS for fade up animation
 const fadeUpStyles = `
@@ -139,6 +140,22 @@ export default function ArtPage() {
   const [activeCategory, setActiveCategory] = useState<ArtCategory>("painting");
   const [activeSketchbookIndex, setActiveSketchbookIndex] = useState<number | undefined>(undefined);
   const [activeMuralIndex, setActiveMuralIndex] = useState<number | undefined>(undefined);
+
+  // Track if hero animation has been played this session to prevent re-animation on tab switches
+  const [heroAnimationPlayed, setHeroAnimationPlayed] = useState(() => {
+    return sessionStorage.getItem('heroAnimationPlayed') === 'true';
+  });
+  
+  useEffect(() => {
+    if (!heroAnimationPlayed) {
+      // Mark as played after a short delay to let the animation complete
+      const timer = setTimeout(() => {
+        sessionStorage.setItem('heroAnimationPlayed', 'true');
+        setHeroAnimationPlayed(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [heroAnimationPlayed]);
 
   // Section refs for scrolling
   const paintingRef = useRef<HTMLDivElement>(null);
@@ -398,19 +415,23 @@ export default function ArtPage() {
             <div className="content-stretch flex flex-col gap-4 items-start pb-6 pt-11 px-16 max-md:px-8 relative w-full">
               <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
                 {/* Name + b. 2004 */}
-                <div className="flex gap-4 items-baseline w-full">
-                  <p className="font-['Figtree',sans-serif] font-medium leading-normal text-[#374151] text-6xl max-md:text-5xl">
-                    michelle liu
-                  </p>
-                  <p className="flex-1 font-['Figtree',sans-serif] font-normal text-[#4b5563] text-xl whitespace-pre-wrap animate-fade-up">
-                    b. 2004
-                  </p>
-                </div>
+                <ScrollReveal variant="fade" rootMargin="0px" disabled={heroAnimationPlayed}>
+                  <div className="flex gap-4 items-baseline w-full max-md:flex-col max-md:gap-0 max-md:items-start">
+                    <p className="font-['Figtree',sans-serif] font-medium leading-normal text-[#374151] text-6xl max-md:text-5xl">
+                      michelle liu
+                    </p>
+                    <p className="font-['Figtree',sans-serif] font-normal text-gray-500 text-xl whitespace-pre-wrap">
+                      b. 2004
+                    </p>
+                  </div>
+                </ScrollReveal>
                 {/* Location description */}
-                <div className="font-['Figtree',sans-serif] font-normal leading-7 max-md:leading-6 tracking-wide text-[#9ca3af] text-[1.2rem] max-md:text-[1.13rem] w-full whitespace-pre-wrap -mt-2 max-md:mt-1 animate-fade-up">
-                  <p className="mb-0">Currently based in Los Angeles, CA.</p>
-                  <p>Also in between San Francisco &amp; New York City.</p>
-                </div>
+                <ScrollReveal variant="fade" delay={150} rootMargin="0px">
+                  <div className="font-['Figtree',sans-serif] font-normal leading-7 max-md:leading-6 tracking-wide text-[#9ca3af] text-[1.2rem] max-md:text-[1.13rem] w-full whitespace-pre-wrap -mt-2 max-md:mt-3">
+                    <p className="mb-0">Currently based in Los Angeles, CA.</p>
+                    <p>Also in between San Francisco &amp; New York City.</p>
+                  </div>
+                </ScrollReveal>
               </div>
             </div>
           </div>
@@ -419,17 +440,17 @@ export default function ArtPage() {
 
       {/* Navigation */}
       <div className="content-stretch flex flex-col items-center pb-6 pt-0 px-0 relative shrink-0 w-full">
-        <div className="relative shrink-0 w-full">
+        <ScrollReveal variant="fade" delay={280} rootMargin="0px" className="relative shrink-0 w-full" disabled={heroAnimationPlayed}>
           <div className="size-full">
             <div className="content-stretch flex flex-col gap-3 items-start pb-0 pt-4 px-16 max-md:px-8 relative w-full">
               <div className="content-stretch flex gap-1 items-start relative shrink-0">
                 <TagBackgroundImageAndText text="Work" onClick={() => navigate("/")} />
                 <TagBackgroundImageAndText text="Art" active />
-                <TagBackgroundImageAndText text="About" />
+                <TagBackgroundImageAndText text="About" onClick={() => navigate("/about")} />
               </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Divider line */}
         <div className="px-17 max-md:px-8 w-full pt-3">
@@ -438,7 +459,7 @@ export default function ArtPage() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start px-16 max-md:px-8 py-0 relative shrink-0 w-full">
+      <div className="flex flex-col lg:flex-row gap-4 items-start px-16 max-md:px-8 pt-2 relative shrink-0 w-full">
         {/* Sidebar - stacks on top on mobile, left side on desktop */}
         <div className="lg:sticky lg:top-8 pb-4 lg:pb-8 w-full lg:w-[202px] shrink-0">
           <ArtSidebar
@@ -492,12 +513,16 @@ export default function ArtPage() {
             <>
               {/* Painting Section */}
               <section ref={paintingRef} className="flex flex-col gap-4 items-start w-full">
-                <HeaderBreakpoint text="Painting" />
+                <ScrollReveal variant="fade" className="w-full">
+                  <HeaderBreakpoint text="Painting" />
+                </ScrollReveal>
                 {artPiecesByType.painting.length > 0 ? (
-                  <ArtGallery 
-                    items={artPiecesByType.painting} 
-                    onItemClick={handleArtItemClick}
-                  />
+                  <ScrollReveal delay={120}>
+                    <ArtGallery 
+                      items={artPiecesByType.painting} 
+                      onItemClick={handleArtItemClick}
+                    />
+                  </ScrollReveal>
                 ) : (
                   <p className="text-gray-400 text-sm py-8">No paintings yet.</p>
                 )}
@@ -505,12 +530,16 @@ export default function ArtPage() {
 
               {/* Conceptual Section */}
               <section ref={conceptualRef} className="flex flex-col gap-4 items-start w-full">
-                <HeaderBreakpoint text="Conceptual" />
+                <ScrollReveal variant="fade" className="w-full">
+                  <HeaderBreakpoint text="Conceptual" />
+                </ScrollReveal>
                 {artPiecesByType.conceptual.length > 0 ? (
-                  <ArtGallery 
-                    items={artPiecesByType.conceptual} 
-                    onItemClick={handleArtItemClick}
-                  />
+                  <ScrollReveal delay={120}>
+                    <ArtGallery 
+                      items={artPiecesByType.conceptual} 
+                      onItemClick={handleArtItemClick}
+                    />
+                  </ScrollReveal>
                 ) : (
                   <p className="text-gray-400 text-sm py-8">No conceptual pieces yet.</p>
                 )}
@@ -518,12 +547,16 @@ export default function ArtPage() {
 
               {/* Graphite Section */}
               <section ref={graphiteRef} className="flex flex-col gap-4 items-start w-full">
-                <HeaderBreakpoint text="Graphite" />
+                <ScrollReveal variant="fade" className="w-full">
+                  <HeaderBreakpoint text="Graphite" />
+                </ScrollReveal>
                 {artPiecesByType.graphite.length > 0 ? (
-                  <ArtGallery 
-                    items={artPiecesByType.graphite} 
-                    onItemClick={handleArtItemClick}
-                  />
+                  <ScrollReveal delay={120}>
+                    <ArtGallery 
+                      items={artPiecesByType.graphite} 
+                      onItemClick={handleArtItemClick}
+                    />
+                  </ScrollReveal>
                 ) : (
                   <p className="text-gray-400 text-sm py-8">No graphite drawings yet.</p>
                 )}
@@ -531,18 +564,20 @@ export default function ArtPage() {
 
               {/* Sketchbook Section */}
               <section ref={sketchbookRef} className="flex flex-col gap-4 items-start w-full">
-               <HeaderBreakpoint text="Sketchbook" />
+                <ScrollReveal variant="fade" className="w-full">
+                  <HeaderBreakpoint className="-mb-4" text="Sketchbook" />
+                </ScrollReveal>
                 {sketchbooks.length > 0 ? (
                   <div className="flex flex-col gap-8 py-8 w-full">
                     {sketchbooks.map((sketchbook, index) => (
-                      <div
+                      <ScrollReveal
                         key={sketchbook.id}
-                        ref={(el) => { sketchbookRefs.current[index] = el; }}
+                        delay={index * 120}
                       >
-                        <SketchbookGallery
-                          data={sketchbook}
-                        />
-                      </div>
+                        <div ref={(el) => { sketchbookRefs.current[index] = el; }}>
+                          <SketchbookGallery data={sketchbook} />
+                        </div>
+                      </ScrollReveal>
                     ))}
                   </div>
                 ) : (
@@ -552,20 +587,20 @@ export default function ArtPage() {
 
               {/* Murals Section */}
               <section ref={muralsRef} className="flex flex-col gap-4 items-start w-full">
-              <HeaderBreakpoint text="Murals" />
+                <ScrollReveal variant="fade" className="w-full">
+                  <HeaderBreakpoint className="-mb-4" text="Murals" />
+                </ScrollReveal>
                 {murals.length > 0 ? (
                   <div className="flex flex-col gap-8 py-8 w-full">
                     {murals.map((mural, index) => (
-                      <div
+                      <ScrollReveal
                         key={mural.id}
-                        ref={(el) => {
-                          muralRefs.current[index] = el;
-                        }}
+                        delay={index * 120}
                       >
-                        <MuralGallery
-                          data={mural}
-                        />
-                      </div>
+                        <div ref={(el) => { muralRefs.current[index] = el; }}>
+                          <MuralGallery data={mural} />
+                        </div>
+                      </ScrollReveal>
                     ))}
                   </div>
                 ) : (

@@ -103,22 +103,21 @@ export default function MuralGallery({
   };
 
   return (
-    <div className={clsx("flex flex-col gap-8 pb-12 w-full", className)}>
+    <div className={clsx("flex flex-col gap-4 pb-12 w-full", className)}>
       {/* Header section */}
       <div className="flex flex-col items-start w-full">
         {/* Title */}
-        <p className="font-medium leading-normal text-gray-900 text-base mb-6">
+        <p className="font-medium leading-normal text-gray-900 text-base mb-4">
           {data.title}
         </p>
 
-        {/* Divider 
-        <div className="bg-zinc-100 h-px shrink-0 w-full mb-4" /> */}
+        
         
         {/* Metadata row - responsive layout */}
-        <div className="flex flex-col md:flex-row font-medium gap-5 items-start text-base w-full">
+        <div className="flex flex-col md:flex-row font-normal gap-5 items-start text-base w-full">
           {/* Location and Date */}
-          <div className="flex flex-col items-start leading-[1.4] w-[202px] flex-shrink-0">
-            <p className="text-gray-600">
+          <div className="flex flex-col items-start w-[202px] flex-shrink-0">
+            <p className="text-gray-500 font-medium">
               {data.location}
             </p>
             <p className="text-gray-400">
@@ -128,19 +127,20 @@ export default function MuralGallery({
           
           {/* Description */}
           {data.description && (
-            <p className="leading-normal text-gray-400 max-w-[366px] whitespace-pre-wrap">
+            <p className="font-normal leading-normal  text-gray-400 max-w-[366px] whitespace-pre-wrap">
               {data.description}
             </p>
           )}
         </div>
       </div>
-
+{/* Divider  */}
+        <div className="bg-zinc-100 h-px shrink-0 w-full mb-2" />
       {/* Scrollable gallery container */}
       <div className="relative w-full">
-        {/* Scroll container */}
+        {/* Scroll container - images have no padding, they touch container edges */}
         <div
           ref={scrollContainerRef}
-          className="flex gap-4 items-center justify-start overflow-x-auto w-full scrollbar-hide pb-1 px-5 sm:px-8"
+          className="flex gap-4 items-center justify-start overflow-x-auto w-full scrollbar-hide pb-1"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {loopedImages.map((image, index) => (
@@ -160,39 +160,31 @@ export default function MuralGallery({
           ))}
         </div>
 
-        {/* Left navigation button */}
-        <div
-          className="pointer-events-none absolute inset-y-0 left-5 sm:left-8 flex items-center z-10 -translate-x-1/2"
+        {/* Left navigation button - centered on left edge of first image */}
+        <button
+          onClick={() => scroll("left")}
+          disabled={!canScrollLeft}
+          className={clsx(
+            "absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 z-10 size-9 flex items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm transition-colors",
+            canScrollLeft ? "text-gray-600 hover:text-gray-800" : "text-gray-300 cursor-default"
+          )}
+          aria-label="Scroll left"
         >
-          <button
-            onClick={() => scroll("left")}
-            disabled={!canScrollLeft}
-            className={clsx(
-              "pointer-events-auto size-9 flex items-center justify-center rounded-full border border-gray-200 bg-white/95 shadow-sm transition-colors",
-              canScrollLeft ? "text-gray-600 hover:text-gray-800" : "text-gray-300 cursor-default"
-            )}
-            aria-label="Scroll left"
-          >
-            <ChevronLeftIcon className="size-5" />
-          </button>
-        </div>
+          <ChevronLeftIcon className="size-5" />
+        </button>
 
-        {/* Right navigation button */}
-        <div
-          className="pointer-events-none absolute inset-y-0 right-5 sm:right-8 flex items-center z-10 translate-x-1/2"
+        {/* Right navigation button - centered on right edge of last visible image */}
+        <button
+          onClick={() => scroll("right")}
+          disabled={!canScrollRight}
+          className={clsx(
+            "absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 z-10 size-9 flex items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm transition-colors",
+            canScrollRight ? "text-gray-600 hover:text-gray-800" : "text-gray-300 cursor-default"
+          )}
+          aria-label="Scroll right"
         >
-          <button
-            onClick={() => scroll("right")}
-            disabled={!canScrollRight}
-            className={clsx(
-              "pointer-events-auto size-9 flex items-center justify-center rounded-full border border-gray-200 bg-white/95 shadow-sm transition-colors",
-              canScrollRight ? "text-gray-600 hover:text-gray-800" : "text-gray-300 cursor-default"
-            )}
-            aria-label="Scroll right"
-          >
-            <ChevronRightIcon className="size-5" />
-          </button>
-        </div>
+          <ChevronRightIcon className="size-5" />
+        </button>
       </div>
     </div>
   );
