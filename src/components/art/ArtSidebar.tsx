@@ -76,7 +76,7 @@ export default function ArtSidebar({
       >
         <span
           className={clsx(
-            "font-semibold leading-5 text-base letter-spacing-[0.01em] text-left transition-colors",
+            "text-base font-semibold tracking-wide leading-5 text-left transition-colors",
             isActive ? "text-blue-500" : "text-gray-400 hover:text-gray-500"
           )}
         >
@@ -98,7 +98,7 @@ export default function ArtSidebar({
       >
         <span
           className={clsx(
-            "font-semibold leading-5 text-base letter-spacing-[0.01em] transition-colors",
+            "text-base font-semibold tracking-wide leading-5 transition-colors",
             isFineArtActive ? "text-gray-500" : "text-gray-400 hover:text-gray-500"
           )}
         >
@@ -125,7 +125,7 @@ export default function ArtSidebar({
       >
         <span
           className={clsx(
-            "font-semibold leading-5 text-base letter-spacing-[0.01em] transition-colors",
+            "text-base font-semibold tracking-wide leading-5 transition-colors",
             isSketchbookActive ? "text-gray-500" : "text-gray-400 hover:text-gray-500"
           )}
         >
@@ -150,7 +150,7 @@ export default function ArtSidebar({
             >
               <span
                 className={clsx(
-                  "font-semibold leading-5 text-base letter-spacing-[0.01em] text-left transition-colors",
+                  "text-base font-semibold tracking-wide leading-5 text-left transition-colors",
                   activeSketchbookIndex === index ? "text-blue-500" : "text-gray-400 hover:text-gray-500"
                 )}
               >
@@ -171,7 +171,7 @@ export default function ArtSidebar({
       >
         <span
           className={clsx(
-            "font-semibold leading-5 text-base letter-spacing-[0.01em] transition-colors",
+            "text-base font-semibold tracking-wide leading-5 transition-colors",
             isMuralsActive ? "text-gray-500" : "text-gray-400 hover:text-gray-500"
           )}
         >
@@ -194,7 +194,7 @@ export default function ArtSidebar({
           >
             <span
               className={clsx(
-                "font-semibold leading-5 text-base letter-spacing-[0.01em] text-left transition-colors",
+                "text-base font-semibold tracking-wide text-left transition-colors",
                 activeMuralIndex === index ? "text-blue-500" : "text-gray-400 hover:text-gray-500"
               )}
             >
@@ -206,3 +206,5 @@ export default function ArtSidebar({
     </div>
   );
 }
+
+

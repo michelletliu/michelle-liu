@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import ArtCard, { ArtCardData } from "./ArtCard";
+import { ScrollReveal } from "../ScrollReveal";
 
 type ArtGalleryProps = {
   className?: string;
@@ -31,12 +32,15 @@ export default function ArtGallery({
       )}
     >
       {items.map((item) => (
-        <ArtCard
-          key={item.id}
-          data={item}
-          onClick={() => onItemClick?.(item)}
-        />
+        <ScrollReveal key={item.id} className="break-inside-avoid">
+          <ArtCard
+            data={item}
+            onClick={() => onItemClick?.(item)}
+          />
+        </ScrollReveal>
       ))}
     </div>
   );
 }
+
+

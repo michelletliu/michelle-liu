@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from "react";
 import svgPaths from "../imports/svg-2tsxp86msm";
 import imgFinalSealLogo1 from "../assets/logo.png";
 import { imgGroup } from "../imports/svg-poktt";
+import { ScrollReveal } from "./ScrollReveal";
 
 // Text Scramble Component
 type TextScrambleProps = {
@@ -13,7 +14,7 @@ function TextScramble({ text, className }: TextScrambleProps) {
   const elementRef = useRef<HTMLParagraphElement>(null);
   const isAnimatingRef = useRef(false);
   const textRef = useRef(text);
-  const isVisibleRef = useRef(false);
+  const hasAnimatedOnScrollRef = useRef(false);
   
   const chars = '!@#$%^&*()_+-;:,.<>?ADELPSTUadelpstu0123456789';
 
@@ -22,37 +23,22 @@ function TextScramble({ text, className }: TextScrambleProps) {
     textRef.current = text;
   }, [text]);
 
-  // Generate scrambled text preserving spaces
-  const generateScrambledText = (originalText: string) => {
-    let scrambled = '';
-    for (let i = 0; i < originalText.length; i++) {
-      if (originalText[i] === ' ' || originalText[i] === ':' || originalText[i] === '-') {
-        scrambled += originalText[i];
-      } else {
-        scrambled += chars[Math.floor(Math.random() * chars.length)];
-      }
-    }
-    return scrambled;
-  };
-
-  // Run the scramble animation (defined as regular function to avoid stale closures)
+  // Run the scramble animation
   const runScrambleAnimation = () => {
     const el = elementRef.current;
     const targetText = textRef.current;
     if (!el || isAnimatingRef.current) return;
     
     isAnimatingRef.current = true;
-    const oldText = el.innerText;
-    const length = Math.max(oldText.length, targetText.length);
+    const length = targetText.length;
     
     // Build queue for each character
-    const queue: Array<{ from: string; to: string; start: number; end: number; char?: string }> = [];
+    const queue: Array<{ to: string; start: number; end: number; char?: string }> = [];
     for (let i = 0; i < length; i++) {
-      const from = oldText[i] || '';
       const to = targetText[i] || '';
       const start = Math.floor(Math.random() * 40);
       const end = start + Math.floor(Math.random() * 40);
-      queue.push({ from, to, start, end });
+      queue.push({ to, start, end });
     }
     
     let frame = 0;
@@ -62,7 +48,7 @@ function TextScramble({ text, className }: TextScrambleProps) {
       let complete = 0;
       
       for (let i = 0; i < queue.length; i++) {
-        const { from, to, start, end } = queue[i];
+        const { to, start, end } = queue[i];
         
         if (frame >= end) {
           complete++;
@@ -73,7 +59,7 @@ function TextScramble({ text, className }: TextScrambleProps) {
           }
           output += `<span style="color: #c4c4c4">${queue[i].char}</span>`;
         } else {
-          output += from;
+          output += to;
         }
       }
       
@@ -90,20 +76,21 @@ function TextScramble({ text, className }: TextScrambleProps) {
     update();
   };
 
-  // Initialize with scrambled text and set up observer
+  // Handle hover to trigger scramble animation
+  const handleMouseEnter = () => {
+    runScrambleAnimation();
+  };
+
+  // Set up intersection observer for initial scroll animation
   useEffect(() => {
     const el = elementRef.current;
     if (!el) return;
 
-    // Start with scrambled text
-    el.innerText = generateScrambledText(text);
-
-    // Create intersection observer
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !isVisibleRef.current) {
-            isVisibleRef.current = true;
+          if (entry.isIntersecting && !hasAnimatedOnScrollRef.current) {
+            hasAnimatedOnScrollRef.current = true;
             // Small delay before starting animation
             setTimeout(() => {
               runScrambleAnimation();
@@ -119,7 +106,15 @@ function TextScramble({ text, className }: TextScrambleProps) {
     return () => observer.disconnect();
   }, []);
 
-  return <p ref={elementRef} className={className} />;
+  return (
+    <p 
+      ref={elementRef} 
+      className={`${className} cursor-pointer`}
+      onMouseEnter={handleMouseEnter}
+    >
+      {text}
+    </p>
+  );
 }
 
 function SocialLinksBackgroundImage({ children }: React.PropsWithChildren<{}>) {
@@ -134,14 +129,27 @@ function SocialLinksBackgroundImage({ children }: React.PropsWithChildren<{}>) {
 
 type LinksBackgroundImageAndTextProps = {
   text: string;
+  href?: string;
 };
 
-function LinksBackgroundImageAndText({ text }: LinksBackgroundImageAndTextProps) {
+function LinksBackgroundImageAndText({ text, href }: LinksBackgroundImageAndTextProps) {
+  const content = (
+    <p className={`font-['Figtree',sans-serif] leading-5 relative shrink-0 text-[#9ca3af] text-base text-nowrap tracking-[0.16px] ${href ? 'hover:text-blue-500 transition-colors duration-200' : ''}`}>
+      {text}
+    </p>
+  );
+
+  if (href) {
+    return (
+      <a href={href} className="content-stretch flex items-center justify-center px-0.5 py-0 relative rounded-full shrink-0">
+        {content}
+      </a>
+    );
+  }
+
   return (
     <div className="content-stretch flex items-center justify-center px-0.5 py-0 relative rounded-full shrink-0">
-      <p className="font-['Figtree',sans-serif] leading-5 relative shrink-0 text-[#9ca3af] text-base text-nowrap tracking-[0.16px]">
-        {text}
-      </p>
+      {content}
     </div>
   );
 }
@@ -151,7 +159,7 @@ export default function Footer() {
     <div className="relative shrink-0 w-full">
       <div className="flex flex-col items-center size-full">
         <div className="content-stretch flex flex-col gap-16 items-center px-16 max-md:px-8 pt-8 pb-8 max-md:pb-16 max-md:pt-4 relative w-full">
-          <div className="content-stretch flex flex-col gap-5 items-start relative shrink-0 w-full">
+          <ScrollReveal className="content-stretch flex flex-col gap-5 items-start relative shrink-0 w-full">
             <div className="bg-gray-200 h-px shrink-0 w-full" />
             
             {/* Desktop Grid (4 columns) */}
@@ -174,9 +182,9 @@ export default function Footer() {
               
               {/* Column 3: Nav Links */}
               <div className="[grid-area:1_/_3] content-stretch flex flex-col gap-2 items-start relative shrink-0">
-                <LinksBackgroundImageAndText text="Work" />
-                <LinksBackgroundImageAndText text="Art" />
-                <LinksBackgroundImageAndText text="About" />
+                <LinksBackgroundImageAndText text="Work" href="/" />
+                <LinksBackgroundImageAndText text="Art" href="/art" />
+                <LinksBackgroundImageAndText text="About" href="/about" />
               </div>
               
               {/* Column 4: Contact + Social */}
@@ -289,14 +297,14 @@ export default function Footer() {
                   </div>
                 </div>
                 <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0 w-[338px]">
-                  <LinksBackgroundImageAndText text="WORK" />
-                  <LinksBackgroundImageAndText text="ART" />
-                  <LinksBackgroundImageAndText text="ABOUT" />
+                  <LinksBackgroundImageAndText text="WORK" href="/" />
+                  <LinksBackgroundImageAndText text="ART" href="/art" />
+                  <LinksBackgroundImageAndText text="ABOUT" href="/about" />
                 </div>
               </div>
             </div>
-          </div>
-          <div className="content-stretch flex flex-col gap-0.5 items-center relative shrink-0">
+          </ScrollReveal>
+          <ScrollReveal variant="fade" delay={200} className="content-stretch flex flex-col gap-0.5 items-center relative shrink-0">
             <p className="font-['Figtree',sans-serif] font-normal leading-7 relative shrink-0 text-gray-500 text-sm">
               <span>{`Built with React & `}</span>
               <span className="group">
@@ -316,9 +324,10 @@ export default function Footer() {
               text="CHANGELOG: 12-21-25"
               className="font-['Figtree',sans-serif] font-normal leading-5 tracking-wider relative shrink-0 text-[#9ca3af] text-xs text-nowrap"
             />
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </div>
   );
 }
+

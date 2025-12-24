@@ -149,3 +149,137 @@ export const PROJECT_BY_COMPANY_QUERY = `
     }
   }
 `;
+
+// ============================================
+// ABOUT PAGE QUERIES
+// ============================================
+
+// Query for the About page singleton document
+export const ABOUT_PAGE_QUERY = `
+  *[_type == "aboutPage"][0] {
+    _id,
+    profilePhoto,
+    name,
+    tagline,
+    bio,
+    location,
+    education {
+      school,
+      degree,
+      years
+    },
+    socialLinks {
+      linkedIn,
+      twitter,
+      email,
+      goodreads,
+      spotify,
+      letterboxd
+    },
+    experienceTitle,
+    communityTitle,
+    shelfTitle,
+    loreTitle
+  }
+`;
+
+// Query for all experience items
+export const EXPERIENCES_QUERY = `
+  *[_type == "experience" && isPublished == true] | order(order asc) {
+    _id,
+    company,
+    role,
+    logo,
+    period,
+    description
+  }
+`;
+
+// Query for all community items
+export const COMMUNITIES_QUERY = `
+  *[_type == "community" && isPublished == true] | order(order asc) {
+    _id,
+    title,
+    sidebarName,
+    logo,
+    description,
+    photos[] {
+      _key,
+      image,
+      caption,
+      rotation,
+      orientation,
+      yOffset,
+      xOffset
+    }
+  }
+`;
+
+// Query for shelf items (books, music, movies)
+export const SHELF_ITEMS_QUERY = `
+  *[_type == "shelfItem" && isPublished == true] | order(order asc) {
+    _id,
+    title,
+    mediaType,
+    cover,
+    author,
+    year,
+    rating,
+    isFeatured
+  }
+`;
+
+// Query for shelf items by media type
+export const SHELF_ITEMS_BY_TYPE_QUERY = `
+  *[_type == "shelfItem" && isPublished == true && mediaType == $mediaType] | order(order asc) {
+    _id,
+    title,
+    mediaType,
+    cover,
+    author,
+    year,
+    rating,
+    isFeatured
+  }
+`;
+
+// Query for featured shelf items only (for default/collapsed state)
+export const FEATURED_SHELF_ITEMS_QUERY = `
+  *[_type == "shelfItem" && isPublished == true && isFeatured == true] | order(order asc) {
+    _id,
+    title,
+    mediaType,
+    cover,
+    author,
+    year,
+    rating
+  }
+`;
+
+// Query for all lore items
+export const LORE_ITEMS_QUERY = `
+  *[_type == "loreItem" && isPublished == true] | order(order asc) {
+    _id,
+    headline,
+    image,
+    imageBackground,
+    date,
+    description,
+    link,
+    fullStory
+  }
+`;
+
+// Query for all quotes
+export const QUOTES_QUERY = `
+  *[_type == "aboutQuote" && isPublished == true] | order(order asc) {
+    _id,
+    emoji,
+    title,
+    text,
+    underlinedText,
+    author
+  }
+`;
+
+

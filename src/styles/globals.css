@@ -291,33 +291,21 @@ p a:hover {
   }
 }
 
-/* Social link icon hover gradient */
-@keyframes social-gradient {
-  0% {
-    --gradient-angle: 0deg;
-  }
-  50% {
-    --gradient-angle: 180deg;
-  }
-  100% {
-    --gradient-angle: 360deg;
-  }
-}
-
+/* Social link icon hover */
 .social-link {
   transition: transform 0.1s ease;
 }
 
 .social-link:hover svg path {
-  fill: url(#socialGradient) !important;
+  fill: #3b82f6 !important; /* blue-500 - matches link hover color */
   stroke: none !important;
   transition: fill 0.1s linear;
 }
 
 /* LinkedIn icon needs stroke to maintain its weight */
 .social-link-linkedin:hover svg path {
-  fill: url(#socialGradient) !important;
-  stroke: url(#socialGradient) !important;
+  fill: #3b82f6 !important; /* blue-500 - matches link hover color */
+  stroke: #3b82f6 !important;
   transition: fill 0.1s linear, stroke 0.1s linear;
 }
 
@@ -381,4 +369,119 @@ p a:hover {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* ==========================================
+   SCROLL REVEAL ANIMATIONS
+   Smooth slide-up animations triggered on scroll
+   Inspired by Squarespace's slideIn animation
+   ========================================== */
+
+/* Base state: Elements start invisible and translated down */
+.scroll-reveal {
+  opacity: 0;
+  transform: translate3d(0, 20px, 0);
+  transition-property: transform, opacity;
+  transition-timing-function: ease-out;
+  transition-duration: 0.8s;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Revealed state: Elements animate to final position */
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Stagger delays for child elements */
+.scroll-reveal-stagger > .scroll-reveal:nth-child(1) { transition-delay: 0ms; }
+.scroll-reveal-stagger > .scroll-reveal:nth-child(2) { transition-delay: 80ms; }
+.scroll-reveal-stagger > .scroll-reveal:nth-child(3) { transition-delay: 160ms; }
+.scroll-reveal-stagger > .scroll-reveal:nth-child(4) { transition-delay: 240ms; }
+.scroll-reveal-stagger > .scroll-reveal:nth-child(5) { transition-delay: 320ms; }
+.scroll-reveal-stagger > .scroll-reveal:nth-child(6) { transition-delay: 400ms; }
+.scroll-reveal-stagger > .scroll-reveal:nth-child(7) { transition-delay: 480ms; }
+.scroll-reveal-stagger > .scroll-reveal:nth-child(8) { transition-delay: 560ms; }
+.scroll-reveal-stagger > .scroll-reveal:nth-child(9) { transition-delay: 640ms; }
+.scroll-reveal-stagger > .scroll-reveal:nth-child(10) { transition-delay: 720ms; }
+.scroll-reveal-stagger > .scroll-reveal:nth-child(n+11) { transition-delay: 800ms; }
+
+/* Faster variant for smaller elements (text, headers) */
+.scroll-reveal-fast {
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+  transition-property: transform, opacity;
+  transition-timing-function: ease-out;
+  transition-duration: 0.65s;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.scroll-reveal-fast.revealed {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Fade + subtle slide variant (for text) */
+.scroll-reveal-fade {
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+  transition-property: transform, opacity;
+  transition-timing-function: ease-out;
+  transition-duration: 0.3s;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.scroll-reveal-fade.revealed {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal,
+  .scroll-reveal-fast,
+  .scroll-reveal-fade {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ==========================================
+   QUOTE ANIMATED UNDERLINE
+   Left-to-right underline animation on scroll
+   ========================================== */
+
+.quote-underline-wrapper {
+  display: inline;
+}
+
+.quote-animated-underline {
+  position: relative;
+  display: inline;
+  background-image: linear-gradient(
+    to right,
+    #d1d5db 0%,
+    #d1d5db 100%
+  );
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 2px;
+  transition: background-size 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-bottom: 1px;
+}
+
+.quote-animated-underline.revealed {
+  background-size: 100% 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .quote-animated-underline {
+    background-size: 100% 2px;
+    transition: none;
+  }
 }

@@ -172,3 +172,101 @@ export interface Project {
   isPublished?: boolean;
   order?: number;
 }
+
+// ============================================
+// ABOUT PAGE TYPES
+// ============================================
+
+export interface AboutPageData {
+  _id: string;
+  profilePhoto?: SanityImage;
+  name?: string;
+  tagline?: string;
+  bio?: string;
+  location?: string;
+  education?: {
+    school?: string;
+    degree?: string;
+    years?: string;
+  };
+  socialLinks?: {
+    linkedIn?: string;
+    twitter?: string;
+    email?: string;
+    goodreads?: string;
+    spotify?: string;
+    letterboxd?: string;
+  };
+  experienceTitle?: string;
+  communityTitle?: string;
+  shelfTitle?: string;
+  loreTitle?: string;
+}
+
+export interface Experience {
+  _id: string;
+  company: string;
+  role: string;
+  logo?: SanityImage;
+  period?: string;
+  description?: string;
+  order?: number;
+}
+
+export interface CommunityPhoto {
+  _key: string;
+  image?: SanityImage;
+  caption?: string;
+  rotation?: number;
+  orientation?: "horizontal" | "vertical";
+  yOffset?: string;
+  xOffset?: string;
+}
+
+export interface Community {
+  _id: string;
+  title: string;
+  sidebarName?: string;
+  logo?: SanityImage;
+  description?: string;
+  photos?: CommunityPhoto[];
+  order?: number;
+}
+
+export type ShelfMediaType = "book" | "music" | "movie";
+
+export interface ShelfItem {
+  _id: string;
+  title: string;
+  mediaType: ShelfMediaType;
+  cover?: SanityImage;
+  author?: string;
+  year?: string;
+  rating?: number;
+  isFeatured?: boolean;
+  order?: number;
+}
+
+export interface LoreItem {
+  _id: string;
+  headline: string;
+  image?: SanityImage;
+  imageBackground?: string;
+  date?: string;
+  description?: string;
+  link?: string;
+  fullStory?: any[]; // Portable Text
+  order?: number;
+}
+
+export interface AboutQuote {
+  _id: string;
+  emoji?: string;
+  title: string;
+  text: string;
+  underlinedText?: string;
+  author?: string;
+  order?: number;
+}
+
+
