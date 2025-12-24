@@ -1,8 +1,20 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { client } from "@/sanity/client";
 import { ALL_PROJECTS_QUERY } from "@/sanity/queries";
 import { urlFor } from "@/sanity/image";
 import type { Project } from "@/sanity/types";
+
+export const metadata: Metadata = {
+  title: "Projects | Michelle Liu",
+  description:
+    "Explore my product design work at Apple, Roblox, Adobe, and NASA. Case studies showcasing user-centered design solutions.",
+  openGraph: {
+    title: "Projects | Michelle Liu",
+    description:
+      "Explore my product design work at Apple, Roblox, Adobe, and NASA. Case studies showcasing user-centered design solutions.",
+  },
+};
 
 export default async function Home() {
   const projects = await client.fetch<Project[]>(ALL_PROJECTS_QUERY);

@@ -103,7 +103,7 @@ export default function ShelfSection({
             rel="noopener noreferrer"
             className="absolute right-0 bottom-[calc(1rem+0.5rem)] flex shrink-0 cursor-pointer justify-start rounded-full px-0.5 transition-colors"
           >
-            <span className="font-['Figtree',sans-serif] text-sm md:text-base font-semibold tracking-wide text-gray-400 hover:text-blue-500 transition-colors whitespace-nowrap">
+            <span className="font-['Figtree',sans-serif] text-sm md:text-base font-normal tracking-wide text-gray-400 hover:text-blue-500 transition-colors whitespace-nowrap">
               {externalLink.label} ↗
             </span>
           </a>

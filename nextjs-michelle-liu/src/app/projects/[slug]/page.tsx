@@ -1,12 +1,71 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { client } from "@/sanity/client";
-import { PROJECT_QUERY } from "@/sanity/queries";
+import { PROJECT_QUERY, ALL_PROJECTS_QUERY } from "@/sanity/queries";
 import { urlFor } from "@/sanity/image";
 import type { Project, ContentSection } from "@/sanity/types";
 import { PortableText } from "@portabletext/react";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+// Generate static params for all projects
+export async function generateStaticParams() {
+  const projects = await client.fetch<Project[]>(ALL_PROJECTS_QUERY);
+  return projects.map((project) => ({
+    slug: project.slug,
+  }));
+}
+
+// Generate dynamic metadata for each project
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const project = await client.fetch<Project>(PROJECT_QUERY, { slug });
+
+  if (!project) {
+    return {
+      title: "Project Not Found",
+      description: "The requested project could not be found.",
+    };
+  }
+
+  const companyName = project.company
+    ? project.company.charAt(0).toUpperCase() + project.company.slice(1)
+    : "";
+  
+  const title = `${project.title}${companyName ? ` at ${companyName}` : ""}`;
+  const description =
+    project.shortDescription ||
+    `${project.title} - A product design case study by Michelle Liu.`;
+
+  const ogImage = project.heroImage
+    ? urlFor(project.heroImage).width(1200).height(630).url()
+    : "/og-image.png";
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title: `${title} | Michelle Liu`,
+      description,
+      type: "article",
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: project.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | Michelle Liu`,
+      description,
+      images: [ogImage],
+    },
+  };
 }
 
 export default async function ProjectPage({ params }: PageProps) {
@@ -243,4 +302,5 @@ function ContentBlock({ section }: { section: ContentSection }) {
       return null;
   }
 }
+
 

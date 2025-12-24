@@ -225,6 +225,10 @@ export default function AboutPage() {
   const musicRef = useRef<HTMLDivElement>(null);
   const moviesRef = useRef<HTMLDivElement>(null);
   
+  // Badge expansion state - animates from dot to full on scroll
+  const badgeRef = useRef<HTMLSpanElement>(null);
+  const [badgeExpanded, setBadgeExpanded] = useState(false);
+  
   // Active community ID state (will be set to first community when data loads)
   const [activeCommunityId, setActiveCommunityId] = useState<string | undefined>();
   
@@ -287,6 +291,32 @@ export default function AboutPage() {
       }
     }
   }, [communities, activeCommunityId]);
+
+  // Badge scroll-triggered expansion animation
+  useEffect(() => {
+    const badge = badgeRef.current;
+    if (!badge) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !badgeExpanded) {
+            // Delay the expansion slightly for a nice effect
+            setTimeout(() => {
+              setBadgeExpanded(true);
+            }, 400);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(badge);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [badgeExpanded]);
 
   // Handle category click - scroll to section
   const handleCategoryClick = (category: AboutCategory) => {
@@ -572,7 +602,7 @@ export default function AboutPage() {
 
               {/* Location & Education */}
               <ScrollReveal variant="fade" delay={200}>
-                <div className="flex flex-wrap gap-2 md:gap-6 text-sm tracking-wide font-medium text-gray-500">
+                <div className="flex flex-wrap gap-2 md:gap-6 text-base tracking-wide font-medium text-gray-500">
                   <div className="flex items-center gap-2">
                     <img src={mapPinIcon} alt="" className="w-4 h-4" />
                     <span className="text-gray-400">SF — LA — NYC</span>
@@ -607,12 +637,20 @@ export default function AboutPage() {
                 </div>
               </ScrollReveal>
 
-              {/* CTA Badge - Always expanded */}
+              {/* CTA Badge - Animates from dot to full on scroll */}
               <ScrollReveal variant="fade" delay={300}>
-                <span className="relative inline-flex items-center justify-center rounded-[999px] gap-2 bg-[#ecfdf5] pl-1.5 pr-3.5 py-1 mt-2 w-fit">
+                <span 
+                  ref={badgeRef}
+                  className={clsx(
+                    "relative inline-flex items-center justify-center rounded-[999px] transition-all duration-[600ms] ease-out mt-2 w-fit",
+                    badgeExpanded 
+                      ? "gap-2 bg-[#ecfdf5] pl-1.5 pr-3.5 py-1" 
+                      : "gap-0 bg-transparent p-0"
+                  )}
+                >
                   <span className="relative shrink-0 size-[16px] overflow-visible">
-                    {/* Pulsing ring behind the badge */}
-                    <span className="green-pulse-ring" />
+                    {/* Pulsing ring behind the badge - only when minimized */}
+                    <span className={badgeExpanded ? "green-pulse-ring-off" : "green-pulse-ring"} />
                     <svg className="block size-full relative z-10" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
                       <g id="Background">
                         <rect fill="var(--fill-0, #A7F3D0)" height="16" rx="8" width="16" />
@@ -620,7 +658,10 @@ export default function AboutPage() {
                       </g>
                     </svg>
                   </span>
-                  <span className="font-['Figtree:Medium',sans-serif] font-normal text-[#10b981] text-base text-nowrap">
+                  <span className={clsx(
+                    "font-['Figtree:Medium',sans-serif] font-normal text-[#10b981] text-base text-nowrap overflow-hidden transition-all duration-[600ms] ease-out",
+                    badgeExpanded ? "max-w-[500px] opacity-100" : "max-w-0 opacity-0"
+                  )}>
                     <span>Working on something cool? Get in</span>{" "}
                     <a href="mailto:michelletheresaliu@gmail.com" className="[text-decoration-skip-ink:none] [text-underline-position:from-font] decoration-solid underline hover:!text-emerald-600 transition-colors">touch</a>!
                   </span>
@@ -733,7 +774,7 @@ export default function AboutPage() {
                 <div ref={booksRef} className="scroll-mt-8">
                   <ScrollReveal delay={100}>
                     <ShelfSection
-                      title="BOOKS ★"
+                      title="★ BOOKS"
                       count={bookItems.length}
                       mediaType="book"
                       yearFilters={bookYears}
@@ -751,7 +792,7 @@ export default function AboutPage() {
                 <div ref={musicRef} className="scroll-mt-8">
                   <ScrollReveal delay={200}>
                     <ShelfSection
-                      title="MUSIC ★"
+                      title="★ MUSIC"
                       count={musicItems.length}
                       mediaType="music"
                       externalLink={{ label: "Spotify", href: "https://open.spotify.com/user/i4stx92bb6e14vmhqe5tl8az6?si=3b9ee8fc1b3a4784" }}
@@ -766,7 +807,7 @@ export default function AboutPage() {
                 <div ref={moviesRef} className="scroll-mt-8">
                   <ScrollReveal delay={300}>
                     <ShelfSection
-                      title="MOVIES ★"
+                      title="★ MOVIES"
                       count={movieItems.length}
                       mediaType="movie"
                       yearFilters={movieYears}

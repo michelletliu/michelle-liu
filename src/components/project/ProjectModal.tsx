@@ -12,6 +12,53 @@ import lockIcon from "../../assets/lock.svg";
 import expandIcon from "../../assets/Expand.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
 
+// Chevron right icon for breadcrumb
+const ChevronRightIcon = () => (
+  <svg className="block size-full" viewBox="0 0 16 16" fill="none">
+    <path
+      d="M6 12L10 8L6 4"
+      stroke="#9CA3AF"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+// Breadcrumb component for fullscreen modal header
+type BreadcrumbProps = {
+  projectName: string;
+  onWorkClick?: () => void;
+};
+
+function Breadcrumb({ projectName, onWorkClick }: BreadcrumbProps) {
+  return (
+    <div className="flex gap-0.5 items-center px-2.5 py-1">
+      {/* Work link - clickable with hover state */}
+      <button
+        onClick={onWorkClick}
+        className="flex items-center justify-center px-[7px] py-0.5 rounded-md transition-colors duration-200 hover:bg-[#f3f4f6]"
+      >
+        <span className="font-['Figtree:Medium',sans-serif] font-medium text-base leading-normal text-[#4b5563]">
+          Work
+        </span>
+      </button>
+
+      {/* Chevron separator */}
+      <div className="shrink-0 size-4">
+        <ChevronRightIcon />
+      </div>
+
+      {/* Project name - not clickable */}
+      <div className="flex items-center justify-center px-[7px] py-0.5">
+        <span className="font-['Figtree:Medium',sans-serif] font-medium text-base leading-normal text-[#1f2937]">
+          {projectName}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // Close icon SVG
 const CloseIcon = () => (
   <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 10">
@@ -297,7 +344,7 @@ export default function ProjectModal({
                 background: 'linear-gradient(to bottom, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 33%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.2) 60%, rgba(255,255,255,0.1) 70%, rgba(255,255,255,0) 100%)'
               }} */
             >
-              <div className="content-stretch flex items-start justify-between relative shrink-0 w-full">
+              <div className="content-stretch flex gap-2.5 items-center relative shrink-0 w-full">
                 <button
                   onClick={handleBack}
                   className={clsx(
@@ -311,6 +358,12 @@ export default function ProjectModal({
                     className="size-full object-cover"
                   />
                 </button>
+                
+                {/* Breadcrumb navigation */}
+                <Breadcrumb 
+                  projectName={project?.title || projectId.charAt(0).toUpperCase() + projectId.slice(1)}
+                  onWorkClick={onViewAllProjects}
+                />
               </div>
             </div>
           )}
@@ -327,7 +380,7 @@ export default function ProjectModal({
           )}
 
           {!loading && !error && project && (
-            <>
+            <div className="flex flex-col pb-16">
               {/* Project Hero Header */}
               <div className="content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
                 {/* Logo */}
@@ -437,7 +490,7 @@ export default function ProjectModal({
 
               {/* Also Check Out Section */}
               {project.relatedProjects && project.relatedProjects.length > 0 && (
-                <div className="content-stretch flex flex-col gap-16 items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
+                <div className="content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
                   <div className="content-stretch flex flex-col gap-8 items-start relative shrink-0 w-full">
                     {/* Section Title */}
                     <ScrollReveal variant="fade">
@@ -491,7 +544,7 @@ export default function ProjectModal({
                   </ScrollReveal>
                 </div>
               )}
-            </>
+            </div>
           )}
 
           {!loading && !error && !project && (

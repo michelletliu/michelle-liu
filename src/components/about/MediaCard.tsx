@@ -136,7 +136,7 @@ export default function MediaCard({
         ref={cardRef}
         className={clsx(
           "flex flex-col items-start overflow-hidden rounded-3xl border border-gray-100 bg-white transition-shadow duration-200",
-          "shadow-[0px_4px_16px_0px_rgba(209,213,219,0.7)] hover:shadow-[0px_4px_16px_0px_rgba(209,213,219,0.9)]",
+          "shadow-[0px_4px_16px_0px_rgba(209,213,219,0.65)] hover:shadow-[0px_4px_16px_0px_rgba(209,213,219,0.9)]",
           "md:rounded-3xl",
           className
         )}

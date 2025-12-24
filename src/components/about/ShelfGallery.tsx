@@ -140,7 +140,7 @@ export default function ShelfGallery({
               rel="noopener noreferrer"
               className="flex shrink-0 cursor-pointer items-center justify-center rounded-full px-0.5 transition-colors hover:text-gray-600"
             >
-              <span className="text-base font-semibold leading-5 tracking-wide text-gray-400">
+              <span className="text-base font-normal leading-5 tracking-wide text-gray-400">
                 {externalLink.label} ↗
               </span>
             </a>

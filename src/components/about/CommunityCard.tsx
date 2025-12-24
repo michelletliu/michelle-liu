@@ -123,7 +123,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
         
         {/* Description on the right */}
         {data.description && (
-          <p className="w-[440px] shrink-0 whitespace-pre-wrap text-base font-medium leading-[1.4] text-gray-400">
+          <p className="w-[440px] shrink-0 whitespace-pre-wrap text-base font-normal leading-[1.4] text-gray-400">
             {data.description}
           </p>
         )}
@@ -148,8 +148,8 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                     className="relative flex flex-col gap-1"
                     style={{ transform: `rotate(${rotation}deg)` }}
                   >
-                    <div className="group/photo relative transition-transform duration-200 hover:scale-[1.01]">
-                      <div className="absolute -inset-2 rounded-sm border border-gray-100 bg-white shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)] transition-shadow duration-200 group-hover/photo:shadow-[0px_6px_12px_0px_rgba(0,0,0,0.25)]" />
+                    <div className="relative transition-transform duration-200 hover:scale-[1.01]">
+                      <div className="absolute -inset-2 rounded-sm border border-gray-100 bg-white shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)]" />
                       <div
                         className={clsx(
                           "relative overflow-hidden rounded-sm",
@@ -211,8 +211,8 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                     className="relative flex flex-col gap-1"
                     style={{ transform: `rotate(${rotation}deg)` }}
                   >
-                    <div className="group/photo relative transition-transform duration-200 hover:scale-[1.01]">
-                      <div className="absolute -inset-2 rounded-sm border border-gray-100 bg-white shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)] transition-shadow duration-200 group-hover/photo:shadow-[0px_6px_12px_0px_rgba(0,0,0,0.25)]" />
+                    <div className="relative transition-transform duration-200 hover:scale-[1.01]">
+                      <div className="absolute -inset-2 rounded-sm border border-gray-100 bg-white shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)]" />
                       <div
                         className={clsx(
                           "relative overflow-hidden rounded-sm",

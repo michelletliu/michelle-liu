@@ -412,14 +412,14 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
     return (
       <button
         onClick={onClick}
-        className="content-stretch flex flex-col gap-2 items-start relative shrink-0 w-full cursor-pointer group project-card"
+        className="content-stretch flex flex-col gap-3 items-start relative shrink-0 w-full cursor-pointer group project-card"
       >
         <div 
           className="content-stretch flex flex-col items-start justify-end overflow-clip relative rounded-[26px] shrink-0 w-full transition-transform duration-300 group-hover:scale-[0.99]"
         >
           <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
-          {/* Floating title pill inside the card */}
-          <div className="absolute bottom-0 left-0 p-3">
+          {/* Floating title pill inside the card - desktop only */}
+          <div className="absolute bottom-0 left-0 p-3 hidden md:block">
             <div className="bg-white border border-[#f3f4f6] border-solid flex items-center justify-center px-3 py-1.5 rounded-full">
               <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] text-[#111827] text-base">
                 <span>{project.title} </span>
@@ -428,8 +428,17 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
             </div>
           </div>
         </div>
-        <div className="content-stretch flex flex-col items-start px-[13px] py-0 relative shrink-0">
+        {/* Desktop: just description */}
+        <div className="hidden md:flex content-stretch flex-col items-start px-[13px] py-0 relative shrink-0">
           <p className="font-['Figtree',sans-serif] font-normal leading-[1] text-[#9ca3af] text-base w-full text-left project-hover-text">{project.description}</p>
+        </div>
+        {/* Mobile: title + description */}
+        <div className="md:hidden content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base gap-1">
+          <p className="relative shrink-0 text-[#111827] w-full text-left project-hover-text">
+            <span>{project.title} </span>
+            <span className="text-[#9ca3af]">• {project.year}</span>
+          </p>
+          <p className="relative shrink-0 text-[#9ca3af] w-full text-left font-normal leading-[1.3]">{project.description}</p>
         </div>
       </button>
     );
@@ -870,7 +879,11 @@ function HomePage() {
               delay={Math.min(index * 60, 300)}
               rootMargin="0px 0px -50px 0px"
             >
-              <ProjectCard project={project} onClick={() => handleProjectClick(project)} />
+              <ProjectCard 
+                project={project} 
+                onClick={() => handleProjectClick(project)} 
+                featured={index < 4}
+              />
             </ScrollReveal>
           ))}
         </div>
