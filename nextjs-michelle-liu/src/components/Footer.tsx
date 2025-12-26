@@ -266,7 +266,7 @@ export default function Footer() {
               <span className="text-gray-400"> ☕︎</span>
             </p>
             <TextScramble 
-              text="CHANGELOG: 12-24-25"
+              text="CHANGELOG: 12-26-25"
               className="font-['Figtree',sans-serif] font-normal leading-5 tracking-wider text-[#9ca3af] text-xs text-nowrap"
             />
           </div>

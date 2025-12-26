@@ -11,6 +11,7 @@
   "dependencies": {
     "@portabletext/react": "^6.0.0",
     "@sanity/image-url": "^2.0.2",
+    "modern-screenshot": "^4.6.7",
     "next": "16.1.0",
     "next-sanity": "^12.0.5",
     "react": "19.2.3",

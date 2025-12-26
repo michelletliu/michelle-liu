@@ -321,7 +321,7 @@ export default function Footer() {
               </span>
             </p>
             <TextScramble 
-              text="CHANGELOG: 12-21-25"
+              text="CHANGELOG: 12-26-25"
               className="font-['Figtree',sans-serif] font-normal leading-5 tracking-wider relative shrink-0 text-[#9ca3af] text-xs text-nowrap"
             />
           </ScrollReveal>

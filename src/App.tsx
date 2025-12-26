@@ -531,7 +531,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
       {/* Modal - matches Figma PopUpCard design */}
       <div 
         className={clsx(
-          "relative bg-white rounded-[26px] flex flex-col w-[calc(100%*10/12)] max-md:w-full max-h-[90vh] overflow-auto transition-all duration-300 ease-out",
+          "relative bg-white rounded-[26px] flex flex-col w-[calc(100%*10/12)] max-md:w-full max-h-[90vh] overflow-hidden transition-all duration-300 ease-out",
           isVisible 
             ? 'opacity-100 translate-y-0' 
             : isClosing 
@@ -539,20 +539,24 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               : 'opacity-0 translate-y-8'
         )}
       >
-        {/* Close button row - sticky at top right */}
-        <div className="content-stretch flex items-start justify-end px-6 pt-6 pb-0 max-md:px-4 max-md:pt-4 sticky top-0 z-10 bg-white shrink-0 w-full">
-          <button
-            onClick={handleClose}
-            className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-full hover:bg-[#F3F4F6] transition-colors duration-200 ease-out"
-          >
-            <div className="overflow-clip relative shrink-0 size-[10px]">
-              <PopupCloseIcon />
-            </div>
-          </button>
-        </div>
+        {/* Inner container with top padding to keep scrollbar away from rounded corners */}
+        <div className="flex flex-col flex-1 min-h-0 pt-6 max-md:pt-4">
+          {/* Close button row - stays fixed at top */}
+          <div className="content-stretch flex items-start justify-end px-6 pb-0 max-md:px-4 -mt-6 max-md:-mt-4 pt-6 max-md:pt-4 shrink-0 w-full bg-white z-10">
+            <button
+              onClick={handleClose}
+              className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-full hover:bg-[#F3F4F6] transition-colors duration-200 ease-out"
+            >
+              <div className="overflow-clip relative shrink-0 size-[10px]">
+                <PopupCloseIcon />
+              </div>
+            </button>
+          </div>
 
-        {/* Content area with horizontal padding */}
-        <div className="content-stretch flex flex-col gap-3 items-start px-44 max-md:px-10 pt-16 max-md:pt-0 pb-8 max-md:pb-6 relative shrink-0 w-full">
+          {/* Scrollable content area */}
+          <div className="overflow-y-auto flex-1">
+            {/* Content area with horizontal padding */}
+            <div className="content-stretch flex flex-col gap-3 items-start px-44 max-md:px-10 pt-16 max-md:pt-0 pb-8 max-md:pb-6 relative shrink-0 w-full">
           {/* Title, Description, and Try It Out button section */}
           {/* Desktop: row layout with button on right */}
           <div className="hidden md:flex gap-[6px] items-start relative shrink-0 w-full">
@@ -672,6 +676,8 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
                 muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
               />
             )}
+          </div>
+        </div>
           </div>
         </div>
       </div>
