@@ -98,7 +98,7 @@ export default function AboutSidebar({
             isCommunityActive ? "text-gray-500" : "text-gray-400 hover:text-gray-500"
           )}
         >
-          COMMUNITY ♥︎
+          COMMUNITY
         </span>
       </button>
 

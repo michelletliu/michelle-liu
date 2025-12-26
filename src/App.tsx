@@ -10,7 +10,9 @@ import Footer from "./components/Footer";
 import { ProjectModal as SanityProjectModal } from "./components/project";
 import ArtPage from "./components/art/ArtPage";
 import { AboutPage } from "./components/about";
+import { PolaroidPage } from "./components/polaroid";
 import { ScrollReveal } from "./components/ScrollReveal";
+import { TryItOutButton } from "./components/TryItOutButton";
 
 // CSS for fade up animation
 const fadeUpStyles = `
@@ -429,7 +431,7 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
           </div>
         </div>
         {/* Desktop: just description */}
-        <div className="hidden md:flex content-stretch flex-col items-start px-[13px] py-0 relative shrink-0">
+        <div className="hidden md:flex content-stretch flex-col items-start px-[13px] py-0 -mt-0.5 relative shrink-0">
           <p className="font-['Figtree',sans-serif] font-normal leading-[1] text-[#9ca3af] text-base w-full text-left project-hover-text">{project.description}</p>
         </div>
         {/* Mobile: title + description */}
@@ -455,7 +457,7 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
       >
         <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
       </div>
-      <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base">
+      <div className="content-stretch flex flex-col font-['Figtree',sans-serif] -mt-1 font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base">
         <p className="relative shrink-0 text-[#111827] w-full text-left project-hover-text">
           <span>{project.title} </span>
           <span className="text-[#9ca3af]">• {project.year}</span>
@@ -491,6 +493,7 @@ function PopupLine() {
 }
 
 function ProjectModal({ project, onClose }: ProjectModalProps) {
+  const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
@@ -549,30 +552,72 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
         </div>
 
         {/* Content area with horizontal padding */}
-        <div className="content-stretch flex flex-col gap-3 items-start px-44 max-md:px-8 pt-16 max-md:pt-0 pb-8 max-md:pb-6 relative shrink-0 w-full">
-          {/* Title and Description section */}
-          <div className="content-stretch flex flex-col gap-1 items-start relative shrink-0 w-full">
-            {/* Title row: Project Title • Year */}
-            <div className="content-stretch flex items-start relative shrink-0 w-full">
-              <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
-                <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
-                  {project.title}
-                </p>
-                <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
-                  •
-                </p>
-                <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-xl">
-                  {project.year}
+        <div className="content-stretch flex flex-col gap-3 items-start px-44 max-md:px-10 pt-16 max-md:pt-0 pb-8 max-md:pb-6 relative shrink-0 w-full">
+          {/* Title, Description, and Try It Out button section */}
+          {/* Desktop: row layout with button on right */}
+          <div className="hidden md:flex gap-[6px] items-start relative shrink-0 w-full">
+            {/* Title and Description - left side */}
+            <div className="content-stretch flex flex-[1_0_0] flex-col gap-[6px] items-start min-h-px min-w-px relative shrink-0">
+              {/* Title row: Project Title • Year */}
+              <div className="content-stretch flex items-start relative shrink-0 w-full">
+                <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
+                  <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
+                    {project.title}
+                  </p>
+                  <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
+                    •
+                  </p>
+                  <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-xl">
+                    {project.year}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Description */}
+              <div className="content-stretch flex gap-2 items-start relative w-full">
+                <p className="font-['Figtree',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base">
+                  {project.description}
                 </p>
               </div>
             </div>
-            
-            {/* Description */}
-            <div className="content-stretch flex gap-2 items-start relative shrink-0 w-full">
-              <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#6b7280] text-base">
-                {project.description}
-              </p>
+
+            {/* Try It Out button - desktop */}
+            {project.id === 'polaroid' && (
+              <TryItOutButton />
+            )}
+          </div>
+
+          {/* Mobile: stacked layout */}
+          <div className="md:hidden flex flex-col gap-3 items-start relative shrink-0 w-full">
+            {/* Title and Description */}
+            <div className="content-stretch flex flex-col gap-[6px] items-start relative shrink-0 w-full">
+              {/* Title row: Project Title • Year */}
+              <div className="content-stretch flex items-start relative shrink-0 w-full">
+                <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
+                  <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
+                    {project.title}
+                  </p>
+                  <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
+                    •
+                  </p>
+                  <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-xl">
+                    {project.year}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Description */}
+              <div className="content-stretch flex gap-2 items-start relative w-full">
+                <p className="font-['Figtree',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base">
+                  {project.description}
+                </p>
+              </div>
             </div>
+
+            {/* Try It Out button - mobile */}
+            {project.id === 'polaroid' && (
+              <TryItOutButton />
+            )}
           </div>
 
           {/* Divider line */}
@@ -584,7 +629,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               href={project.xLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="content-stretch flex items-center relative shrink-0 group/xlink -mt-1"
+              className="content-stretch flex items-center relative shrink-0 group/xlink"
             >
               <div className="content-stretch flex gap-[2px] items-center relative shrink-0">
                 <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
@@ -607,7 +652,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
           )}
 
           {/* Video/Image content area with rounded corners */}
-          <div className="relative rounded-[16px] w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 my-4">
+          <div className="relative rounded-[16px] w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0">
             {/* Always show poster/thumbnail as background */}
             <img
               alt=""
@@ -854,7 +899,7 @@ function HomePage() {
         </div>
 
         {/* Projects Grid - Desktop (2 columns) */}
-        <div className="hidden md:grid gap-4 grid-cols-2 px-16 py-4 pt-6 relative shrink-0 w-full">
+        <div className="hidden md:grid gap-6 grid-cols-2 px-16 py-4 pt-6 relative shrink-0 w-full">
           {projects.map((project, index) => (
             <ScrollReveal 
               key={project.id} 
@@ -939,6 +984,9 @@ export default function App() {
       
       {/* About page */}
       <Route path="/about" element={<AboutPage />} />
+      
+      {/* Polaroid Studio page */}
+      <Route path="/polaroid" element={<PolaroidPage />} />
     </Routes>
   );
 }

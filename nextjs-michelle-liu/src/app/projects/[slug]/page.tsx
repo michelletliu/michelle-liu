@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     openGraph: {
-      title: `${title} | Michelle Liu`,
+      title: `${title} | michelle liu`,
       description,
       type: "article",
       images: [
@@ -61,9 +61,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} | Michelle Liu`,
+      title: `${title} | michelle liu`,
       description,
       images: [ogImage],
+    },
+    alternates: {
+      canonical: `/projects/${slug}`,
     },
   };
 }

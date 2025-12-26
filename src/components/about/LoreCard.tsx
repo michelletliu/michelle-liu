@@ -68,8 +68,8 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
       {/* Caption */}
       <div className="flex w-full flex-col px-1 text-base font-normal pt-1">
         <p>
-          <span className="text-gray-800 text-[1.115rem] leading-0 font-medium">{data.headline}</span>
-          {data.date && <span className="pl-1 text-[1.115rem] font-medium text-gray-400"> {data.date}</span>}
+          <span className="text-gray-800 text-[1.115rem] leading-0 font-medium transition-colors hover:text-blue-500">{data.headline}</span>
+          {data.date && <span className="pl-1 text-base font-medium text-gray-400"> {data.date}</span>}
         </p>
         {data.description && (
           <p className="whitespace-pre-wrap pt-1 text-gray-400">{data.description}</p>

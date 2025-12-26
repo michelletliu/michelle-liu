@@ -18,44 +18,54 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://michelleliu.design"
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Michelle Liu | Product Designer",
-    template: "%s | Michelle Liu",
+    default: "michelle liu",
+    template: "%s | michelle liu",
   },
   description:
-    "Product Designer crafting thoughtful digital experiences. Previously at Apple, Roblox, Adobe, and NASA.",
+    "Product designer crafting useful products that spark moments of delight & human connection. Previously at Apple, Roblox, and NASA.",
   keywords: [
+    "Michelle Liu",
     "Product Designer",
     "UX Designer",
     "UI Designer",
-    "Michelle Liu",
     "Design Portfolio",
     "Apple Designer",
     "Roblox Designer",
+    "NASA Designer",
+    "User Experience Design",
+    "Interaction Design",
+    "Digital Product Design",
+    "San Francisco Designer",
+    "Bay Area Product Designer",
   ],
-  authors: [{ name: "Michelle Liu" }],
+  authors: [{ name: "Michelle Liu", url: siteUrl }],
   creator: "Michelle Liu",
+  publisher: "Michelle Liu",
+  alternates: {
+    canonical: siteUrl,
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
     url: siteUrl,
-    siteName: "Michelle Liu",
-    title: "Michelle Liu | Product Designer",
+    siteName: "michelle liu",
+    title: "michelle liu – product designer",
     description:
-      "Product Designer crafting thoughtful digital experiences. Previously at Apple, Roblox, Adobe, and NASA.",
+      "Product designer crafting useful products that spark moments of delight & human connection. Previously at Apple, Roblox, and NASA.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Michelle Liu - Product Designer",
+        alt: "michelle liu – product designer",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Michelle Liu | Product Designer",
+    title: "michelle liu – product designer",
     description:
-      "Product Designer crafting thoughtful digital experiences. Previously at Apple, Roblox, Adobe, and NASA.",
+      "Product designer crafting useful products that spark moments of delight & human connection. Previously at Apple, Roblox, and NASA.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -69,6 +79,43 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  verification: {
+    // Add your verification codes here when available
+    // google: "your-google-verification-code",
+  },
+  category: "Design Portfolio",
+};
+
+// JSON-LD structured data for better SEO
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Michelle Liu",
+  url: siteUrl,
+  jobTitle: "Product Designer",
+  description:
+    "Product designer crafting useful products that spark moments of delight & human connection.",
+  worksFor: [
+    {
+      "@type": "Organization",
+      name: "Apple",
+    },
+  ],
+  alumniOf: [
+    { "@type": "Organization", name: "Roblox" },
+    { "@type": "Organization", name: "NASA" },
+  ],
+  knowsAbout: [
+    "Product Design",
+    "User Experience Design",
+    "User Interface Design",
+    "Interaction Design",
+  ],
+  sameAs: [
+    // Add your social profiles here
+    // "https://linkedin.com/in/yourprofile",
+    // "https://twitter.com/yourhandle",
+  ],
 };
 
 export default function RootLayout({
@@ -78,6 +125,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

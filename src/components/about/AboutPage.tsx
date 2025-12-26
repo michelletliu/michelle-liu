@@ -757,7 +757,7 @@ export default function AboutPage() {
                 <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-[40px] leading-normal shrink-0">
                   Shelf
                 </h2>
-                <p className="font-['Figtree',sans-serif] font-medium text-gray-400 text-2xl">
+                <p className="font-['Figtree',sans-serif] font-medium text-gray-400 text-xl">
                   ★ - Favorites
                 </p>
               </div>

@@ -6,13 +6,18 @@ import { urlFor } from "@/sanity/image";
 import type { Project } from "@/sanity/types";
 
 export const metadata: Metadata = {
-  title: "Projects | Michelle Liu",
+  title: "work",
   description:
-    "Explore my product design work at Apple, Roblox, Adobe, and NASA. Case studies showcasing user-centered design solutions.",
+    "Explore my product design work at Apple, Roblox, and NASA. Case studies showcasing user-centered design solutions that spark delight.",
   openGraph: {
-    title: "Projects | Michelle Liu",
+    title: "work | michelle liu",
     description:
-      "Explore my product design work at Apple, Roblox, Adobe, and NASA. Case studies showcasing user-centered design solutions.",
+      "Explore my product design work at Apple, Roblox, and NASA. Case studies showcasing user-centered design solutions that spark delight.",
+  },
+  twitter: {
+    title: "work | michelle liu",
+    description:
+      "Explore my product design work at Apple, Roblox, and NASA. Case studies showcasing user-centered design solutions that spark delight.",
   },
 };
 
