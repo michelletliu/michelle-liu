@@ -514,8 +514,8 @@ export default function AboutPage() {
                 </ScrollReveal>
                 <ScrollReveal variant="fade" delay={150} rootMargin="0px">
                   <div className="font-['Figtree',sans-serif] font-normal leading-7 max-md:leading-6 tracking-wide text-[#9ca3af] text-[1.2rem] max-md:text-[1.13rem] w-full whitespace-pre-wrap -mt-2 max-md:mt-1">
-                    <p>Product, design, &</p>
-                    <p>every<span className="gradient-text-animated">thing in between. ⟡˙⋆</span></p>
+                    <p>Product, design, & everything in between.</p>
+                    <p>Graduating from UCLA in June 2026!</p>
                   </div>
                 </ScrollReveal>
               </div>

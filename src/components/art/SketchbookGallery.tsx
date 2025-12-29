@@ -101,7 +101,7 @@ export default function SketchbookGallery({
     <div className={clsx("flex flex-col gap-6 pb-6 w-full", className)}>
       {/* Caption: Title and Date */}
       <div className="flex flex-col font-medium items-start leading-[1.4] text-base">
-        <p className="text-gray-900">
+        <p className="text-gray-900 text-lg">
           {data.title}
         </p>
         <p className="text-gray-400">

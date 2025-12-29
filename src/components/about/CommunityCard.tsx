@@ -118,12 +118,12 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
               />
             </div>
           )}
-          <h3 className="text-2xl font-medium leading-[1.4] text-gray-900">{data.title}</h3>
+          <h3 className="text-2xl font-medium leading-[1.4] text-gray-700">{data.title}</h3>
         </div>
         
         {/* Description on the right */}
         {data.description && (
-          <p className="w-[440px] shrink-0 whitespace-pre-wrap text-base font-normal leading-[1.4] text-gray-400">
+          <p className="w-100 mr-12 shrink-0 whitespace-pre-wrap text-base font-normal leading-[1.4] text-gray-400">
             {data.description}
           </p>
         )}
