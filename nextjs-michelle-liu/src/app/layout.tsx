@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteUrl,
     siteName: "michelle liu",
-    title: "michelle liu – portfolio",
+    title: "michelle liu",
     description:
       "Product designer crafting useful products that spark moments of delight & human connection. Previously at Apple, Roblox, and NASA.",
     images: [
@@ -57,13 +57,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "michelle liu – portfolio",
+        alt: "michelle liu",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "michelle liu – portfolio",
+    title: "michelle liu",
     description:
       "Product designer crafting useful products that spark moments of delight & human connection. Previously at Apple, Roblox, and NASA.",
     images: ["/og-image.png"],

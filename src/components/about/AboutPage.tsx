@@ -515,7 +515,7 @@ export default function AboutPage() {
                 <ScrollReveal variant="fade" delay={150} rootMargin="0px">
                   <div className="font-['Figtree',sans-serif] font-normal leading-7 max-md:leading-6 tracking-wide text-[#9ca3af] text-[1.2rem] max-md:text-[1.13rem] w-full whitespace-pre-wrap -mt-2 max-md:mt-1">
                     <p>Product, design, & everything in between.</p>
-                    <p>Graduating from UCLA in June 2026!</p>
+                    <p>Graduating from UCLA in June 2026. ⟢</p>
                   </div>
                 </ScrollReveal>
               </div>
@@ -569,7 +569,7 @@ export default function AboutPage() {
         {/* Main Content */}
         <div className="flex-1 flex flex-col gap-20 items-start pb-8 min-w-0 w-full">
           {/* HI! Section - Hardcoded */}
-          <section ref={hiRef} className="flex flex-col md:flex-row gap-10 md:gap-16 items-start w-full max-w-5xl scroll-mt-8">
+          <section ref={hiRef} className="flex flex-col md:flex-row gap-10 md:gap-16 items-center w-full max-w-5xl scroll-mt-8">
             {/* Profile Photo */}
             <ScrollReveal delay={100}>
               <div className="shrink-0">
@@ -602,7 +602,7 @@ export default function AboutPage() {
 
               {/* Location & Education */}
               <ScrollReveal variant="fade" delay={200}>
-                <div className="flex flex-wrap gap-2 md:gap-6 text-base tracking-wide font-medium text-gray-500">
+                <div className="flex flex-wrap gap-2 md:gap-6 text-base tracking-wide font-medium text-gray-400">
                   <div className="flex items-center gap-2">
                     <img src={mapPinIcon} alt="" className="w-4 h-4" />
                     <span className="text-gray-400">SF — LA — NYC</span>
@@ -642,10 +642,10 @@ export default function AboutPage() {
                 <span 
                   ref={badgeRef}
                   className={clsx(
-                    "relative inline-flex items-center justify-center rounded-[999px] transition-all duration-[600ms] ease-out mt-2 w-fit",
+                    "relative inline-flex items-center justify-center rounded-[999px] transition-all duration-[800ms] ease-out mt-2 w-fit bg-[#ecfdf5]",
                     badgeExpanded 
-                      ? "gap-2 bg-[#ecfdf5] pl-1.5 pr-3.5 py-1" 
-                      : "gap-0 bg-transparent p-0"
+                      ? "gap-2 pl-1.5 pr-3.5 py-1" 
+                      : "gap-0 p-1"
                   )}
                 >
                   <span className="relative shrink-0 size-[16px] overflow-visible">
@@ -659,7 +659,7 @@ export default function AboutPage() {
                     </svg>
                   </span>
                   <span className={clsx(
-                    "font-['Figtree:Medium',sans-serif] font-normal text-[#10b981] text-base text-nowrap overflow-hidden transition-all duration-[600ms] ease-out",
+                    "font-['Figtree:Medium',sans-serif] font-normal text-[#10b981] text-base text-nowrap overflow-hidden transition-all duration-[800ms] ease-out",
                     badgeExpanded ? "max-w-[500px] opacity-100" : "max-w-0 opacity-0"
                   )}>
                     <span>Working on something cool? Get in</span>{" "}
@@ -738,10 +738,10 @@ export default function AboutPage() {
               </div>
             </ScrollReveal>
             {quotes.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:grid-rows-[1fr_1fr]">
                 {quotes.map((quote, index) => (
-                  <ScrollReveal key={quote.id} delay={index * 80}>
-                    <MediaCard data={quote} />
+                  <ScrollReveal key={quote.id} delay={index * 80} className="h-full">
+                    <MediaCard data={quote} className="h-full" topRow={index < 2} />
                   </ScrollReveal>
                 ))}
               </div>
