@@ -19,9 +19,9 @@ export function TryItOutButton({ href = "/polaroid", onClick, className = "" }: 
   return (
     <button
       onClick={handleClick}
-      className={`bg-[#60a5fa] border border-[#3b82f6] border-solid content-stretch flex items-center justify-center px-4 py-1.5 relative rounded-full shrink-0 cursor-pointer hover:bg-[#3b82f6] transition-colors duration-200 ease-out ${className}`}
+      className={`bg-blue-500 border border-blue-400 border-solid content-stretch flex items-center justify-center px-4 py-1.5 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out ${className}`}
     >
-      <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-base text-white tracking-[0.16px] whitespace-nowrap">
+      <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-base text-white whitespace-nowrap">
         Try It Out! ↗
       </span>
     </button>

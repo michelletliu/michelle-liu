@@ -24,7 +24,7 @@ const colors: ColorOption[] = [
   { id: 'orange', fill: '#FF8D28', fillHover: '#E67A1C', tint: 'rgba(255, 141, 40, 0.15)', border: '#ffe0c8' },
   { id: 'yellow', fill: '#FFCC00', fillHover: '#E6B800', tint: 'rgba(255, 204, 0, 0.15)', border: '#fff2cc' },
   { id: 'green', fill: '#34C759', fillHover: '#2DB04C', tint: 'rgba(52, 199, 89, 0.15)', border: '#d4eedd' },
-  { id: 'cyan', fill: '#00C3D0', fillHover: '#00A8B5', tint: 'rgba(0, 195, 208, 0.1)', border: '#acc8c9' },
+  { id: 'cyan', fill: '#00C3D0', fillHover: '#00A8B5', tint: 'rgba(0, 195, 208, 0.1)', border: '#c5f0e7' },
   { id: 'blue', fill: '#0088FF', fillHover: '#0070D9', tint: 'rgba(0, 136, 255, 0.15)', border: '#cce5ff' },
   { id: 'purple', fill: '#6155F5', fillHover: '#4E3FE0', tint: 'rgba(97, 85, 245, 0.15)', border: '#d1d0e0' },
 ];
@@ -109,6 +109,9 @@ export default function PolaroidPage() {
   const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [isEntering, setIsEntering] = useState(true);
+  const [isLogoFlying, setIsLogoFlying] = useState(false);
+  const [logoStartPos, setLogoStartPos] = useState({ x: 32, y: 32 });
+  const logoRef = useRef<HTMLButtonElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle entrance animation
@@ -120,12 +123,21 @@ export default function PolaroidPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle navigation back to home with smooth transition
+  // Handle navigation back to home with smooth transition and flying seal
   const handleBackToHome = () => {
+    // Capture the current position of the logo
+    if (logoRef.current) {
+      const rect = logoRef.current.getBoundingClientRect();
+      setLogoStartPos({ x: rect.left, y: rect.top });
+    }
+    
+    setIsLogoFlying(true);
     setIsExiting(true);
+    
+    // Navigate after the flying animation completes - go to homepage with polaroid modal open
     setTimeout(() => {
-      navigate('/');
-    }, 400); // Wait for fade-out animation to complete
+      navigate('/project/polaroid');
+    }, 300); // Fast transition
   };
 
   // Parse URL params on mount to restore shared polaroid state
@@ -345,12 +357,13 @@ export default function PolaroidPage() {
 
   return (
     <div 
-      className={`relative size-full min-h-screen px-4 transition-all ease-out ${
-        isExiting ? 'opacity-0 scale-[0.98]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
+      className={`relative size-full min-h-screen px-4 transition-all ${
+        isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
       }`}
       style={{ 
         backgroundImage: "linear-gradient(133.216deg, rgba(151, 191, 255, 0.2) 10.334%, rgba(151, 191, 255, 0) 94.005%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)",
-        transitionDuration: isExiting ? '400ms' : '500ms'
+        transitionDuration: isExiting ? '280ms' : '300ms',
+        transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out'
       }}
       onClick={() => {
         setIsDateFocused(false);
@@ -359,8 +372,11 @@ export default function PolaroidPage() {
     >
       {/* Logo - acts as back button */}
       <button
+        ref={logoRef}
         onClick={handleBackToHome}
-        className="absolute top-8 left-8 z-20 cursor-pointer hover:opacity-80 hover:scale-95 transition-all duration-200"
+        className={`absolute top-8 left-8 z-20 cursor-pointer transition-all duration-200 ${
+          isLogoFlying ? 'opacity-0' : 'hover:opacity-80 hover:scale-95'
+        }`}
         aria-label="Go back to home"
       >
         <img 
@@ -370,22 +386,41 @@ export default function PolaroidPage() {
         />
       </button>
 
-      <div className="flex flex-col gap-[32px] md:gap-[48px] items-center w-full max-w-[583px] mx-auto min-h-screen justify-center py-8">
+      {/* Flying seal logo overlay during transition */}
+      {isLogoFlying && (
+        <div 
+          className="fixed z-50 w-[44px] h-[44px] pointer-events-none seal-flying"
+          style={{
+            '--start-x': `${logoStartPos.x}px`,
+            '--start-y': `${logoStartPos.y}px`,
+            '--end-x': '64px', // Target position on homepage (px-16 = 64px)
+            '--end-y': '32px', // Target position on homepage (pt-8 = 32px)
+          } as React.CSSProperties}
+        >
+          <img 
+            src={imgLogo} 
+            alt="" 
+            className="w-full h-full object-contain"
+          />
+        </div>
+      )}
+
+      <div className="flex flex-col gap-[32px] md:gap-[48px] items-center w-full max-w-[583px] mx-auto min-h-screen justify-center py-24 md:py-8">
         {/* Title */}
         <div 
-          className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-2xl md:text-3rxl text-black text-center text-nowrap" 
+          className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-2xl md:text-3rxl text-black text-center text-nowrap" 
           style={{ fontVariationSettings: "'wdth' 100" }}
         >
           <p className="">
             <span>Polaroid </span>
-            <span className="text-[rgba(0,0,0,0.4)]">Studio</span>
+            <span className="text-gray-400">Studio</span>
           </p>
         </div>
 
         {/* Polaroid Frame */}
         <div 
           ref={polaroidRef}
-          className="content-stretch flex h-[320px] md:h-[393.22px] items-center justify-center relative rounded-[5.5px] md:rounded-[6.78px] shadow-[0px_2.5px_16px_0px_rgba(0,0,0,0.15)] md:shadow-[0px_3.39px_20.339px_0px_rgba(0,0,0,0.15)] shrink-0 w-[274px] md:w-[337.288px] transition-transform duration-300 ease-out hover:rotate-2">
+          className="content-stretch flex h-[320px] md:h-[393.22px] items-center justify-center relative rounded-[5.5px] md:rounded-[6.78px] shadow-[0px_2.5px_16px_0px_rgba(0,0,0,0.08)] md:shadow-[0px_3.39px_20.339px_0px_rgba(0,0,0,0.08)] shrink-0 w-[274px] md:w-[337.288px] transition-transform duration-300 ease-out hover:rotate-2">
           <div className="h-[320px] md:h-[393.22px] relative rounded-[5.5px] md:rounded-[6.78px] shrink-0 w-[274px] md:w-[337.288px]">
             <div className="absolute contents left-0 top-0">
               <div className="absolute contents left-0 top-0">
@@ -397,7 +432,7 @@ export default function PolaroidPage() {
                 >
                   <div 
                     aria-hidden="true" 
-                    className="absolute border-[1.38px] md:border-[1.695px] border-solid inset-[-1.38px] md:inset-[-1.695px] pointer-events-none rounded-[6.88px] md:rounded-[8.475px]"
+                    className="absolute border border-[rgba(0,0,0,0.1)] border-solid inset-[-1px] pointer-events-none rounded-[6.88px] md:rounded-[8.475px]"
                     style={{
                       borderColor: selectedColor ? selectedColor.border : 'rgba(0,0,0,0.1)'
                     }}
@@ -462,14 +497,14 @@ export default function PolaroidPage() {
                           }}
                           className="cursor-pointer block transition-all duration-500 ease-in-out animate-scale-in-centered"
                         >
-                          <div className="bg-white content-stretch flex gap-[12px] items-center px-[16px] py-[12px] rounded-[999px] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.1)] hover:shadow-[0px_4px_12px_0px_rgba(0,0,0,0.15)] transition-all duration-300 ease-in-out">
+                          <div className="bg-gray-50 hover:!bg-gray-200 content-stretch flex gap-[12px] items-center px-6 py-3 rounded-[999px] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)] hover:shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] transition-all duration-300 ease-in-out">
                             <div aria-hidden="true" className="absolute border border-[#bfbfbf] border-solid inset-0 pointer-events-none rounded-[999px]" />
                             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(60,60,67,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                               <polyline points="17 8 12 3 7 8" />
                               <line x1="12" y1="3" x2="12" y2="15" />
                             </svg>
-                            <span className="font-['SF_Pro','-apple-system',sans-serif] text-[17px] text-[rgba(60,60,67,0.6)] tracking-[-0.43px] whitespace-nowrap">
+                            <span className="font-['SF_Pro','-apple-system',sans-serif] text-[17px] text-[rgba(60,60,67,0.6)] whitespace-nowrap">
                               Upload Your Own
                             </span>
                           </div>
@@ -579,15 +614,16 @@ export default function PolaroidPage() {
                       setShowDate(!showDate);
                       if (!showDate) {
                         setIsDateFocused(true);
+                        setIsTextFocused(false);
                       }
                     }}
                     className={`relative rounded-[999px] shrink-0 size-[40px] cursor-pointer transition-all duration-300 ${
-                      showDate && isDateFocused ? 'bg-[#0088FF]' : showDate ? 'bg-[#bfbfbf] hover:bg-[#a8a8a8]' : 'bg-transparent hover:bg-[#e5e5e5]'
+                      showDate && isDateFocused ? 'bg-[#0088FF]' : showDate ? 'bg-[#e5e7eb] hover:bg-[#d1d5db]' : 'bg-transparent hover:bg-[#e5e5e5]'
                     }`}
                     aria-label="Toggle date"
                   >
                     <div className={`absolute inset-0 flex items-center justify-center transition-colors duration-300`}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={showDate ? 'white' : 'black'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={showDate && isDateFocused ? 'white' : showDate ? '#1f2937' : 'black'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                         <line x1="16" y1="2" x2="16" y2="6" />
                         <line x1="8" y1="2" x2="8" y2="6" />
@@ -609,6 +645,7 @@ export default function PolaroidPage() {
                       } else {
                         setShowText(true);
                         setIsTextFocused(true);
+                        setIsDateFocused(false);
                         setTimeout(() => {
                           const input = document.querySelector('input[type="text"]') as HTMLInputElement;
                           if (input) input.focus();
@@ -616,12 +653,12 @@ export default function PolaroidPage() {
                       }
                     }}
                     className={`relative rounded-[999px] shrink-0 size-[40px] cursor-pointer transition-all duration-300 ${
-                      showText && isTextFocused ? 'bg-[#0088FF]' : showText ? 'bg-[#bfbfbf] hover:bg-[#a8a8a8]' : 'bg-transparent hover:bg-[#e5e5e5]'
+                      showText && isTextFocused ? 'bg-[#0088FF]' : showText ? 'bg-[#e5e7eb] hover:bg-[#d1d5db]' : 'bg-transparent hover:bg-[#e5e5e5]'
                     }`}
                     aria-label="Toggle text"
                   >
                     <div className={`absolute inset-0 flex items-center justify-center transition-colors duration-300`}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={showText ? 'white' : 'black'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={showText && isTextFocused ? 'white' : showText ? '#1f2937' : 'black'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="4 7 4 4 20 4 20 7" />
                         <line x1="9" y1="20" x2="15" y2="20" />
                         <line x1="12" y1="4" x2="12" y2="20" />
@@ -636,7 +673,7 @@ export default function PolaroidPage() {
           {/* Action Buttons */}
           <div className="content-stretch flex gap-[24px] items-center relative shrink-0">
             <button 
-              className="flex items-center gap-[8px] px-[24px] py-[12px] text-[17px] text-[rgba(60,60,67,0.6)] cursor-pointer rounded-[999px] hover:bg-[rgba(0,0,0,0.05)] transition-colors"
+              className="flex items-center gap-[8px] px-6 py-3 text-[17px] text-[rgba(60,60,67,0.5)] cursor-pointer rounded-[999px] hover:bg-[rgba(0,0,0,0.05)] transition-colors"
               onClick={handleRestart}
             >
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -647,7 +684,7 @@ export default function PolaroidPage() {
             </button>
 
             <button 
-              className="bg-black rounded-[999px] flex items-center gap-[8px] px-[24px] py-[12px] text-[17px] text-white cursor-pointer hover:bg-[rgba(0,0,0,0.8)] transition-colors"
+              className="bg-black rounded-[999px] flex items-center gap-[8px] px-6 py-3 text-[17px] text-white cursor-pointer hover:bg-[rgba(0,0,0,0.8)] transition-colors"
               onClick={() => setShowShareModal(true)}
             >
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -762,7 +799,7 @@ export default function PolaroidPage() {
                 <div className="content-stretch flex gap-[16px] sm:gap-[24px] items-center relative shrink-0 w-full">
                   <button 
                     onClick={handleCopyLink}
-                    className="basis-0 bg-white grow h-[120px] sm:h-[140px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
+                    className="group basis-0 bg-white grow h-[120px] sm:h-[140px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
                     style={{ backgroundImage: copyLinkSuccess ? "linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" : undefined }}
                   >
                     <div aria-hidden="true" className="absolute border border-[rgba(0,0,0,0.1)] border-solid inset-0 pointer-events-none rounded-[16px]" />
@@ -770,7 +807,7 @@ export default function PolaroidPage() {
                       <div className="content-stretch flex flex-col gap-[7px] items-center p-[24px] relative size-full">
                         <div className="relative shrink-0 size-[70px]">
                           <div 
-                            className={`absolute bg-[#ededed] flex items-center justify-center rounded-full size-[70px] transition-all duration-300 ease-in-out ${
+                            className={`absolute bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center rounded-full size-[70px] transition-all duration-300 ease-in-out ${
                               copyLinkSuccess ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
                             }`}
                           >
@@ -791,7 +828,7 @@ export default function PolaroidPage() {
                         </div>
                         <div className="relative h-[20px] overflow-visible">
                           <p 
-                            className={`font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-[#333] text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                            className={`font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-gray-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
                               copyLinkSuccess ? 'opacity-0 translate-y-[-5px]' : 'opacity-100 translate-y-0'
                             }`} 
                             style={{ fontVariationSettings: "'wdth' 100" }}
@@ -799,7 +836,7 @@ export default function PolaroidPage() {
                             Copy Link
                           </p>
                           <p 
-                            className={`absolute left-0 right-0 top-0 font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-[#333] text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                            className={`absolute left-0 right-0 top-0 font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-gray-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
                               copyLinkSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[5px]'
                             }`} 
                             style={{ fontVariationSettings: "'wdth' 100" }}
@@ -813,7 +850,7 @@ export default function PolaroidPage() {
 
                   <button 
                     onClick={handleDownload}
-                    className="basis-0 bg-white grow h-[120px] sm:h-[140px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
+                    className="group basis-0 bg-white grow h-[120px] sm:h-[140px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
                     style={{ backgroundImage: downloadSuccess ? "linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" : undefined }}
                   >
                     <div aria-hidden="true" className="absolute border border-[rgba(0,0,0,0.1)] border-solid inset-0 pointer-events-none rounded-[16px]" />
@@ -821,7 +858,7 @@ export default function PolaroidPage() {
                       <div className="content-stretch flex flex-col gap-[7px] items-center p-[24px] relative size-full">
                         <div className="relative shrink-0 size-[70px]">
                           <div 
-                            className={`absolute bg-[#ededed] flex items-center justify-center rounded-full size-[70px] transition-all duration-300 ease-in-out ${
+                            className={`absolute bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center rounded-full size-[70px] transition-all duration-300 ease-in-out ${
                               downloadSuccess ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
                             }`}
                           >
@@ -843,7 +880,7 @@ export default function PolaroidPage() {
                         </div>
                         <div className="relative h-[15px]">
                           <p 
-                            className={`font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-[#333] text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                            className={`font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-gray-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
                               downloadSuccess ? 'opacity-0 translate-y-[-5px]' : 'opacity-100 translate-y-0'
                             }`} 
                             style={{ fontVariationSettings: "'wdth' 100" }}
@@ -851,7 +888,7 @@ export default function PolaroidPage() {
                             Download
                           </p>
                           <p 
-                            className={`absolute left-0 right-0 top-0 font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-[#333] text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                            className={`absolute left-0 right-0 top-0 font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-gray-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
                               downloadSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[5px]'
                             }`} 
                             style={{ fontVariationSettings: "'wdth' 100" }}
@@ -868,9 +905,9 @@ export default function PolaroidPage() {
               {/* Close Button */}
               <button
                 onClick={() => setShowShareModal(false)}
-                className="absolute bg-white right-[27px] rounded-full size-[32px] top-[24px] cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-center"
+                className="absolute bg-white right-[17px] rounded-full size-[32px] top-[17px] cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-center"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(20,20,20,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(20,20,20,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -886,7 +923,7 @@ export default function PolaroidPage() {
                     <div className="relative rounded-[18.928px] shrink-0 size-[69.402px]">
                       <img alt="Instagram" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[18.928px] size-full" src={imgInstagramIcon} />
                     </div>
-                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-black text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Instagram
                     </p>
                   </button>
@@ -900,7 +937,7 @@ export default function PolaroidPage() {
                         <img alt="LinkedIn" className="absolute h-[1236.21%] left-[-168.97%] max-w-none top-[-256.03%] w-[568.97%]" src={imgLinkedInIcon} />
                       </div>
                     </div>
-                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-black text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       LinkedIn
                     </p>
                   </button>
@@ -912,7 +949,7 @@ export default function PolaroidPage() {
                     <div className="relative rounded-[15px] shrink-0 size-[70px]">
                       <img alt="Mail" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] size-full" src={imgMailIcon} />
                     </div>
-                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-black text-center text-nowrap tracking-[0.06px]" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px]" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Mail
                     </p>
                   </button>
@@ -926,7 +963,7 @@ export default function PolaroidPage() {
                         <img alt="X" className="absolute h-[1225.64%] left-[-39.66%] max-w-none top-[-671.79%] w-[568.97%]" src={imgXIcon} />
                       </div>
                     </div>
-                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-black text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       X
                     </p>
                   </button>
@@ -938,7 +975,7 @@ export default function PolaroidPage() {
                     <div className="relative rounded-[18.928px] shrink-0 size-[69.402px]">
                       <img alt="Messages" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[18.928px] size-full" src={imgMessagesIcon} />
                     </div>
-                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-black text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Messages
                     </p>
                   </button>
@@ -985,6 +1022,28 @@ export default function PolaroidPage() {
         .scrollbar-hide {
           -ms-overflow-style: none;
           scrollbar-width: none;
+        }
+        
+        /* Flying seal animation */
+        @keyframes sealFly {
+          0% {
+            left: var(--start-x);
+            top: var(--start-y);
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+          100% {
+            left: var(--end-x);
+            top: var(--end-y);
+            transform: scale(1);
+          }
+        }
+        .seal-flying {
+          animation: sealFly 280ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+          left: var(--start-x);
+          top: var(--start-y);
         }
       `}</style>
     </div>

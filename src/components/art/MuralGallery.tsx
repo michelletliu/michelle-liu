@@ -107,7 +107,7 @@ export default function MuralGallery({
       {/* Header section */}
       <div className="flex flex-col items-start w-full">
         {/* Title */}
-        <p className="font-medium leading-normal text-gray-900 text-base mb-4">
+        <p className="font-medium leading-normal text-gray-900 text-lg mb-4">
           {data.title}
         </p>
 

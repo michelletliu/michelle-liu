@@ -640,9 +640,9 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
                   View on
                 </p>
                 {/* X logo - small icon */}
-                <div className="content-stretch flex items-center justify-center p-[6.667px] relative shrink-0 size-[24px]">
+                <div className="content-stretch flex items-center justify-center px-[4.667px] py-[6.667px] relative shrink-0 -mr-0.5">
                   <svg 
-                    className="block w-[12px] h-[11px] fill-[#9ca3af] group-hover/xlink:fill-blue-500 transition-colors" 
+                    className="block w-[16px] h-[16px] fill-[#9ca3af] group-hover/xlink:fill-blue-500 transition-colors" 
                     viewBox="0 0 19 18"
                   >
                     <path d={svgPaths.p16308a80} />

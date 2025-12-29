@@ -31,6 +31,8 @@ type MediaCardProps = {
   /** Override aspect ratio (square for albums, portrait for books/movies) */
   aspectRatio?: "square" | "portrait";
   onClick?: () => void;
+  /** For Quote type: whether this card is in the top row (more top padding) */
+  topRow?: boolean;
 };
 
 /**
@@ -82,6 +84,7 @@ export default function MediaCard({
   variant = "default",
   aspectRatio,
   onClick,
+  topRow = false,
 }: MediaCardProps) {
   const type = data?.type || "Book";
   const hasImage = !!data?.imageSrc;
@@ -135,13 +138,16 @@ export default function MediaCard({
       <div
         ref={cardRef}
         className={clsx(
-          "flex flex-col items-start overflow-hidden rounded-3xl border border-gray-100 bg-white transition-shadow duration-200",
+          "flex h-full min-h-[260px] md:min-h-[280px] flex-col items-start overflow-hidden rounded-3xl border border-gray-100 bg-white transition-shadow duration-200",
           "shadow-[0px_4px_16px_0px_rgba(209,213,219,0.65)] hover:shadow-[0px_4px_16px_0px_rgba(209,213,219,0.9)]",
           "md:rounded-3xl",
           className
         )}
       >
-        <div className="flex h-64 w-full items-start flex-col gap-4 overflow-hidden px-12 py-12 md:h-76 md:gap-4 md:px-12 md:py-16">
+        <div className={clsx(
+          "flex w-full flex-col gap-4 px-12 pb-12 md:gap-4 md:px-12 md:pb-12",
+          topRow ? "pt-14 md:pt-18" : "pt-14 md:pt-14"
+        )}>
           {/* Emoji */}
           {data?.emoji && (
             <p className="font-['Figtree'] text-4xl font-bold md:text-5xl">
@@ -151,15 +157,15 @@ export default function MediaCard({
 
           {/* Quote Title */}
           {data?.quoteTitle && (
-            <p className="whitespace-pre-wrap font-['Figtree'] -mb-1 text-lg font-semibold text-gray-700 md:text-xl">
+            <p className="whitespace-pre-wrap font-['Figtree'] -mb-1 text-lg font-semibold text-gray-800 md:text-xl">
               {data.quoteTitle}
             </p>
           )}
 
           {/* Quote Text & Author */}
-          <div className="flex flex-col items-start text-sm md:text-base">
+          <div className="flex flex-col items-start text-base md:text-base">
             {data?.quoteText && (
-              <p className="font-['Figtree'] font-normal text-gray-600 mb-0.5">
+              <p className="font-['Figtree'] font-medium text-gray-600 mb-0.5">
                 <QuoteTextWithUnderline
                   text={data.quoteText}
                   underlinedText={data.quoteUnderlinedText}
