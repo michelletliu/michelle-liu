@@ -30,6 +30,7 @@ import {
   LORE_ITEMS_QUERY,
   QUOTES_QUERY,
 } from "../../sanity/queries";
+import { getCachedData } from "../../sanity/preload";
 import type {
   Experience,
   Community,
@@ -247,12 +248,20 @@ export default function AboutPage() {
   const [activeBooksYear, setActiveBooksYear] = useState<string | undefined>();
   const [activeMoviesYear, setActiveMoviesYear] = useState<string | undefined>();
 
-  // Fetch data from Sanity
+  // Fetch data from Sanity (uses preloaded cache if available)
   useEffect(() => {
     async function fetchAboutData() {
       try {
         setIsLoading(true);
 
+        // Check cache first (populated by preloadLikelyPages)
+        const cachedExperiences = getCachedData<Experience[]>("about:experiences");
+        const cachedCommunities = getCachedData<Community[]>("about:communities");
+        const cachedShelfItems = getCachedData<ShelfItem[]>("about:shelfItems");
+        const cachedQuotes = getCachedData<AboutQuote[]>("about:quotes");
+        const cachedLoreItems = getCachedData<LoreItem[]>("about:loreItems");
+
+        // Fetch only what's not cached
         const [
           experiencesData,
           communitiesData,
@@ -260,11 +269,11 @@ export default function AboutPage() {
           quotesData,
           loreItemsData,
         ] = await Promise.all([
-          client.fetch<Experience[]>(EXPERIENCES_QUERY),
-          client.fetch<Community[]>(COMMUNITIES_QUERY),
-          client.fetch<ShelfItem[]>(SHELF_ITEMS_QUERY),
-          client.fetch<AboutQuote[]>(QUOTES_QUERY),
-          client.fetch<LoreItem[]>(LORE_ITEMS_QUERY),
+          cachedExperiences ?? client.fetch<Experience[]>(EXPERIENCES_QUERY),
+          cachedCommunities ?? client.fetch<Community[]>(COMMUNITIES_QUERY),
+          cachedShelfItems ?? client.fetch<ShelfItem[]>(SHELF_ITEMS_QUERY),
+          cachedQuotes ?? client.fetch<AboutQuote[]>(QUOTES_QUERY),
+          cachedLoreItems ?? client.fetch<LoreItem[]>(LORE_ITEMS_QUERY),
         ]);
 
         setExperiences(transformExperiences(experiencesData || []));

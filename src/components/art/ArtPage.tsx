@@ -34,6 +34,7 @@ import type { MuralData } from "./MuralGallery";
 // Sanity imports
 import { client, urlFor } from "../../sanity/client";
 import { ART_PIECES_QUERY, SKETCHBOOKS_QUERY, MURALS_QUERY } from "../../sanity/queries";
+import { getCachedData } from "../../sanity/preload";
 import type { ArtPiece, Sketchbook, Mural, ArtType } from "../../sanity/types";
 
 function FinalSealLogoBackgroundImage({ additionalClassNames = "" }: { additionalClassNames?: string }) {
@@ -181,17 +182,23 @@ export default function ArtPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch data from Sanity
+  // Fetch data from Sanity (uses preloaded cache if available)
   useEffect(() => {
     async function fetchArtData() {
       try {
         setIsLoading(true);
         setError(null);
 
+        // Check cache first (populated by preloadLikelyPages)
+        const cachedArtPieces = getCachedData<ArtPiece[]>("art:pieces");
+        const cachedSketchbooks = getCachedData<Sketchbook[]>("art:sketchbooks");
+        const cachedMurals = getCachedData<Mural[]>("art:murals");
+
+        // Fetch only what's not cached
         const [artPiecesData, sketchbooksData, muralsData] = await Promise.all([
-          client.fetch<ArtPiece[]>(ART_PIECES_QUERY),
-          client.fetch<Sketchbook[]>(SKETCHBOOKS_QUERY),
-          client.fetch<Mural[]>(MURALS_QUERY),
+          cachedArtPieces ?? client.fetch<ArtPiece[]>(ART_PIECES_QUERY),
+          cachedSketchbooks ?? client.fetch<Sketchbook[]>(SKETCHBOOKS_QUERY),
+          cachedMurals ?? client.fetch<Mural[]>(MURALS_QUERY),
         ]);
 
         // Group art pieces by type and transform
