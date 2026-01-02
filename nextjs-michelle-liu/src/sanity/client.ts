@@ -7,3 +7,5 @@ export const client = createClient({
   useCdn: false,
 });
 
+
+

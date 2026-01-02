@@ -13,6 +13,7 @@ import { AboutPage } from "./components/about";
 import { PolaroidPage } from "./components/polaroid";
 import { ScrollReveal } from "./components/ScrollReveal";
 import { TryItOutButton } from "./components/TryItOutButton";
+import { preloadLikelyPages } from "./sanity/preload";
 
 // CSS for fade up animation
 const fadeUpStyles = `
@@ -498,6 +499,15 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
   // Trigger enter animation on mount
   useEffect(() => {
     // Small delay to ensure the initial state is rendered first
@@ -711,6 +721,11 @@ function HomePage() {
       return () => clearTimeout(timer);
     }
   }, [heroAnimationPlayed]);
+
+  // Preload likely pages (Roblox, Apple, Art, About) when homepage loads
+  useEffect(() => {
+    preloadLikelyPages();
+  }, []);
 
   // Find project based on URL slug
   const selectedProject = slug ? projects.find(p => p.id === slug) || null : null;

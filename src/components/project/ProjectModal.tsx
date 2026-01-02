@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { PortableText } from "@portabletext/react";
 import { client, urlFor } from "../../sanity/client";
 import { PROJECT_BY_COMPANY_QUERY } from "../../sanity/queries";
+import { getCachedData } from "../../sanity/preload";
 import type { Project, ContentSection } from "../../sanity/types";
 import Footer from "../Footer";
 import VideoPlayer from "../VideoPlayer";
@@ -29,29 +30,33 @@ const ChevronRightIcon = () => (
 type BreadcrumbProps = {
   projectName: string;
   onWorkClick?: () => void;
+  isScrolled?: boolean;
 };
 
-function Breadcrumb({ projectName, onWorkClick }: BreadcrumbProps) {
+function Breadcrumb({ projectName, onWorkClick, isScrolled = false }: BreadcrumbProps) {
   return (
-    <div className="flex gap-0.5 items-center px-2.5 py-1">
-      {/* Work link - clickable with hover state */}
+    <div className="flex items-center">
+      {/* Work link - clickable with hover state, fades out on scroll */}
       <button
         onClick={onWorkClick}
-        className="flex items-center justify-center px-[7px] py-0.5 rounded-md transition-colors duration-200 hover:bg-[#f3f4f6]"
+        className={clsx(
+          "flex items-center justify-center py-0.5 rounded-md transition-all duration-300 ease-out hover:bg-[#f3f4f6]",
+          isScrolled ? "opacity-0 pointer-events-none w-0 px-0 overflow-hidden" : "opacity-100 px-1.5 ml-2"
+        )}
       >
-        <span className="font-['Figtree:Medium',sans-serif] font-medium text-base leading-normal text-[#4b5563]">
+        <span className="font-['Figtree:Medium',sans-serif] font-medium text-sm leading-normal text-[#4b5563] whitespace-nowrap">
           Work
         </span>
       </button>
 
-      {/* Chevron separator */}
+      {/* Chevron separator - always visible */}
       <div className="shrink-0 size-4">
         <ChevronRightIcon />
       </div>
 
       {/* Project name - not clickable */}
-      <div className="flex items-center justify-center px-[7px] py-0.5">
-        <span className="font-['Figtree:Medium',sans-serif] font-medium text-base leading-normal text-[#1f2937]">
+      <div className="flex items-center justify-center px-1 py-0.5">
+        <span className="font-['Figtree:Medium',sans-serif] font-medium text-sm leading-normal text-[#1f2937]">
           {projectName}
         </span>
       </div>
@@ -195,11 +200,24 @@ export default function ProjectModal({
   // Fullscreen state is controlled by URL via initialFullscreen prop
   const isFullscreen = initialFullscreen;
 
-  // Fetch project data from Sanity
+  // Fetch project data from Sanity (uses preloaded cache if available)
   useEffect(() => {
     async function fetchProject() {
       try {
         setLoading(true);
+        
+        // Check cache first (populated by preloadLikelyPages)
+        const cacheKey = `project:${projectId}`;
+        const cachedData = getCachedData<Project>(cacheKey);
+        
+        if (cachedData) {
+          setProject(cachedData);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+        
+        // Fallback to fetching from Sanity
         const data = await client.fetch<Project>(PROJECT_BY_COMPANY_QUERY, {
           company: projectId,
         });
@@ -215,6 +233,17 @@ export default function ProjectModal({
 
     fetchProject();
   }, [projectId]);
+
+  // Lock body scroll when modal is open (popup mode only)
+  useEffect(() => {
+    if (!isFullscreen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isFullscreen]);
 
   // Trigger enter animation on mount
   useEffect(() => {
@@ -337,19 +366,19 @@ export default function ProjectModal({
           {isFullscreen && (
             <div 
               className={clsx(
-                "content-stretch flex flex-col items-start px-16 max-md:px-8 relative shrink-0 w-full md:sticky md:top-0 z-10 transition-all duration-300 ease-out",
+                "content-stretch flex flex-col items-start px-14 max-md:px-6 relative shrink-0 w-full md:sticky md:top-0 z-10 transition-all duration-300 ease-out",
                 isScrolled ? "py-4" : "py-8"
               )}
               /*style={{ 
                 background: 'linear-gradient(to bottom, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 33%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.2) 60%, rgba(255,255,255,0.1) 70%, rgba(255,255,255,0) 100%)'
               }} */
             >
-              <div className="content-stretch flex gap-2.5 items-center relative shrink-0 w-full">
+              <div className="content-stretch flex gap-1.5 items-center relative shrink-0 w-full">
                 <button
                   onClick={handleBack}
                   className={clsx(
-                    "overflow-clip relative shrink-0 cursor-pointer hover:opacity-80 transition-all duration-300 ease-out",
-                    isScrolled ? "size-[28px]" : "size-[44px]"
+                    "overflow-clip relative shrink-0 cursor-pointer hover:opacity-80 transition-all duration-300 ease-out p-0 border-0 bg-transparent",
+                    isScrolled ? "size-7" : "size-[44px]"
                   )}
                 >
                   <img
@@ -363,6 +392,7 @@ export default function ProjectModal({
                 <Breadcrumb 
                   projectName={project?.title || projectId.charAt(0).toUpperCase() + projectId.slice(1)}
                   onWorkClick={onViewAllProjects}
+                  isScrolled={isScrolled}
                 />
               </div>
             </div>

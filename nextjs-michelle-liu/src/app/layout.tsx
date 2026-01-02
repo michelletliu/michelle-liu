@@ -133,7 +133,14 @@ export default function RootLayout({
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
+        <span
+          dangerouslySetInnerHTML={{
+            __html: "<!-- ✨ thanks for stopping by! say hi: michelletheresaliu@gmail.com -->",
+          }}
+          style={{ display: "none" }}
+        />
         {children}
         <Footer />
       </body>

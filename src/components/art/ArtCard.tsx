@@ -44,3 +44,5 @@ export default function ArtCard({ className, data, onClick }: ArtCardProps) {
 }
 
 
+
+
