@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { ScrollReveal } from "../ScrollReveal";
+import PageHeader from "../PageHeader";
 
 // CSS for fade up animation
 const fadeUpStyles = `
@@ -19,8 +20,6 @@ const fadeUpStyles = `
   animation: fadeUp 400ms ease-out forwards;
 }
 `;
-import imgFinalSealLogo1 from "../../assets/logo.png";
-import grainTexture from "../../assets/Rectangle Grain 1.png";
 import Footer from "../Footer";
 import HeaderBreakpoint from "./HeaderBreakpoint";
 import ArtGallery from "./ArtGallery";
@@ -36,16 +35,6 @@ import { client, urlFor } from "../../sanity/client";
 import { ART_PIECES_QUERY, SKETCHBOOKS_QUERY, MURALS_QUERY } from "../../sanity/queries";
 import { getCachedData } from "../../sanity/preload";
 import type { ArtPiece, Sketchbook, Mural, ArtType } from "../../sanity/types";
-
-function FinalSealLogoBackgroundImage({ additionalClassNames = "" }: { additionalClassNames?: string }) {
-  return (
-    <img
-      alt="Michelle Liu Logo"
-      className={clsx("object-contain pointer-events-none", additionalClassNames)}
-      src={imgFinalSealLogo1}
-    />
-  );
-}
 
 type TagBackgroundImageAndTextProps = {
   text: string;
@@ -386,64 +375,20 @@ export default function ArtPage() {
       <style>{fadeUpStyles}</style>
       
       {/* Header */}
-      <div 
-        className="content-stretch flex flex-col items-start relative shrink-0 w-full"
-        style={{ 
-          backgroundImage: "linear-gradient(16deg, rgba(255, 255, 255, 1) 60%, rgba(243, 218, 255, 1) 81%, rgba(192, 221, 254, 1) 98%, rgba(154, 226, 244, 1) 100%)" 
-        }}
+      <PageHeader
+        variant="art"
+        heroAnimationPlayed={heroAnimationPlayed}
+        nameAddon={
+          <p className="font-['Figtree',sans-serif] font-normal text-gray-500 text-xl whitespace-pre-wrap">
+            b. 2004
+          </p>
+        }
       >
-        {/* Grain texture overlay */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `url(${grainTexture})`,
-            backgroundRepeat: 'repeat',
-            backgroundSize: 'auto',
-            opacity: 0.8,
-          }}
-        />
-        
-        {/* Logo */}
-        <div className="relative shrink-0 w-full z-[2]">
-          <div className="size-full">
-            <div className="content-stretch flex flex-col items-start px-16 pt-8 pb-8 max-md:px-8 max-md:pt-8 max-md:pb-4 relative w-full">
-              <div className="content-stretch flex items-start justify-between relative shrink-0 w-full">
-                <button onClick={() => navigate("/")} className="relative shrink-0 size-11 cursor-pointer">
-                  <FinalSealLogoBackgroundImage additionalClassNames="size-full" />
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="font-['Figtree',sans-serif] font-normal leading-7 max-md:leading-6 tracking-wide text-[#9ca3af] text-[1.2rem] max-md:text-[1.13rem] w-full whitespace-pre-wrap mt-1 max-md:mt-1">
+          <p className="mb-0">Currently based in Los Angeles, CA.</p>
+          <p>Also in between San Francisco &amp; New York City.</p>
         </div>
-
-        {/* Hero Text - Simplified for Art page */}
-        <div className="relative shrink-0 w-full z-[2]">
-          <div className="size-full">
-            <div className="content-stretch flex flex-col gap-4 items-start pb-6 pt-11 px-16 max-md:px-8 relative w-full">
-              <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
-                {/* Name + b. 2004 */}
-                <ScrollReveal variant="fade" rootMargin="0px" disabled={heroAnimationPlayed}>
-                  <div className="flex gap-4 items-baseline w-full max-md:flex-col max-md:gap-0 max-md:items-start">
-                    <p className="font-['Figtree',sans-serif] font-medium leading-normal text-[#374151] text-6xl max-md:text-5xl">
-                      michelle liu
-                    </p>
-                    <p className="font-['Figtree',sans-serif] font-normal text-gray-500 text-xl whitespace-pre-wrap">
-                      b. 2004
-                    </p>
-                  </div>
-                </ScrollReveal>
-                {/* Location description */}
-                <ScrollReveal variant="fade" delay={150} rootMargin="0px">
-                  <div className="font-['Figtree',sans-serif] font-normal leading-7 max-md:leading-6 tracking-wide text-[#9ca3af] text-[1.2rem] max-md:text-[1.13rem] w-full whitespace-pre-wrap -mt-2 max-md:mt-3">
-                    <p className="mb-0">Currently based in Los Angeles, CA.</p>
-                    <p>Also in between San Francisco &amp; New York City.</p>
-                  </div>
-                </ScrollReveal>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      </PageHeader>
 
       {/* Navigation */}
       <div className="content-stretch flex flex-col items-center pb-6 pt-0 px-0 relative shrink-0 w-full">

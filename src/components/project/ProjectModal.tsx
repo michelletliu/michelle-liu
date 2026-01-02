@@ -252,10 +252,10 @@ export default function ProjectModal({
     });
   }, []);
 
-  // Handle scroll for sticky header shrink effect in fullscreen
+  // Handle scroll for header effects (shrink in fullscreen, hide in popup)
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer || !isFullscreen) return;
+    if (!scrollContainer) return;
 
     const handleScroll = () => {
       const scrollTop = scrollContainer.scrollTop;
@@ -264,7 +264,7 @@ export default function ProjectModal({
 
     scrollContainer.addEventListener("scroll", handleScroll);
     return () => scrollContainer.removeEventListener("scroll", handleScroll);
-  }, [isFullscreen]);
+  }, []);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -329,15 +329,12 @@ export default function ProjectModal({
             : "opacity-0 translate-y-8"
         )}
       >
-        {/* Inner container that provides padding to keep scrollbar away from rounded corners */}
-        <div className={clsx(
-          "flex flex-col flex-1 min-h-0",
-          !isFullscreen && "pt-[26px]"
-        )}>
-          {/* Non-fullscreen header stays outside scroll container */}
+        {/* Inner container */}
+        <div className="flex flex-col flex-1 min-h-0 relative">
+          {/* Non-fullscreen header - absolutely positioned to float over content */}
           {!isFullscreen && (
             /* Modal header with back and close buttons */
-            <div className="content-stretch flex items-start justify-between px-7 py-6 -mt-[26px] relative shrink-0 w-full bg-white z-10">
+            <div className="absolute top-0 left-0 right-0 flex items-start justify-between px-7 pt-6 pb-3 z-10">
               {/* Back/Expand button */}
               <button
                 onClick={handleExpandToFullscreen}
@@ -361,7 +358,10 @@ export default function ProjectModal({
           )}
 
           {/* Scrollable content */}
-          <div ref={scrollContainerRef} className="overflow-y-auto flex-1">
+          <div ref={scrollContainerRef} className={clsx(
+            "overflow-y-auto flex-1",
+            !isFullscreen && "rounded-t-[26px]"
+          )}>
           {/* Fullscreen header - INSIDE scroll container so sticky works and gradient fades content */}
           {isFullscreen && (
             <div 
@@ -412,7 +412,7 @@ export default function ProjectModal({
           {!loading && !error && project && (
             <div className="flex flex-col pb-16">
               {/* Project Hero Header */}
-              <div className="content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
+              <div className="content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] pt-32 pb-16 relative shrink-0 w-full">
                 {/* Logo */}
                 {project.logo && (
                   <ScrollReveal variant="fade" rootMargin="0px">
@@ -512,11 +512,17 @@ export default function ProjectModal({
               </div>
 
               {/* Dynamic Content Sections */}
-              {project.content?.map((section) => (
-                <ScrollReveal key={section._key}>
-                  <ContentBlock section={section} isFullscreen={isFullscreen} />
-                </ScrollReveal>
-              ))}
+              {project.content?.map((section) => 
+                // Testimonials have interactive expand/collapse - skip ScrollReveal
+                // to prevent animation from replaying when clicking "Read more"
+                section._type === "testimonialSection" ? (
+                  <ContentBlock key={section._key} section={section} isFullscreen={isFullscreen} />
+                ) : (
+                  <ScrollReveal key={section._key}>
+                    <ContentBlock section={section} isFullscreen={isFullscreen} />
+                  </ScrollReveal>
+                )
+              )}
 
               {/* Also Check Out Section */}
               {project.relatedProjects && project.relatedProjects.length > 0 && (
@@ -698,7 +704,7 @@ function TestimonialBlock({
         {/* Quote Section - Layout changes based on expanded state */}
         <div
           className={clsx(
-            "content-stretch flex items-start relative shrink-0 w-full transition-all duration-400 ease-out",
+            "content-stretch flex items-start relative shrink-0 w-full",
             // Desktop: side-by-side layout, with horizontal padding only in fullscreen
             "justify-between",
             isFullscreen && "px-[111px]",
@@ -709,7 +715,7 @@ function TestimonialBlock({
           {/* Author Info - Left Side */}
           <div
             className={clsx(
-              "content-stretch flex relative shrink-0 transition-all duration-400 ease-out",
+              "content-stretch flex relative shrink-0",
               // Desktop: vertical stack
               "flex-col gap-6 items-start w-[202px]",
               // Mobile: horizontal layout
@@ -737,17 +743,17 @@ function TestimonialBlock({
           {/* Quote Content - Right Side */}
           <div
             className={clsx(
-              "content-stretch flex flex-col gap-6 relative shrink-0 transition-all duration-400 ease-out",
-              // Desktop expanded: align content to end
-              isExpanded ? "items-end justify-end" : "items-start justify-center",
+              "content-stretch flex flex-col gap-6 relative shrink-0",
+              // Keep alignment consistent - no change on expand to prevent weird transition
+              "items-start justify-center",
               // Mobile: full width
-              "max-md:items-start max-md:justify-center max-md:w-full"
+              "max-md:w-full"
             )}
           >
             {/* Quote Graphic - positioned above quote */}
             <div
               className={clsx(
-                "absolute pointer-events-none transition-all duration-400 ease-out",
+                "absolute pointer-events-none",
                 // Desktop positioning
                 "-top-[77px] -left-[77px] w-[121px] h-[120px]",
                 // Mobile positioning
@@ -761,31 +767,17 @@ function TestimonialBlock({
               />
             </div>
 
-            {/* Quote Text Container with smooth height transition */}
-            <div className="relative w-[424px] max-md:w-full overflow-hidden">
-              {/* Short Quote */}
-              <div
-                className={clsx(
-                  "transition-all duration-400 ease-out",
-                  isExpanded
-                    ? "opacity-0 max-h-0 pointer-events-none"
-                    : "opacity-100 max-h-[500px]"
-                )}
-              >
-                <p className="leading-[26px] text-[#1f2937] text-xl whitespace-pre-wrap">
-                  {quote}
-                </p>
-              </div>
+            {/* Quote Text Container - simple show/hide without layout shifts */}
+            <div className="relative w-[424px] max-md:w-full">
+              {/* Short Quote - shown when collapsed */}
+              {!isExpanded && (
+                <div className="leading-[26px] text-[#1f2937] text-xl whitespace-pre-wrap">
+                  <p>{quote}</p>
+                </div>
+              )}
 
-              {/* Full Quote - Multiple paragraphs */}
-              <div
-                className={clsx(
-                  "transition-all duration-400 ease-out",
-                  isExpanded
-                    ? "opacity-100 max-h-[2000px]"
-                    : "opacity-0 max-h-0 pointer-events-none absolute top-0 left-0"
-                )}
-              >
+              {/* Full Quote - shown when expanded */}
+              {isExpanded && (
                 <div className="leading-[26px] text-[#1f2937] text-xl whitespace-pre-wrap">
                   {fullQuote?.map((paragraph, index) => (
                     <p
@@ -796,14 +788,14 @@ function TestimonialBlock({
                     </p>
                   ))}
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Action Button - Read More or Collapse */}
             <button
               onClick={toggleExpanded}
               className={clsx(
-                "relative shrink-0 cursor-pointer transition-all duration-300 ease-out",
+                "relative shrink-0 cursor-pointer transition-colors duration-300 ease-out",
                 isExpanded
                   ? "size-6 hover:opacity-70"
                   : "leading-5 text-[#9ca3af] text-base hover:text-[#6b7280] text-left"
@@ -1129,6 +1121,8 @@ function ContentBlock({ section, isFullscreen = false }: { section: ContentSecti
       );
 
       case "testimonialSection":
+        // Testimonial has interactive expand/collapse - don't double-wrap with ScrollReveal
+        // to prevent animation from replaying when clicking "Read more"
         return (
           <TestimonialBlock
             sectionLabel={section.sectionLabel}
@@ -1150,6 +1144,12 @@ function ContentBlock({ section, isFullscreen = false }: { section: ContentSecti
 
   const content = renderContent();
   if (!content) return null;
+  
+  // Testimonials are excluded from ScrollReveal at the parent level
+  // to prevent animation replaying on expand/collapse
+  if (section._type === "testimonialSection") {
+    return content;
+  }
   
   return (
     <ScrollReveal>

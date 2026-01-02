@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { Routes, Route, useParams, useNavigate, useLocation } from "react-router-dom";
 import svgPaths from "./imports/svg-2tsxp86msm";
 import clsx from "clsx";
-import imgFinalSealLogo1 from "./assets/logo.png";
-import grainTexture from "./assets/Rectangle Grain 1.png";
 import { imgGroup } from "./imports/svg-poktt";
 import VideoPlayer from "./components/VideoPlayer";
 import Footer from "./components/Footer";
@@ -14,6 +12,7 @@ import { PolaroidPage } from "./components/polaroid";
 import { ScrollReveal } from "./components/ScrollReveal";
 import { TryItOutButton } from "./components/TryItOutButton";
 import { preloadLikelyPages } from "./sanity/preload";
+import PageHeader from "./components/PageHeader";
 
 // CSS for fade up animation
 const fadeUpStyles = `
@@ -388,19 +387,6 @@ function TagBackgroundImageAndText({ text, active = false, onClick }: TagBackgro
   );
 }
 
-type FinalSealLogoBackgroundImageProps = {
-  additionalClassNames?: string;
-};
-
-function FinalSealLogoBackgroundImage({ additionalClassNames = "" }: FinalSealLogoBackgroundImageProps) {
-  return (
-    <img
-      alt="Michelle Liu Logo"
-      className={clsx("object-contain pointer-events-none", additionalClassNames)}
-      src={imgFinalSealLogo1}
-    />
-  );
-}
 
 type ProjectCardProps = {
   project: Project;
@@ -666,7 +652,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
           )}
 
           {/* Video/Image content area with rounded corners */}
-          <div className="relative rounded-[16px] w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0">
+          <div className="relative rounded-[16px] w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 mt-3">
             {/* Always show poster/thumbnail as background */}
             <img
               alt=""
@@ -805,44 +791,8 @@ function HomePage() {
         </defs>
       </svg>
       {/* Header */}
-      <div
-        className="content-stretch flex flex-col items-start relative shrink-0 w-full header-gradient"
-      >
-        {/* Grain texture overlay - sits on top of gradient but below content */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `url(${grainTexture})`,
-            backgroundRepeat: 'repeat',
-            backgroundSize: 'auto',
-            opacity: 0.8,
-          }}
-        />
-        {/* Logo */}
-        <div className="relative shrink-0 w-full" style={{ zIndex: 2 }}>
-          <div className="size-full">
-            <div className="content-stretch flex flex-col items-start px-16 pt-8 pb-8 max-md:px-8 max-md:pt-8 max-md:pb-4 relative w-full">
-              <div className="content-stretch flex items-start justify-between relative shrink-0 w-full">
-                <div className="relative shrink-0 size-11">
-                  <FinalSealLogoBackgroundImage additionalClassNames="size-full" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Hero Text */}
-        <div className="relative shrink-0 w-full" style={{ zIndex: 2 }}>
-          <div className="size-full">
-            <div className="content-stretch flex flex-col gap-4 items-start pb-6 pt-11 px-16 max-md:px-8 relative w-full">
-              <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
-                <ScrollReveal variant="fade" rootMargin="0px" disabled={heroAnimationPlayed}>
-                  <p className="font-['Figtree',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-6xl w-full max-md:text-5xl">
-                    michelle liu
-                  </p>
-                </ScrollReveal>
-                <ScrollReveal variant="fade" delay={150} rootMargin="0px">
-                  <p className="font-['Figtree',sans-serif] font-normal leading-7 max-md:leading-6 tracking-wide not-italic relative shrink-0 text-[#6b7280] text-[1.2rem] w-full max-md:text-[1.13rem] -mt-2 max-md:mt-1">
+      <PageHeader variant="work" heroAnimationPlayed={heroAnimationPlayed}>
+        <p className="font-['Figtree',sans-serif] font-normal leading-7 max-md:leading-6 tracking-wide not-italic relative shrink-0 text-[#6b7280] text-[1.2rem] w-full max-md:text-[1.13rem] mt-1 max-md:mt-1">
                   <span className="font-['Figtree',sans-serif] text-[#9ca3af]">
                     Designing useful products to spark moments of{" "}</span>
                     <br className="md:hidden" />
@@ -892,13 +842,8 @@ function HomePage() {
                       <a href="mailto:michelletheresaliu@gmail.com" className="[text-decoration-skip-ink:none] [text-underline-position:from-font] decoration-solid underline hover:!text-emerald-600 transition-colors">touch</a>!
                     </span>
                   </span>
-                </p>
-                </ScrollReveal>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        </p>
+      </PageHeader>
 
       {/* Navigation */}
       <div className="content-stretch flex flex-col items-center pb-4 pt-0 px-0 relative shrink-0 w-full">
