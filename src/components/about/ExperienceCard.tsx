@@ -44,7 +44,7 @@ export default function ExperienceCard({ className, data }: ExperienceCardProps)
 
       {/* Text content */}
       <div className="flex flex-1 flex-col items-start">
-        <p className="whitespace-pre-wrap text-base text-lg font-medium leading-[1.4] text-gray-900">
+        <p className="whitespace-pre-wrap text-base text-lg font-medium leading-[1.4] text-gray-700">
           {data.company}
         </p>
         <div className="flex items-start gap-1 text-base font-normal leading-[1.4]">

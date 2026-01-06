@@ -204,6 +204,7 @@ export const COMMUNITIES_QUERY = `
     sidebarName,
     logo,
     description,
+    instagramUrl,
     photos[] {
       _key,
       image,
@@ -228,6 +229,7 @@ export const SHELF_ITEMS_QUERY = `
     year,
     rating,
     isFeatured,
+    goodreadsUrl,
     letterboxdSlug,
     spotifyUrl
   }

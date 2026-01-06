@@ -88,3 +88,79 @@ body {
   opacity: 0;
   animation: shelfItemFadeUp 400ms ease-out forwards;
 }
+
+/* Modal open animation - smooth slide down with scale */
+@keyframes modalSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-modal-in {
+  animation: modalSlideIn 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Centered modal animation - scale up from center */
+@keyframes modalScaleIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.animate-modal-scale-in {
+  animation: modalScaleIn 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Overlay fade in */
+@keyframes overlayFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-overlay-in {
+  animation: overlayFadeIn 200ms ease-out forwards;
+}
+
+/* Centered modal exit animation - scale down to center */
+@keyframes modalScaleOut {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+}
+
+.animate-modal-scale-out {
+  animation: modalScaleOut 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+/* Overlay fade out */
+@keyframes overlayFadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-overlay-out {
+  animation: overlayFadeOut 200ms ease-in forwards;
+}

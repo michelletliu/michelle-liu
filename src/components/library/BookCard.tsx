@@ -2,19 +2,14 @@ import type { Book } from "./types";
 
 interface BookCardProps {
   book: Book;
+  onClick: () => void;
 }
 
-export function BookCard({ book }: BookCardProps) {
-  const handleClick = () => {
-    if (book.goodreadsUrl) {
-      window.open(book.goodreadsUrl, '_blank', 'noopener,noreferrer');
-    }
-  };
-
+export function BookCard({ book, onClick }: BookCardProps) {
   return (
     <button
-      onClick={handleClick}
-      className={`relative flex flex-col items-center w-[120px] sm:w-[136px] md:w-[148px] lg:w-[160px] h-[250px] sm:h-[280px] md:h-[320px] lg:h-[350px] group overflow-visible ${book.goodreadsUrl ? 'cursor-pointer' : 'cursor-default'}`}
+      onClick={onClick}
+      className="relative flex flex-col items-center w-[120px] sm:w-[136px] md:w-[148px] lg:w-[160px] h-[250px] sm:h-[280px] md:h-[320px] lg:h-[350px] group overflow-visible cursor-pointer"
     >
       {/* Book cover - default state */}
       <div className="absolute left-1/2 -translate-x-1/2 top-0 h-[172px] sm:h-[197px] md:h-[222px] lg:h-[246.753px] w-[120px] sm:w-[136px] md:w-[148px] lg:w-[160px] rounded-sm shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] transition-all duration-[400ms] ease-out group-hover:top-[-12px] group-hover:sm:top-[-14px] group-hover:md:top-[-16px] group-hover:lg:top-[-18px] group-hover:h-[176px] group-hover:sm:h-[202px] group-hover:md:h-[227px] group-hover:lg:h-[253px] group-hover:w-[123px] group-hover:sm:w-[139px] group-hover:md:w-[152px] group-hover:lg:w-[164px] group-hover:shadow-none">

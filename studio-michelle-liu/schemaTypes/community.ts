@@ -38,6 +38,16 @@ export const community = defineType({
       rows: 3,
     }),
     defineField({
+      name: 'instagramUrl',
+      title: 'Instagram URL',
+      type: 'url',
+      description: 'Link to the community/organization Instagram page',
+      validation: (rule) =>
+        rule.uri({
+          scheme: ['http', 'https'],
+        }),
+    }),
+    defineField({
       name: 'photos',
       title: 'Photo Collage',
       description: 'Add up to 4 photos for the collage',

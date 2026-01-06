@@ -11,10 +11,9 @@ type ArtGalleryProps = {
 };
 
 /**
- * Art Gallery component - displays a responsive layout of art cards
- * - Mobile: Single column, images fill width with natural aspect ratio
- * - Medium (md): 2 columns
- * - Desktop (lg): 3 columns masonry
+ * Art Gallery component - displays a responsive masonry layout of art cards
+ * - Mobile/Tablet: 2 columns
+ * - Desktop (lg): 3 columns
  */
 export default function ArtGallery({ 
   className, 
@@ -25,9 +24,8 @@ export default function ArtGallery({
     <div 
       className={clsx(
         "w-full max-w-full",
-        // Single column on mobile, masonry on larger screens
-        "flex flex-col gap-4",
-        "md:block md:columns-2 lg:columns-3 md:gap-4",
+        // 2 columns on mobile, 3 columns on desktop
+        "columns-2 gap-4 lg:columns-3",
         className
       )}
     >

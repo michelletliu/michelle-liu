@@ -101,144 +101,18 @@ export default function ShelfSection({
       {/* Header */}
       <div className="relative flex w-full flex-col py-4">
         {/* Title tag and year filters */}
-        <div className="flex items-center gap-1 pb-3">
-          {/* Title tag - clickable to show favorites (default view) - always visible */}
-          <button
-            onClick={() => onYearChange?.("")}
-            className={clsx(
-              "hidden md:flex shrink-0 items-center justify-center rounded-full px-3 py-1 transition-colors cursor-pointer",
-              !activeYear ? "bg-gray-500/10" : "hover:bg-gray-500/5"
-            )}
-          >
-            <span className={clsx(
-              "font-['Figtree',sans-serif] font-semibold text-base tracking-wide whitespace-nowrap",
-              !activeYear ? "text-gray-500" : "text-gray-400"
-            )}>
-              {title}
-              {count !== undefined && (
-                <span className={!activeYear ? "text-gray-400" : "text-gray-300"}> ({count})</span>
-              )}
-            </span>
-          </button>
-
-          {/* Mobile: Dropdown for year filters */}
-          {yearFilters.length > 0 && (
-            <div className="relative md:hidden" ref={dropdownRef}>
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className={clsx(
-                  "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 transition-colors cursor-pointer",
-                  "bg-gray-500/10"
-                )}
-              >
-                <span className="font-['Figtree',sans-serif] font-semibold text-sm tracking-wide whitespace-nowrap text-gray-500">
-                  {!activeYear ? (
-                    <>
-                      {title}
-                      {count !== undefined && (
-                        <span className="text-gray-400"> ({count})</span>
-                      )}
-                    </>
-                  ) : (
-                    (() => {
-                      const filter = yearFilters.find(f => f.year === activeYear);
-                      return filter ? (
-                        <>
-                          {filter.year}
-                          {filter.count !== undefined && (
-                            <span className="text-gray-400"> ({filter.count})</span>
-                          )}
-                        </>
-                      ) : activeYear;
-                    })()
-                  )}
-                </span>
-                <svg
-                  className={clsx(
-                    "w-3 h-3 text-gray-400 transition-transform duration-200",
-                    isDropdownOpen && "rotate-180"
-                  )}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              
-              {/* Dropdown menu */}
-              {isDropdownOpen && (
-                <div className="absolute left-0 top-[calc(100%+4px)] bg-white rounded-lg shadow-lg border border-gray-100 z-50 min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200">
-                  <div className="flex flex-col py-1.5 px-1.5">
-                    {/* Favorites option */}
-                    <button
-                      onClick={() => {
-                        onYearChange?.("");
-                        setIsDropdownOpen(false);
-                      }}
-                      className={clsx(
-                        "flex items-center px-3 py-1.5 rounded-md transition-colors text-left",
-                        !activeYear ? "bg-gray-100" : "hover:bg-gray-50"
-                      )}
-                    >
-                      <span className={clsx(
-                        "font-['Figtree',sans-serif] font-semibold text-sm tracking-wide",
-                        !activeYear ? "text-gray-600" : "text-gray-400"
-                      )}>
-                        {title}
-                        {count !== undefined && (
-                          <span className={!activeYear ? "text-gray-400" : "text-gray-300"}> ({count})</span>
-                        )}
-                      </span>
-                    </button>
-                    
-                    {/* Year options */}
-                    {yearFilters.map((filter) => {
-                      const isActive = activeYear === filter.year;
-                      return (
-                        <button
-                          key={filter.year}
-                          onClick={() => {
-                            onYearChange?.(filter.year);
-                            setIsDropdownOpen(false);
-                          }}
-                          className={clsx(
-                            "flex items-center px-3 py-1.5 rounded-md transition-colors text-left",
-                            isActive ? "bg-gray-100" : "hover:bg-gray-50"
-                          )}
-                        >
-                          <span className={clsx(
-                            "font-['Figtree',sans-serif] font-semibold text-sm tracking-wide",
-                            isActive ? "text-gray-600" : "text-gray-400"
-                          )}>
-                            {filter.year}
-                            {filter.count !== undefined && (
-                              <span className={isActive ? "text-gray-400" : "text-gray-300"}>
-                                {" "}({filter.count})
-                              </span>
-                            )}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          
-          {/* Mobile: Show title only if no year filters */}
-          {yearFilters.length === 0 && (
+        <div className="flex items-center justify-between gap-2 pb-3">
+          <div className="flex items-center gap-1 min-w-0">
+            {/* Desktop: Title tag - clickable to show favorites */}
             <button
               onClick={() => onYearChange?.("")}
               className={clsx(
-                "flex md:hidden shrink-0 items-center justify-center rounded-full px-3 py-1 transition-colors cursor-pointer",
+                "hidden lg:flex shrink-0 items-center justify-center rounded-full px-3 py-1 transition-colors cursor-pointer",
                 !activeYear ? "bg-gray-500/10" : "hover:bg-gray-500/5"
               )}
             >
               <span className={clsx(
-                "font-['Figtree',sans-serif] font-semibold text-sm tracking-wide whitespace-nowrap",
+                "font-['Figtree',sans-serif] font-semibold text-base tracking-wide whitespace-nowrap",
                 !activeYear ? "text-gray-500" : "text-gray-400"
               )}>
                 {title}
@@ -247,46 +121,174 @@ export default function ShelfSection({
                 )}
               </span>
             </button>
-          )}
 
-          {/* Desktop: Year filters - horizontally displayed */}
-          <div className="hidden md:flex items-center gap-1">
-            {yearFilters.map((filter) => {
-              const isActive = activeYear === filter.year;
-              return (
+            {/* Mobile/Tablet: Dropdown for year filters */}
+            {yearFilters.length > 0 && (
+              <div className="relative lg:hidden shrink-0" ref={dropdownRef}>
                 <button
-                  key={filter.year}
-                  onClick={() => onYearChange?.(filter.year)}
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className={clsx(
-                    "flex shrink-0 cursor-pointer items-center justify-center rounded-full px-3 py-1 transition-colors",
-                    isActive ? "bg-gray-500/10" : "hover:bg-gray-500/5"
+                    "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 transition-colors cursor-pointer",
+                    "bg-gray-500/10"
                   )}
                 >
-                  <span
-                    className={clsx(
-                      "font-['Figtree',sans-serif] text-base font-semibold tracking-wide whitespace-nowrap",
-                      isActive ? "text-gray-600" : "text-gray-400"
-                    )}
-                  >
-                    {filter.year}
-                    {filter.count !== undefined && (
-                      <span className={isActive ? "text-gray-400" : "text-gray-300"}>
-                        {" "}({filter.count})
-                      </span>
+                  <span className="font-['Figtree',sans-serif] font-semibold text-sm tracking-wide whitespace-nowrap text-gray-500">
+                    {!activeYear ? (
+                      <>
+                        {title}
+                        {count !== undefined && (
+                          <span className="text-gray-400"> ({count})</span>
+                        )}
+                      </>
+                    ) : (
+                      (() => {
+                        const filter = yearFilters.find(f => f.year === activeYear);
+                        return filter ? (
+                          <>
+                            {filter.year}
+                            {filter.count !== undefined && (
+                              <span className="text-gray-400"> ({filter.count})</span>
+                            )}
+                          </>
+                        ) : activeYear;
+                      })()
                     )}
                   </span>
+                  <svg
+                    className={clsx(
+                      "w-3 h-3 text-gray-400 transition-transform duration-200",
+                      isDropdownOpen && "rotate-180"
+                    )}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
                 </button>
-              );
-            })}
+                
+                {/* Dropdown menu */}
+                {isDropdownOpen && (
+                  <div className="absolute left-0 top-[calc(100%+4px)] bg-white rounded-lg shadow-lg border border-gray-100 z-50 min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200">
+                    <div className="flex flex-col py-1.5 px-1.5">
+                      {/* Favorites option */}
+                      <button
+                        onClick={() => {
+                          onYearChange?.("");
+                          setIsDropdownOpen(false);
+                        }}
+                        className={clsx(
+                          "flex items-center px-3 py-1.5 rounded-md transition-colors text-left",
+                          !activeYear ? "bg-gray-100" : "hover:bg-gray-50"
+                        )}
+                      >
+                        <span className={clsx(
+                          "font-['Figtree',sans-serif] font-semibold text-sm tracking-wide",
+                          !activeYear ? "text-gray-600" : "text-gray-400"
+                        )}>
+                          {title}
+                          {count !== undefined && (
+                            <span className={!activeYear ? "text-gray-400" : "text-gray-300"}> ({count})</span>
+                          )}
+                        </span>
+                      </button>
+                      
+                      {/* Year options */}
+                      {yearFilters.map((filter) => {
+                        const isActive = activeYear === filter.year;
+                        return (
+                          <button
+                            key={filter.year}
+                            onClick={() => {
+                              onYearChange?.(filter.year);
+                              setIsDropdownOpen(false);
+                            }}
+                            className={clsx(
+                              "flex items-center px-3 py-1.5 rounded-md transition-colors text-left",
+                              isActive ? "bg-gray-100" : "hover:bg-gray-50"
+                            )}
+                          >
+                            <span className={clsx(
+                              "font-['Figtree',sans-serif] font-semibold text-sm tracking-wide",
+                              isActive ? "text-gray-600" : "text-gray-400"
+                            )}>
+                              {filter.year}
+                              {filter.count !== undefined && (
+                                <span className={isActive ? "text-gray-400" : "text-gray-300"}>
+                                  {" "}({filter.count})
+                                </span>
+                              )}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Mobile/Tablet: Show title only if no year filters */}
+            {yearFilters.length === 0 && (
+              <button
+                onClick={() => onYearChange?.("")}
+                className={clsx(
+                  "flex lg:hidden shrink-0 items-center justify-center rounded-full px-3 py-1 transition-colors cursor-pointer",
+                  !activeYear ? "bg-gray-500/10" : "hover:bg-gray-500/5"
+                )}
+              >
+                <span className={clsx(
+                  "font-['Figtree',sans-serif] font-semibold text-sm tracking-wide whitespace-nowrap",
+                  !activeYear ? "text-gray-500" : "text-gray-400"
+                )}>
+                  {title}
+                  {count !== undefined && (
+                    <span className={!activeYear ? "text-gray-400" : "text-gray-300"}> ({count})</span>
+                  )}
+                </span>
+              </button>
+            )}
+
+            {/* Desktop: Year filters - horizontally displayed */}
+            <div className="hidden lg:flex items-center gap-1">
+              {yearFilters.map((filter) => {
+                const isActive = activeYear === filter.year;
+                return (
+                  <button
+                    key={filter.year}
+                    onClick={() => onYearChange?.(filter.year)}
+                    className={clsx(
+                      "flex shrink-0 cursor-pointer items-center justify-center rounded-full px-3 py-1 transition-colors",
+                      isActive ? "bg-gray-500/10" : "hover:bg-gray-500/5"
+                    )}
+                  >
+                    <span
+                      className={clsx(
+                        "font-['Figtree',sans-serif] text-base font-semibold tracking-wide whitespace-nowrap",
+                        isActive ? "text-gray-600" : "text-gray-400"
+                      )}
+                    >
+                      {filter.year}
+                      {filter.count !== undefined && (
+                        <span className={isActive ? "text-gray-400" : "text-gray-300"}>
+                          {" "}({filter.count})
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* External link - aligned with filter text */}
+          {/* External link - right aligned, never overflows past divider */}
           {externalLink && (
             <a
               href={externalLink.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="ml-auto shrink-0 cursor-pointer px-0.5 transition-colors"
+              className="shrink-0 cursor-pointer transition-colors"
             >
               <span className="font-['Figtree',sans-serif] text-sm md:text-base font-normal tracking-wide text-gray-400 hover:text-blue-500 transition-colors whitespace-nowrap">
                 {externalLink.label} ↗

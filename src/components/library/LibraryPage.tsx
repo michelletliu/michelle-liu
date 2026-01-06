@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { client, urlFor } from "../../sanity/client";
 import { BOOKS_QUERY } from "../../sanity/queries";
 import { BookCard } from "./BookCard";
+import { BookDetailModal } from "./BookDetailModal";
 import { AddBookModal } from "./AddBookModal";
 import { ChevronDownIcon, PlusIcon } from "./icons";
 import type { Book, SanityBookData } from "./types";
@@ -65,13 +66,28 @@ export default function LibraryPage() {
   const [books, setBooks] = useState<Book[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>([{ value: 'favorite', label: 'favorite', isFavorite: true }]);
   const [activeFilter, setActiveFilter] = useState<string>("favorite");
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [showAddBookModal, setShowAddBookModal] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [isEntering, setIsEntering] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const logoRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Handle dropdown animation
+  useEffect(() => {
+    if (showFilterDropdown) {
+      // Opening: make visible immediately, then animate in
+      requestAnimationFrame(() => {
+        setIsDropdownVisible(true);
+      });
+    } else {
+      // Closing: animate out first
+      setIsDropdownVisible(false);
+    }
+  }, [showFilterDropdown]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -182,7 +198,7 @@ export default function LibraryPage() {
           
           <div className="flex items-start justify-between w-full">
           {/* Title and Filter */}
-          <div className="flex flex-col gap-[8px] items-start shrink-0">
+          <div className="flex flex-col gap-3 items-start shrink-0">
             <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-[34px] relative shrink-0 text-[28px] text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
               library
             </p>
@@ -191,8 +207,7 @@ export default function LibraryPage() {
                   onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                   className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors cursor-pointer bg-gray-500/10"
                 >
-                  <span className="font-['Figtree',sans-serif] font-semibold text-base whitespace-nowrap text-gray-500">
-                    {activeFilter === 'favorite' && '★ '}
+                  <span className="font-['Figtree',sans-serif] font-semibold text-base tracking-[0.01em] whitespace-nowrap text-gray-500">
                     {activeFilter === 'favorite' ? 'favorites' : activeFilter}
                     <span className="text-gray-400"> ({filteredBooks.length})</span>
                   </span>
@@ -210,8 +225,15 @@ export default function LibraryPage() {
                   </svg>
                 </button>
                 
-                {showFilterDropdown && (
-                  <div className="absolute left-0 top-[calc(100%+4px)] bg-white rounded-lg shadow-lg border border-gray-100 z-50 min-w-[160px] animate-in fade-in slide-in-from-top-1 duration-200">
+                <div 
+                  className={clsx(
+                    "absolute left-0 top-[calc(100%+4px)] bg-white rounded-lg shadow-lg border border-gray-100 z-50 min-w-full transition-all duration-200 ease-out",
+                    showFilterDropdown ? "pointer-events-auto" : "pointer-events-none",
+                    isDropdownVisible 
+                      ? "opacity-100 translate-y-0" 
+                      : "opacity-0 -translate-y-1"
+                  )}
+                >
                     <div className="flex flex-col py-1.5 px-1.5">
                       {filterOptions.map((option) => {
                         const isActive = activeFilter === option.value;
@@ -231,10 +253,9 @@ export default function LibraryPage() {
                             )}
                           >
                             <span className={clsx(
-                              "font-['Figtree',sans-serif] font-semibold text-sm tracking-wide",
+                              "font-['Figtree',sans-serif] font-semibold text-base tracking-[0.01em]",
                               isActive ? "text-gray-600" : "text-gray-400"
                             )}>
-                              {option.isFavorite && '★ '}
                               {option.isFavorite ? 'favorites' : option.label}
                               <span className={isActive ? "text-gray-400" : "text-gray-300"}>
                                 {" "}({count})
@@ -244,8 +265,7 @@ export default function LibraryPage() {
                         );
                       })}
                     </div>
-                  </div>
-                )}
+                </div>
               </div>
           </div>
           
@@ -253,10 +273,10 @@ export default function LibraryPage() {
           <div className="relative">
             <button 
               onClick={() => setShowAddBookModal(!showAddBookModal)}
-              className="bg-[rgba(0,0,0,0.05)] content-stretch flex items-center justify-center rounded-[1000px] size-[40px] hover:bg-[rgba(0,0,0,0.1)] transition-all duration-300"
+              className=" bg-gray-500/10 content-stretch flex items-center justify-center rounded-[1000px] size-[40px] hover:bg-[rgba(0,0,0,0.1)] transition-all duration-300"
             >
-              <div className={`flex items-center justify-center text-[rgba(20,20,20,0.4)] transition-transform duration-300 ${showAddBookModal ? 'rotate-45' : 'rotate-0'}`}>
-                <PlusIcon className="w-[18px] h-[18px]" />
+              <div className={`flex items-center justify-center text-gray-400 transition-transform duration-300 ${showAddBookModal ? 'rotate-45' : 'rotate-0'}`}>
+                <PlusIcon className="w-[14px] h-[14px]" />
               </div>
             </button>
             
@@ -287,10 +307,10 @@ export default function LibraryPage() {
             </div>
           ) : (
             <div 
-              className="grid grid-cols-[repeat(3,auto)] md:grid-cols-[repeat(6,auto)] gap-y-[60px] sm:gap-y-[80px] md:gap-y-[100px] justify-between"
+              className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 sm:gap-x-6 lg:gap-x-8 gap-y-[60px] sm:gap-y-[80px] lg:gap-y-[100px]"
             >
               {filteredBooks.map((book) => (
-                <BookCard key={book.id} book={book} />
+                <BookCard key={book.id} book={book} onClick={() => setSelectedBook(book)} />
               ))}
             </div>
           )}
@@ -298,6 +318,11 @@ export default function LibraryPage() {
       </div>
 
       </div>
+
+      {/* Book Detail Modal - outside transformed container for proper viewport centering */}
+      {selectedBook && (
+        <BookDetailModal book={selectedBook} onClose={() => setSelectedBook(null)} />
+      )}
     </>
   );
 }

@@ -412,8 +412,8 @@ export default function ArtPage() {
 
       {/* Main Content Area */}
       <div className="flex flex-col lg:flex-row gap-4 items-start px-16 max-md:px-8 pt-2 relative shrink-0 w-full">
-        {/* Sidebar - stacks on top on mobile, left side on desktop */}
-        <div className="lg:sticky lg:top-8 pb-4 lg:pb-8 w-full lg:w-[202px] shrink-0">
+        {/* Sidebar - hidden on mobile, visible on desktop */}
+        <div className="hidden lg:block lg:sticky lg:top-8 pb-8 w-[202px] shrink-0">
           <ArtSidebar
             activeCategory={activeCategory}
             onCategoryClick={handleCategoryClick}

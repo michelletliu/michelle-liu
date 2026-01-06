@@ -13,6 +13,8 @@ export type MediaCardData = {
   year?: string;
   /** Whether this item is featured (shows in default view) */
   isFeatured?: boolean;
+  /** For Book type: Goodreads book URL */
+  goodreadsUrl?: string;
   /** For Movie type: Letterboxd URL slug for linking to reviews */
   letterboxdSlug?: string;
   /** For Music type: Spotify album URL */
@@ -145,7 +147,7 @@ export default function MediaCard({
         ref={cardRef}
         className={clsx(
           "flex h-full min-h-[260px] md:min-h-[280px] flex-col items-start overflow-hidden rounded-3xl border border-gray-100 bg-white transition-shadow duration-200",
-          "shadow-[0px_4px_16px_0px_rgba(209,213,219,0.65)] hover:shadow-[0px_4px_16px_0px_rgba(209,213,219,0.9)]",
+          "shadow-[0px_4px_16px_0px_rgba(209,213,219,0.65)]",
           "md:rounded-3xl",
           className
         )}
@@ -156,14 +158,14 @@ export default function MediaCard({
         )}>
           {/* Emoji */}
           {data?.emoji && (
-            <p className="font-['Figtree'] text-4xl font-bold md:text-5xl">
+            <p className="font-['Figtree'] text-4xl">
               {data.emoji}
             </p>
           )}
 
           {/* Quote Title */}
           {data?.quoteTitle && (
-            <p className="whitespace-pre-wrap font-['Figtree'] -mb-1 text-lg tracking-[0.01em] font-semibold text-gray-800 md:text-xl">
+            <p className="whitespace-pre-wrap font-['Figtree'] -mb-1 text-2xl tracking-[0.01em] font-semibold text-gray-800">
               {data.quoteTitle}
             </p>
           )}
@@ -192,7 +194,9 @@ export default function MediaCard({
 
   // Handle click - open external link if available, otherwise call onClick
   const handleClick = () => {
-    if (type === "Music" && data?.spotifyUrl) {
+    if (type === "Book" && data?.goodreadsUrl) {
+      window.open(data.goodreadsUrl, "_blank", "noopener,noreferrer");
+    } else if (type === "Music" && data?.spotifyUrl) {
       window.open(data.spotifyUrl, "_blank", "noopener,noreferrer");
     } else if (type === "Movie" && data?.letterboxdSlug) {
       window.open(`https://letterboxd.com/liumichelle/film/${data.letterboxdSlug}/`, "_blank", "noopener,noreferrer");
@@ -236,7 +240,7 @@ export default function MediaCard({
         // Placeholder background when no image
         !hasImage && "bg-gray-300",
         // Cursor style - pointer if has link
-        (type === "Music" && data?.spotifyUrl) || (type === "Movie" && data?.letterboxdSlug) ? "cursor-pointer" : "",
+        (type === "Book" && data?.goodreadsUrl) || (type === "Music" && data?.spotifyUrl) || (type === "Movie" && data?.letterboxdSlug) ? "cursor-pointer" : "",
         className
       )}
       title={data?.title}

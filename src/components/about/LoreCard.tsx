@@ -25,6 +25,7 @@ type LoreCardProps = {
 /**
  * LoreCard - A card component for displaying stories/experiences
  * with an image, headline, date, and description.
+ * Arrow appears on hover anywhere on the card.
  * Designed for Sanity CMS integration.
  */
 export default function LoreCard({ className, data, onClick }: LoreCardProps) {
@@ -43,36 +44,49 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
     <button
       onClick={handleClick}
       className={clsx(
-        "group flex w-full flex-col items-start gap-2 text-left",
+        "group flex w-full flex-col items-start text-left",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2",
         className
       )}
     >
       {/* Image */}
-      <div className="relative h-48 w-full shrink-0 overflow-hidden rounded-xl transition-transform group-hover:scale-[1.005] md:h-52">
+      <div className="relative h-[140px] md:h-[200px] w-full shrink-0 rounded-3xl">
         {hasImage ? (
           <img
             src={data.imageSrc}
             alt={data.headline}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full rounded-3xl object-cover transition-transform duration-200 ease-out group-hover:scale-[1.01]"
             loading="lazy"
           />
         ) : (
           <div
-            className="h-full w-full rounded-xl"
+            className="h-full w-full transition-transform duration-200 ease-out group-hover:scale-[1.01]"
             style={{ backgroundColor: bgColor }}
           />
         )}
       </div>
 
       {/* Caption */}
-      <div className="flex w-full flex-col px-1 text-base font-normal pt-1">
-        <p>
-          <span className="text-gray-800 text-[1.115rem] leading-0 font-medium transition-colors hover:text-blue-500">{data.headline}</span>
-          {data.date && <span className="pl-1 text-base font-medium text-gray-400"> {data.date}</span>}
-        </p>
+      <div className="flex w-full flex-col px-1 font-['Figtree',sans-serif] pt-2 font-medium text-base">
+        {/* Headline row with arrow */}
+        <div className="flex w-full items-start justify-between">
+          <div className="flex flex-col md:flex-row md:gap-1 md:items-center md:flex-wrap">
+            <span className="text-gray-900 text-base md:text-lg">{data.headline}</span>
+            {data.date && (
+              <>
+                <span className="hidden md:inline text-gray-500 text-sm font-normal md:text-base"> • {data.date}</span>
+                <span className="md:hidden text-gray-500 font-normal text-sm">{data.date}</span>
+              </>
+            )}
+          </div>
+          {/* Arrow - always visible on mobile, hover on desktop */}
+          <span className="text-gray-700 opacity-100 md:opacity-0 transition-opacity duration-200 ease-out md:group-hover:opacity-100">
+            ↗
+          </span>
+        </div>
+        {/* Description - always visible on mobile, fade up on hover for desktop */}
         {data.description && (
-          <p className="whitespace-pre-wrap pt-1 text-gray-400">{data.description}</p>
+          <p className="whitespace-pre-wrap font-normal text-base text-gray-400 md:opacity-0 md:translate-y-1 md:transition-all md:duration-300 md:ease-out md:group-hover:opacity-100 md:group-hover:translate-y-0">{data.description}</p>
         )}
       </div>
     </button>

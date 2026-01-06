@@ -132,6 +132,7 @@ function transformCommunities(data: Community[]): CommunityCardData[] {
     title: community.title,
     sidebarName: community.sidebarName,
     description: community.description,
+    instagramUrl: community.instagramUrl,
     photos: community.photos?.map((photo): CommunityPhotoType => ({
       id: photo._key,
       imageSrc: photo.image ? urlFor(photo.image).width(1200).quality(90).url() : "",
@@ -157,6 +158,7 @@ function transformShelfItems(data: ShelfItem[]): MediaCardData[] {
       : "Book",
     year: item.year,
     isFeatured: item.isFeatured,
+    goodreadsUrl: item.goodreadsUrl,
     letterboxdSlug: item.letterboxdSlug,
     spotifyUrl: item.spotifyUrl,
   }));
@@ -214,6 +216,9 @@ export default function AboutPage() {
   const philosophyRef = useRef<HTMLDivElement>(null);
   const shelfRef = useRef<HTMLDivElement>(null);
   const loreRef = useRef<HTMLDivElement>(null);
+  
+  // Individual community card refs (for scrolling to specific communities)
+  const communityRefs = useRef<Record<string, HTMLDivElement | null>>({});
   
   // Shelf subcategory refs
   const booksRef = useRef<HTMLDivElement>(null);
@@ -339,11 +344,15 @@ export default function AboutPage() {
     }
   };
 
-  // Handle community click - scroll to community section
+  // Handle community click - scroll to specific community card
   const handleCommunityClick = (communityId: string) => {
     setActiveCommunityId(communityId);
-    // For now, all communities are in the same section, so scroll to community
-    if (communityRef?.current) {
+    // Scroll to the specific community card
+    const communityElement = communityRefs.current[communityId];
+    if (communityElement) {
+      communityElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else if (communityRef?.current) {
+      // Fallback to section scroll if specific ref not found
       communityRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
@@ -603,7 +612,7 @@ export default function AboutPage() {
                   className={clsx(
                     "relative inline-flex items-center justify-center rounded-[999px] transition-all duration-[800ms] ease-out mt-2 w-fit bg-[#ecfdf5]",
                     badgeExpanded 
-                      ? "gap-2 pl-1.5 pr-3.5 py-1" 
+                      ? "gap-1.5 pl-1.5 pr-2.5 py-1" 
                       : "gap-0 p-1"
                   )}
                 >
@@ -661,7 +670,7 @@ export default function AboutPage() {
                 <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-[40px] leading-normal shrink-0">
                   My Communities
                 </h2>
-                <p className="font-['Figtree',sans-serif] font-normal text-gray-400 text-xl">
+                <p className="font-['Figtree',sans-serif] font-medium text-gray-400 text-lg">
                   The people who make it all worth it
                 </p>
               </div>
@@ -674,9 +683,21 @@ export default function AboutPage() {
             ) : communities.length > 0 ? (
               <div className="flex flex-col gap-12 pt-4">
                 {communities.map((community, index) => (
-                  <ScrollReveal key={community.id} delay={index * 100}>
-                    <CommunityCard data={community} />
-                  </ScrollReveal>
+                  <div
+                    key={community.id}
+                    ref={(el) => {
+                      communityRefs.current[community.id] = el;
+                    }}
+                    className="scroll-mt-8"
+                  >
+                    <ScrollReveal delay={index * 100}>
+                      <CommunityCard data={community} />
+                      {/* Horizontal divider between communities */}
+                      {index < communities.length - 1 && (
+                        <div className="mt-12 h-px w-full bg-gray-200" />
+                      )}
+                    </ScrollReveal>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -691,7 +712,7 @@ export default function AboutPage() {
                 <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-[40px] leading-normal shrink-0">
                   My Favorite Quotes
                 </h2>
-                <p className="font-['Figtree',sans-serif] font-normal text-gray-400 text-xl">
+                <p className="font-['Figtree',sans-serif] font-medium text-gray-400 text-lg">
                   a.k.a. my Design ( + Life ) Philosophy
                 </p>
               </div>
@@ -716,7 +737,7 @@ export default function AboutPage() {
                 <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-[40px] leading-normal shrink-0">
                   Shelf
                 </h2>
-                <p className="font-['Figtree',sans-serif] font-medium text-gray-400 text-xl">
+                <p className="font-['Figtree',sans-serif] font-medium text-gray-400 text-lg">
                   ★ - Favorites
                 </p>
               </div>
@@ -791,11 +812,16 @@ export default function AboutPage() {
           </section>
 
           {/* Lore Section */}
-          <section ref={loreRef} className="flex flex-col gap-6 w-full scroll-mt-8">
+          <section ref={loreRef} className="flex flex-col gap-12 w-full scroll-mt-8">
             <ScrollReveal variant="fade">
-              <h2 className="font-['Figtree',sans-serif] font-medium text-gray-700 text-[40px] leading-normal shrink-0">
+              <div className="flex flex-col">
+                <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-[40px] leading-normal shrink-0">
                 Lore ⟡˙⋆
-              </h2>
+                </h2>
+                <p className="font-['Figtree',sans-serif] font-medium text-gray-400 text-lg">
+                  Fun things from past lives
+                </p>
+              </div>
             </ScrollReveal>
             {isLoading ? (
               <div className="flex items-center gap-3 py-4">
@@ -803,7 +829,7 @@ export default function AboutPage() {
                 <span className="text-gray-400 text-sm">Loading...</span>
               </div>
             ) : loreItems.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                 {loreItems.map((lore, index) => (
                   <ScrollReveal key={lore.id} delay={index * 80}>
                     <LoreCard

@@ -271,6 +271,7 @@ export interface Community {
   sidebarName?: string;
   logo?: SanityImage;
   description?: string;
+  instagramUrl?: string;
   photos?: CommunityPhoto[];
   order?: number;
 }
@@ -288,6 +289,7 @@ export interface ShelfItem {
   rating?: number;
   isFeatured?: boolean;
   order?: number;
+  goodreadsUrl?: string;
   letterboxdSlug?: string;
   spotifyUrl?: string;
 }

@@ -70,6 +70,13 @@ export const shelfItem = defineType({
       initialValue: false,
     }),
     defineField({
+      name: 'goodreadsUrl',
+      title: 'Goodreads URL',
+      description: 'Full Goodreads book URL (e.g., "https://www.goodreads.com/book/show/...")',
+      type: 'url',
+      hidden: ({document}) => document?.mediaType !== 'book',
+    }),
+    defineField({
       name: 'letterboxdSlug',
       title: 'Letterboxd Slug',
       description: 'URL slug for your Letterboxd review (e.g., "left-handed-girl" for letterboxd.com/liumichelle/film/left-handed-girl/)',
