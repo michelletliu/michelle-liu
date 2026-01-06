@@ -24,6 +24,43 @@ type MuralGalleryProps = {
   onImageClick?: (image: MuralImage) => void;
 };
 
+// Individual image component with loading state
+function MuralImageCard({ 
+  image, 
+  onClick 
+}: { 
+  image: MuralImage; 
+  onClick?: () => void;
+}) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  return (
+    <button
+      onClick={onClick}
+      className="flex-none inline-flex h-[200px] md:h-[250px] lg:h-96 rounded-xl overflow-hidden cursor-pointer transition-transform duration-300 items-center justify-center relative"
+      style={{ width: "auto", minWidth: "150px" }}
+    >
+      {/* Shimmer placeholder */}
+      <div 
+        className={clsx(
+          "absolute inset-0 rounded-xl transition-opacity duration-500 ease-out",
+          imageLoaded ? "opacity-0" : "opacity-100 animate-shimmer"
+        )}
+      />
+      <img
+        src={image.imageSrc}
+        alt=""
+        className={clsx(
+          "block h-[200px] md:h-[250px] lg:h-96 w-auto max-w-none object-contain transition-opacity duration-500 ease-out",
+          imageLoaded ? "opacity-100" : "opacity-0"
+        )}
+        style={{ maxWidth: "unset" }}
+        onLoad={() => setImageLoaded(true)}
+      />
+    </button>
+  );
+}
+
 /**
  * Mural Gallery component - horizontal scrolling carousel
  * with title, location, date, description and navigation arrows
@@ -144,19 +181,11 @@ export default function MuralGallery({
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {loopedImages.map((image, index) => (
-            <button
+            <MuralImageCard
               key={`${image.id}-${index}`}
+              image={image}
               onClick={() => onImageClick?.(image)}
-              className="flex-none inline-flex h-[200px] md:h-[250px] lg:h-96 rounded-xl overflow-hidden cursor-pointer transition-transform duration-300 bg-[#e3dff4] items-center justify-center"
-              style={{ width: "auto" }}
-            >
-              <img
-                src={image.imageSrc}
-                alt=""
-                className="block h-[200px] md:h-[250px] lg:h-96 w-auto max-w-none object-contain"
-                style={{ maxWidth: "unset" }}
-              />
-            </button>
+            />
           ))}
         </div>
 

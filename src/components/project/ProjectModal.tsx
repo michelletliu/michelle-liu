@@ -8,6 +8,8 @@ import type { Project, ContentSection } from "../../sanity/types";
 import Footer from "../Footer";
 import VideoPlayer from "../VideoPlayer";
 import ViewAllProjectsButton from "./ViewAllProjectsButton";
+import ProjectCardSection from "./ProjectCardSection";
+import SideQuestSection from "./SideQuestSection";
 import { ScrollReveal } from "../ScrollReveal";
 import lockIcon from "../../assets/lock.svg";
 import expandIcon from "../../assets/Expand.svg";
@@ -31,11 +33,15 @@ type BreadcrumbProps = {
   projectName: string;
   onWorkClick?: () => void;
   isScrolled?: boolean;
+  isPastHero?: boolean;
 };
 
-function Breadcrumb({ projectName, onWorkClick, isScrolled = false }: BreadcrumbProps) {
+function Breadcrumb({ projectName, onWorkClick, isScrolled = false, isPastHero = false }: BreadcrumbProps) {
   return (
-    <div className="flex items-center">
+    <div className={clsx(
+      "flex items-center transition-all duration-300 ease-out",
+      isPastHero ? "opacity-0 pointer-events-none" : "opacity-100"
+    )}>
       {/* Work link - clickable with hover state, fades out on scroll */}
       <button
         onClick={onWorkClick}
@@ -49,7 +55,7 @@ function Breadcrumb({ projectName, onWorkClick, isScrolled = false }: Breadcrumb
         </span>
       </button>
 
-      {/* Chevron separator - always visible */}
+      {/* Chevron separator */}
       <div className="shrink-0 size-4">
         <ChevronRightIcon />
       </div>
@@ -192,10 +198,12 @@ export default function ProjectModal({
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isPastHero, setIsPastHero] = useState(false);
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const heroRef = React.useRef<HTMLDivElement>(null);
   
   // Fullscreen state is controlled by URL via initialFullscreen prop
   const isFullscreen = initialFullscreen;
@@ -265,6 +273,37 @@ export default function ProjectModal({
     scrollContainer.addEventListener("scroll", handleScroll);
     return () => scrollContainer.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Observe when hero section leaves the viewport (for hiding breadcrumb)
+  useEffect(() => {
+    const heroElement = heroRef.current;
+    const scrollContainer = scrollContainerRef.current;
+    if (!heroElement || !scrollContainer || !isFullscreen) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // Check if hero has scrolled OUT OF VIEW (above the viewport)
+          // entry.boundingClientRect.bottom < 0 means the hero is above the viewport
+          // We also check !entry.isIntersecting to ensure it's truly out of view
+          const heroTop = entry.boundingClientRect.top;
+          const rootTop = entry.rootBounds?.top ?? 0;
+          
+          // Hero is past when its bottom is above the visible area (scrolled up and out)
+          const isPast = !entry.isIntersecting && heroTop < rootTop;
+          setIsPastHero(isPast);
+        });
+      },
+      {
+        root: scrollContainer,
+        threshold: 0,
+        rootMargin: "0px 0px 0px 0px",
+      }
+    );
+
+    observer.observe(heroElement);
+    return () => observer.disconnect();
+  }, [isFullscreen, project]);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -393,6 +432,7 @@ export default function ProjectModal({
                   projectName={project?.title || projectId.charAt(0).toUpperCase() + projectId.slice(1)}
                   onWorkClick={onViewAllProjects}
                   isScrolled={isScrolled}
+                  isPastHero={isPastHero}
                 />
               </div>
             </div>
@@ -473,7 +513,7 @@ export default function ProjectModal({
                 {/* Hero Video or Image */}
                 {project.heroVideo ? (
                   <ScrollReveal delay={480} rootMargin="0px" className="w-full">
-                    <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
+                    <div ref={heroRef} className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
                       <div className="aspect-[1090/591] relative rounded-[26px] shrink-0 w-full overflow-hidden bg-gray-100">
                         {/* Fallback image while video loads */}
                         {project.heroImage && (
@@ -498,7 +538,7 @@ export default function ProjectModal({
                   </ScrollReveal>
                 ) : project.heroImage ? (
                   <ScrollReveal delay={480} rootMargin="0px" className="w-full">
-                    <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
+                    <div ref={heroRef} className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
                       <div className="aspect-[1090/591] relative rounded-[26px] shrink-0 w-full">
                         <img
                           className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full"
@@ -886,7 +926,7 @@ function ContentBlock({ section, isFullscreen = false }: { section: ContentSecti
             {/* Description */}
             {hasDescription && (
               <div className="flex flex-col gap-8 mt-8 w-[410px] max-md:w-full px-8 max-md:px-0">
-                <div className="leading-5 text-[#4b5563] text-base whitespace-pre-wrap prose prose-p:my-4 first:prose-p:mt-0 last:prose-p:mb-0">
+                <div className="leading-normal text-[#4b5563] text-base whitespace-pre-wrap prose prose-p:my-4 first:prose-p:mt-0 last:prose-p:mb-0">
                   <PortableText value={section.missionDescription} />
                 </div>
 
@@ -935,7 +975,7 @@ function ContentBlock({ section, isFullscreen = false }: { section: ContentSecti
 
           {/* Right: Description - only shown when there is description content */}
           {hasDescription && (
-            <div className="leading-5 relative text-[#4b5563] text-base whitespace-pre-wrap col-start-3 max-md:col-start-auto max-md:w-full prose prose-p:my-4 first:prose-p:mt-0 last:prose-p:mb-0">
+            <div className="leading-normal relative text-[#4b5563] text-base whitespace-pre-wrap col-start-3 max-md:col-start-auto max-md:w-full prose prose-p:my-4 first:prose-p:mt-0 last:prose-p:mb-0">
               <PortableText value={section.missionDescription} />
             </div>
           )}
@@ -960,11 +1000,11 @@ function ContentBlock({ section, isFullscreen = false }: { section: ContentSecti
                 </div>
 
                 {/* Text Content */}
-                <div className="content-stretch flex flex-col gap-2 items-start opacity-60 relative shrink-0 w-full">
+                <div className="content-stretch flex flex-col gap-2 items-start relative shrink-0 w-full">
                   <p className="leading-7 relative shrink-0 text-2xl text-black">
                     {(section.title || (hasPassword ? "This case study is password-protected." : "Confidential")).replace(/\n/g, ' ')}
                   </p>
-                  <p className="leading-6 relative shrink-0 text-[#6b7280] text-lg">
+                  <p className="leading-6 relative shrink-0 text-[#9ca3af] text-lg">
                     {hasPassword ? "Curious? Feel free to " : (section.message || "Interested? Please ")}
                     {section.contactEmail ? (
                       <>
@@ -1094,18 +1134,16 @@ function ContentBlock({ section, isFullscreen = false }: { section: ContentSecti
 
     case "videoSection":
       return (
-        <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
-          {section.title && (
-            <p className="mb-4 text-lg text-gray-900">{section.title}</p>
-          )}
+        <div className="content-stretch flex flex-col items-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
           {section.videoType === "mux" && section.muxPlaybackId && (
             <div className="aspect-video w-full overflow-hidden rounded-[26px] bg-black">
               <VideoPlayer
                 src={`https://stream.mux.com/${section.muxPlaybackId}.m3u8`}
                 className="w-full h-full"
-                controls
-                autoPlay={section.autoplay}
-                muted={section.autoplay}
+                controls={false}
+                autoPlay
+                muted
+                loop
                 poster={
                   section.posterImage
                     ? urlFor(section.posterImage).width(1200).url()
@@ -1114,8 +1152,15 @@ function ContentBlock({ section, isFullscreen = false }: { section: ContentSecti
               />
             </div>
           )}
-          {section.caption && (
-            <p className="mt-3 text-center w-full text-[#6b7280]">{section.caption}</p>
+          {(section.title || section.caption) && (
+            <div className="flex flex-col items-center gap-2 mt-8 text-center">
+              {section.title && (
+                <p className="text-xl text-black">{section.title}</p>
+              )}
+              {section.caption && (
+                <p className="text-base text-[#9ca3af]">{section.caption}</p>
+              )}
+            </div>
           )}
         </div>
       );
@@ -1135,6 +1180,33 @@ function ContentBlock({ section, isFullscreen = false }: { section: ContentSecti
             authorImage={section.authorImage}
             isFullscreen={isFullscreen}
           />
+        );
+
+      case "projectCardSection":
+        return section.cards && section.cards.length > 0 ? (
+          <ProjectCardSection cards={section.cards} />
+        ) : null;
+
+      case "sideQuestSection":
+        return (
+          <SideQuestSection
+            label={section.label}
+            title={section.title}
+            subtitle={section.subtitle}
+            image={section.image}
+            teamLabel={section.teamLabel}
+            teamMembers={section.teamMembers}
+            description={section.description}
+          />
+        );
+
+      case "dividerSection":
+        return (
+          <div className="px-8 md:px-[8%] xl:px-[175px] py-8 w-full">
+            <div className="h-px relative shrink-0 w-full">
+              <div className="absolute bg-[#e5e7eb] inset-0" />
+            </div>
+          </div>
         );
 
       default:

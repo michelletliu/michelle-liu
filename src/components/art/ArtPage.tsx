@@ -384,10 +384,10 @@ export default function ArtPage() {
           </p>
         }
       >
-        <div className="font-['Figtree',sans-serif] font-normal leading-7 max-md:leading-6 tracking-wide text-[#9ca3af] text-[1.2rem] max-md:text-[1.13rem] w-full whitespace-pre-wrap mt-1 max-md:mt-1">
+        <>
           <p className="mb-0">Currently based in Los Angeles, CA.</p>
           <p>Also in between San Francisco &amp; New York City.</p>
-        </div>
+        </>
       </PageHeader>
 
       {/* Navigation */}

@@ -77,7 +77,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
   return (
     <div
       className={clsx(
-        "flex w-full flex-col gap-8",
+        "flex w-full flex-col gap-12 py-2",
         className
       )}
     >

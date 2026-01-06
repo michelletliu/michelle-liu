@@ -9,10 +9,13 @@ import { ProjectModal as SanityProjectModal } from "./components/project";
 import ArtPage from "./components/art/ArtPage";
 import { AboutPage } from "./components/about";
 import { PolaroidPage } from "./components/polaroid";
+import { LibraryPage } from "./components/library";
 import { ScrollReveal } from "./components/ScrollReveal";
 import { TryItOutButton } from "./components/TryItOutButton";
 import { preloadLikelyPages } from "./sanity/preload";
 import PageHeader from "./components/PageHeader";
+import { client } from "./sanity/client";
+import { PROJECTS_QUERY } from "./sanity/queries";
 
 // CSS for fade up animation
 const fadeUpStyles = `
@@ -189,39 +192,47 @@ type Project = {
   xLink?: string; // Optional X (Twitter) link
 };
 
-// Project data
-const projects: Project[] = [
+// Helper to generate Mux URLs from playback ID
+function getMuxUrls(playbackId: string) {
+  return {
+    imageSrc: `https://image.mux.com/${playbackId}/thumbnail.png`,
+    videoSrc: `https://stream.mux.com/${playbackId}.m3u8`,
+  };
+}
+
+// Static project data - main projects (apple, roblox, adobe, nasa) get heroVideo from Sanity
+const staticProjects: Project[] = [
   {
     id: "apple",
     title: "Apple",
     year: "2025",
     description: "Designing new features to drive engagement and user delight.",
-    imageSrc: "https://image.mux.com/mO00LSDA3cQYKHdNhgbgYoQfaffVw2ZLzbJbVY0227kmU/thumbnail.png",
-    videoSrc: "https://stream.mux.com/mO00LSDA3cQYKHdNhgbgYoQfaffVw2ZLzbJbVY0227kmU.m3u8",
+    imageSrc: "", // Will be populated from Sanity
+    videoSrc: "", // Will be populated from Sanity
   },
   {
     id: "roblox",
     title: "Roblox",
     year: "2024",
     description: "Reimagining the future of social gameplay and user communication.",
-    imageSrc: "https://image.mux.com/I6q7LcqND5RlqmjJPrusNZ0101sm7POhbjcLSEhxvR7C8/thumbnail.png",
-    videoSrc: "https://stream.mux.com/I6q7LcqND5RlqmjJPrusNZ0101sm7POhbjcLSEhxvR7C8.m3u8",
+    imageSrc: "", // Will be populated from Sanity
+    videoSrc: "", // Will be populated from Sanity
   },
   {
     id: "adobe",
     title: "Adobe",
     year: "2023",
     description: "Product strategy to drive user acquisition on college campuses.",
-    imageSrc: "https://image.mux.com/15z5wuJU62pEJRzHyxUymxTaUeUwbpMD6jdujLx888M/thumbnail.png",
-    videoSrc: "https://stream.mux.com/15z5wuJU62pEJRzHyxUymxTaUeUwbpMD6jdujLx888M.m3u8",
+    imageSrc: "", // Will be populated from Sanity
+    videoSrc: "", // Will be populated from Sanity
   },
   {
     id: "nasa",
     title: "NASA JPL",
     year: "2023-24",
     description: "Daring (& designing) mighty things at NASA's in-house DesignLab.",
-    imageSrc: "https://image.mux.com/fpv3LqS007ZL8RqZtzGwAYICLErOTlpmTJwnf1nEbtHw/thumbnail.png",
-    videoSrc: "https://stream.mux.com/fpv3LqS007ZL8RqZtzGwAYICLErOTlpmTJwnf1nEbtHw.m3u8",
+    imageSrc: "", // Will be populated from Sanity
+    videoSrc: "", // Will be populated from Sanity
   },
   {
     id: "polaroid",
@@ -269,6 +280,7 @@ function ProjectMedia({ imageSrc, videoSrc }: ProjectMediaProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   // Intersection Observer to detect when card is visible
   useEffect(() => {
@@ -293,30 +305,34 @@ function ProjectMedia({ imageSrc, videoSrc }: ProjectMediaProps) {
     return () => observer.disconnect();
   }, []);
 
-  // If there's a video, show thumbnail with actual video playing
+  // If there's a video, show placeholder until video is fully loaded
   if (videoSrc) {
     return (
       <div 
         ref={containerRef}
         className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full overflow-hidden"
       >
-        {/* Static thumbnail - visible as base layer while video loads */}
-        <img
-          alt=""
-          className="absolute max-w-none object-cover rounded-[26px] size-full"
-          src={imageSrc}
-          loading="lazy"
+        {/* Shimmer placeholder - visible while video is loading */}
+        <div 
+          className={clsx(
+            "absolute inset-0 rounded-[26px] transition-opacity duration-500 ease-out",
+            videoLoaded ? "opacity-0" : "opacity-100 animate-shimmer"
+          )}
         />
         {/* Actual video - plays full duration when visible */}
         {isVisible && videoReady && (
           <VideoPlayer
             src={videoSrc}
-            className="absolute max-w-none object-cover rounded-[26px] size-full"
+            className={clsx(
+              "absolute max-w-none object-cover rounded-[26px] size-full transition-opacity duration-500 ease-out",
+              videoLoaded ? "opacity-100" : "opacity-0"
+            )}
             autoPlay
             muted
             loop
             controls={false}
             muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+            onLoaded={() => setVideoLoaded(true)}
           />
         )}
       </div>
@@ -582,8 +598,8 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
             </div>
 
             {/* Try It Out button - desktop */}
-            {project.id === 'polaroid' && (
-              <TryItOutButton />
+            {(project.id === 'polaroid' || project.id === 'library') && (
+              <TryItOutButton href={project.id === 'polaroid' ? '/polaroid' : '/library'} />
             )}
           </div>
 
@@ -615,8 +631,8 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
             </div>
 
             {/* Try It Out button - mobile */}
-            {project.id === 'polaroid' && (
-              <TryItOutButton />
+            {(project.id === 'polaroid' || project.id === 'library') && (
+              <TryItOutButton href={project.id === 'polaroid' ? '/polaroid' : '/library'} />
             )}
           </div>
 
@@ -684,6 +700,15 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
 // Side project IDs that use the simple modal
 const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library"];
 
+// Main project IDs that get heroVideo from Sanity
+const MAIN_PROJECT_IDS = ["apple", "roblox", "adobe", "nasa"];
+
+// Sanity project type for fetching
+type SanityProject = {
+  company: string;
+  heroVideo?: string;
+};
+
 // Main HomePage component that handles the portfolio display and modal routing
 function HomePage() {
   const navigate = useNavigate();
@@ -692,10 +717,53 @@ function HomePage() {
   const [badgeHovered, setBadgeHovered] = useState(false);
   const badgeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
+  // State for projects with Sanity data merged in
+  const [projects, setProjects] = useState<Project[]>(staticProjects);
+  
   // Track if hero animation has been played this session to prevent re-animation on tab switches
   const [heroAnimationPlayed, setHeroAnimationPlayed] = useState(() => {
     return sessionStorage.getItem('heroAnimationPlayed') === 'true';
   });
+  
+  // Fetch heroVideo from Sanity and merge with static project data
+  useEffect(() => {
+    async function fetchSanityProjects() {
+      try {
+        const sanityProjects = await client.fetch<SanityProject[]>(PROJECTS_QUERY);
+        
+        // Create a map of company -> heroVideo
+        const heroVideoMap: Record<string, string> = {};
+        sanityProjects.forEach((sp) => {
+          if (sp.company && sp.heroVideo) {
+            heroVideoMap[sp.company] = sp.heroVideo;
+          }
+        });
+        
+        // Merge Sanity heroVideo data with static projects
+        const mergedProjects = staticProjects.map((project) => {
+          if (MAIN_PROJECT_IDS.includes(project.id)) {
+            const heroVideo = heroVideoMap[project.id];
+            if (heroVideo) {
+              const muxUrls = getMuxUrls(heroVideo);
+              return {
+                ...project,
+                imageSrc: muxUrls.imageSrc,
+                videoSrc: muxUrls.videoSrc,
+              };
+            }
+          }
+          return project;
+        });
+        
+        setProjects(mergedProjects);
+      } catch (error) {
+        console.error("Error fetching Sanity projects:", error);
+        // Keep static projects on error
+      }
+    }
+    
+    fetchSanityProjects();
+  }, []);
   
   useEffect(() => {
     if (!heroAnimationPlayed) {
@@ -792,29 +860,28 @@ function HomePage() {
       </svg>
       {/* Header */}
       <PageHeader variant="work" heroAnimationPlayed={heroAnimationPlayed}>
-        <p className="font-['Figtree',sans-serif] font-normal leading-7 max-md:leading-6 tracking-wide not-italic relative shrink-0 text-[#6b7280] text-[1.2rem] w-full max-md:text-[1.13rem] mt-1 max-md:mt-1">
-                  <span className="font-['Figtree',sans-serif] text-[#9ca3af]">
+        <>
+                  <span>
                     Designing useful products to spark moments of{" "}</span>
-                    <br className="md:hidden" />
-                  <span className="font-['Figtree',sans-serif] text-[#9ca3af]">delight</span>
-                  <span className="font-['Figtree',sans-serif] text-[#9ca3af]">{` & `}</span>
-                  <span className="font-['Figtree',sans-serif] gradient-text-animated">human connection. ⟡˙⋆</span>
-                  <span className="font-['Figtree',sans-serif] text-[#9ca3af]">
+                  <span>delight</span>
+                  <span>{` & `}</span>
+                  <span className="gradient-text-animated">human connection. ⟡˙⋆</span>
+                  <span>
                     <br aria-hidden="true" />
                     {`Previously at `}
                   </span>
                   <span
-                    className="font-['Figtree',sans-serif] text-[#374151]"
+                    className="text-[#374151]"
                     style={{ fontVariationSettings: "'wdth' 100" }}
                   >
                     
                   </span>
                   <span className="font-['Figtree',sans-serif] text-[#374151]"></span>
-                  <span className="font-['Figtree',sans-serif] text-[#9ca3af]">{`, `}</span>
-                  <span className="font-['Figtree',sans-serif] text-[#374151]">Roblox</span>
-                  <span className="font-['Figtree',sans-serif] text-[#9ca3af]">{`, & `}</span>
-                  <span className="font-['Figtree',sans-serif] text-[#374151]">NASA</span>
-                  <span className="font-['Figtree',sans-serif] text-[#9ca3af]">.</span>
+                  <span>{`, `}</span>
+                  <span className="text-[#374151]">Roblox</span>
+                  <span>{`, & `}</span>
+                  <span className="text-[#374151]">NASA</span>
+                  <span>.</span>
                   <span 
                     className={clsx(
                       "relative inline-flex items-center justify-center rounded-[999px] align-middle -translate-y-[2px] transition-all duration-300 ease-in-out [cursor:inherit] before:content-[''] before:absolute before:-inset-[2px] before:rounded-[999px] before:pointer-events-none",
@@ -842,7 +909,7 @@ function HomePage() {
                       <a href="mailto:michelletheresaliu@gmail.com" className="[text-decoration-skip-ink:none] [text-underline-position:from-font] decoration-solid underline hover:!text-emerald-600 transition-colors">touch</a>!
                     </span>
                   </span>
-        </p>
+        </>
       </PageHeader>
 
       {/* Navigation */}
@@ -953,6 +1020,9 @@ export default function App() {
       
       {/* Polaroid Studio page */}
       <Route path="/polaroid" element={<PolaroidPage />} />
+
+      {/* Library page */}
+      <Route path="/library" element={<LibraryPage />} />
     </Routes>
   );
 }

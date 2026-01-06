@@ -63,5 +63,45 @@ export const ALL_PROJECTS_QUERY = groq`
   }
 `;
 
+// ============================================
+// LIBRARY PAGE QUERIES
+// ============================================
+
+// Query for all books
+export const BOOKS_QUERY = groq`
+  *[_type == "book" && isPublished == true] | order(order asc, dateFinished desc) {
+    _id,
+    title,
+    author,
+    coverImage,
+    coverUrl,
+    rating,
+    shelf,
+    dateStarted,
+    dateFinished,
+    review
+  }
+`;
+
+// Query for books by shelf
+export const BOOKS_BY_SHELF_QUERY = groq`
+  *[_type == "book" && isPublished == true && shelf == $shelf] | order(order asc, dateFinished desc) {
+    _id,
+    title,
+    author,
+    coverImage,
+    coverUrl,
+    rating,
+    shelf,
+    dateStarted,
+    dateFinished,
+    review
+  }
+`;
+
+// Query for all available shelves (for dropdown)
+export const BOOK_SHELVES_QUERY = groq`
+  array::unique(*[_type == "book" && isPublished == true].shelf)
+`;
 
 

@@ -11,6 +11,7 @@ export const PROJECTS_QUERY = `
     shortDescription,
     logo,
     heroImage,
+    heroVideo,
     isPublished
   }
 `;
@@ -217,15 +218,18 @@ export const COMMUNITIES_QUERY = `
 
 // Query for shelf items (books, music, movies)
 export const SHELF_ITEMS_QUERY = `
-  *[_type == "shelfItem" && isPublished == true] | order(order asc) {
+  *[_type == "shelfItem" && isPublished == true] | order(isFeatured desc, order asc) {
     _id,
     title,
     mediaType,
     cover,
+    externalCoverUrl,
     author,
     year,
     rating,
-    isFeatured
+    isFeatured,
+    letterboxdSlug,
+    spotifyUrl
   }
 `;
 
@@ -236,6 +240,7 @@ export const SHELF_ITEMS_BY_TYPE_QUERY = `
     title,
     mediaType,
     cover,
+    externalCoverUrl,
     author,
     year,
     rating,
@@ -250,6 +255,7 @@ export const FEATURED_SHELF_ITEMS_QUERY = `
     title,
     mediaType,
     cover,
+    externalCoverUrl,
     author,
     year,
     rating
@@ -280,6 +286,49 @@ export const QUOTES_QUERY = `
     underlinedText,
     author
   }
+`;
+
+// ============================================
+// LIBRARY PAGE QUERIES
+// ============================================
+
+// Query for all books
+export const BOOKS_QUERY = `
+  *[_type == "book" && isPublished == true] | order(order asc, dateFinished desc) {
+    _id,
+    title,
+    author,
+    coverImage,
+    coverUrl,
+    rating,
+    shelf,
+    dateStarted,
+    dateFinished,
+    review,
+    goodreadsUrl
+  }
+`;
+
+// Query for books by shelf
+export const BOOKS_BY_SHELF_QUERY = `
+  *[_type == "book" && isPublished == true && shelf == $shelf] | order(order asc, dateFinished desc) {
+    _id,
+    title,
+    author,
+    coverImage,
+    coverUrl,
+    rating,
+    shelf,
+    dateStarted,
+    dateFinished,
+    review,
+    goodreadsUrl
+  }
+`;
+
+// Query for all available shelves (for dropdown)
+export const BOOK_SHELVES_QUERY = `
+  array::unique(*[_type == "book" && isPublished == true].shelf)
 `;
 
 

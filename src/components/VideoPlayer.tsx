@@ -28,6 +28,8 @@ type VideoPlayerProps = {
   loop?: boolean;
   /** Whether to show video controls */
   controls?: boolean;
+  /** Callback when video is fully loaded and ready to play */
+  onLoaded?: () => void;
 };
 
 export default function VideoPlayer({
@@ -41,10 +43,12 @@ export default function VideoPlayer({
   muted = false,
   loop = false,
   controls = true,
+  onLoaded,
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const playerInitTime = useRef(Date.now());
+  const hasCalledOnLoaded = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -54,6 +58,17 @@ export default function VideoPlayer({
     if (muted) {
       video.muted = true;
     }
+
+    // Handler for when video has enough data to play
+    const handleCanPlay = () => {
+      if (onLoaded && !hasCalledOnLoaded.current) {
+        hasCalledOnLoaded.current = true;
+        onLoaded();
+      }
+    };
+
+    // Listen for canplaythrough event (video is ready to play through without buffering)
+    video.addEventListener('canplaythrough', handleCanPlay);
 
     const isHlsSource = src.includes(".m3u8");
 
@@ -151,12 +166,13 @@ export default function VideoPlayer({
 
     // Cleanup
     return () => {
+      video.removeEventListener('canplaythrough', handleCanPlay);
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
       }
     };
-  }, [src, muxEnvKey, playerName, muxMetadata, autoPlay, muted]);
+  }, [src, muxEnvKey, playerName, muxMetadata, autoPlay, muted, onLoaded]);
 
   return (
     <video

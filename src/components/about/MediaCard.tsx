@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 export type MediaCardData = {
   id: string;
@@ -11,6 +11,12 @@ export type MediaCardData = {
   type?: "Book" | "Music" | "Movie" | "Quote";
   /** Year of the item (for filtering) */
   year?: string;
+  /** Whether this item is featured (shows in default view) */
+  isFeatured?: boolean;
+  /** For Movie type: Letterboxd URL slug for linking to reviews */
+  letterboxdSlug?: string;
+  /** For Music type: Spotify album URL */
+  spotifyUrl?: string;
   /** For Quote type: emoji to display */
   emoji?: string;
   /** For Quote type: the main quote title/phrase */
@@ -157,7 +163,7 @@ export default function MediaCard({
 
           {/* Quote Title */}
           {data?.quoteTitle && (
-            <p className="whitespace-pre-wrap font-['Figtree'] -mb-1 text-lg font-semibold text-gray-800 md:text-xl">
+            <p className="whitespace-pre-wrap font-['Figtree'] -mb-1 text-lg tracking-[0.01em] font-semibold text-gray-800 md:text-xl">
               {data.quoteTitle}
             </p>
           )}
@@ -165,7 +171,7 @@ export default function MediaCard({
           {/* Quote Text & Author */}
           <div className="flex flex-col items-start text-base md:text-base">
             {data?.quoteText && (
-              <p className="font-['Figtree'] font-medium text-gray-600 mb-0.5">
+              <p className="font-['Figtree'] font-medium text-gray-500 mb-0.5">
                 <QuoteTextWithUnderline
                   text={data.quoteText}
                   underlinedText={data.quoteUnderlinedText}
@@ -184,31 +190,74 @@ export default function MediaCard({
     );
   }
 
+  // Handle click - open external link if available, otherwise call onClick
+  const handleClick = () => {
+    if (type === "Music" && data?.spotifyUrl) {
+      window.open(data.spotifyUrl, "_blank", "noopener,noreferrer");
+    } else if (type === "Movie" && data?.letterboxdSlug) {
+      window.open(`https://letterboxd.com/liumichelle/film/${data.letterboxdSlug}/`, "_blank", "noopener,noreferrer");
+    } else {
+      onClick?.();
+    }
+  };
+
+  // Image loading state
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  
+  // Reset image loading state when imageSrc changes
+  useEffect(() => {
+    setImageLoaded(false);
+    setImageError(false);
+  }, [data?.imageSrc]);
+
+  const handleImageLoad = useCallback(() => {
+    setImageLoaded(true);
+  }, []);
+
+  const handleImageError = useCallback(() => {
+    setImageError(true);
+  }, []);
+
+  const showShimmer = hasImage && !imageLoaded && !imageError;
+
   // Book and Music cards share similar structure
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       className={clsx(
         "relative overflow-hidden transition-transform hover:scale-[1.01]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2",
         // Aspect ratio: Music/square albums vs portrait books/movies (210:271 from Figma)
         isSquare ? "aspect-square" : "aspect-[210/310]",
         // Border radius based on variant
-        variant === "default" && "rounded-xl md:rounded-[md",
+        variant === "default" && "rounded-xl md:rounded-md",
         variant === "expanded" && "rounded-lg md:rounded-md",
         // Placeholder background when no image
         !hasImage && "bg-gray-300",
+        // Cursor style - pointer if has link
+        (type === "Music" && data?.spotifyUrl) || (type === "Movie" && data?.letterboxdSlug) ? "cursor-pointer" : "",
         className
       )}
       title={data?.title}
       aria-label={data?.title || "Media item"}
     >
+      {/* Shimmer placeholder while image is loading */}
+      {showShimmer && (
+        <div className="absolute inset-0 animate-shimmer transition-opacity duration-500 ease-out" />
+      )}
+      
       {hasImage && (
         <img
           src={data.imageSrc}
           alt={data.title || "Media cover"}
-          className="absolute inset-0 h-full w-full object-cover"
+          className={clsx(
+            "absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out",
+            imageLoaded ? "opacity-100" : "opacity-0"
+          )}
           loading="lazy"
+          onLoad={handleImageLoad}
+          onError={handleImageError}
         />
       )}
     </button>

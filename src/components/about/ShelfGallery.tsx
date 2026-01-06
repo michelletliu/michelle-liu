@@ -67,11 +67,11 @@ export default function ShelfGallery({
   return (
     <div className={clsx("flex w-full flex-col gap-1", className)}>
       {/* Header */}
-      <div className="flex w-full flex-col gap-3 py-4">
+      <div className="flex w-full flex-col py-4">
         {/* Top row: Categories and external link */}
         <div className="flex w-full items-center justify-between">
           {/* Category tags */}
-          <div className="flex shrink-0 items-start gap-1">
+          <div className="flex shrink-0 items-start">
             {categories.map((category) => {
               const isActive = currentActiveCategory === category.id;
               const isLabel = category.type === "label";

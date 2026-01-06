@@ -97,6 +97,9 @@ export const project = defineType({
         defineArrayMember({type: 'imageSection'}),
         defineArrayMember({type: 'videoSection'}),
         defineArrayMember({type: 'testimonialSection'}),
+        defineArrayMember({type: 'projectCardSection'}),
+        defineArrayMember({type: 'sideQuestSection'}),
+        defineArrayMember({type: 'dividerSection'}),
       ],
     }),
 

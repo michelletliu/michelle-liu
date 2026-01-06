@@ -1,8 +1,41 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import svgPaths from "../imports/svg-2tsxp86msm";
 import imgFinalSealLogo1 from "../assets/logo.png";
 import { imgGroup } from "../imports/svg-poktt";
 import { ScrollReveal } from "./ScrollReveal";
+
+// Hook to fetch latest commit date from GitHub
+function useLatestCommitDate() {
+  const [commitDate, setCommitDate] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchLatestCommit = async () => {
+      try {
+        const response = await fetch(
+          'https://api.github.com/repos/michelletliu/michelle-liu/commits?per_page=1'
+        );
+        if (!response.ok) throw new Error('Failed to fetch');
+        
+        const commits = await response.json();
+        if (commits && commits.length > 0) {
+          const date = new Date(commits[0].commit.committer.date);
+          // Format as mm-dd-yy
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const year = String(date.getFullYear()).slice(-2);
+          setCommitDate(`${month}-${day}-${year}`);
+        }
+      } catch (error) {
+        console.error('Failed to fetch latest commit date:', error);
+        // Keep null to show fallback
+      }
+    };
+
+    fetchLatestCommit();
+  }, []);
+
+  return commitDate;
+}
 
 // Text Scramble Component
 type TextScrambleProps = {
@@ -155,6 +188,11 @@ function LinksBackgroundImageAndText({ text, href }: LinksBackgroundImageAndText
 }
 
 export default function Footer() {
+  const latestCommitDate = useLatestCommitDate();
+  const changelogText = latestCommitDate 
+    ? `CHANGELOG: ${latestCommitDate}` 
+    : 'CHANGELOG: ...';
+
   return (
     <div className="relative shrink-0 w-full">
       <div className="flex flex-col items-center size-full">
@@ -166,7 +204,7 @@ export default function Footer() {
             <div className="hidden md:grid gap-5 grid-cols-[repeat(4,_minmax(0px,_1fr))] grid-rows-[repeat(1,_fit-content(100%))] relative shrink-0 w-full">
               {/* Column 1: Logo */}
               <div className="[grid-area:1_/_1] content-stretch flex flex-col items-start relative shrink-0">
-                <div className="content-stretch flex gap-3 items-center justify-center relative shrink-0">
+                <a href="/" className="content-stretch flex gap-3 items-center justify-center relative shrink-0 hover:opacity-80 transition-opacity">
                   <div className="relative shrink-0 size-7">
                     <img
                       alt="Michelle Liu Logo"
@@ -177,7 +215,7 @@ export default function Footer() {
                   <p className="font-['Figtree',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-[32px] w-[212px]">
                     michelle liu
                   </p>
-                </div>
+                </a>
               </div>
               
               {/* Column 3: Nav Links */}
@@ -237,7 +275,7 @@ export default function Footer() {
             <div className="md:hidden content-stretch flex flex-col gap-10 items-start relative shrink-0 w-full">
               {/* Logo Section */}
               <div className="content-stretch flex flex-col gap-1.5 items-start relative shrink-0">
-                <div className="content-stretch flex gap-2 items-center justify-center relative shrink-0">
+                <a href="/" className="content-stretch flex gap-2 items-center justify-center relative shrink-0 hover:opacity-80 transition-opacity">
                   <div className="relative shrink-0 size-7">
                     <img
                       alt="Michelle Liu Logo"
@@ -248,7 +286,7 @@ export default function Footer() {
                   <p className="font-['Figtree',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-[32px] w-[212px]">
                     michelle liu
                   </p>
-                </div>
+                </a>
               </div>
               
               {/* Contact + Social + Nav */}
@@ -321,7 +359,7 @@ export default function Footer() {
               </span>
             </p>
             <TextScramble 
-              text="CHANGELOG: 12-26-25"
+              text={changelogText}
               className="font-['Figtree',sans-serif] font-normal leading-5 tracking-wider relative shrink-0 text-[#9ca3af] text-xs text-nowrap"
             />
           </ScrollReveal>

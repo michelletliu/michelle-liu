@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { domToPng } from 'modern-screenshot';
 
 // Asset paths from public folder
-const imgDefaultPhoto = '/polaroid/da0162d03b0f8405da5f70fbba04c6dd8720ada0.png';
 const imgInstagramIcon = '/polaroid/fcadb86f9e7ac3194098e501064eb43213cdfff1.png';
 const imgMessagesIcon = '/polaroid/dd3b1a5ed7db644c197314328f647774bd86226e.png';
 const imgLinkedInIcon = '/polaroid/f81f194aee98efdd62a97e659006efa986492874.png';
@@ -15,20 +14,137 @@ const imgLogo = '/logo.png';
 
 type ColorOption = {
   id: string;
+  name: string;
   fill: string;
   fillHover: string;
   tint: string;
   border: string;
 };
 
+// Tooltip warmup state - tracks if any tooltip is currently open
+// This allows subsequent tooltips to open instantly without delay or animation
+let tooltipWarmupActive = false;
+let tooltipWarmupTimeout: NodeJS.Timeout | null = null;
+
+function setTooltipWarmup(active: boolean) {
+  if (tooltipWarmupTimeout) {
+    clearTimeout(tooltipWarmupTimeout);
+    tooltipWarmupTimeout = null;
+  }
+  
+  if (active) {
+    tooltipWarmupActive = true;
+  } else {
+    // Keep warmup active briefly to allow moving between tooltips
+    tooltipWarmupTimeout = setTimeout(() => {
+      tooltipWarmupActive = false;
+    }, 150);
+  }
+}
+
+// Tooltip component
+function Tooltip({ label, children, offsetY = 0 }: { label: string; children: React.ReactNode; offsetY?: number }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isEnding, setIsEnding] = useState(false);
+  const [isInstant, setIsInstant] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  const handleMouseEnter = () => {
+    // Clear any existing timeout
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    
+    // Calculate position immediately
+    if (wrapperRef.current) {
+      const rect = wrapperRef.current.getBoundingClientRect();
+      setTooltipPosition({
+        top: rect.top - 8 + offsetY,
+        left: rect.left + rect.width / 2
+      });
+    }
+    
+    setIsEnding(false);
+    
+    // If warmup is active (another tooltip was recently open), show instantly
+    if (tooltipWarmupActive) {
+      setIsInstant(true);
+      setIsVisible(true);
+      setTooltipWarmup(true);
+    } else {
+      // Show tooltip after 300ms delay
+      setIsInstant(false);
+      hoverTimeoutRef.current = setTimeout(() => {
+        setIsVisible(true);
+        setTooltipWarmup(true);
+      }, 300);
+    }
+  };
+  
+  const handleMouseLeave = () => {
+    // Clear the timeout if user leaves before 300ms
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    
+    if (isVisible) {
+      // Signal that we're closing (but keep warmup briefly active)
+      setTooltipWarmup(false);
+      
+      // If instant mode, hide immediately without animation
+      if (isInstant) {
+        setIsVisible(false);
+        setIsInstant(false);
+      } else {
+        // Trigger exit animation
+        setIsEnding(true);
+        // Remove after animation completes
+        setTimeout(() => {
+          setIsVisible(false);
+          setIsEnding(false);
+        }, 125);
+      }
+    }
+  };
+  
+  return (
+    <div 
+      ref={wrapperRef}
+      className="relative inline-flex"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {children}
+      {isVisible && (
+        <div 
+          className="tooltip fixed px-2.5 py-1.5 bg-[#1d1d1f] text-white text-[13px] font-medium rounded-md whitespace-nowrap pointer-events-none z-[9999] -translate-x-1/2 -translate-y-full"
+          data-ending-style={isEnding ? "" : undefined}
+          data-instant={isInstant ? "" : undefined}
+          style={{ 
+            top: tooltipPosition.top, 
+            left: tooltipPosition.left,
+            ['--transform-origin' as string]: 'center bottom'
+          }}
+        >
+          {label}
+          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-[#1d1d1f]" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 const colors: ColorOption[] = [
-  { id: 'red', fill: '#FF383C', fillHover: '#E32226', tint: 'rgba(255, 56, 60, 0.15)', border: '#f0c8c9' },
-  { id: 'orange', fill: '#FF8D28', fillHover: '#E67A1C', tint: 'rgba(255, 141, 40, 0.15)', border: '#ffe0c8' },
-  { id: 'yellow', fill: '#FFCC00', fillHover: '#E6B800', tint: 'rgba(255, 204, 0, 0.15)', border: '#fff2cc' },
-  { id: 'green', fill: '#34C759', fillHover: '#2DB04C', tint: 'rgba(52, 199, 89, 0.15)', border: '#d4eedd' },
-  { id: 'cyan', fill: '#00C3D0', fillHover: '#00A8B5', tint: 'rgba(0, 195, 208, 0.1)', border: '#acc8c9' },
-  { id: 'blue', fill: '#0088FF', fillHover: '#0070D9', tint: 'rgba(0, 136, 255, 0.15)', border: '#cce5ff' },
-  { id: 'purple', fill: '#6155F5', fillHover: '#4E3FE0', tint: 'rgba(97, 85, 245, 0.15)', border: '#d1d0e0' },
+  { id: 'red', name: 'Red', fill: '#FF383C', fillHover: '#E32226', tint: 'rgba(255, 56, 60, 0.15)', border: '#f0c8c9' },
+  { id: 'orange', name: 'Orange', fill: '#FF8D28', fillHover: '#E67A1C', tint: 'rgba(255, 141, 40, 0.15)', border: '#ffe0c8' },
+  { id: 'yellow', name: 'Yellow', fill: '#FFCC00', fillHover: '#E6B800', tint: 'rgba(255, 204, 0, 0.15)', border: '#fff2cc' },
+  { id: 'green', name: 'Green', fill: '#34C759', fillHover: '#2DB04C', tint: 'rgba(52, 199, 89, 0.15)', border: '#d4eedd' },
+  { id: 'cyan', name: 'Cyan', fill: '#00C3D0', fillHover: '#00A8B5', tint: 'rgba(0, 195, 208, 0.1)', border: '#acc8c9' },
+  { id: 'blue', name: 'Blue', fill: '#0088FF', fillHover: '#0070D9', tint: 'rgba(0, 136, 255, 0.15)', border: '#cce5ff' },
+  { id: 'purple', name: 'Purple', fill: '#6155F5', fillHover: '#4E3FE0', tint: 'rgba(97, 85, 245, 0.15)', border: '#d1d0e0' },
 ];
 
 function ColorButton({ 
@@ -44,52 +160,56 @@ function ColorButton({
 
   if (isSelected) {
     return (
+      <Tooltip label={color.name} offsetY={-5}>
+        <button
+          onClick={onClick}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className="relative shrink-0 size-[30px] cursor-pointer group"
+          aria-label={`Select ${color.name} color`}
+        >
+          <div className="absolute inset-[-20%]">
+            <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 42 42">
+              <g>
+                <circle 
+                  cx="21" 
+                  cy="21" 
+                  fill={isHovered ? color.fillHover : color.fill} 
+                  opacity="0.7" 
+                  r="15" 
+                  className="transition-all duration-200" 
+                />
+                <circle cx="21" cy="21" opacity="0.7" r="19.5" stroke="#0088FF" strokeWidth="3" />
+              </g>
+            </svg>
+          </div>
+        </button>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <Tooltip label={color.name} offsetY={-5}>
       <button
         onClick={onClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className="relative shrink-0 size-[30px] cursor-pointer group"
-        aria-label={`Select ${color.id} color`}
+        aria-label={`Select ${color.name} color`}
       >
-        <div className="absolute inset-[-20%]">
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 42 42">
-            <g>
-              <circle 
-                cx="21" 
-                cy="21" 
-                fill={isHovered ? color.fillHover : color.fill} 
-                opacity="0.7" 
-                r="15" 
-                className="transition-all duration-200" 
-              />
-              <circle cx="21" cy="21" opacity="0.7" r="19.5" stroke="#0088FF" strokeWidth="3" />
-            </g>
-          </svg>
-        </div>
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 30 30">
+          <g opacity="0.7">
+            <circle 
+              cx="15" 
+              cy="15" 
+              fill={isHovered ? color.fillHover : color.fill} 
+              r="15" 
+              className="transition-all duration-200" 
+            />
+          </g>
+        </svg>
       </button>
-    );
-  }
-
-  return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="relative shrink-0 size-[30px] cursor-pointer group"
-      aria-label={`Select ${color.id} color`}
-    >
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 30 30">
-        <g opacity="0.7">
-          <circle 
-            cx="15" 
-            cy="15" 
-            fill={isHovered ? color.fillHover : color.fill} 
-            r="15" 
-            className="transition-all duration-200" 
-          />
-        </g>
-      </svg>
-    </button>
+    </Tooltip>
   );
 }
 
@@ -107,11 +227,10 @@ export default function PolaroidPage() {
   const [isTextFocused, setIsTextFocused] = useState(false);
   const [showUploadOverlay, setShowUploadOverlay] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [isImageHovered, setIsImageHovered] = useState(false);
   const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [isEntering, setIsEntering] = useState(true);
-  const [isLogoFlying, setIsLogoFlying] = useState(false);
-  const [logoStartPos, setLogoStartPos] = useState({ x: 32, y: 32 });
   const logoRef = useRef<HTMLButtonElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -124,21 +243,14 @@ export default function PolaroidPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle navigation back to home with smooth transition and flying seal
+  // Handle navigation back to home
   const handleBackToHome = () => {
-    // Capture the current position of the logo
-    if (logoRef.current) {
-      const rect = logoRef.current.getBoundingClientRect();
-      setLogoStartPos({ x: rect.left, y: rect.top });
-    }
-    
-    setIsLogoFlying(true);
     setIsExiting(true);
     
-    // Navigate after the flying animation completes - go to homepage with polaroid modal open
+    // Navigate after the fade transition
     setTimeout(() => {
       router.push('/project/polaroid');
-    }, 300); // Fast transition
+    }, 280);
   };
 
   // Parse URL params on mount to restore shared polaroid state
@@ -308,10 +420,15 @@ export default function PolaroidPage() {
   };
 
   const handleImageHoverStart = () => {
-    setShowUploadOverlay(true);
+    setIsImageHovered(true);
+    // Only show upload overlay if there's already an uploaded image
+    if (uploadedImage) {
+      setShowUploadOverlay(true);
+    }
   };
 
   const handleImageHoverEnd = () => {
+    setIsImageHovered(false);
     // Don't hide overlay if file dialog is open
     if (!isFileDialogOpen) {
       setShowUploadOverlay(false);
@@ -350,27 +467,12 @@ export default function PolaroidPage() {
   };
 
   return (
-    <div 
-      className={`relative size-full min-h-screen px-4 transition-all ${
-        isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
-      }`}
-      style={{ 
-        backgroundImage: "linear-gradient(133.216deg, rgba(151, 191, 255, 0.2) 10.334%, rgba(151, 191, 255, 0) 94.005%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)",
-        transitionDuration: isExiting ? '280ms' : '300ms',
-        transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out'
-      }}
-      onClick={() => {
-        setIsDateFocused(false);
-        setIsTextFocused(false);
-      }}
-    >
-      {/* Logo - acts as back button */}
+    <>
+      {/* Logo - fixed outside transitioning container to stay constant */}
       <button
         ref={logoRef}
         onClick={handleBackToHome}
-        className={`absolute top-8 left-8 z-20 cursor-pointer transition-all duration-200 ${
-          isLogoFlying ? 'opacity-0' : 'hover:opacity-80 hover:scale-95'
-        }`}
+        className="fixed top-8 left-8 md:left-16 z-40 cursor-pointer transition-opacity duration-200 hover:opacity-80"
         aria-label="Go back to home"
       >
         <img 
@@ -380,26 +482,22 @@ export default function PolaroidPage() {
         />
       </button>
 
-      {/* Flying seal logo overlay during transition */}
-      {isLogoFlying && (
-        <div 
-          className="fixed z-50 w-[44px] h-[44px] pointer-events-none seal-flying"
-          style={{
-            '--start-x': `${logoStartPos.x}px`,
-            '--start-y': `${logoStartPos.y}px`,
-            '--end-x': '64px', // Target position on homepage (px-16 = 64px)
-            '--end-y': '32px', // Target position on homepage (pt-8 = 32px)
-          } as React.CSSProperties}
-        >
-          <img 
-            src={imgLogo} 
-            alt="" 
-            className="w-full h-full object-contain"
-          />
-        </div>
-      )}
+      <div 
+        className={`relative w-full min-h-screen min-h-[100dvh] px-4 flex flex-col items-center transition-all ${
+          isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
+        }`}
+        style={{ 
+          backgroundImage: "linear-gradient(133.216deg, rgba(151, 191, 255, 0.2) 10.334%, rgba(151, 191, 255, 0) 94.005%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)",
+          transitionDuration: isExiting ? '280ms' : '300ms',
+          transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out'
+        }}
+        onClick={() => {
+          setIsDateFocused(false);
+          setIsTextFocused(false);
+        }}
+      >
 
-      <div className="flex flex-col gap-[32px] md:gap-[48px] items-center w-full max-w-[583px] mx-auto min-h-screen justify-center py-24 md:py-8">
+      <div className="flex flex-col gap-[32px] md:gap-[48px] items-center w-full max-w-[583px] my-auto py-24 md:py-8">
         {/* Title */}
         <div 
           className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-2xl md:text-3rxl text-black text-center text-nowrap" 
@@ -445,27 +543,49 @@ export default function PolaroidPage() {
                   onMouseLeave={handleImageHoverEnd}
                 >
                   <div className="overflow-clip relative rounded-[inherit] size-full">
-                    {uploadedImage ? (
-                      /* Uploaded image - preserve aspect ratio and center */
-                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[4.7px] md:rounded-[5.773px] bg-[#f5f5f5]">
-                        <img 
-                          alt="Polaroid photo" 
-                          className="max-w-full max-h-full w-auto h-auto object-contain" 
-                          src={uploadedImage} 
-                        />
-                      </div>
-                    ) : (
-                      /* Default photo - original styling */
-                      <div className="absolute h-[241px] md:h-[296.61px] left-[-29px] md:left-[-35.59px] rounded-[4.7px] md:rounded-[5.773px] top-0 w-[325px] md:w-[400.291px]">
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[4.7px] md:rounded-[5.773px]">
-                          <img 
-                            alt="Polaroid photo" 
-                            className="absolute h-full left-[-4.86%] max-w-none top-0 w-[109.72%]" 
-                            src={imgDefaultPhoto} 
-                          />
-                        </div>
-                      </div>
-                    )}
+                                {uploadedImage ? (
+                                      /* Uploaded image - preserve aspect ratio and center */
+                                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[4.7px] md:rounded-[5.773px] bg-[#f5f5f5]">
+                                        <img 
+                                          alt="Polaroid photo" 
+                                          className="max-w-full max-h-full w-auto h-auto object-contain" 
+                                          src={uploadedImage} 
+                                        />
+                                      </div>
+                                    ) : (
+                                      /* Default placeholder - light gray background with centered circle and upload icon */
+                                      /* Darkens on hover to indicate clickability */
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setIsFileDialogOpen(true);
+                                          fileInputRef.current?.click();
+                                        }}
+                                        className="absolute inset-0 rounded-[4.7px] md:rounded-[5.773px] flex items-center justify-center cursor-pointer transition-colors duration-200"
+                                        style={{ backgroundColor: isImageHovered ? '#e5e7eb' : '#f3f4f6' }}
+                                      >
+                                        <div 
+                                          className="rounded-full w-[162px] h-[162px] md:w-[200px] md:h-[200px] flex items-center justify-center transition-colors duration-200"
+                                          style={{ backgroundColor: isImageHovered ? '#d1d5db' : '#e5e7eb' }}
+                                        >
+                                          <svg 
+                                            width="65" 
+                                            height="65" 
+                                            viewBox="0 0 24 24" 
+                                            fill="none" 
+                                            stroke={isImageHovered ? '#6b7280' : '#9ca3af'} 
+                                            strokeWidth="1.5" 
+                                            strokeLinecap="round" 
+                                            strokeLinejoin="round" 
+                                            className="md:w-[80px] md:h-[80px] transition-colors duration-200"
+                                          >
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                            <polyline points="17 8 12 3 7 8" />
+                                            <line x1="12" y1="3" x2="12" y2="15" />
+                                          </svg>
+                                        </div>
+                                      </button>
+                                    )}
                   </div>
                   
                   {/* Hidden file input - always in DOM so onChange fires properly */}
@@ -478,10 +598,10 @@ export default function PolaroidPage() {
                     aria-hidden="true"
                   />
                   
-                  {/* Upload Overlay */}
-                  {showUploadOverlay && (
+                  {/* Upload Overlay - only shows when there's an uploaded image */}
+                  {showUploadOverlay && uploadedImage && (
                     <>
-                      <div className="absolute bg-[rgba(196,196,196,0.5)] inset-0 rounded-[3.39px]" />
+                      <div className="absolute bg-[rgba(196,196,196,0.5)] inset-0 rounded-[3.39px] transition-all duration-150 ease-out animate-fade-in-fast" />
                       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                         <button 
                           type="button"
@@ -489,7 +609,7 @@ export default function PolaroidPage() {
                             setIsFileDialogOpen(true);
                             fileInputRef.current?.click();
                           }}
-                          className="cursor-pointer block"
+                          className="cursor-pointer block transition-all duration-150 ease-out animate-scale-in-fast"
                         >
                           <div className="bg-white content-stretch flex gap-[12px] items-center px-[16px] py-[12px] rounded-[999px] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)] hover:shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] transition-shadow duration-150">
                             <div aria-hidden="true" className="absolute border border-[#bfbfbf] border-solid inset-0 pointer-events-none rounded-[999px]" />
@@ -583,9 +703,9 @@ export default function PolaroidPage() {
           <div className="content-stretch flex items-center px-[8px] py-0 relative rounded-[16px] shrink-0 w-full justify-center">
             <div className="content-stretch flex md:flex-row flex-col gap-[10px] items-center justify-center relative shrink-0">
               {/* Color Palette */}
-              <div className="bg-white content-stretch flex items-center md:p-[10px] p-[8px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
+              <div className="bg-white content-stretch flex items-center md:p-[10px] p-[8px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)] overflow-visible">
                 <div aria-hidden="true" className="absolute border border-[rgba(0,0,0,0.1)] border-solid inset-0 pointer-events-none rounded-[1000px]" />
-                <div className="content-stretch flex md:gap-[18px] gap-[12px] items-center relative shrink-0">
+                <div className="content-stretch flex md:gap-[18px] gap-[12px] items-center relative shrink-0 overflow-visible">
                   {colors.map((color) => (
                     <ColorButton
                       key={color.id}
@@ -600,66 +720,70 @@ export default function PolaroidPage() {
               {/* Toggle Buttons Container */}
               <div className="flex gap-[10px] items-center">
                 {/* Date Toggle Button */}
-                <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
-                  <div aria-hidden="true" className="absolute border border-[rgba(0,0,0,0.1)] border-solid inset-0 pointer-events-none rounded-[1000px]" />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowDate(!showDate);
-                      if (!showDate) {
-                        setIsDateFocused(true);
-                        setIsTextFocused(false);
-                      }
-                    }}
-                    className={`relative rounded-[999px] shrink-0 size-[40px] cursor-pointer transition-all duration-300 ${
-                      showDate && isDateFocused ? 'bg-[#0088FF]' : showDate ? 'bg-[#e5e7eb] hover:bg-[#d1d5db]' : 'bg-transparent hover:bg-[#e5e5e5]'
-                    }`}
-                    aria-label="Toggle date"
-                  >
-                    <div className={`absolute inset-0 flex items-center justify-center transition-colors duration-300`}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={showDate && isDateFocused ? 'white' : showDate ? '#1f2937' : 'black'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
-                    </div>
-                  </button>
-                </div>
+                <Tooltip label="Date">
+                  <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
+                    <div aria-hidden="true" className="absolute border border-[rgba(0,0,0,0.1)] border-solid inset-0 pointer-events-none rounded-[1000px]" />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowDate(!showDate);
+                        if (!showDate) {
+                          setIsDateFocused(true);
+                          setIsTextFocused(false);
+                        }
+                      }}
+                      className={`relative rounded-[999px] shrink-0 size-[40px] cursor-pointer transition-all duration-300 ${
+                        showDate && isDateFocused ? 'bg-[#0088FF]' : showDate ? 'bg-[#e5e7eb] hover:bg-[#d1d5db]' : 'bg-transparent hover:bg-[#e5e5e5]'
+                      }`}
+                      aria-label="Toggle date"
+                    >
+                      <div className={`absolute inset-0 flex items-center justify-center transition-colors duration-300`}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={showDate && isDateFocused ? 'white' : showDate ? '#1f2937' : 'black'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                          <line x1="16" y1="2" x2="16" y2="6" />
+                          <line x1="8" y1="2" x2="8" y2="6" />
+                          <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg>
+                      </div>
+                    </button>
+                  </div>
+                </Tooltip>
 
                 {/* Text Toggle Button */}
-                <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
-                  <div aria-hidden="true" className="absolute border border-[rgba(0,0,0,0.1)] border-solid inset-0 pointer-events-none rounded-[1000px]" />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (showText) {
-                        setShowText(false);
-                        setIsTextFocused(false);
-                      } else {
-                        setShowText(true);
-                        setIsTextFocused(true);
-                        setIsDateFocused(false);
-                        setTimeout(() => {
-                          const input = document.querySelector('input[type="text"]') as HTMLInputElement;
-                          if (input) input.focus();
-                        }, 100);
-                      }
-                    }}
-                    className={`relative rounded-[999px] shrink-0 size-[40px] cursor-pointer transition-all duration-300 ${
-                      showText && isTextFocused ? 'bg-[#0088FF]' : showText ? 'bg-[#e5e7eb] hover:bg-[#d1d5db]' : 'bg-transparent hover:bg-[#e5e5e5]'
-                    }`}
-                    aria-label="Toggle text"
-                  >
-                    <div className={`absolute inset-0 flex items-center justify-center transition-colors duration-300`}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={showText && isTextFocused ? 'white' : showText ? '#1f2937' : 'black'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="4 7 4 4 20 4 20 7" />
-                        <line x1="9" y1="20" x2="15" y2="20" />
-                        <line x1="12" y1="4" x2="12" y2="20" />
-                      </svg>
-                    </div>
-                  </button>
-                </div>
+                <Tooltip label="Caption">
+                  <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
+                    <div aria-hidden="true" className="absolute border border-[rgba(0,0,0,0.1)] border-solid inset-0 pointer-events-none rounded-[1000px]" />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (showText) {
+                          setShowText(false);
+                          setIsTextFocused(false);
+                        } else {
+                          setShowText(true);
+                          setIsTextFocused(true);
+                          setIsDateFocused(false);
+                          setTimeout(() => {
+                            const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+                            if (input) input.focus();
+                          }, 100);
+                        }
+                      }}
+                      className={`relative rounded-[999px] shrink-0 size-[40px] cursor-pointer transition-all duration-300 ${
+                        showText && isTextFocused ? 'bg-[#0088FF]' : showText ? 'bg-[#e5e7eb] hover:bg-[#d1d5db]' : 'bg-transparent hover:bg-[#e5e5e5]'
+                      }`}
+                      aria-label="Toggle text"
+                    >
+                      <div className={`absolute inset-0 flex items-center justify-center transition-colors duration-300`}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={showText && isTextFocused ? 'white' : showText ? '#1f2937' : 'black'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="4 7 4 4 20 4 20 7" />
+                          <line x1="9" y1="20" x2="15" y2="20" />
+                          <line x1="12" y1="4" x2="12" y2="20" />
+                        </svg>
+                      </div>
+                    </button>
+                  </div>
+                </Tooltip>
               </div>
             </div>
           </div>
@@ -744,14 +868,14 @@ export default function PolaroidPage() {
                                   />
                                 </div>
                               ) : (
-                                /* Default photo - original styling */
-                                <div className="absolute h-[191.774px] left-[-23.01px] rounded-[3.733px] top-0 w-[258.809px]">
-                                  <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[3.733px]">
-                                    <img 
-                                      alt="Polaroid photo" 
-                                      className="absolute h-full left-[-4.86%] max-w-none top-0 w-[109.72%]" 
-                                      src={imgDefaultPhoto} 
-                                    />
+                                /* Default placeholder - light gray background with centered circle and upload icon */
+                                <div className="absolute inset-0 bg-[#f3f4f6] rounded-[3.733px] flex items-center justify-center">
+                                  <div className="bg-[#e5e7eb] rounded-full w-[130px] h-[130px] flex items-center justify-center">
+                                    <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                      <polyline points="17 8 12 3 7 8" />
+                                      <line x1="12" y1="3" x2="12" y2="15" />
+                                    </svg>
                                   </div>
                                 </div>
                               )}
@@ -990,6 +1114,26 @@ export default function PolaroidPage() {
         .animate-blink {
           animation: blink 1s infinite;
         }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleInCentered {
+          from { 
+            opacity: 0; 
+            transform: scale(0.9);
+          }
+          to { 
+            opacity: 1; 
+            transform: scale(1);
+          }
+        }
+        .animate-fade-in-fast {
+          animation: fadeIn 0.15s ease-out forwards;
+        }
+        .animate-scale-in-fast {
+          animation: scaleInCentered 0.15s ease-out forwards;
+        }
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
@@ -997,30 +1141,9 @@ export default function PolaroidPage() {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
-        
-        /* Flying seal animation */
-        @keyframes sealFly {
-          0% {
-            left: var(--start-x);
-            top: var(--start-y);
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.05);
-          }
-          100% {
-            left: var(--end-x);
-            top: var(--end-y);
-            transform: scale(1);
-          }
-        }
-        .seal-flying {
-          animation: sealFly 280ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-          left: var(--start-x);
-          top: var(--start-y);
-        }
       `}</style>
-    </div>
+      </div>
+    </>
   );
 }
 

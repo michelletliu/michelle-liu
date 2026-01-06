@@ -5,7 +5,7 @@ export const client = createClient({
   projectId: "am3v0x1c",
   dataset: "production",
   apiVersion: "2024-01-01",
-  useCdn: false, // Set to true for production
+  useCdn: true, // Using CDN for faster image delivery
 });
 
 const builder = imageUrlBuilder(client);

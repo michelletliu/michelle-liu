@@ -57,6 +57,9 @@ export function ScrollReveal({
   // Determine the actual variant
   const actualVariant = fast ? "fast" : variant;
 
+  // Track if element was above the fold on mount
+  const wasAboveFoldRef = useRef<boolean | null>(null);
+
   useEffect(() => {
     if (disabled) return;
     
@@ -70,14 +73,28 @@ export function ScrollReveal({
       return;
     }
 
-    // Check if element is already in viewport
-    const checkVisibility = () => {
+    // Check if element is in viewport
+    const isInViewport = () => {
       const rect = element.getBoundingClientRect();
       const windowHeight = window.innerHeight || document.documentElement.clientHeight;
       // Element is visible if its top is within the viewport (with some margin)
-      const isVisible = rect.top < windowHeight + 40 && rect.bottom > -40;
+      return rect.top < windowHeight + 40 && rect.bottom > -40;
+    };
+
+    // On first mount, check if element is "above the fold" (visible without scrolling)
+    // These elements should animate together without staggered delays
+    if (wasAboveFoldRef.current === null) {
+      wasAboveFoldRef.current = isInViewport();
       
-      if (isVisible) {
+      // Clear delay for above-fold elements so they all animate together
+      if (wasAboveFoldRef.current && delay > 0) {
+        element.style.transitionDelay = "0ms";
+      }
+    }
+
+    // Check if element is already in viewport and reveal it
+    const checkVisibility = () => {
+      if (isInViewport()) {
         requestAnimationFrame(() => {
           element.classList.add("revealed");
         });
@@ -114,7 +131,7 @@ export function ScrollReveal({
     return () => {
       observer.disconnect();
     };
-  }, [threshold, rootMargin, disabled]);
+  }, [threshold, rootMargin, disabled, delay]);
 
   if (disabled) {
     return <>{children}</>;

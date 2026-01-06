@@ -301,6 +301,11 @@ function ContentBlock({ section }: { section: ContentSection }) {
         </div>
       );
 
+    case "dividerSection":
+      return (
+        <div className="mb-16 h-px w-full bg-gray-200" />
+      );
+
     default:
       return null;
   }

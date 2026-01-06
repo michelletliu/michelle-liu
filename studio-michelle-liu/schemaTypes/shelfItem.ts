@@ -39,6 +39,12 @@ export const shelfItem = defineType({
       },
     }),
     defineField({
+      name: 'externalCoverUrl',
+      title: 'External Cover URL',
+      description: 'Alternative: URL to an external cover image (e.g., from TMDb). Used if no cover image is uploaded.',
+      type: 'url',
+    }),
+    defineField({
       name: 'author',
       title: 'Author/Artist/Director',
       type: 'string',
@@ -62,6 +68,20 @@ export const shelfItem = defineType({
       description: 'Show in the collapsed "Default" state',
       type: 'boolean',
       initialValue: false,
+    }),
+    defineField({
+      name: 'letterboxdSlug',
+      title: 'Letterboxd Slug',
+      description: 'URL slug for your Letterboxd review (e.g., "left-handed-girl" for letterboxd.com/liumichelle/film/left-handed-girl/)',
+      type: 'string',
+      hidden: ({document}) => document?.mediaType !== 'movie',
+    }),
+    defineField({
+      name: 'spotifyUrl',
+      title: 'Spotify URL',
+      description: 'Full Spotify album URL (e.g., "https://open.spotify.com/album/...")',
+      type: 'url',
+      hidden: ({document}) => document?.mediaType !== 'music',
     }),
     defineField({
       name: 'order',

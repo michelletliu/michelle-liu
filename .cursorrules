@@ -1,0 +1,39 @@
+# Michelle Liu Personal Website - Cursor Rules
+
+## Project Context
+This is Michelle Liu's personal portfolio website built with React, Vite, and Sanity CMS.
+
+## API Keys & Credentials
+
+### TMDb (The Movie Database) API
+- **API Key**: bcc72ac7b1d156541c8eab9e0b596bc2
+- **Read Access Token**: eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiY2M3MmFjN2IxZDE1NjU0MWM4ZWFiOWUwYjU5NmJjMiIsIm5iZiI6MTc2NzY2MzY2NC4yODQsInN1YiI6IjY5NWM2ODMwZGM0OTFkM2Y2NTE3OGQ3NiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.1bZQO4mj9dwPhnsT2O3YCUn_4LpQJqbTf1otSqMKmAs
+- **Usage**: Used to fetch movie poster images for the Shelf section on the About page
+- **Script**: `scripts/update-movie-posters.js` - Run to update broken/missing movie posters
+
+### Sanity CMS
+- **Project ID**: am3v0x1c
+- **Dataset**: production
+- **Studio**: `studio-michelle-liu/`
+
+## Common Tasks
+
+### Updating Movie Posters
+When movie posters are missing or broken, run:
+```bash
+node scripts/update-movie-posters.js
+```
+
+This script:
+1. Fetches all movies from Sanity
+2. Tests if existing poster URLs work
+3. Searches TMDb API for correct poster URLs
+4. Outputs which movies need updates (or updates them if SANITY_TOKEN env var is set)
+
+You can also use the Sanity MCP tools to manually patch `externalCoverUrl` on shelfItem documents.
+
+## Tech Stack
+- Frontend: React + TypeScript + Vite
+- CMS: Sanity v3
+- Styling: Tailwind CSS
+- Hosting: Vercel

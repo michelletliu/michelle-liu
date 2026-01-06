@@ -3,6 +3,7 @@ import {project} from './project'
 import {artPiece} from './artPiece'
 import {sketchbook} from './sketchbook'
 import {mural} from './mural'
+import {book} from './book'
 
 // About page document types
 import {aboutPage} from './aboutPage'
@@ -21,6 +22,9 @@ import {textSection} from './objects/textSection'
 import {imageSection} from './objects/imageSection'
 import {videoSection} from './objects/videoSection'
 import {testimonialSection} from './objects/testimonialSection'
+import {projectCardSection} from './objects/projectCardSection'
+import {sideQuestSection} from './objects/sideQuestSection'
+import {dividerSection} from './objects/dividerSection'
 
 export const schemaTypes = [
   // Documents
@@ -28,6 +32,7 @@ export const schemaTypes = [
   artPiece,
   sketchbook,
   mural,
+  book,
   
   // About page
   aboutPage,
@@ -46,4 +51,7 @@ export const schemaTypes = [
   imageSection,
   videoSection,
   testimonialSection,
+  projectCardSection,
+  sideQuestSection,
+  dividerSection,
 ]

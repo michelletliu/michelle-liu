@@ -147,6 +147,45 @@ export interface TestimonialSection {
   authorImage?: SanityImage;
 }
 
+export interface ProjectCard {
+  _key: string;
+  label?: string;
+  emoji?: string;
+  title: string;
+  linkColor?: string;
+  image?: SanityImage;
+}
+
+export interface ProjectCardSection {
+  _key: string;
+  _type: "projectCardSection";
+  cards?: ProjectCard[];
+}
+
+export interface TeamMember {
+  _key: string;
+  name: string;
+  link?: string;
+}
+
+export interface SideQuestSection {
+  _key: string;
+  _type: "sideQuestSection";
+  label?: string;
+  title: string;
+  subtitle?: string;
+  image?: SanityImage;
+  teamLabel?: string;
+  teamMembers?: TeamMember[];
+  description?: any[];
+}
+
+export interface DividerSection {
+  _key: string;
+  _type: "dividerSection";
+  style?: string;
+}
+
 export type ContentSection =
   | MissionSection
   | ProtectedSection
@@ -154,7 +193,10 @@ export type ContentSection =
   | TextSection
   | ImageSection
   | VideoSection
-  | TestimonialSection;
+  | TestimonialSection
+  | ProjectCardSection
+  | SideQuestSection
+  | DividerSection;
 
 export interface Project {
   _id: string;
@@ -240,11 +282,14 @@ export interface ShelfItem {
   title: string;
   mediaType: ShelfMediaType;
   cover?: SanityImage;
+  externalCoverUrl?: string;
   author?: string;
   year?: string;
   rating?: number;
   isFeatured?: boolean;
   order?: number;
+  letterboxdSlug?: string;
+  spotifyUrl?: string;
 }
 
 export interface LoreItem {
@@ -266,6 +311,26 @@ export interface AboutQuote {
   text: string;
   underlinedText?: string;
   author?: string;
+  order?: number;
+}
+
+// ============================================
+// LIBRARY PAGE TYPES
+// ============================================
+
+export type BookShelf = "favorites" | "read" | "currently-reading" | "want-to-read";
+
+export interface SanityBook {
+  _id: string;
+  title: string;
+  author: string;
+  coverImage?: SanityImage;
+  coverUrl?: string;
+  rating: number;
+  shelf: BookShelf;
+  dateStarted?: string;
+  dateFinished?: string;
+  review?: string;
   order?: number;
 }
 

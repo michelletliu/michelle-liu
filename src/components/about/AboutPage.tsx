@@ -147,13 +147,18 @@ function transformCommunities(data: Community[]): CommunityCardData[] {
 function transformShelfItems(data: ShelfItem[]): MediaCardData[] {
   return data.map((item) => ({
     id: item._id,
-    imageSrc: item.cover ? urlFor(item.cover).width(300).url() : undefined,
+    imageSrc: item.cover 
+      ? urlFor(item.cover).width(300).url() 
+      : item.externalCoverUrl || undefined,
     title: item.title,
     type: item.mediaType === "book" ? "Book" 
       : item.mediaType === "music" ? "Music" 
       : item.mediaType === "movie" ? "Movie"
       : "Book",
     year: item.year,
+    isFeatured: item.isFeatured,
+    letterboxdSlug: item.letterboxdSlug,
+    spotifyUrl: item.spotifyUrl,
   }));
 }
 
@@ -233,8 +238,9 @@ export default function AboutPage() {
   const [loreItems, setLoreItems] = useState<LoreCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Shelf year filter state (for books and movies)
+  // Shelf year filter state (for books, music, and movies)
   const [activeBooksYear, setActiveBooksYear] = useState<string | undefined>();
+  const [activeMusicYear, setActiveMusicYear] = useState<string | undefined>();
   const [activeMoviesYear, setActiveMoviesYear] = useState<string | undefined>();
 
   // Fetch data from Sanity (uses preloaded cache if available)
@@ -461,6 +467,7 @@ export default function AboutPage() {
   };
 
   const bookYears = getYearsWithCounts(bookItems);
+  const musicYears = getYearsWithCounts(musicItems);
   const movieYears = getYearsWithCounts(movieItems);
 
   return (
@@ -470,10 +477,10 @@ export default function AboutPage() {
 
       {/* Header */}
       <PageHeader variant="about" heroAnimationPlayed={heroAnimationPlayed}>
-        <div className="font-['Figtree',sans-serif] font-normal leading-7 max-md:leading-6 tracking-wide text-[#9ca3af] text-[1.2rem] max-md:text-[1.13rem] w-full whitespace-pre-wrap mt-1 max-md:mt-1">
+        <>
           <p>Product, design, & everything in between.</p>
-          <p>Graduating from UCLA in June 2026. ⟢</p>
-        </div>
+          <p>Graduating from UCLA in June 2026. ⋆˙⟡</p>
+        </>
       </PageHeader>
 
       {/* Navigation */}
@@ -554,21 +561,21 @@ export default function AboutPage() {
 
               {/* Location & Education */}
               <ScrollReveal variant="fade" delay={200}>
-                <div className="flex flex-wrap gap-2 md:gap-6 text-base tracking-wide font-medium text-gray-400">
+                <div className="flex flex-wrap gap-2 md:gap-6 text-base tracking-wide text-gray-400">
                   <div className="flex items-center gap-2">
                     <img src={mapPinIcon} alt="" className="w-4 h-4" />
                     <span className="text-gray-400">SF — LA — NYC</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <img src={academicCapIcon} alt="" className="w-4 h-4" />
-                    <span className="text-gray-400">B.A. Art, B.S. Cognitive Science - UCLA '26</span>
+                    <span className="text-gray-400">B.A. Art, B.S. Cognitive Science — UCLA '26</span>
                   </div>
                 </div>
               </ScrollReveal>
 
               {/* Bio Paragraphs */}
               <ScrollReveal variant="fade" delay={250}>
-                <div className="flex flex-col gap-4 text-gray-500 text-base leading-relaxed">
+                <div className="flex flex-col gap-4 text-gray-600 text-base leading-relaxed">
                   <p>
                     I love art, business, technology, & the ways that they can work together to
                     create extraordinary products for people.
@@ -576,7 +583,7 @@ export default function AboutPage() {
                   <p>
                     I believe thoughtful design makes life more intuitive (& beautiful). I want to
                     bring more of it into the world—whether through my creations or the
-                    communities I'm helping to build. I like to think of it as my <a href="https://en.wikipedia.org/wiki/Ikigai" target="_blank" rel="noopener noreferrer" className="text-gray-700 font-medium no-underline hover:text-gray-800 transition-colors">ikigai</a>: the constant
+                    communities I'm helping to build. I like to think of it as my <a href="https://en.wikipedia.org/wiki/Ikigai" target="_blank" rel="noopener noreferrer" className="text-gray-700 font-medium no-underline hover:text-blue-500 transition-colors">ikigai</a>: the constant
                     pursuit of an intersection between passion, profession, and personal mission.
                   </p>
                   <p>
@@ -727,11 +734,11 @@ export default function AboutPage() {
                   <ScrollReveal delay={100}>
                     <ShelfSection
                       title="★ BOOKS"
-                      count={bookItems.length}
+                      count={bookItems.filter(item => item.isFeatured).length}
                       mediaType="book"
                       yearFilters={bookYears}
                       activeYear={activeBooksYear}
-                      onYearChange={setActiveBooksYear}
+                      onYearChange={(year) => setActiveBooksYear(year || undefined)}
                       externalLink={{ label: "Goodreads", href: "https://www.goodreads.com/user/show/126741914-michelletliu" }}
                       items={bookItems}
                       itemCount={5}
@@ -745,8 +752,11 @@ export default function AboutPage() {
                   <ScrollReveal delay={200}>
                     <ShelfSection
                       title="★ MUSIC"
-                      count={musicItems.length}
+                      count={musicItems.filter(item => item.isFeatured).length}
                       mediaType="music"
+                      yearFilters={musicYears}
+                      activeYear={activeMusicYear}
+                      onYearChange={(year) => setActiveMusicYear(year || undefined)}
                       externalLink={{ label: "Spotify", href: "https://open.spotify.com/user/i4stx92bb6e14vmhqe5tl8az6?si=3b9ee8fc1b3a4784" }}
                       items={musicItems}
                       itemCount={5}
@@ -760,15 +770,19 @@ export default function AboutPage() {
                   <ScrollReveal delay={300}>
                     <ShelfSection
                       title="★ MOVIES"
-                      count={movieItems.length}
+                      count={movieItems.filter(item => item.isFeatured).length}
                       mediaType="movie"
                       yearFilters={movieYears}
                       activeYear={activeMoviesYear}
-                      onYearChange={setActiveMoviesYear}
+                      onYearChange={(year) => setActiveMoviesYear(year || undefined)}
                       externalLink={{ label: "Letterboxd", href: "https://letterboxd.com/LiuMichelle/" }}
                       items={movieItems}
                       itemCount={5}
-                      onItemClick={(item) => console.log("Movie clicked:", item)}
+                      onItemClick={(item) => {
+                        if (item.letterboxdSlug) {
+                          window.open(`https://letterboxd.com/liumichelle/film/${item.letterboxdSlug}/`, '_blank');
+                        }
+                      }}
                     />
                   </ScrollReveal>
                 </div>

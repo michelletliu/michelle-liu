@@ -98,6 +98,12 @@ export interface TestimonialSection {
   authorImage?: SanityImage;
 }
 
+export interface DividerSection {
+  _key: string;
+  _type: "dividerSection";
+  style?: string;
+}
+
 export type ContentSection =
   | MissionSection
   | ProtectedSection
@@ -105,7 +111,8 @@ export type ContentSection =
   | TextSection
   | ImageSection
   | VideoSection
-  | TestimonialSection;
+  | TestimonialSection
+  | DividerSection;
 
 export interface Project {
   _id: string;
@@ -124,5 +131,36 @@ export interface Project {
   order?: number;
 }
 
+// ============================================
+// LIBRARY TYPES
+// ============================================
+
+export interface Book {
+  id: string;
+  title: string;
+  author: string;
+  coverImage: string;
+  rating: number;
+  shelf: string;
+  datesRead?: {
+    start: string;
+    end: string;
+  };
+  review?: string;
+}
+
+// Raw Sanity book data structure
+export interface SanityBookData {
+  _id: string;
+  title: string;
+  author: string;
+  coverImage?: SanityImage;
+  coverUrl?: string;
+  rating: number;
+  shelf: string;
+  dateStarted?: string;
+  dateFinished?: string;
+  review?: string;
+}
 
 

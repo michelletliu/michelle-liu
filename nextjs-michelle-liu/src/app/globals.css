@@ -25,3 +25,30 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ==========================================
+   TOOLTIP ANIMATION
+   Smooth scale + fade animation using @starting-style
+   ========================================== */
+
+.tooltip {
+  transition:
+    transform 0.125s ease-out,
+    opacity 0.125s ease-out;
+  transform-origin: var(--transform-origin);
+
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+.tooltip[data-ending-style] {
+  opacity: 0;
+  transform: scale(0.97);
+}
+
+/** This takes care of disabling subsequent animations */
+.tooltip[data-instant] {
+  transition-duration: 0ms;
+}

@@ -48,3 +48,43 @@ body {
     transform: translateY(0);
   }
 }
+
+/* Shimmer loading animation for images */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    110deg,
+    #e5e7eb 0%,
+    #e5e7eb 40%,
+    #f3f4f6 60%,
+    #e5e7eb 80%,
+    #e5e7eb 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Shelf item fade up animation */
+@keyframes shelfItemFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-shelf-item-fade-up {
+  opacity: 0;
+  animation: shelfItemFadeUp 400ms ease-out forwards;
+}

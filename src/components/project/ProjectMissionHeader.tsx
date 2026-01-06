@@ -94,7 +94,7 @@ export default function ProjectMissionHeader({
               isMobile && "w-full px-0"
             )}
           >
-            <div className="leading-5 text-[#4b5563] text-base whitespace-pre-wrap">
+            <div className="text-[#4b5563] text-base whitespace-pre-wrap">
               {description.map((paragraph, index) => (
                 <p key={index} className={index < description.length - 1 ? "mb-4" : ""}>
                   {paragraph}
@@ -104,7 +104,7 @@ export default function ProjectMissionHeader({
 
             {/* Italic Note */}
             {note && (
-              <p className="text-[#9ca3af] text-base italic leading-5">
+              <p className="text-[#9ca3af] text-base italic">
                 {note}
               </p>
             )}
@@ -114,7 +114,7 @@ export default function ProjectMissionHeader({
         {/* Italic Note (when no description) */}
         {!hasDescription && note && (
           <p className={clsx(
-            "text-[#9ca3af] text-base italic leading-5 mt-8 px-8",
+            "text-[#9ca3af] text-base italic mt-8 px-8",
             isDesktop && "w-[410px]",
             isMobile && "w-full px-0"
           )}>
@@ -150,10 +150,10 @@ export default function ProjectMissionHeader({
           isMobile && "w-full"
         )}
       >
-        <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
+        <p className="relative shrink-0 text-[#9ca3af] text-base">
           {label}
         </p>
-        <p className="leading-7 min-w-full relative shrink-0 text-2xl text-black whitespace-pre-wrap text-pretty">
+        <p className=" min-w-full leading-normal relative shrink-0 text-2xl text-black whitespace-pre-wrap text-pretty">
           {title}
         </p>
       </div>
