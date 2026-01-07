@@ -21,9 +21,9 @@ export function BookCard({ book, onClick }: BookCardProps) {
       </div>
 
       {/* Text content - appears on hover, centered with cover */}
-      <div className="absolute top-[175px] sm:top-[200px] md:top-[225px] lg:top-[250px] left-1/2 -translate-x-1/2 w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex flex-col items-center text-center leading-[0] opacity-0 transition-opacity duration-[400ms] ease-out group-hover:opacity-100">
-        <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-base text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
-          <p className="leading-normal">{book.title}</p>
+      <div className="absolute top-[175px] sm:top-[200px] md:top-[225px] lg:top-[250px] left-1/2 -translate-x-1/2 w-[130px] sm:w-[140px] md:w-[150px] lg:w-[160px] flex flex-col items-center text-center leading-[0] opacity-0 transition-opacity duration-[400ms] ease-out group-hover:opacity-100">
+        <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-medium justify-center relative shrink-0 text-base text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
+          <p className="leading-normal line-clamp-2">{book.title}</p>
         </div>
         <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-base text-gray-500" style={{ fontVariationSettings: "'wdth' 100" }}>
           <p className="leading-normal">{book.author}</p>

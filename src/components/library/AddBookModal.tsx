@@ -32,6 +32,12 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
 
   return (
     <>
+      {/* Invisible overlay to catch clicks outside the modal */}
+      <div 
+        className="fixed inset-0 z-40" 
+        onClick={onClose}
+      />
+      
       {/* Modal - positioned below the button, right-aligned with plus button */}
       <div className="absolute right-0 top-[calc(100%+12px)] z-50 bg-white rounded-[16px] w-[calc(100vw-40px)] sm:w-[420px] max-w-[420px] animate-modal-in">
         <div aria-hidden="true" className="absolute border border-gray-200 border-solid inset-0 pointer-events-none rounded-[16px] shadow-sm" />
@@ -48,7 +54,7 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
             <div className="basis-0 bg-[#f5f5f5] grow h-[40px] min-h-px min-w-px relative rounded-[999px] shrink-0">
               <div 
                 aria-hidden="true" 
-                className={`absolute border-2 border-solid inset-0 pointer-events-none rounded-[999px] transition-colors duration-300 ${
+                className={`absolute border-[1.5px] border-solid inset-0 pointer-events-none rounded-[999px] transition-colors duration-300 ${
                   isSubmitted ? "border-[rgba(0,0,0,0.1)]" : "border-[#2883de]"
                 }`}
               />

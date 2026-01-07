@@ -9,6 +9,19 @@ import imgLinkedInIcon from '../../assets/polaroid/f81f194aee98efdd62a97e659006e
 import imgMailIcon from '../../assets/polaroid/7d8c54338d14a1f9afdfff1bec90c42375e5050e.png';
 import imgXIcon from '../../assets/polaroid/a643fce02520f3d992e6b432fa72fab473a1ca7e.png';
 import imgLogo from '../../assets/logo.png';
+import InfoButton from '../InfoButton';
+
+// Project info for the info button modal
+const POLAROID_PROJECT = {
+  id: 'polaroid',
+  title: 'Polaroid Studio',
+  year: '2025',
+  description: 'A digital way to customize your own polaroid.',
+  imageSrc: 'https://image.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w/thumbnail.png',
+  videoSrc: 'https://stream.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w.m3u8',
+  xLink: 'https://x.com/michelletliu/status/1991201412072734777',
+  tryItOutHref: '/polaroid',
+};
 
 type ColorOption = {
   id: string;
@@ -45,23 +58,12 @@ function Tooltip({ label, children, offsetY = 0 }: { label: string; children: Re
   const [isVisible, setIsVisible] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const [isInstant, setIsInstant] = useState(false);
-  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
-  const wrapperRef = useRef<HTMLDivElement>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const handleMouseEnter = () => {
     // Clear any existing timeout
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
-    }
-    
-    // Calculate position immediately
-    if (wrapperRef.current) {
-      const rect = wrapperRef.current.getBoundingClientRect();
-      setTooltipPosition({
-        top: rect.top - 8 + offsetY,
-        left: rect.left + rect.width / 2
-      });
     }
     
     setIsEnding(false);
@@ -110,7 +112,6 @@ function Tooltip({ label, children, offsetY = 0 }: { label: string; children: Re
   
   return (
     <div 
-      ref={wrapperRef}
       className="relative inline-flex"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -118,17 +119,16 @@ function Tooltip({ label, children, offsetY = 0 }: { label: string; children: Re
       {children}
       {isVisible && (
         <div 
-          className="tooltip fixed px-2.5 py-1.5 bg-[#1d1d1f] text-white text-[13px] font-medium rounded-md whitespace-nowrap pointer-events-none z-[9999] -translate-x-1/2 -translate-y-full"
+          className="tooltip absolute left-1/2 px-2.5 py-1.5 bg-gray-800 text-white text-[13px] font-medium rounded-md whitespace-nowrap pointer-events-none z-[9999] -translate-x-1/2"
           data-ending-style={isEnding ? "" : undefined}
           data-instant={isInstant ? "" : undefined}
           style={{ 
-            top: tooltipPosition.top, 
-            left: tooltipPosition.left,
+            bottom: `calc(100% + 8px - ${offsetY}px)`,
             ['--transform-origin' as string]: 'center bottom'
           }}
         >
           {label}
-          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-[#1d1d1f]" />
+          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-gray-800" />
         </div>
       )}
     </div>
@@ -488,6 +488,9 @@ export default function PolaroidPage() {
         />
       </button>
 
+      {/* Info Button - fixed top right */}
+      <InfoButton project={POLAROID_PROJECT} />
+
       <div 
         className={`polaroid-page-container relative w-full min-h-screen min-h-[100dvh] px-4 flex flex-col items-center transition-all ${
           isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
@@ -530,9 +533,9 @@ export default function PolaroidPage() {
                 >
                   <div 
                     aria-hidden="true" 
-                    className="absolute border border-[rgba(0,0,0,0.1)] border-solid inset-[-1px] pointer-events-none rounded-[6.88px] md:rounded-[8.475px]"
+                    className="absolute border border-gray-200/50 border-solid inset-[-1px] pointer-events-none rounded-[6.88px] md:rounded-[8.475px]"
                     style={{
-                      borderColor: selectedColor ? selectedColor.border : 'rgba(0,0,0,0.1)'
+                      borderColor: selectedColor ? selectedColor.border : undefined
                     }}
                   />
                 </div>
@@ -618,7 +621,7 @@ export default function PolaroidPage() {
                           className="cursor-pointer block transition-all duration-150 ease-out animate-scale-in-fast"
                         >
                           <div className="bg-gray-50 hover:!bg-gray-200 content-stretch flex gap-[12px] items-center px-6 py-3 rounded-[999px] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)] hover:shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] transition-all duration-300 ease-in-out">
-                            <div aria-hidden="true" className="absolute border border-[#bfbfbf] border-solid inset-0 pointer-events-none rounded-[999px]" />
+                            <div aria-hidden="true" className="absolute border border-gray-200/50 border-solid inset-0 pointer-events-none rounded-[999px]" />
                             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(60,60,67,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                               <polyline points="17 8 12 3 7 8" />
@@ -635,9 +638,9 @@ export default function PolaroidPage() {
                   
                   <div 
                     aria-hidden="true" 
-                    className="absolute border-[0.847px] border-solid inset-0 pointer-events-none rounded-[3.39px]"
+                    className="absolute border-[0.847px] border-solid border-gray-200/50 inset-0 pointer-events-none rounded-[3.39px]"
                     style={{
-                      borderColor: selectedColor ? `${selectedColor.fill}4D` : 'rgba(0,0,0,0.1)'
+                      borderColor: selectedColor ? `${selectedColor.fill}4D` : undefined
                     }}
                   />
                 </div>
@@ -710,7 +713,7 @@ export default function PolaroidPage() {
             <div className="content-stretch flex md:flex-row flex-col gap-[10px] items-center justify-center relative shrink-0">
               {/* Color Palette */}
               <div className="bg-white content-stretch flex items-center md:p-[10px] p-[8px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)] overflow-visible">
-                <div aria-hidden="true" className="absolute border border-[rgba(0,0,0,0.1)] border-solid inset-0 pointer-events-none rounded-[1000px]" />
+                <div aria-hidden="true" className="absolute border border-gray-200/80 border-solid inset-0 pointer-events-none rounded-[1000px]" />
                 <div className="content-stretch flex md:gap-[18px] gap-[12px] items-center relative shrink-0 overflow-visible">
                   {colors.map((color) => (
                     <ColorButton
@@ -728,7 +731,7 @@ export default function PolaroidPage() {
                 {/* Date Toggle Button */}
                 <Tooltip label="Date">
                   <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
-                    <div aria-hidden="true" className="absolute border border-[rgba(0,0,0,0.1)] border-solid inset-0 pointer-events-none rounded-[1000px]" />
+                    <div aria-hidden="true" className="absolute border border-gray-200/80 border-solid inset-0 pointer-events-none rounded-[1000px]" />
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -758,7 +761,7 @@ export default function PolaroidPage() {
                 {/* Text Toggle Button */}
                 <Tooltip label="Caption">
                   <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
-                    <div aria-hidden="true" className="absolute border border-[rgba(0,0,0,0.1)] border-solid inset-0 pointer-events-none rounded-[1000px]" />
+                    <div aria-hidden="true" className="absolute border border-gray-200/80 border-solid inset-0 pointer-events-none rounded-[1000px]" />
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -808,8 +811,13 @@ export default function PolaroidPage() {
             </button>
 
             <button 
-              className="bg-black rounded-[999px] flex items-center gap-[8px] px-6 py-3 text-[17px] text-white cursor-pointer hover:bg-[rgba(0,0,0,0.8)] transition-colors"
-              onClick={() => setShowShareModal(true)}
+              className={`rounded-[999px] flex items-center gap-[8px] px-6 py-3 text-[17px] text-white transition-colors ${
+                uploadedImage 
+                  ? 'bg-black cursor-pointer hover:bg-[rgba(0,0,0,0.8)]' 
+                  : 'bg-gray-800 cursor-not-allowed opacity-50'
+              }`}
+              onClick={() => uploadedImage && setShowShareModal(true)}
+              disabled={!uploadedImage}
             >
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
@@ -853,8 +861,8 @@ export default function PolaroidPage() {
                           >
                             <div 
                               aria-hidden="true" 
-                              className="absolute border-[1.096px] border-solid inset-[-1.096px] pointer-events-none rounded-[5.479px]"
-                              style={{ borderColor: selectedColor ? selectedColor.border : 'rgba(0,0,0,0.1)' }}
+                              className="absolute border-[1.096px] border-solid border-gray-200/50 inset-[-1.096px] pointer-events-none rounded-[5.479px]"
+                              style={{ borderColor: selectedColor ? selectedColor.border : undefined }}
                             />
                           </div>
                         </div>
@@ -888,8 +896,8 @@ export default function PolaroidPage() {
                             </div>
                             <div 
                               aria-hidden="true" 
-                              className="absolute border-[0.548px] border-solid inset-0 pointer-events-none rounded-[2.192px]"
-                              style={{ borderColor: selectedColor ? `${selectedColor.fill}4D` : 'rgba(0,0,0,0.1)' }}
+                              className="absolute border-[0.548px] border-solid border-gray-200/50 inset-0 pointer-events-none rounded-[2.192px]"
+                              style={{ borderColor: selectedColor ? `${selectedColor.fill}4D` : undefined }}
                             />
                           </div>
                         </div>
@@ -926,7 +934,7 @@ export default function PolaroidPage() {
                     className="group basis-0 bg-white grow h-[120px] sm:h-[140px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
                     style={{ backgroundImage: copyLinkSuccess ? "linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" : undefined }}
                   >
-                    <div aria-hidden="true" className="absolute border border-[rgba(0,0,0,0.1)] border-solid inset-0 pointer-events-none rounded-[16px]" />
+                    <div aria-hidden="true" className="absolute border border-gray-200/50 border-solid inset-0 pointer-events-none rounded-[16px]" />
                     <div className="flex flex-col items-center size-full">
                       <div className="content-stretch flex flex-col gap-[7px] items-center p-[24px] relative size-full">
                         <div className="relative shrink-0 size-[70px]">
@@ -977,7 +985,7 @@ export default function PolaroidPage() {
                     className="group basis-0 bg-white grow h-[120px] sm:h-[140px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
                     style={{ backgroundImage: downloadSuccess ? "linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" : undefined }}
                   >
-                    <div aria-hidden="true" className="absolute border border-[rgba(0,0,0,0.1)] border-solid inset-0 pointer-events-none rounded-[16px]" />
+                    <div aria-hidden="true" className="absolute border border-gray-200/50 border-solid inset-0 pointer-events-none rounded-[16px]" />
                     <div className="flex flex-col items-center size-full">
                       <div className="content-stretch flex flex-col gap-[7px] items-center p-[24px] relative size-full">
                         <div className="relative shrink-0 size-[70px]">
@@ -1106,7 +1114,7 @@ export default function PolaroidPage() {
                 </div>
               </div>
             </div>
-            <div aria-hidden="true" className="absolute border border-[rgba(0,0,0,0.05)] border-solid inset-0 pointer-events-none rounded-[26px]" />
+            <div aria-hidden="true" className="absolute border border-gray-200/50 border-solid inset-0 pointer-events-none rounded-[26px]" />
           </div>
         </>
       )}

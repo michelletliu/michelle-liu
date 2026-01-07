@@ -3,7 +3,6 @@ import {project} from './project'
 import {artPiece} from './artPiece'
 import {sketchbook} from './sketchbook'
 import {mural} from './mural'
-import {book} from './book'
 
 // About page document types
 import {aboutPage} from './aboutPage'
@@ -32,7 +31,6 @@ export const schemaTypes = [
   artPiece,
   sketchbook,
   mural,
-  book,
   
   // About page
   aboutPage,

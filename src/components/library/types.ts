@@ -9,14 +9,8 @@ export interface Book {
   year?: string;
   isFavorite?: boolean;
   goodreadsUrl?: string;
-  // Legacy fields (from book schema)
-  shelf?: string;
-  yearFinished?: string;
-  datesRead?: {
-    start: string;
-    end: string;
-  };
   review?: string;
+  dateRead?: string;
 }
 
 // Raw Sanity book data structure (legacy - uses book schema)
@@ -45,4 +39,6 @@ export interface ShelfBookData {
   year?: string;
   isLibraryFavorite?: boolean;
   goodreadsUrl?: string;
+  review?: string;
+  dateRead?: string;
 }

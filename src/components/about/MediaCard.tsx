@@ -165,7 +165,7 @@ export default function MediaCard({
 
           {/* Quote Title */}
           {data?.quoteTitle && (
-            <p className="whitespace-pre-wrap font-['Figtree'] -mb-1 text-2xl tracking-[0.01em] font-semibold text-gray-800">
+            <p className="whitespace-pre-wrap font-['Figtree'] -mb-1 text-2xl tracking-[0.01em] font-semibold text-gray-600">
               {data.quoteTitle}
             </p>
           )}

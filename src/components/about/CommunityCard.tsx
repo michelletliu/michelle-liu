@@ -64,15 +64,34 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
       }
     };
 
+    let scrollY = 0;
+    let originalStyles: { overflow: string; position: string; top: string; width: string } | null = null;
+    
     if (expandedPhotoId) {
       document.addEventListener("keydown", handleKeyDown);
-      // Prevent body scroll when modal is open
+      // Prevent body scroll when modal is open, preserving scroll position
+      scrollY = window.scrollY;
+      originalStyles = {
+        overflow: document.body.style.overflow,
+        position: document.body.style.position,
+        top: document.body.style.top,
+        width: document.body.style.width,
+      };
       document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
     }
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
+      if (originalStyles) {
+        document.body.style.overflow = originalStyles.overflow;
+        document.body.style.position = originalStyles.position;
+        document.body.style.top = originalStyles.top;
+        document.body.style.width = originalStyles.width;
+        window.scrollTo(0, scrollY);
+      }
     };
   }, [expandedPhotoId]);
 
@@ -97,9 +116,9 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
         )}
 
         {/* Text content */}
-        <div className="flex w-full max-w-xs flex-col gap-4 whitespace-pre-wrap font-normal leading-[1.2]">
+        <div className="flex w-full max-w-lg flex-col gap-4 whitespace-pre-wrap font-normal leading-[1.2]">
           <div className="flex items-center gap-2">
-            <h3 className="text-xl font-medium text-gray-900">{data.title}</h3>
+            <h3 className="text-xl font-medium text-gray-600">{data.title}</h3>
             {data.instagramUrl && (
               <a
                 href={data.instagramUrl}
@@ -140,9 +159,9 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
       </div>
 
       {/* Desktop: Logo + Title on left, Description on right - single row */}
-      <div className="hidden w-full items-start py-8 justify-between lg:flex">
+      <div className="hidden w-full items-start py-8 justify-between gap-12 lg:flex">
         {/* Logo + Title + Instagram */}
-        <div className="flex shrink-0 items-center gap-8">
+        <div className="flex shrink-0 items-center gap-4 xl:gap-8">
           {data.logoSrc && (
             <div className="relative h-[90px] w-[90px] shrink-0">
               <img
@@ -152,7 +171,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
               />
             </div>
           )}
-          <h3 className="text-2xl font-medium leading-[1.4] text-gray-700">{data.title}</h3>
+          <h3 className="text-2xl font-medium leading-[1.4] text-gray-600">{data.title}</h3>
           {data.instagramUrl && (
             <a
               href={data.instagramUrl}
@@ -187,7 +206,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
         
         {/* Description on the right */}
         {data.description && (
-          <p className="w-100 mr-12 shrink-0 whitespace-pre-wrap text-base font-normal leading-[1.4] text-gray-400">
+          <p className="max-w-xs xl:max-w-sm mr-12 shrink-0 whitespace-pre-wrap text-base font-normal leading-[1.4] text-gray-400">
             {data.description}
           </p>
         )}
@@ -195,8 +214,8 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
 
       {/* Photo Collage - full width below header */}
       {photos.length > 0 && (
-        <div className="relative w-full shrink-0 overflow-visible px-4 lg:h-[400px]">
-          {/* Mobile: vertical stacked layout */}
+        <div className="relative w-full shrink-0 px-4">
+          {/* Mobile: single column stacked layout */}
           <div className="flex w-full flex-col items-center gap-10 lg:hidden">
             {photos.slice(0, 4).map((photo, index) => {
               const rotation = photo.rotation ?? defaultRotations[index] ?? 0;
@@ -245,12 +264,61 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
             })}
           </div>
 
-          {/* Desktop: flexbox centered layout - scaled up */}
-          <div className="hidden h-full w-full items-start justify-center lg:flex">
+          {/* Tablet (lg): 2x2 grid layout */}
+          <div className="hidden lg:grid xl:hidden grid-cols-2 gap-8 justify-items-center">
             {photos.slice(0, 4).map((photo, index) => {
               const rotation = photo.rotation ?? defaultRotations[index] ?? 0;
               const isVertical = photo.orientation === "vertical";
-              const yOffsetValue = parseInt(photo.yOffset || "0", 10) * 4; // Convert to pixels (Tailwind scale: 1 = 4px)
+
+              return (
+                <div
+                  key={photo.id}
+                  className="relative cursor-pointer"
+                  onClick={() => setExpandedPhotoId(photo.id)}
+                >
+                  <div
+                    className="relative flex flex-col gap-1"
+                    style={{ transform: `rotate(${rotation}deg)` }}
+                  >
+                    <div className="relative transition-transform duration-200 hover:scale-[1.01]">
+                      <div className="absolute -inset-2 rounded-sm border border-gray-100 bg-white shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)]" />
+                      <div
+                        className={clsx(
+                          "relative overflow-hidden rounded-sm",
+                          isVertical ? "h-56 w-48" : "h-48 w-56"
+                        )}
+                      >
+                        <img
+                          src={photo.imageSrc}
+                          alt={photo.caption || "Community photo"}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    </div>
+                    {photo.caption && (
+                      <p
+                        className={clsx(
+                          "mt-3 font-['DM_Sans'] text-sm font-normal text-gray-500",
+                          isVertical ? "w-48" : "w-56"
+                        )}
+                        style={{ fontVariationSettings: "'opsz' 9" }}
+                      >
+                        {photo.caption}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop (xl+): flexbox row with overlap effect */}
+          <div className="hidden h-[400px] w-full items-start justify-center xl:flex">
+            {photos.slice(0, 4).map((photo, index) => {
+              const rotation = photo.rotation ?? defaultRotations[index] ?? 0;
+              const isVertical = photo.orientation === "vertical";
+              const yOffsetValue = parseInt(photo.yOffset || "0", 10) * 4;
               const xOffsetValue = parseInt(photo.xOffset || "0", 10) * 4;
 
               // Negative margins to create overlap effect

@@ -40,7 +40,7 @@ export function PlusIcon({ className = "" }: IconProps) {
       <path 
         d="M9 1V17M1 9H17" 
         stroke="currentColor" 
-        strokeWidth="1.5" 
+        strokeWidth="2" 
         strokeLinecap="round"
       />
     </svg>

@@ -9,6 +9,19 @@ import { AddBookModal } from "./AddBookModal";
 import { ChevronDownIcon, PlusIcon } from "./icons";
 import type { Book, ShelfBookData } from "./types";
 import imgLogo from '../../assets/logo.png';
+import InfoButton from '../InfoButton';
+
+// Project info for the info button modal
+const LIBRARY_PROJECT = {
+  id: 'library',
+  title: 'Personal Library',
+  year: '2025',
+  description: 'My dream digital bookshelf',
+  imageSrc: 'https://image.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo/thumbnail.png',
+  videoSrc: 'https://stream.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo.m3u8',
+  xLink: 'https://x.com/michelletliu/status/1981030966044061894',
+  tryItOutHref: '/library',
+};
 
 // Transform shelfItem book data to component format
 function transformShelfBook(item: ShelfBookData): Book {
@@ -29,6 +42,8 @@ function transformShelfBook(item: ShelfBookData): Book {
     year: item.year,
     isFavorite: item.isLibraryFavorite || false,
     goodreadsUrl: item.goodreadsUrl,
+    review: item.review,
+    dateRead: item.dateRead,
   };
 }
 
@@ -145,6 +160,25 @@ export default function LibraryPage() {
 
   return (
     <>
+      {/* Info Button - fixed top right */}
+      <InfoButton project={LIBRARY_PROJECT} />
+
+      {/* Logo - outside animated container so it stays in place during transitions */}
+      <div className="absolute top-0 left-0 pt-8 px-8 md:px-16 z-10">
+        <button
+          ref={logoRef}
+          onClick={handleBackToHome}
+          className="cursor-pointer transition-opacity duration-200 hover:opacity-80"
+          aria-label="Go back to home"
+        >
+          <img
+            src={imgLogo}
+            alt="Michelle Liu Logo"
+            className="size-[44px] object-contain"
+          />
+        </button>
+      </div>
+
       <div 
         className={`relative min-h-screen w-full bg-white transition-all ${
           isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
@@ -157,20 +191,10 @@ export default function LibraryPage() {
       >
         {/* Header */}
         <div className="pt-8 px-8 md:px-16">
+          {/* Spacer for logo height */}
           <div className="flex flex-col gap-10 md:gap-12 items-start pb-5 md:pb-6">
-            {/* Logo */}
-            <button
-              ref={logoRef}
-              onClick={handleBackToHome}
-              className="cursor-pointer transition-opacity duration-200 hover:opacity-80"
-              aria-label="Go back to home"
-            >
-              <img
-                src={imgLogo}
-                alt="Michelle Liu Logo"
-                className="size-[44px] object-cover"
-              />
-            </button>
+            {/* Logo spacer - matches the logo size */}
+            <div className="size-[44px] shrink-0" />
           
           <div className="flex items-start justify-between w-full">
           {/* Title and Filter */}
@@ -183,7 +207,7 @@ export default function LibraryPage() {
                   onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                   className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors cursor-pointer bg-gray-500/10"
                 >
-                  <span className="font-['Figtree',sans-serif] font-semibold text-base tracking-[0.01em] whitespace-nowrap text-gray-500">
+                  <span className="font-['Figtree',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap text-gray-500">
                     {activeFilter}
                     <span className="text-gray-400"> ({filteredBooks.length})</span>
                   </span>
@@ -195,7 +219,7 @@ export default function LibraryPage() {
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    strokeWidth={2}
+                    strokeWidth={3}
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
@@ -231,7 +255,7 @@ export default function LibraryPage() {
                             )}
                           >
                             <span className={clsx(
-                              "font-['Figtree',sans-serif] font-semibold text-base tracking-[0.01em]",
+                              "font-['Figtree',sans-serif] font-medium text-base tracking-[0.01em]",
                               isActive ? "text-gray-600" : "text-gray-400"
                             )}>
                               {option.label}
@@ -285,7 +309,7 @@ export default function LibraryPage() {
             </div>
           ) : (
             <div 
-              className="grid grid-cols-[repeat(3,auto)] md:grid-cols-[repeat(6,auto)] gap-y-[60px] sm:gap-y-[80px] md:gap-y-[100px] justify-between"
+              className="grid grid-cols-[repeat(3,auto)] md:grid-cols-[repeat(6,auto)] gap-y-14 sm:gap-y-12 md:gap-y-8 justify-between"
             >
               {filteredBooks.map((book) => (
                 <BookCard key={book.id} book={book} onClick={() => setSelectedBook(book)} />

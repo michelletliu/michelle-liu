@@ -10,6 +10,7 @@ import ArtPage from "./components/art/ArtPage";
 import { AboutPage } from "./components/about";
 import { PolaroidPage } from "./components/polaroid";
 import { LibraryPage } from "./components/library";
+import { ScreentimePage } from "./components/screentime";
 import { ScrollReveal } from "./components/ScrollReveal";
 import { TryItOutButton } from "./components/TryItOutButton";
 import { preloadLikelyPages } from "./sanity/preload";
@@ -255,8 +256,8 @@ const staticProjects: Project[] = [
   {
     id: "sketchbook",
     title: "Digital Sketchbook",
-    year: "2024",
-    description: "A digital home for sketches and visual journaling.",
+    year: "2025",
+    description: "A digital home for sketches and visual journaling. Live app coming soon!",
     imageSrc: "https://image.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg/thumbnail.png",
     videoSrc: "https://stream.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg.m3u8",
   },
@@ -387,8 +388,9 @@ function TagBackgroundImageAndText({ text, active = false, onClick }: TagBackgro
     <button
       onClick={onClick}
       className={clsx(
-        "content-stretch flex items-center justify-center px-4 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-gray-100 transition-colors",
-        active && "bg-[rgba(107,114,128,0.1)]"
+        "content-stretch flex items-center justify-center px-4 pt-[5px] pb-[3px] relative rounded-full shrink-0 cursor-pointer transition-all duration-100 ease-out border border-transparent",
+        !active && "hover:bg-gray-200/40 hover:pt-[3px] hover:pb-[1px] hover:my-[2px]",
+        active && "bg-gray-200/60 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.02)] !border-white/50"
       )}
     >
       <p
@@ -411,13 +413,22 @@ type ProjectCardProps = {
 };
 
 function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
-  const hasTryItOut = project.id === 'polaroid' || project.id === 'library';
+  const hasTryItOut = project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime';
+  
+  // Handle click - navigate directly for polaroid/library, otherwise open modal
+  const handleClick = () => {
+    if (hasTryItOut) {
+      window.location.href = project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : '/library';
+    } else {
+      onClick();
+    }
+  };
 
   // Featured card style (for first 4 cards on desktop)
   if (featured) {
     return (
       <button
-        onClick={onClick}
+        onClick={handleClick}
         className="content-stretch flex flex-col gap-3 items-start relative shrink-0 w-full cursor-pointer group project-card"
       >
         <div 
@@ -428,44 +439,54 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
           <div className="absolute bottom-0 left-0 p-3 hidden md:block">
             <div className="bg-white border border-[#f3f4f6] border-solid flex items-center justify-center px-3 py-1.5 rounded-full">
               <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] text-[#111827] text-base">
-                <span>{project.title} </span>
-                <span className="text-[#9ca3af]">• {project.year}</span>
+                <span>{project.title}</span>
+                {/* Show year only for non-Try It Out projects */}
+                {!hasTryItOut && (
+                  <span className="text-[#9ca3af]"> • {project.year}</span>
+                )}
+                {/* Try It Out tag - inline, appears on hover */}
+                {hasTryItOut && (
+                  <>
+                    <span className="text-[#9ca3af] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
+                    <a 
+                      href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : '/library'}
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-blue-500 hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                    >
+                      Try It Out!
+                    </a>
+                  </>
+                )}
               </p>
             </div>
           </div>
         </div>
-        {/* Desktop: description and Try It Out */}
-        <div className="hidden md:flex content-stretch items-start justify-between px-[13px] py-0 -mt-0.5 relative shrink-0 w-full">
+        {/* Desktop: just description */}
+        <div className="hidden md:flex content-stretch items-start px-[13px] py-0 -mt-0.5 relative shrink-0 w-full">
           <p className="font-['Figtree',sans-serif] font-normal leading-[1] text-[#9ca3af] text-base text-left project-hover-text">{project.description}</p>
-          {/* Try It Out tag - appears on hover for polaroid and library */}
-          {hasTryItOut && (
-            <a 
-              href={project.id === 'polaroid' ? '/polaroid' : '/library'}
-              onClick={(e) => e.stopPropagation()}
-              className="font-['Figtree',sans-serif] text-blue-500 text-base md:opacity-0 md:translate-y-1 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300 ease-out hover:text-blue-400"
-            >
-              Try It Out!
-            </a>
-          )}
         </div>
         {/* Mobile: title + description */}
         <div className="md:hidden content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base gap-1">
-          <div className="flex justify-between w-full">
-            <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
-              <span>{project.title} </span>
-              <span className="text-[#9ca3af]">• {project.year}</span>
-            </p>
-            {/* Try It Out tag - always visible on mobile */}
-            {hasTryItOut && (
-              <a 
-                href={project.id === 'polaroid' ? '/polaroid' : '/library'}
-                onClick={(e) => e.stopPropagation()}
-                className="font-['Figtree',sans-serif] text-blue-500 text-base hover:text-blue-400"
-              >
-                Try It Out!
-              </a>
+          <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
+            <span>{project.title}</span>
+            {/* Show year only for non-Try It Out projects */}
+            {!hasTryItOut && (
+              <span className="text-[#9ca3af]"> • {project.year}</span>
             )}
-          </div>
+            {/* Try It Out tag - inline with title */}
+            {hasTryItOut && (
+              <>
+                <span className="text-[#9ca3af]"> • </span>
+                <a 
+                  href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : '/library'}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-blue-500 hover:text-blue-400"
+                >
+                  Try It Out!
+                </a>
+              </>
+            )}
+          </p>
           <p className="relative shrink-0 text-[#9ca3af] w-full text-left font-normal leading-[1.3]">{project.description}</p>
         </div>
       </button>
@@ -475,7 +496,7 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
   // Default card style
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       className="content-stretch flex flex-col gap-3 items-start relative shrink-0 w-full cursor-pointer group project-card"
     >
       <div 
@@ -483,21 +504,27 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
       >
         <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
       </div>
-      <div className="content-stretch flex font-['Figtree',sans-serif] -mt-1 font-normal items-start justify-between leading-[1.4] px-[13px] py-0 relative shrink-0 text-base w-full">
+      <div className="content-stretch flex font-['Figtree',sans-serif] -mt-1 font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base w-full">
         <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
-          <span>{project.title} </span>
-          <span className="text-[#9ca3af]">• {project.year}</span>
+          <span>{project.title}</span>
+          {/* Show year only for non-Try It Out projects */}
+          {!hasTryItOut && (
+            <span className="text-[#9ca3af]"> • {project.year}</span>
+          )}
+          {/* Try It Out tag - inline with title */}
+          {hasTryItOut && (
+            <>
+              <span className="text-[#9ca3af] md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
+              <a 
+                href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : '/library'}
+                onClick={(e) => e.stopPropagation()}
+                className="text-blue-500 hover:text-blue-400 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
+              >
+                Try It Out!
+              </a>
+            </>
+          )}
         </p>
-        {/* Try It Out tag - appears on hover for polaroid and library */}
-        {hasTryItOut && (
-          <a 
-            href={project.id === 'polaroid' ? '/polaroid' : '/library'}
-            onClick={(e) => e.stopPropagation()}
-            className="font-['Figtree',sans-serif] -mt-1 text-blue-500 text-base md:opacity-0 md:translate-y-1 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300 ease-out hover:text-blue-400"
-          >
-            Try It Out!
-          </a>
-        )}
       </div>
     </button>
   );
@@ -507,16 +534,6 @@ type ProjectModalProps = {
   project: Project;
   onClose: () => void;
 };
-
-// Close icon for popup modal (matches Figma design)
-const PopupCloseIcon = () => (
-  <svg className="block size-full" fill="none" viewBox="0 0 10 10">
-    <path
-      d="M9.76256 1.17736C10.0791 0.860788 10.0791 0.347859 9.76256 0.031284C9.44599 -0.285291 8.93306 -0.285291 8.61648 0.031284L5 3.64776L1.38352 0.031284C1.06694 -0.285291 0.554014 -0.285291 0.237439 0.031284C-0.0791362 0.347859 -0.0791362 0.860788 0.237439 1.17736L3.85392 4.79384L0.237439 8.41032C-0.0791362 8.7269 -0.0791362 9.23982 0.237439 9.5564C0.554014 9.87297 1.06694 9.87297 1.38352 9.5564L5 5.93992L8.61648 9.5564C8.93306 9.87297 9.44599 9.87297 9.76256 9.5564C10.0791 9.23982 10.0791 8.7269 9.76256 8.41032L6.14608 4.79384L9.76256 1.17736Z"
-      fill="#4B5563"
-    />
-  </svg>
-);
 
 // Horizontal divider line for popup modal
 function PopupLine() {
@@ -534,11 +551,27 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
   const [videoReady, setVideoReady] = useState(false);
 
   // Lock body scroll when modal is open
+  // Preserve scroll position to prevent flicker on close
   useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
+    const scrollY = window.scrollY;
+    
+    // Lock scroll while preserving position
     document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    
     return () => {
-      document.body.style.overflow = originalOverflow;
+      // Remove fixed positioning styles
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      
+      // Immediately restore scroll position synchronously to prevent flicker
+      // Using both methods for cross-browser compatibility
+      document.documentElement.scrollTop = scrollY;
+      document.body.scrollTop = scrollY;
     };
   }, []);
 
@@ -585,17 +618,6 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
       >
         {/* Inner container with top padding to keep scrollbar away from rounded corners */}
         <div className="flex flex-col flex-1 min-h-0 pt-6 max-md:pt-4">
-          {/* Close button row - stays fixed at top */}
-          <div className="content-stretch flex items-start justify-end px-6 pb-0 max-md:px-4 -mt-6 max-md:-mt-4 pt-6 max-md:pt-4 shrink-0 w-full bg-white z-10">
-            <button
-              onClick={handleClose}
-              className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-full hover:bg-[#F3F4F6] transition-colors duration-200 ease-out"
-            >
-              <div className="overflow-clip relative shrink-0 size-[10px]">
-                <PopupCloseIcon />
-              </div>
-            </button>
-          </div>
 
           {/* Scrollable content area */}
           <div className="overflow-y-auto flex-1">
@@ -630,8 +652,8 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
             </div>
 
             {/* Try It Out button - desktop */}
-            {(project.id === 'polaroid' || project.id === 'library') && (
-              <TryItOutButton href={project.id === 'polaroid' ? '/polaroid' : '/library'} />
+            {(project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime') && (
+              <TryItOutButton href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : '/library'} />
             )}
           </div>
 
@@ -663,8 +685,8 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
             </div>
 
             {/* Try It Out button - mobile */}
-            {(project.id === 'polaroid' || project.id === 'library') && (
-              <TryItOutButton href={project.id === 'polaroid' ? '/polaroid' : '/library'} />
+            {(project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime') && (
+              <TryItOutButton href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : '/library'} />
             )}
           </div>
 
@@ -1035,14 +1057,13 @@ function HomePage() {
 export default function App() {
   return (
     <Routes>
-      {/* Home page - no modal */}
-      <Route path="/" element={<HomePage />} />
-      
-      {/* Project overlay modal */}
-      <Route path="/project/:slug" element={<HomePage />} />
-      
-      {/* Project fullscreen/expanded view */}
-      <Route path="/project/:slug/:mode" element={<HomePage />} />
+      {/* Home page layout - stays mounted for all project modals */}
+      <Route path="/" element={<HomePage />}>
+        {/* These nested routes keep HomePage mounted when navigating between them */}
+        <Route index element={null} />
+        <Route path="project/:slug" element={null} />
+        <Route path="project/:slug/:mode" element={null} />
+      </Route>
       
       {/* Art page */}
       <Route path="/art" element={<ArtPage />} />
@@ -1055,6 +1076,9 @@ export default function App() {
 
       {/* Library page */}
       <Route path="/library" element={<LibraryPage />} />
+
+      {/* Screentime Receipt page */}
+      <Route path="/screentime" element={<ScreentimePage />} />
     </Routes>
   );
 }

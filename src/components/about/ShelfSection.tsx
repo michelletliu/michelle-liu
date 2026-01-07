@@ -101,8 +101,8 @@ export default function ShelfSection({
       {/* Header */}
       <div className="relative flex w-full flex-col py-4">
         {/* Title tag and year filters */}
-        <div className="flex items-center justify-between pb-2">
-          <div className="flex items-center gap-1 min-w-0">
+        <div className="flex items-center pb-2">
+          <div className="flex items-center gap-1 min-w-0 overflow-hidden flex-1">
             {/* Desktop: Title tag - clickable to show favorites */}
             <button
               onClick={() => onYearChange?.("")}
@@ -282,18 +282,20 @@ export default function ShelfSection({
             </div>
           </div>
 
-          {/* External link - right aligned, never overflows past divider */}
+          {/* External link - right aligned with gradient fade for readability */}
           {externalLink && (
-            <a
-              href={externalLink.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 cursor-pointer transition-colors"
-            >
-              <span className="font-['Figtree',sans-serif] text-sm md:text-base font-normal tracking-wide text-gray-400 hover:text-blue-500 transition-colors whitespace-nowrap">
-                {externalLink.label} ↗
-              </span>
-            </a>
+            <div className="shrink-0 flex items-center pl-6 bg-gradient-to-r from-transparent to-white">
+              <a
+                href={externalLink.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cursor-pointer transition-colors bg-white"
+              >
+                <span className="font-['Figtree',sans-serif] text-sm md:text-base font-normal tracking-wide text-gray-400 hover:text-blue-500 transition-colors whitespace-nowrap">
+                  {externalLink.label} ↗
+                </span>
+              </a>
+            </div>
           )}
         </div>
 
