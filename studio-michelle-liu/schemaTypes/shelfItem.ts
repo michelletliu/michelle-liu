@@ -56,11 +56,26 @@ export const shelfItem = defineType({
       type: 'string',
     }),
     defineField({
+      name: 'dateRead',
+      title: 'Date Read',
+      description: 'Specific date finished reading (from Goodreads)',
+      type: 'date',
+      hidden: ({document}) => document?.mediaType !== 'book',
+    }),
+    defineField({
       name: 'rating',
       title: 'Rating',
       description: 'Optional rating (1-5 stars)',
       type: 'number',
       validation: (rule) => rule.min(1).max(5),
+    }),
+    defineField({
+      name: 'review',
+      title: 'Review',
+      description: 'Personal review or notes',
+      type: 'text',
+      rows: 6,
+      hidden: ({document}) => document?.mediaType !== 'book',
     }),
     defineField({
       name: 'isFeatured',

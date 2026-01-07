@@ -802,8 +802,13 @@ export default function PolaroidPage() {
             </button>
 
             <button 
-              className="bg-black rounded-[999px] flex items-center gap-[8px] px-[24px] py-[12px] text-[17px] text-white cursor-pointer hover:bg-[rgba(0,0,0,0.8)] transition-colors"
-              onClick={() => setShowShareModal(true)}
+              className={`rounded-[999px] flex items-center gap-[8px] px-[24px] py-[12px] text-[17px] text-white transition-colors ${
+                uploadedImage 
+                  ? 'bg-black cursor-pointer hover:bg-[rgba(0,0,0,0.8)]' 
+                  : 'bg-gray-800 cursor-not-allowed opacity-50'
+              }`}
+              onClick={() => uploadedImage && setShowShareModal(true)}
+              disabled={!uploadedImage}
             >
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />

@@ -280,12 +280,28 @@ export default function ProjectModal({
   }, [projectId]);
 
   // Lock body scroll when modal is open (popup mode only)
+  // Preserve scroll position to prevent flicker on close
   useEffect(() => {
     if (!isFullscreen) {
-      const originalOverflow = document.body.style.overflow;
+      const scrollY = window.scrollY;
+      
+      // Lock scroll while preserving position
       document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      
       return () => {
-        document.body.style.overflow = originalOverflow;
+        // Remove fixed positioning styles
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        
+        // Immediately restore scroll position synchronously to prevent flicker
+        // Using both methods for cross-browser compatibility
+        document.documentElement.scrollTop = scrollY;
+        document.body.scrollTop = scrollY;
       };
     }
   }, [isFullscreen]);
@@ -357,8 +373,11 @@ export default function ProjectModal({
   };
 
   const handleBack = () => {
-    if (isFullscreen && onCollapseFromFullscreen) {
-      onCollapseFromFullscreen();
+    if (isFullscreen) {
+      // In fullscreen mode, clicking logo should go to homepage top
+      if (onViewAllProjects) {
+        onViewAllProjects();
+      }
     } else if (onBack) {
       setIsClosing(true);
       setIsVisible(false);
@@ -429,25 +448,15 @@ export default function ProjectModal({
         <div className="flex flex-col flex-1 min-h-0 relative">
           {/* Non-fullscreen header - absolutely positioned to float over content */}
           {!isFullscreen && (
-            /* Modal header with back and close buttons */
-            <div className="absolute top-0 left-0 right-0 flex items-start justify-between px-7 pt-6 pb-3 z-10">
-              {/* Back/Expand button */}
+            /* Modal header with expand button */
+            <div className="absolute top-0 left-0 right-0 flex items-start justify-start px-7 pt-6 pb-3 z-10">
+              {/* Expand button */}
               <button
                 onClick={handleExpandToFullscreen}
                 className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-sm hover:bg-gray-200 transition-colors duration-200 ease-out text-[#4b5563]"
               >
                 <div className="relative shrink-0 size-[18px]">
                   <BackArrowIcon />
-                </div>
-              </button>
-
-              {/* Close button */}
-              <button
-                onClick={handleClose}
-                className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-full hover:bg-gray-200 transition-colors duration-200 ease-out text-[#4b5563]"
-              >
-                <div className="overflow-clip relative shrink-0 size-2.5">
-                  <CloseIcon />
                 </div>
               </button>
             </div>

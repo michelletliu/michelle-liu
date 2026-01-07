@@ -294,45 +294,6 @@ export const QUOTES_QUERY = `
 // LIBRARY PAGE QUERIES
 // ============================================
 
-// Query for all books (legacy - uses book schema)
-export const BOOKS_QUERY = `
-  *[_type == "book" && isPublished == true] | order(order asc, dateFinished desc) {
-    _id,
-    title,
-    author,
-    coverImage,
-    coverUrl,
-    rating,
-    shelf,
-    dateStarted,
-    dateFinished,
-    review,
-    goodreadsUrl
-  }
-`;
-
-// Query for books by shelf (legacy)
-export const BOOKS_BY_SHELF_QUERY = `
-  *[_type == "book" && isPublished == true && shelf == $shelf] | order(order asc, dateFinished desc) {
-    _id,
-    title,
-    author,
-    coverImage,
-    coverUrl,
-    rating,
-    shelf,
-    dateStarted,
-    dateFinished,
-    review,
-    goodreadsUrl
-  }
-`;
-
-// Query for all available shelves (for dropdown) - legacy
-export const BOOK_SHELVES_QUERY = `
-  array::unique(*[_type == "book" && isPublished == true].shelf)
-`;
-
 // Query for shelf items that are books (uses shelfItem schema)
 export const SHELF_BOOKS_QUERY = `
   *[_type == "shelfItem" && isPublished == true && mediaType == "book"] | order(isLibraryFavorite desc, year desc, order asc) {
@@ -344,7 +305,9 @@ export const SHELF_BOOKS_QUERY = `
     rating,
     year,
     isLibraryFavorite,
-    goodreadsUrl
+    goodreadsUrl,
+    review,
+    dateRead
   }
 `;
 

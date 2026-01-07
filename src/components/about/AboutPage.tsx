@@ -72,8 +72,9 @@ function TagBackgroundImageAndText({ text, active = false, onClick }: TagBackgro
     <button
       onClick={onClick}
       className={clsx(
-        "content-stretch flex items-center justify-center px-4 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-gray-100 transition-colors",
-        active && "bg-[rgba(107,114,128,0.1)]"
+        "content-stretch flex items-center justify-center px-4 pt-[5px] pb-[3px] relative rounded-full shrink-0 cursor-pointer transition-all duration-100 ease-out border border-transparent",
+        !active && "hover:bg-gray-200/40 hover:pt-[3px] hover:pb-[1px] hover:my-[2px]",
+        active && "bg-gray-200/60 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.02)] !border-white/50"
       )}
     >
       <p
@@ -508,6 +509,7 @@ export default function AboutPage() {
       }
     });
     return Object.entries(yearCounts)
+      .filter(([year]) => Number(year) >= 2019) // Only show 2019 and newer
       .sort(([a], [b]) => Number(b) - Number(a)) // Sort descending
       .map(([year, count]) => ({ year, count }));
   };

@@ -77,12 +77,6 @@ export const structure = (S: StructureBuilder) =>
         .schemaType('mural')
         .child(S.documentTypeList('mural').title('Murals')),
 
-      // Book
-      S.listItem()
-        .title('Book')
-        .schemaType('book')
-        .child(S.documentTypeList('book').title('Books')),
-
       // About Page
       S.listItem()
         .title('About Page')
@@ -119,6 +113,15 @@ export const structure = (S: StructureBuilder) =>
                   S.documentList()
                     .title('★ Favorite Books')
                     .filter('_type == "shelfItem" && mediaType == "book" && isFeatured == true')
+                    .defaultOrdering([{field: 'title', direction: 'asc'}])
+                ),
+              S.listItem()
+                .title('⭐ Library Favorites')
+                .id('book-library-favorites')
+                .child(
+                  S.documentList()
+                    .title('⭐ Library Favorites')
+                    .filter('_type == "shelfItem" && mediaType == "book" && isLibraryFavorite == true')
                     .defaultOrdering([{field: 'title', direction: 'asc'}])
                 ),
               S.divider(),
