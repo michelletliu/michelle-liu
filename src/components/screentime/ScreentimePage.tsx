@@ -948,7 +948,10 @@ export default function ScreentimePage() {
         }}
       >
         <div className="relative w-full max-w-[402px] min-h-screen mx-auto bg-[#f3f4f6]">
-          <StatusBar />
+          {/* Hide status bar on mobile - users already have their real one */}
+          <div className="hidden md:block">
+            <StatusBar />
+          </div>
           <HomeIndicator additionalClassNames="bottom-0" />
           
           {screen === 'generate' && (

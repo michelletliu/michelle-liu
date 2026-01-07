@@ -3,6 +3,7 @@ import svgPaths from "../imports/svg-2tsxp86msm";
 import imgFinalSealLogo1 from "../assets/logo.png";
 import { imgGroup } from "../imports/svg-poktt";
 import { ScrollReveal } from "./ScrollReveal";
+import { ArrowUpRight } from "./ArrowUpRight";
 
 // Hook to fetch latest commit date from GitHub
 function useLatestCommitDate() {
@@ -232,7 +233,7 @@ export default function Footer() {
                   <p className="leading-6 relative shrink-0 text-base break-all">
                     <a href="mailto:michelletheresaliu@gmail.com" className="hover:text-blue-500 text-gray-500 transition-colors duration-200">
                       <span>{`michelletheresaliu@gmail.com `}</span>
-                      <span className="font-['Figtree',sans-serif] font-bold">↗</span>
+                      <span className="font-['Figtree',sans-serif] font-bold"><ArrowUpRight /></span>
                     </a>
                   </p>
                 </div>
@@ -297,7 +298,7 @@ export default function Footer() {
                     <p className="leading-6 relative shrink-0 text-base w-full break-all">
                       <a href="mailto:michelletheresaliu@gmail.com" className="hover:text-blue-500 text-gray-500 transition-colors duration-200">
                         <span>{`michelletheresaliu@gmail.com `}</span>
-                        <span className="font-['Figtree',sans-serif] font-bold">↗</span>
+                        <span className="font-['Figtree',sans-serif] font-bold"><ArrowUpRight /></span>
                       </a>
                     </p>
                   </div>

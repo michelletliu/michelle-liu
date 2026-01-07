@@ -17,6 +17,7 @@ import { preloadLikelyPages } from "./sanity/preload";
 import PageHeader from "./components/PageHeader";
 import { client } from "./sanity/client";
 import { PROJECTS_QUERY } from "./sanity/queries";
+import { ArrowUpRight } from "./components/ArrowUpRight";
 
 // CSS for fade up animation
 const fadeUpStyles = `
@@ -715,7 +716,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
                   </svg>
                 </div>
                 <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
-                  ↗
+                  <ArrowUpRight />
                 </p>
               </div>
             </a>

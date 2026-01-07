@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { ArrowUpRight } from "../ArrowUpRight";
 
 export type LoreCardData = {
   id: string;
@@ -81,7 +82,7 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
           </div>
           {/* Arrow - always visible on mobile, hover on desktop */}
           <span className="text-gray-700 text-sm opacity-100 md:opacity-0 transition-opacity duration-200 ease-out md:group-hover:opacity-100">
-            ↗
+            <ArrowUpRight />
           </span>
         </div>
         {/* Description - always visible on mobile, fade up on hover for desktop */}

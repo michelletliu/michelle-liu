@@ -1,6 +1,7 @@
 import { useState } from "react";
 import clsx from "clsx";
 import MediaCard, { type MediaCardData } from "./MediaCard";
+import { ArrowUpRight } from "../ArrowUpRight";
 
 export type ShelfCategory = {
   id: string;
@@ -141,7 +142,7 @@ export default function ShelfGallery({
               className="flex shrink-0 cursor-pointer items-center justify-center rounded-full px-0.5 transition-colors hover:text-gray-600"
             >
               <span className="text-base font-normal leading-5 tracking-wide text-gray-400">
-                {externalLink.label} ↗
+                {externalLink.label} <ArrowUpRight />
               </span>
             </a>
           )}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import VideoPlayer from './VideoPlayer';
+import { ArrowUpRight } from './ArrowUpRight';
 
 // Info icon SVG component - gray-400 color, 20px
 function InfoIcon() {
@@ -171,7 +172,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                             </svg>
                           </div>
                           <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
-                            ↗
+                            <ArrowUpRight />
                           </p>
                         </div>
                       </a>

@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { useEffect, useState, useRef } from "react";
 import MediaCard, { type MediaCardData } from "./MediaCard";
+import { ArrowUpRight } from "../ArrowUpRight";
 
 type YearFilter = {
   year: string;
@@ -102,29 +103,9 @@ export default function ShelfSection({
       <div className="relative flex w-full flex-col py-4">
         {/* Title tag and year filters */}
         <div className="flex items-center pb-2">
-          <div className="flex items-center gap-1 min-w-0 overflow-hidden flex-1">
-            {/* Desktop: Title tag - clickable to show favorites */}
-            <button
-              onClick={() => onYearChange?.("")}
-              className={clsx(
-                "hidden lg:flex shrink-0 items-center justify-center rounded-full px-3 py-1 transition-colors cursor-pointer",
-                !activeYear ? "bg-gray-500/10" : "hover:bg-gray-500/5"
-              )}
-            >
-              <span className={clsx(
-                "font-['Figtree',sans-serif] font-semibold text-base tracking-wide whitespace-nowrap",
-                !activeYear ? "text-gray-500" : "text-gray-400"
-              )}>
-                {title}
-                {count !== undefined && (
-                  <span className={!activeYear ? "text-gray-400" : "text-gray-300"}> ({count})</span>
-                )}
-              </span>
-            </button>
-
-            {/* Mobile/Tablet: Dropdown for year filters */}
-            {yearFilters.length > 0 && (
-              <div className="relative lg:hidden shrink-0" ref={dropdownRef}>
+          {/* Mobile/Tablet: Dropdown for year filters - outside overflow container */}
+          {yearFilters.length > 0 && (
+            <div className="relative lg:hidden shrink-0" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className={clsx(
@@ -250,8 +231,28 @@ export default function ShelfSection({
               </button>
             )}
 
-            {/* Desktop: Year filters - horizontally displayed */}
-            <div className="hidden lg:flex items-center gap-1">
+            {/* Desktop: Title and year filters in overflow container */}
+            <div className="hidden lg:flex items-center gap-1 min-w-0 overflow-hidden flex-1">
+              {/* Desktop: Title tag - clickable to show favorites */}
+              <button
+                onClick={() => onYearChange?.("")}
+                className={clsx(
+                  "flex shrink-0 items-center justify-center rounded-full px-3 py-1 transition-colors cursor-pointer",
+                  !activeYear ? "bg-gray-500/10" : "hover:bg-gray-500/5"
+                )}
+              >
+                <span className={clsx(
+                  "font-['Figtree',sans-serif] font-semibold text-base tracking-wide whitespace-nowrap",
+                  !activeYear ? "text-gray-500" : "text-gray-400"
+                )}>
+                  {title}
+                  {count !== undefined && (
+                    <span className={!activeYear ? "text-gray-400" : "text-gray-300"}> ({count})</span>
+                  )}
+                </span>
+              </button>
+
+              {/* Year filters */}
               {yearFilters.map((filter) => {
                 const isActive = activeYear === filter.year;
                 return (
@@ -280,7 +281,6 @@ export default function ShelfSection({
                 );
               })}
             </div>
-          </div>
 
           {/* External link - right aligned with gradient fade for readability */}
           {externalLink && (
@@ -292,7 +292,7 @@ export default function ShelfSection({
                 className="cursor-pointer transition-colors bg-white"
               >
                 <span className="font-['Figtree',sans-serif] text-sm md:text-base font-normal tracking-wide text-gray-400 hover:text-blue-500 transition-colors whitespace-nowrap">
-                  {externalLink.label} ↗
+                  {externalLink.label} <ArrowUpRight />
                 </span>
               </a>
             </div>

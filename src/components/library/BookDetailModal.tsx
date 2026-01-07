@@ -87,7 +87,7 @@ export function BookDetailModal({ book, onClose }: BookDetailModalProps) {
       
       {/* Modal */}
       <div 
-        className={`fixed left-1/2 top-1/2 z-50 flex flex-col gap-6 sm:gap-8 md:gap-10 p-6 sm:p-10 md:p-16 lg:p-20 rounded-2xl w-[calc(100vw-32px)] sm:w-[calc(100vw-80px)] md:w-[min(1137px,90vw)] max-h-[calc(100vh-32px)] sm:max-h-[90vh] overflow-y-auto bg-white border border-[rgba(0,0,0,0.1)] shadow-[0px_4px_36px_0px_rgba(0,0,0,0.15)] ${isClosing ? 'animate-modal-scale-out' : 'animate-modal-scale-in'}`}
+        className={`fixed left-1/2 top-1/2 z-50 flex flex-col gap-6 sm:gap-8 md:gap-10 p-6 sm:p-10 md:p-16 lg:p-20 rounded-2xl w-[calc(100vw-32px)] sm:w-[calc(100vw-80px)] md:w-[min(1137px,90vw)] max-h-[80vh] sm:max-h-[90vh] overflow-y-auto bg-white border border-[rgba(0,0,0,0.1)] shadow-[0px_4px_36px_0px_rgba(0,0,0,0.15)] ${isClosing ? 'animate-modal-scale-out' : 'animate-modal-scale-in'}`}
       >
         {/* Header: Cover + Info */}
         <div className="flex flex-col sm:flex-row gap-8 sm:gap-9 md:gap-11 w-full">

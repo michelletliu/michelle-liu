@@ -12,6 +12,7 @@ import LoreCard from "./LoreCard";
 import MediaCard from "./MediaCard";
 import AboutSidebar from "./AboutSidebar";
 import Footer from "../Footer";
+import { ArrowUpRight } from "../ArrowUpRight";
 
 import type { AboutCategory, ShelfSubcategory, CommunitySidebarItem } from "./AboutSidebar";
 
@@ -509,7 +510,7 @@ export default function AboutPage() {
       }
     });
     return Object.entries(yearCounts)
-      .filter(([year]) => Number(year) >= 2019) // Only show 2019 and newer
+      .filter(([year]) => Number(year) >= 2020) // Only show 2020 and newer
       .sort(([a], [b]) => Number(b) - Number(a)) // Sort descending
       .map(([year, count]) => ({ year, count }));
   };
@@ -690,7 +691,7 @@ export default function AboutPage() {
                   rel="noopener noreferrer"
                   className="font-['Figtree',sans-serif] font-medium text-gray-400 text-lg hover:text-blue-500 transition-colors"
                 >
-                  Resume ↗
+                  Resume <ArrowUpRight />
                 </a>
               </div>
             </ScrollReveal>

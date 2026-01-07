@@ -2,6 +2,7 @@ import svgPaths from "./svg-i7sj423lwm";
 import clsx from "clsx";
 import imgFinalSealLogo1 from "../assets/logo.png";
 import { imgGroup } from "./svg-r5pnh";
+import { ArrowUpRight } from "../components/ArrowUpRight";
 
 function AppleCoverBackgroundImage({ children }: React.PropsWithChildren<{}>) {
   return (
@@ -262,7 +263,7 @@ export default function V() {
                       <p className="leading-[24px] relative shrink-0 text-[16px] w-full">Let's work together!</p>
                       <p className="leading-[24px] relative shrink-0 text-[0px] text-[16px] w-full">
                         <span>{`michelletheresaliu@gmail.com `}</span>
-                        <span className="font-['Figtree',sans-serif] font-bold">↗</span>
+                        <span className="font-['Figtree',sans-serif] font-bold"><ArrowUpRight /></span>
                       </p>
                     </div>
                     <div className="content-stretch flex flex-col gap-[20px] items-start relative shrink-0 w-[326px]">
