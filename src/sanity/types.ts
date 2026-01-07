@@ -62,9 +62,13 @@ export interface MetadataItem {
   subValue?: string;
 }
 
+// Visibility setting for content sections
+export type SectionVisibility = "both" | "locked" | "unlocked";
+
 export interface MissionSection {
   _key: string;
   _type: "missionSection";
+  visibility?: SectionVisibility;
   sectionLabel?: string;
   missionTitle: string;
   highlightedText?: string;
@@ -97,6 +101,7 @@ export interface GalleryImage {
 export interface GallerySection {
   _key: string;
   _type: "gallerySection";
+  visibility?: SectionVisibility;
   title?: string;
   layout?: "4-col" | "3-col" | "2-col" | "masonry";
   images?: GalleryImage[];
@@ -105,6 +110,7 @@ export interface GallerySection {
 export interface TextSection {
   _key: string;
   _type: "textSection";
+  visibility?: SectionVisibility;
   label?: string;
   heading?: string;
   body?: any[]; // Portable Text
@@ -114,7 +120,9 @@ export interface TextSection {
 export interface ImageSection {
   _key: string;
   _type: "imageSection";
-  image: SanityImage;
+  visibility?: SectionVisibility;
+  image?: SanityImage;
+  externalImageUrl?: string;
   alt?: string;
   caption?: string;
   size?: "full" | "large" | "medium";
@@ -124,6 +132,7 @@ export interface ImageSection {
 export interface VideoSection {
   _key: string;
   _type: "videoSection";
+  visibility?: SectionVisibility;
   title?: string;
   videoType?: "mux" | "youtube" | "vimeo";
   muxPlaybackId?: string;
@@ -137,6 +146,7 @@ export interface VideoSection {
 export interface TestimonialSection {
   _key: string;
   _type: "testimonialSection";
+  visibility?: SectionVisibility;
   sectionLabel?: string;
   sectionTitle?: string;
   quote: string;
@@ -159,6 +169,7 @@ export interface ProjectCard {
 export interface ProjectCardSection {
   _key: string;
   _type: "projectCardSection";
+  visibility?: SectionVisibility;
   cards?: ProjectCard[];
 }
 
@@ -171,6 +182,7 @@ export interface TeamMember {
 export interface SideQuestSection {
   _key: string;
   _type: "sideQuestSection";
+  visibility?: SectionVisibility;
   label?: string;
   title: string;
   subtitle?: string;
@@ -183,6 +195,7 @@ export interface SideQuestSection {
 export interface DividerSection {
   _key: string;
   _type: "dividerSection";
+  visibility?: SectionVisibility;
   style?: string;
 }
 

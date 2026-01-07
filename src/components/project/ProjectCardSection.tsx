@@ -20,11 +20,11 @@ function SingleProjectCard({ card }: { card: ProjectCard }) {
       {/* Left side: Label and Title */}
       <div className="flex flex-col gap-3">
         {card.label && (
-          <p className="text-[#9ca3af] text-sm font-medium tracking-wide uppercase">
+          <p className="text-[#9ca3af] text-sm font-normal tracking-wide uppercase">
             {card.label}
           </p>
         )}
-        <p className="text-xl md:text-2xl font-normal text-[#111827]">
+        <p className="text-xl font-normal text-[#111827]">
           {card.emoji && <span className="mr-2">{card.emoji}</span>}
           {card.title}
         </p>

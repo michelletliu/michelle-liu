@@ -21,16 +21,16 @@ export function BookCard({ book, onClick }: BookCardProps) {
       </div>
 
       {/* Text content - appears on hover, centered with cover */}
-      <div className="absolute top-[175px] sm:top-[200px] md:top-[225px] lg:top-[250px] left-1/2 -translate-x-1/2 w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex flex-col gap-[3px] sm:gap-[4px] items-center text-center leading-[0] opacity-0 transition-opacity duration-[400ms] ease-out group-hover:opacity-100">
-        <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-[16px] sm:text-[18px] md:text-[19px] lg:text-[20px] text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
-          <p className="leading-[20px] sm:leading-[23px] md:leading-[24px] lg:leading-[25px]">{book.title}</p>
+      <div className="absolute top-[175px] sm:top-[200px] md:top-[225px] lg:top-[250px] left-1/2 -translate-x-1/2 w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex flex-col items-center text-center leading-[0] opacity-0 transition-opacity duration-[400ms] ease-out group-hover:opacity-100">
+        <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-base text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
+          <p className="leading-normal">{book.title}</p>
         </div>
-        <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] text-[rgba(0,0,0,0.5)]" style={{ fontVariationSettings: "'wdth' 100" }}>
-          <p className="leading-[18px] sm:leading-[20px] md:leading-[21px] lg:leading-[22px]">{book.author}</p>
+        <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-base text-gray-500" style={{ fontVariationSettings: "'wdth' 100" }}>
+          <p className="leading-normal">{book.author}</p>
         </div>
-        <p className="font-['DM_Sans:Medium','Noto_Sans_Symbols2:Regular',sans-serif] leading-[1.4] not-italic relative shrink-0 text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] text-black text-nowrap">
-          <span className="text-[#797979]">{"★".repeat(book.rating)}</span>
-          <span className="text-[#e8e8e8]">{"★".repeat(5 - book.rating)}</span>
+        <p className="font-['DM_Sans:Medium','Noto_Sans_Symbols2:Regular',sans-serif] leading-normal not-italic relative shrink-0 text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] text-black text-nowrap">
+          <span className="text-gray-500">{"★".repeat(book.rating)}</span>
+          <span className="text-gray-200">{"★".repeat(5 - book.rating)}</span>
         </p>
       </div>
     </button>

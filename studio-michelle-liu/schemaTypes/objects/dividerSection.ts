@@ -1,4 +1,4 @@
-import {defineType} from 'sanity'
+import {defineType, defineField} from 'sanity'
 import {RemoveIcon} from '@sanity/icons'
 
 export const dividerSection = defineType({
@@ -7,7 +7,21 @@ export const dividerSection = defineType({
   type: 'object',
   icon: RemoveIcon,
   fields: [
-    // No fields needed - this is just a visual separator
+    defineField({
+      name: 'visibility',
+      title: 'Visibility',
+      type: 'string',
+      description: 'When should this section be visible?',
+      options: {
+        list: [
+          {title: 'Both (locked & unlocked)', value: 'both'},
+          {title: 'Locked only', value: 'locked'},
+          {title: 'Unlocked only', value: 'unlocked'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'both',
+    }),
     // Adding a hidden field to satisfy Sanity's requirement for at least one field
     {
       name: 'style',

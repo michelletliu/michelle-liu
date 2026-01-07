@@ -192,18 +192,19 @@ export default function MediaCard({
     );
   }
 
-  // Handle click - open external link if available, otherwise call onClick
-  const handleClick = () => {
+  // Get external link URL if available
+  const getExternalUrl = (): string | undefined => {
     if (type === "Book" && data?.goodreadsUrl) {
-      window.open(data.goodreadsUrl, "_blank", "noopener,noreferrer");
+      return data.goodreadsUrl;
     } else if (type === "Music" && data?.spotifyUrl) {
-      window.open(data.spotifyUrl, "_blank", "noopener,noreferrer");
+      return data.spotifyUrl;
     } else if (type === "Movie" && data?.letterboxdSlug) {
-      window.open(`https://letterboxd.com/liumichelle/film/${data.letterboxdSlug}/`, "_blank", "noopener,noreferrer");
-    } else {
-      onClick?.();
+      return `https://letterboxd.com/liumichelle/film/${data.letterboxdSlug}/`;
     }
+    return undefined;
   };
+
+  const externalUrl = getExternalUrl();
 
   // Image loading state
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -225,27 +226,25 @@ export default function MediaCard({
 
   const showShimmer = hasImage && !imageLoaded && !imageError;
 
-  // Book and Music cards share similar structure
-  return (
-    <button
-      onClick={handleClick}
-      className={clsx(
-        "relative overflow-hidden transition-transform hover:scale-[1.01]",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2",
-        // Aspect ratio: Music/square albums vs portrait books/movies (210:271 from Figma)
-        isSquare ? "aspect-square" : "aspect-[210/310]",
-        // Border radius based on variant
-        variant === "default" && "rounded-xl md:rounded-md",
-        variant === "expanded" && "rounded-lg md:rounded-md",
-        // Placeholder background when no image
-        !hasImage && "bg-gray-300",
-        // Cursor style - pointer if has link
-        (type === "Book" && data?.goodreadsUrl) || (type === "Music" && data?.spotifyUrl) || (type === "Movie" && data?.letterboxdSlug) ? "cursor-pointer" : "",
-        className
-      )}
-      title={data?.title}
-      aria-label={data?.title || "Media item"}
-    >
+  // Shared class names for both anchor and button
+  const sharedClasses = clsx(
+    "relative overflow-hidden transition-transform hover:scale-[1.01]",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2",
+    // Aspect ratio: Music/square albums vs portrait books/movies (210:271 from Figma)
+    isSquare ? "aspect-square" : "aspect-[210/310]",
+    // Border radius based on variant
+    variant === "default" && "rounded-xl md:rounded-md",
+    variant === "expanded" && "rounded-lg md:rounded-md",
+    // Placeholder background when no image
+    !hasImage && "bg-gray-300",
+    // Cursor style - pointer if has link
+    externalUrl ? "cursor-pointer" : "",
+    className
+  );
+
+  // Card content (shared between anchor and button)
+  const cardContent = (
+    <>
       {/* Shimmer placeholder while image is loading */}
       {showShimmer && (
         <div className="absolute inset-0 animate-shimmer transition-opacity duration-500 ease-out" />
@@ -264,6 +263,34 @@ export default function MediaCard({
           onError={handleImageError}
         />
       )}
+    </>
+  );
+
+  // Use anchor tag for external links (faster navigation, no about:blank delay)
+  if (externalUrl) {
+    return (
+      <a
+        href={externalUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={clsx(sharedClasses, "block")}
+        title={data?.title}
+        aria-label={data?.title || "Media item"}
+      >
+        {cardContent}
+      </a>
+    );
+  }
+
+  // Use button for onClick handlers only
+  return (
+    <button
+      onClick={onClick}
+      className={sharedClasses}
+      title={data?.title}
+      aria-label={data?.title || "Media item"}
+    >
+      {cardContent}
     </button>
   );
 }

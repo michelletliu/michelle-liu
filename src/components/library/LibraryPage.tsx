@@ -2,70 +2,49 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { client, urlFor } from "../../sanity/client";
-import { BOOKS_QUERY } from "../../sanity/queries";
+import { SHELF_BOOKS_QUERY, BOOK_YEARS_QUERY } from "../../sanity/queries";
 import { BookCard } from "./BookCard";
 import { BookDetailModal } from "./BookDetailModal";
 import { AddBookModal } from "./AddBookModal";
 import { ChevronDownIcon, PlusIcon } from "./icons";
-import type { Book, SanityBookData } from "./types";
+import type { Book, ShelfBookData } from "./types";
 import imgLogo from '../../assets/logo.png';
 
-// Helper to format dates from Sanity
-function formatDate(dateString?: string): string {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { 
-    month: 'long', 
-    day: 'numeric', 
-    year: 'numeric' 
-  });
-}
-
-// Extract year from date string (e.g., "2025-01-15" -> "2025")
-function getYearFromDate(dateString?: string): string | undefined {
-  if (!dateString) return undefined;
-  return dateString.split('-')[0];
-}
-
-// Transform Sanity book data to component format
-function transformBook(sanityBook: SanityBookData): Book {
-  // Get cover image URL - prefer uploaded image, fallback to URL
+// Transform shelfItem book data to component format
+function transformShelfBook(item: ShelfBookData): Book {
+  // Get cover image URL - prefer uploaded Sanity image, fallback to external URL
   let coverImageUrl = '';
-  if (sanityBook.coverImage?.asset) {
-    coverImageUrl = urlFor(sanityBook.coverImage).width(400).url();
-  } else if (sanityBook.coverUrl) {
-    coverImageUrl = sanityBook.coverUrl;
+  if (item.cover?.asset) {
+    coverImageUrl = urlFor(item.cover).width(400).url();
+  } else if (item.externalCoverUrl) {
+    coverImageUrl = item.externalCoverUrl;
   }
 
   return {
-    id: sanityBook._id,
-    title: sanityBook.title,
-    author: sanityBook.author,
+    id: item._id,
+    title: item.title,
+    author: item.author || 'Unknown Author',
     coverImage: coverImageUrl,
-    rating: sanityBook.rating,
-    shelf: sanityBook.shelf,
-    yearFinished: getYearFromDate(sanityBook.dateFinished),
-    datesRead: sanityBook.dateStarted && sanityBook.dateFinished ? {
-      start: formatDate(sanityBook.dateStarted),
-      end: formatDate(sanityBook.dateFinished),
-    } : undefined,
-    review: sanityBook.review,
-    goodreadsUrl: sanityBook.goodreadsUrl,
+    rating: item.rating || 0,
+    year: item.year,
+    isFavorite: item.isLibraryFavorite || false,
+    goodreadsUrl: item.goodreadsUrl,
   };
 }
 
-// Filter type: "favorite" or a year string like "2025"
+// Filter type: "favorites", "all", or a year string like "2025"
 type FilterOption = {
   value: string;
   label: string;
-  isFavorite?: boolean;
+  isFavorites?: boolean;
+  isAll?: boolean;
 };
 
 export default function LibraryPage() {
   const navigate = useNavigate();
   const [books, setBooks] = useState<Book[]>([]);
-  const [filterOptions, setFilterOptions] = useState<FilterOption[]>([{ value: 'favorite', label: 'favorite', isFavorite: true }]);
-  const [activeFilter, setActiveFilter] = useState<string>("favorite");
+  const [filterOptions, setFilterOptions] = useState<FilterOption[]>([{ value: 'favorites', label: 'favorites', isFavorites: true }]);
+  const [activeFilter, setActiveFilter] = useState<string>("favorites");
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [showAddBookModal, setShowAddBookModal] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -103,26 +82,24 @@ export default function LibraryPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showFilterDropdown]);
 
-  // Fetch books from Sanity
+  // Fetch books from Sanity (using shelfItem schema)
   useEffect(() => {
     async function fetchBooks() {
       try {
-        const booksData = await client.fetch<SanityBookData[]>(BOOKS_QUERY);
-        const transformedBooks = booksData.map(transformBook);
+        // Fetch books and years in parallel
+        const [booksData, yearsData] = await Promise.all([
+          client.fetch<ShelfBookData[]>(SHELF_BOOKS_QUERY),
+          client.fetch<string[]>(BOOK_YEARS_QUERY),
+        ]);
+        
+        const transformedBooks = booksData.map(transformShelfBook);
         setBooks(transformedBooks);
         
-        // Build filter options: "favorite" + unique years from dateFinished (descending)
-        const years = new Set<string>();
-        transformedBooks.forEach(book => {
-          if (book.yearFinished) {
-            years.add(book.yearFinished);
-          }
-        });
-        
-        const sortedYears = Array.from(years).sort((a, b) => parseInt(b) - parseInt(a));
+        // Build filter options: "favorites" + "all" + unique years (already sorted desc from query)
         const options: FilterOption[] = [
-          { value: 'favorite', label: 'favorite', isFavorite: true },
-          ...sortedYears.map(year => ({ value: year, label: year }))
+          { value: 'favorites', label: 'favorites', isFavorites: true },
+          { value: 'all', label: 'all', isAll: true },
+          ...yearsData.map(year => ({ value: year, label: year }))
         ];
         
         setFilterOptions(options);
@@ -136,13 +113,12 @@ export default function LibraryPage() {
     fetchBooks();
   }, []);
 
-  // Filter books based on active filter
-  const filteredBooks = books.filter(book => {
-    if (activeFilter === 'favorite') {
-      return book.shelf === 'favorites';
-    }
-    return book.yearFinished === activeFilter;
-  });
+  // Filter books based on active filter (favorites, all, or by year)
+  const filteredBooks = activeFilter === 'all' 
+    ? books 
+    : activeFilter === 'favorites'
+    ? books.filter(book => book.isFavorite)
+    : books.filter(book => book.year === activeFilter);
 
   // Handle entrance animation
   useEffect(() => {
@@ -208,7 +184,7 @@ export default function LibraryPage() {
                   className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors cursor-pointer bg-gray-500/10"
                 >
                   <span className="font-['Figtree',sans-serif] font-semibold text-base tracking-[0.01em] whitespace-nowrap text-gray-500">
-                    {activeFilter === 'favorite' ? 'favorites' : activeFilter}
+                    {activeFilter}
                     <span className="text-gray-400"> ({filteredBooks.length})</span>
                   </span>
                   <svg
@@ -227,7 +203,7 @@ export default function LibraryPage() {
                 
                 <div 
                   className={clsx(
-                    "absolute left-0 top-[calc(100%+4px)] bg-white rounded-lg shadow-lg border border-gray-100 z-50 min-w-full transition-all duration-200 ease-out",
+                    "absolute left-0 top-[calc(100%+4px)] bg-white rounded-lg shadow-lg border border-gray-100 z-50 w-36 transition-all duration-200 ease-out max-h-[300px] overflow-y-auto",
                     showFilterDropdown ? "pointer-events-auto" : "pointer-events-none",
                     isDropdownVisible 
                       ? "opacity-100 translate-y-0" 
@@ -237,9 +213,11 @@ export default function LibraryPage() {
                     <div className="flex flex-col py-1.5 px-1.5">
                       {filterOptions.map((option) => {
                         const isActive = activeFilter === option.value;
-                        const count = option.isFavorite 
-                          ? books.filter(b => b.shelf === 'favorites').length
-                          : books.filter(b => b.yearFinished === option.value).length;
+                        const count = option.isFavorites 
+                          ? books.filter(b => b.isFavorite).length
+                          : option.isAll 
+                          ? books.length
+                          : books.filter(b => b.year === option.value).length;
                         return (
                           <button
                             key={option.value}
@@ -256,7 +234,7 @@ export default function LibraryPage() {
                               "font-['Figtree',sans-serif] font-semibold text-base tracking-[0.01em]",
                               isActive ? "text-gray-600" : "text-gray-400"
                             )}>
-                              {option.isFavorite ? 'favorites' : option.label}
+                              {option.label}
                               <span className={isActive ? "text-gray-400" : "text-gray-300"}>
                                 {" "}({count})
                               </span>
@@ -273,7 +251,7 @@ export default function LibraryPage() {
           <div className="relative">
             <button 
               onClick={() => setShowAddBookModal(!showAddBookModal)}
-              className=" bg-gray-500/10 content-stretch flex items-center justify-center rounded-[1000px] size-[40px] hover:bg-[rgba(0,0,0,0.1)] transition-all duration-300"
+              className="bg-gray-500/10 content-stretch flex items-center justify-center rounded-full size-[36px] hover:bg-[rgba(0,0,0,0.1)] transition-all duration-300"
             >
               <div className={`flex items-center justify-center text-gray-400 transition-transform duration-300 ${showAddBookModal ? 'rotate-45' : 'rotate-0'}`}>
                 <PlusIcon className="w-[14px] h-[14px]" />
@@ -307,7 +285,7 @@ export default function LibraryPage() {
             </div>
           ) : (
             <div 
-              className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 sm:gap-x-6 lg:gap-x-8 gap-y-[60px] sm:gap-y-[80px] lg:gap-y-[100px]"
+              className="grid grid-cols-[repeat(3,auto)] md:grid-cols-[repeat(6,auto)] gap-y-[60px] sm:gap-y-[80px] md:gap-y-[100px] justify-between"
             >
               {filteredBooks.map((book) => (
                 <BookCard key={book.id} book={book} onClick={() => setSelectedBook(book)} />

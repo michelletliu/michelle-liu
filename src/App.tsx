@@ -411,6 +411,7 @@ type ProjectCardProps = {
 };
 
 function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
+  const hasTryItOut = project.id === 'polaroid' || project.id === 'library';
 
   // Featured card style (for first 4 cards on desktop)
   if (featured) {
@@ -433,16 +434,38 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
             </div>
           </div>
         </div>
-        {/* Desktop: just description */}
-        <div className="hidden md:flex content-stretch flex-col items-start px-[13px] py-0 -mt-0.5 relative shrink-0">
-          <p className="font-['Figtree',sans-serif] font-normal leading-[1] text-[#9ca3af] text-base w-full text-left project-hover-text">{project.description}</p>
+        {/* Desktop: description and Try It Out */}
+        <div className="hidden md:flex content-stretch items-start justify-between px-[13px] py-0 -mt-0.5 relative shrink-0 w-full">
+          <p className="font-['Figtree',sans-serif] font-normal leading-[1] text-[#9ca3af] text-base text-left project-hover-text">{project.description}</p>
+          {/* Try It Out tag - appears on hover for polaroid and library */}
+          {hasTryItOut && (
+            <a 
+              href={project.id === 'polaroid' ? '/polaroid' : '/library'}
+              onClick={(e) => e.stopPropagation()}
+              className="font-['Figtree',sans-serif] text-blue-500 text-base md:opacity-0 md:translate-y-1 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300 ease-out hover:text-blue-400"
+            >
+              Try It Out!
+            </a>
+          )}
         </div>
         {/* Mobile: title + description */}
         <div className="md:hidden content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base gap-1">
-          <p className="relative shrink-0 text-[#111827] w-full text-left project-hover-text">
-            <span>{project.title} </span>
-            <span className="text-[#9ca3af]">• {project.year}</span>
-          </p>
+          <div className="flex justify-between w-full">
+            <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
+              <span>{project.title} </span>
+              <span className="text-[#9ca3af]">• {project.year}</span>
+            </p>
+            {/* Try It Out tag - always visible on mobile */}
+            {hasTryItOut && (
+              <a 
+                href={project.id === 'polaroid' ? '/polaroid' : '/library'}
+                onClick={(e) => e.stopPropagation()}
+                className="font-['Figtree',sans-serif] text-blue-500 text-base hover:text-blue-400"
+              >
+                Try It Out!
+              </a>
+            )}
+          </div>
           <p className="relative shrink-0 text-[#9ca3af] w-full text-left font-normal leading-[1.3]">{project.description}</p>
         </div>
       </button>
@@ -460,12 +483,21 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
       >
         <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
       </div>
-      <div className="content-stretch flex flex-col font-['Figtree',sans-serif] -mt-1 font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base">
-        <p className="relative shrink-0 text-[#111827] w-full text-left project-hover-text">
+      <div className="content-stretch flex font-['Figtree',sans-serif] -mt-1 font-normal items-start justify-between leading-[1.4] px-[13px] py-0 relative shrink-0 text-base w-full">
+        <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
           <span>{project.title} </span>
           <span className="text-[#9ca3af]">• {project.year}</span>
         </p>
-        <p className="relative shrink-0 text-[#9ca3af] w-full text-left font-normal hidden">{project.description}</p>
+        {/* Try It Out tag - appears on hover for polaroid and library */}
+        {hasTryItOut && (
+          <a 
+            href={project.id === 'polaroid' ? '/polaroid' : '/library'}
+            onClick={(e) => e.stopPropagation()}
+            className="font-['Figtree',sans-serif] -mt-1 text-blue-500 text-base md:opacity-0 md:translate-y-1 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-300 ease-out hover:text-blue-400"
+          >
+            Try It Out!
+          </a>
+        )}
       </div>
     </button>
   );

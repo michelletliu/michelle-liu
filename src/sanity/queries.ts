@@ -294,7 +294,7 @@ export const QUOTES_QUERY = `
 // LIBRARY PAGE QUERIES
 // ============================================
 
-// Query for all books
+// Query for all books (legacy - uses book schema)
 export const BOOKS_QUERY = `
   *[_type == "book" && isPublished == true] | order(order asc, dateFinished desc) {
     _id,
@@ -311,7 +311,7 @@ export const BOOKS_QUERY = `
   }
 `;
 
-// Query for books by shelf
+// Query for books by shelf (legacy)
 export const BOOKS_BY_SHELF_QUERY = `
   *[_type == "book" && isPublished == true && shelf == $shelf] | order(order asc, dateFinished desc) {
     _id,
@@ -328,9 +328,29 @@ export const BOOKS_BY_SHELF_QUERY = `
   }
 `;
 
-// Query for all available shelves (for dropdown)
+// Query for all available shelves (for dropdown) - legacy
 export const BOOK_SHELVES_QUERY = `
   array::unique(*[_type == "book" && isPublished == true].shelf)
+`;
+
+// Query for shelf items that are books (uses shelfItem schema)
+export const SHELF_BOOKS_QUERY = `
+  *[_type == "shelfItem" && isPublished == true && mediaType == "book"] | order(isLibraryFavorite desc, year desc, order asc) {
+    _id,
+    title,
+    author,
+    cover,
+    externalCoverUrl,
+    rating,
+    year,
+    isLibraryFavorite,
+    goodreadsUrl
+  }
+`;
+
+// Query to get all unique years from shelf books
+export const BOOK_YEARS_QUERY = `
+  array::unique(*[_type == "shelfItem" && isPublished == true && mediaType == "book" && year != null].year) | order(@ desc)
 `;
 
 

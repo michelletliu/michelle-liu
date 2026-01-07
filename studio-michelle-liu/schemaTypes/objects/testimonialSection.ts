@@ -8,6 +8,21 @@ export const testimonialSection = defineType({
   icon: CommentIcon,
   fields: [
     defineField({
+      name: 'visibility',
+      title: 'Visibility',
+      type: 'string',
+      description: 'When should this section be visible?',
+      options: {
+        list: [
+          {title: 'Both (locked & unlocked)', value: 'both'},
+          {title: 'Locked only', value: 'locked'},
+          {title: 'Unlocked only', value: 'unlocked'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'both',
+    }),
+    defineField({
       name: 'sectionLabel',
       title: 'Section Label',
       type: 'string',

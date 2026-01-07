@@ -84,7 +84,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
       )}
     >
       {/* Mobile: Logo, Title, Description stacked */}
-      <div className="flex w-full shrink-0 flex-col gap-6 md:hidden">
+      <div className="flex w-full shrink-0 flex-col gap-6 lg:hidden">
         {/* Logo */}
         {data.logoSrc && (
           <div className="relative h-16 w-16 shrink-0">
@@ -140,7 +140,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
       </div>
 
       {/* Desktop: Logo + Title on left, Description on right - single row */}
-      <div className="hidden w-full items-start py-8 justify-between md:flex">
+      <div className="hidden w-full items-start py-8 justify-between lg:flex">
         {/* Logo + Title + Instagram */}
         <div className="flex shrink-0 items-center gap-8">
           {data.logoSrc && (
@@ -195,9 +195,9 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
 
       {/* Photo Collage - full width below header */}
       {photos.length > 0 && (
-        <div className="relative w-full shrink-0 overflow-visible px-4 md:h-[400px]">
+        <div className="relative w-full shrink-0 overflow-visible px-4 lg:h-[400px]">
           {/* Mobile: vertical stacked layout */}
-          <div className="flex w-full flex-col items-center gap-10 md:hidden">
+          <div className="flex w-full flex-col items-center gap-10 lg:hidden">
             {photos.slice(0, 4).map((photo, index) => {
               const rotation = photo.rotation ?? defaultRotations[index] ?? 0;
               const isVertical = photo.orientation === "vertical";
@@ -246,7 +246,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
           </div>
 
           {/* Desktop: flexbox centered layout - scaled up */}
-          <div className="hidden h-full w-full items-start justify-center md:flex">
+          <div className="hidden h-full w-full items-start justify-center lg:flex">
             {photos.slice(0, 4).map((photo, index) => {
               const rotation = photo.rotation ?? defaultRotations[index] ?? 0;
               const isVertical = photo.orientation === "vertical";

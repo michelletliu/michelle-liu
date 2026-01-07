@@ -8,13 +8,34 @@ export const imageSection = defineType({
   icon: ImageIcon,
   fields: [
     defineField({
+      name: 'visibility',
+      title: 'Visibility',
+      type: 'string',
+      description: 'When should this section be visible?',
+      options: {
+        list: [
+          {title: 'Both (locked & unlocked)', value: 'both'},
+          {title: 'Locked only', value: 'locked'},
+          {title: 'Unlocked only', value: 'unlocked'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'both',
+    }),
+    defineField({
       name: 'image',
       title: 'Image',
       type: 'image',
       options: {
         hotspot: true,
       },
-      validation: (rule) => rule.required(),
+      description: 'Upload an image or use External Image URL below',
+    }),
+    defineField({
+      name: 'externalImageUrl',
+      title: 'External Image URL',
+      type: 'string',
+      description: 'Alternative: Use a URL or path (e.g., /roblox/image.png) instead of uploading',
     }),
     defineField({
       name: 'alt',

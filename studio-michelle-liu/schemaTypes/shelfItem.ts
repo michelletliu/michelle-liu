@@ -64,10 +64,18 @@ export const shelfItem = defineType({
     }),
     defineField({
       name: 'isFeatured',
-      title: 'Featured',
-      description: 'Show in the collapsed "Default" state',
+      title: 'Featured (About Page)',
+      description: 'Show in the collapsed "Default" state on About page shelf',
       type: 'boolean',
       initialValue: false,
+    }),
+    defineField({
+      name: 'isLibraryFavorite',
+      title: 'Library Favorite ⭐',
+      description: 'Show in the "favorites" shelf on the Library page',
+      type: 'boolean',
+      initialValue: false,
+      hidden: ({document}) => document?.mediaType !== 'book',
     }),
     defineField({
       name: 'goodreadsUrl',

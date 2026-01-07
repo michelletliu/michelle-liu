@@ -50,12 +50,12 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
       )}
     >
       {/* Image */}
-      <div className="relative h-[140px] md:h-[200px] w-full shrink-0 rounded-3xl">
+      <div className="relative h-[140px] md:h-[200px] w-full shrink-0 rounded-2xl sm:rounded-3xl">
         {hasImage ? (
           <img
             src={data.imageSrc}
             alt={data.headline}
-            className="absolute inset-0 h-full w-full rounded-3xl object-cover transition-transform duration-200 ease-out group-hover:scale-[1.01]"
+            className="absolute inset-0 h-full w-full rounded-2xl sm:rounded-3xl object-cover transition-transform duration-200 ease-out group-hover:scale-[1.01]"
             loading="lazy"
           />
         ) : (
@@ -80,13 +80,13 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
             )}
           </div>
           {/* Arrow - always visible on mobile, hover on desktop */}
-          <span className="text-gray-700 opacity-100 md:opacity-0 transition-opacity duration-200 ease-out md:group-hover:opacity-100">
+          <span className="text-gray-700 text-sm opacity-100 md:opacity-0 transition-opacity duration-200 ease-out md:group-hover:opacity-100">
             ↗
           </span>
         </div>
         {/* Description - always visible on mobile, fade up on hover for desktop */}
         {data.description && (
-          <p className="whitespace-pre-wrap font-normal text-base text-gray-400 md:opacity-0 md:translate-y-1 md:transition-all md:duration-300 md:ease-out md:group-hover:opacity-100 md:group-hover:translate-y-0">{data.description}</p>
+          <p className="whitespace-pre-wrap font-normal text-sm sm:text-base text-gray-400 md:opacity-0 md:translate-y-1 md:transition-all md:duration-300 md:ease-out md:group-hover:opacity-100 md:group-hover:translate-y-0">{data.description}</p>
         )}
       </div>
     </button>

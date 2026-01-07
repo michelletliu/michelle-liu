@@ -15,6 +15,34 @@ import lockIcon from "../../assets/lock.svg";
 import expandIcon from "../../assets/Expand.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
 
+// Helper functions for tracking unlocked projects in session
+const UNLOCKED_PROJECTS_KEY = 'unlockedProjects';
+
+function getUnlockedProjects(): string[] {
+  try {
+    const stored = sessionStorage.getItem(UNLOCKED_PROJECTS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+function markProjectUnlocked(projectId: string): void {
+  try {
+    const unlocked = getUnlockedProjects();
+    if (!unlocked.includes(projectId)) {
+      unlocked.push(projectId);
+      sessionStorage.setItem(UNLOCKED_PROJECTS_KEY, JSON.stringify(unlocked));
+    }
+  } catch {
+    // Silently fail if sessionStorage is unavailable
+  }
+}
+
+function isProjectUnlocked(projectId: string): boolean {
+  return getUnlockedProjects().includes(projectId);
+}
+
 // Chevron right icon for breadcrumb
 const ChevronRightIcon = () => (
   <svg className="block size-full" viewBox="0 0 16 16" fill="none">
@@ -103,21 +131,28 @@ const ArrowRightIcon = () => (
 );
 
 // Password input component with local state
-function PasswordInput({ expectedPassword }: { expectedPassword: string }) {
+function PasswordInput({ expectedPassword, onUnlock }: { expectedPassword: string; onUnlock?: () => void }) {
   const [passwordValue, setPasswordValue] = useState("");
   const [error, setError] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordValue === expectedPassword) {
-      // Password correct - you can add unlock logic here
+      // Password correct - unlock the content
       setError(false);
-      // For now, just clear the input
       setPasswordValue("");
+      onUnlock?.();
     } else {
       setError(true);
-      // Clear error after 2 seconds
-      setTimeout(() => setError(false), 2000);
+      // Error stays until user types again
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPasswordValue(e.target.value);
+    // Clear error when user starts typing
+    if (error) {
+      setError(false);
     }
   };
 
@@ -131,7 +166,7 @@ function PasswordInput({ expectedPassword }: { expectedPassword: string }) {
           type="password"
           placeholder="Enter"
           value={passwordValue}
-          onChange={(e) => setPasswordValue(e.target.value)}
+          onChange={handleInputChange}
           className="leading-5 relative shrink-0 text-black text-base bg-transparent border-none outline-none flex-1 placeholder:text-[#9ca3af]"
         />
         <button
@@ -202,6 +237,8 @@ export default function ProjectModal({
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Check if project was previously unlocked in this session
+  const [isUnlocked, setIsUnlocked] = useState(() => isProjectUnlocked(projectId));
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const heroRef = React.useRef<HTMLDivElement>(null);
   
@@ -328,6 +365,26 @@ export default function ProjectModal({
       setTimeout(() => {
         onBack();
       }, 300);
+    }
+  };
+
+  // Handle unlocking a password-protected project
+  const handleUnlock = () => {
+    // Mark project as unlocked in session storage
+    markProjectUnlocked(projectId);
+    setIsUnlocked(true);
+    
+    // If in modal mode, expand to fullscreen
+    // The fullscreen page will naturally start from the top
+    if (!isFullscreen && onExpandToFullscreen) {
+      onExpandToFullscreen();
+    } else {
+      // Already in fullscreen - scroll to top
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({ top: 0, behavior: 'instant' });
+      }
+      // Also scroll window to top for fullscreen mode
+      window.scrollTo({ top: 0, behavior: 'instant' });
     }
   };
 
@@ -552,17 +609,48 @@ export default function ProjectModal({
               </div>
 
               {/* Dynamic Content Sections */}
-              {project.content?.map((section) => 
-                // Testimonials have interactive expand/collapse - skip ScrollReveal
-                // to prevent animation from replaying when clicking "Read more"
-                section._type === "testimonialSection" ? (
-                  <ContentBlock key={section._key} section={section} isFullscreen={isFullscreen} />
-                ) : (
-                  <ScrollReveal key={section._key}>
-                    <ContentBlock section={section} isFullscreen={isFullscreen} />
-                  </ScrollReveal>
-                )
-              )}
+              {(() => {
+                // Filter content based on unlock state and visibility settings
+                let sections = project.content || [];
+                
+                // Helper to check if a section should be visible
+                const shouldShowSection = (section: ContentSection) => {
+                  // ProtectedSection: only show when locked
+                  if (section._type === "protectedSection") {
+                    return !isUnlocked;
+                  }
+                  
+                  // Check visibility setting (default to "both" if not set)
+                  const visibility = (section as any).visibility || "both";
+                  if (visibility === "both") return true;
+                  if (visibility === "locked") return !isUnlocked;
+                  if (visibility === "unlocked") return isUnlocked;
+                  return true;
+                };
+                
+                // When locked, also stop at protectedSection
+                if (!isUnlocked) {
+                  const protectedIndex = sections.findIndex(s => s._type === "protectedSection");
+                  if (protectedIndex !== -1) {
+                    sections = sections.slice(0, protectedIndex + 1);
+                  }
+                }
+                
+                // Filter by visibility
+                sections = sections.filter(shouldShowSection);
+                
+                return sections.map((section) => 
+                  // Testimonials have interactive expand/collapse - skip ScrollReveal
+                  // to prevent animation from replaying when clicking "Read more"
+                  section._type === "testimonialSection" ? (
+                    <ContentBlock key={section._key} section={section} isFullscreen={isFullscreen} isUnlocked={isUnlocked} onUnlock={handleUnlock} />
+                  ) : (
+                    <ScrollReveal key={section._key}>
+                      <ContentBlock section={section} isFullscreen={isFullscreen} isUnlocked={isUnlocked} onUnlock={handleUnlock} />
+                    </ScrollReveal>
+                  )
+                );
+              })()}
 
               {/* Also Check Out Section */}
               {project.relatedProjects && project.relatedProjects.length > 0 && (
@@ -863,7 +951,7 @@ function TestimonialBlock({
 }
 
 // Content section renderer component
-function ContentBlock({ section, isFullscreen = false }: { section: ContentSection; isFullscreen?: boolean }) {
+function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnlock }: { section: ContentSection; isFullscreen?: boolean; isUnlocked?: boolean; onUnlock?: () => void }) {
   const renderContent = () => {
     switch (section._type) {
       case "missionSection":
@@ -983,6 +1071,9 @@ function ContentBlock({ section, isFullscreen = false }: { section: ContentSecti
       );
 
     case "protectedSection":
+      // Don't show the protected section UI when content is unlocked
+      if (isUnlocked) return null;
+      
       const hasPassword = !!(section.showPasswordProtection && section.password);
       return (
         <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
@@ -1024,8 +1115,8 @@ function ContentBlock({ section, isFullscreen = false }: { section: ContentSecti
               </div>
 
               {/* Password Input - shown when password is set in Sanity */}
-              {hasPassword && (
-                <PasswordInput expectedPassword={section.password || ''} />
+              {hasPassword && !isUnlocked && (
+                <PasswordInput expectedPassword={section.password || ''} onUnlock={onUnlock} />
               )}
             </div>
           </div>
@@ -1113,6 +1204,15 @@ function ContentBlock({ section, isFullscreen = false }: { section: ContentSecti
       );
 
     case "imageSection":
+      // Support both Sanity images and external URLs
+      const imageSrc = section.externalImageUrl 
+        ? section.externalImageUrl 
+        : section.image 
+          ? urlFor(section.image).width(1200).url()
+          : null;
+      
+      if (!imageSrc) return null;
+      
       return (
         <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
           <div
@@ -1123,7 +1223,7 @@ function ContentBlock({ section, isFullscreen = false }: { section: ContentSecti
             <img
               className="w-full object-cover"
               alt={section.alt || ""}
-              src={urlFor(section.image).width(1200).url()}
+              src={imageSrc}
             />
           </div>
           {section.caption && (

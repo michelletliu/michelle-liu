@@ -101,7 +101,7 @@ export default function ShelfSection({
       {/* Header */}
       <div className="relative flex w-full flex-col py-4">
         {/* Title tag and year filters */}
-        <div className="flex items-center justify-between gap-2 pb-3">
+        <div className="flex items-center justify-between pb-2">
           <div className="flex items-center gap-1 min-w-0">
             {/* Desktop: Title tag - clickable to show favorites */}
             <button
@@ -170,7 +170,7 @@ export default function ShelfSection({
                 
                 {/* Dropdown menu */}
                 {isDropdownOpen && (
-                  <div className="absolute left-0 top-[calc(100%+4px)] bg-white rounded-lg shadow-lg border border-gray-100 z-50 min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="absolute left-0 top-[calc(100%+4px)] bg-white rounded-lg shadow-lg border border-gray-100 z-[100] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200">
                     <div className="flex flex-col py-1.5 px-1.5">
                       {/* Favorites option */}
                       <button

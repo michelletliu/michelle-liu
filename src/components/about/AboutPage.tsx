@@ -412,6 +412,43 @@ export default function AboutPage() {
       if (activeSection) {
         setActiveCategory(activeSection);
         
+        // If community is active, also track which community is in view
+        if (activeSection === "community") {
+          const visibleCommunities = communities.filter(c => c.sidebarName);
+          let activeCommunity: string | null = null;
+          
+          // Check from bottom to top to find the one that's scrolled past the threshold
+          for (let i = visibleCommunities.length - 1; i >= 0; i--) {
+            const community = visibleCommunities[i];
+            const element = communityRefs.current[community.id];
+            if (element) {
+              const rect = element.getBoundingClientRect();
+              if (rect.top <= viewportThreshold) {
+                activeCommunity = community.id;
+                break;
+              }
+            }
+          }
+          
+          // Fallback: find first one in viewport
+          if (!activeCommunity) {
+            for (const community of visibleCommunities) {
+              const element = communityRefs.current[community.id];
+              if (element) {
+                const rect = element.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                  activeCommunity = community.id;
+                  break;
+                }
+              }
+            }
+          }
+          
+          if (activeCommunity) {
+            setActiveCommunityId(activeCommunity);
+          }
+        }
+        
         // If shelf is active, also track which shelf subcategory is in view
         if (activeSection === "shelf") {
           const shelfSubsections = [
@@ -455,7 +492,7 @@ export default function AboutPage() {
     window.addEventListener("scroll", handleScroll);
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [communities]);
 
   // Filter shelf items by media type
   const bookItems = shelfItems.filter((item) => item.type === "Book");
@@ -641,9 +678,19 @@ export default function AboutPage() {
           {/* Experience Section */}
           <section ref={experienceRef} className="flex flex-col gap-16 md:flex-row md:justify-between md:gap-0 w-full scroll-mt-8">
             <ScrollReveal variant="fade">
-              <h2 className="font-['Figtree',sans-serif] font-medium text-gray-700 text-[40px] leading-normal shrink-0">
-                Experience
-              </h2>
+              <div className="flex flex-col">
+                <h2 className="font-['Figtree',sans-serif] font-medium text-gray-700 text-[40px] leading-normal shrink-0">
+                  Experience
+                </h2>
+                <a
+                  href="https://drive.google.com/file/d/1JPVZsAg6QSwS9He0bc2cMdVohcBQYD0W/view?usp=sharing"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-['Figtree',sans-serif] font-medium text-gray-400 text-lg hover:text-blue-500 transition-colors"
+                >
+                  Resume ↗
+                </a>
+              </div>
             </ScrollReveal>
             {isLoading ? (
               <div className="flex items-center gap-3 py-4">
@@ -819,7 +866,7 @@ export default function AboutPage() {
                 Lore ⟡˙⋆
                 </h2>
                 <p className="font-['Figtree',sans-serif] font-medium text-gray-400 text-lg">
-                  Fun things from past lives
+                  Fun snippets from past lives
                 </p>
               </div>
             </ScrollReveal>
@@ -829,7 +876,7 @@ export default function AboutPage() {
                 <span className="text-gray-400 text-sm">Loading...</span>
               </div>
             ) : loreItems.length > 0 ? (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 md:gap-6">
                 {loreItems.map((lore, index) => (
                   <ScrollReveal key={lore.id} delay={index * 80}>
                     <LoreCard
