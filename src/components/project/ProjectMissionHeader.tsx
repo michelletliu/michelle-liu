@@ -142,7 +142,7 @@ export default function ProjectMissionHeader({
       {/* Left Column: Label + Title */}
       <div
         className={clsx(
-          "content-stretch flex flex-col gap-5 items-start relative",
+          "content-stretch flex flex-col items-start relative",
           // When no description, constrain title width to 646px (per Figma)
           useFullWidthLayout && isDesktop && "w-[646px]",
           useFullWidthLayout && "shrink-0",

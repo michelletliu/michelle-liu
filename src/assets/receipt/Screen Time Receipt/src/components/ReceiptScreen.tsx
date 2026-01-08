@@ -346,7 +346,7 @@ export function ReceiptScreen({ data, onSave, onShare, onGenerateNew }: ReceiptS
                 <Frame20Helper />
               </div>
               <div className="content-stretch flex flex-col font-['SF_Mono:Semibold',sans-serif] gap-[16px] items-start not-italic relative shrink-0 text-center w-full">
-                <p className="leading-[22px] relative shrink-0 text-[17px] text-[rgba(0,0,0,0.6)] w-full">{recommendation.main}</p>
+                <p className="leading-[22px] relative shrink-0 text-[17px] text-gray-500 w-full">{recommendation.main}</p>
                 <div className="leading-[22px] relative shrink-0 text-[15px] text-[rgba(0,0,0,0.4)] w-full">
                   <p className="mb-0">Recommendation:</p>
                   <p>{recommendation.message}</p>

@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useScrollLock } from "../../utils/useScrollLock";
 
 export type CommunityPhoto = {
   id: string;
@@ -56,6 +57,9 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
     ? photos.find((p) => p.id === expandedPhotoId)
     : null;
 
+  // Lock body scroll when modal is open (flicker-free implementation)
+  useScrollLock(!!expandedPhotoId);
+
   // Handle escape key to close expanded view
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -64,34 +68,12 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
       }
     };
 
-    let scrollY = 0;
-    let originalStyles: { overflow: string; position: string; top: string; width: string } | null = null;
-    
     if (expandedPhotoId) {
       document.addEventListener("keydown", handleKeyDown);
-      // Prevent body scroll when modal is open, preserving scroll position
-      scrollY = window.scrollY;
-      originalStyles = {
-        overflow: document.body.style.overflow,
-        position: document.body.style.position,
-        top: document.body.style.top,
-        width: document.body.style.width,
-      };
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = "100%";
     }
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      if (originalStyles) {
-        document.body.style.overflow = originalStyles.overflow;
-        document.body.style.position = originalStyles.position;
-        document.body.style.top = originalStyles.top;
-        document.body.style.width = originalStyles.width;
-        window.scrollTo(0, scrollY);
-      }
     };
   }, [expandedPhotoId]);
 
@@ -406,7 +388,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
               >
                 <path
                   d="M1 1L13 13M1 13L13 1"
-                  stroke="#374151"
+                  stroke="#9ca3af"
                   strokeWidth="2"
                   strokeLinecap="round"
                 />

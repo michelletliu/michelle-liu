@@ -231,6 +231,9 @@ export default function ShelfSection({
               </button>
             )}
 
+            {/* Spacer to push link to right on mobile/tablet */}
+            <div className="flex-1 lg:hidden" />
+
             {/* Desktop: Title and year filters in overflow container */}
             <div className="hidden lg:flex items-center gap-1 min-w-0 overflow-hidden flex-1">
               {/* Desktop: Title tag - clickable to show favorites */}

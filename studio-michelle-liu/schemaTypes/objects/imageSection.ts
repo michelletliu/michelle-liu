@@ -56,6 +56,7 @@ export const imageSection = defineType({
           {title: 'Full Width', value: 'full'},
           {title: 'Large (with padding)', value: 'large'},
           {title: 'Medium', value: 'medium'},
+          {title: 'Small', value: 'small'},
         ],
         layout: 'radio',
       },

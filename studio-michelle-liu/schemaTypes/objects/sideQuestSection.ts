@@ -37,6 +37,19 @@ export const sideQuestSection = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'highlightedText',
+      title: 'Highlighted Text',
+      type: 'string',
+      description: 'Text within the title to highlight with a custom color',
+    }),
+    defineField({
+      name: 'highlightColor',
+      title: 'Highlight Color',
+      type: 'string',
+      description: 'Color for the highlighted text (e.g., "#3b82f6" for blue, "#ef4444" for red)',
+      initialValue: '#3b82f6',
+    }),
+    defineField({
       name: 'subtitle',
       title: 'Subtitle',
       description: 'e.g., "Top 10 teams out of 1,500+ interns"',

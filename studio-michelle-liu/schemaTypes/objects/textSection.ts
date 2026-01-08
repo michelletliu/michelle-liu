@@ -31,7 +31,22 @@ export const textSection = defineType({
     defineField({
       name: 'heading',
       title: 'Heading',
+      type: 'text',
+      rows: 3,
+      description: 'Heading text (line breaks supported)',
+    }),
+    defineField({
+      name: 'highlightedText',
+      title: 'Highlighted Text',
       type: 'string',
+      description: 'Text within the heading to highlight with a custom color',
+    }),
+    defineField({
+      name: 'highlightColor',
+      title: 'Highlight Color',
+      type: 'string',
+      description: 'Color for the highlighted text (e.g., "#3b82f6" for blue, "#ef4444" for red)',
+      initialValue: '#3b82f6',
     }),
     defineField({
       name: 'body',
@@ -47,6 +62,7 @@ export const textSection = defineType({
         list: [
           {title: 'Full Width', value: 'full'},
           {title: 'Two Column (Label + Content)', value: 'two-col'},
+          {title: 'Single Column (Stacked)', value: 'single-col'},
           {title: 'Centered', value: 'centered'},
         ],
         layout: 'radio',

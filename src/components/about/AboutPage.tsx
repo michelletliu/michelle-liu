@@ -632,7 +632,7 @@ export default function AboutPage() {
                   <p>
                     I believe thoughtful design makes life more intuitive (& beautiful). I want to
                     bring more of it into the world—whether through my creations or the
-                    communities I'm helping to build. I like to think of it as my <a href="https://en.wikipedia.org/wiki/Ikigai" target="_blank" rel="noopener noreferrer" className="text-gray-700 font-medium no-underline hover:text-blue-500 transition-colors">ikigai</a>: the constant
+                    communities I'm helping to build. I like to think of it as my <a href="https://en.wikipedia.org/wiki/Ikigai" target="_blank" rel="noopener noreferrer" className="text-gray-900 font-emdium no-underline hover:text-blue-600 transition-colors">ikigai</a>: the constant
                     pursuit of an intersection between passion, profession, and personal mission.
                   </p>
                   <p>

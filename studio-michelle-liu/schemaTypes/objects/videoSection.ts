@@ -23,6 +23,25 @@ export const videoSection = defineType({
       initialValue: 'both',
     }),
     defineField({
+      name: 'backgroundColor',
+      title: 'Background Color',
+      type: 'string',
+      description: 'Optional background color for the section (e.g., "#f9fafb", "#ffffff")',
+    }),
+    defineField({
+      name: 'size',
+      title: 'Video Size',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Full Width', value: 'full'},
+          {title: 'Medium', value: 'medium'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'full',
+    }),
+    defineField({
       name: 'title',
       title: 'Title',
       type: 'string',

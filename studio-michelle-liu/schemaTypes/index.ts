@@ -24,6 +24,11 @@ import {testimonialSection} from './objects/testimonialSection'
 import {projectCardSection} from './objects/projectCardSection'
 import {sideQuestSection} from './objects/sideQuestSection'
 import {dividerSection} from './objects/dividerSection'
+import {featureSection} from './objects/featureSection'
+import {sectionTitleSection} from './objects/sectionTitleSection'
+import {phoneVideoSection} from './objects/phoneVideoSection'
+import {overlayImageSection} from './objects/overlayImageSection'
+import {learningsSection} from './objects/learningsSection'
 
 export const schemaTypes = [
   // Documents
@@ -52,4 +57,9 @@ export const schemaTypes = [
   projectCardSection,
   sideQuestSection,
   dividerSection,
+  featureSection,
+  sectionTitleSection,
+  phoneVideoSection,
+  overlayImageSection,
+  learningsSection,
 ]

@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { Book } from "./types";
+import { useScrollLock } from "../../utils/useScrollLock";
 
 interface BookDetailModalProps {
   book: Book;
@@ -59,15 +60,8 @@ function formatReview(text: string): React.ReactNode[] {
 export function BookDetailModal({ book, onClose }: BookDetailModalProps) {
   const [isClosing, setIsClosing] = useState(false);
 
-  // Lock body scroll when modal is open
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
-  }, []);
+  // Lock body scroll when modal is open (flicker-free implementation)
+  useScrollLock();
 
   const handleClose = () => {
     setIsClosing(true);

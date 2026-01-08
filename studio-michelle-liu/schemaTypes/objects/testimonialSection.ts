@@ -37,6 +37,19 @@ export const testimonialSection = defineType({
       initialValue: 'Kind words from my manager',
     }),
     defineField({
+      name: 'highlightedText',
+      title: 'Highlighted Text',
+      type: 'string',
+      description: 'Text within the section title to highlight with a custom color',
+    }),
+    defineField({
+      name: 'highlightColor',
+      title: 'Highlight Color',
+      type: 'string',
+      description: 'Color for the highlighted text (e.g., "#3b82f6" for blue, "#ef4444" for red)',
+      initialValue: '#3b82f6',
+    }),
+    defineField({
       name: 'quote',
       title: 'Quote (Short)',
       type: 'text',

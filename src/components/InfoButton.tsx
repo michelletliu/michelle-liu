@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import VideoPlayer from './VideoPlayer';
 import { ArrowUpRight } from './ArrowUpRight';
+import { useScrollLock } from '../utils/useScrollLock';
 
 // Info icon SVG component - gray-400 color, 20px
 function InfoIcon() {
@@ -44,31 +45,8 @@ export default function InfoButton({ project }: InfoButtonProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
 
-  // Lock body scroll when modal is open
-  useEffect(() => {
-    if (showModal) {
-      const scrollY = window.scrollY;
-      const originalStyles = {
-        overflow: document.body.style.overflow,
-        position: document.body.style.position,
-        top: document.body.style.top,
-        width: document.body.style.width,
-      };
-      
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      
-      return () => {
-        document.body.style.overflow = originalStyles.overflow;
-        document.body.style.position = originalStyles.position;
-        document.body.style.top = originalStyles.top;
-        document.body.style.width = originalStyles.width;
-        window.scrollTo(0, scrollY);
-      };
-    }
-  }, [showModal]);
+  // Lock body scroll when modal is open (flicker-free implementation)
+  useScrollLock(showModal);
 
   // Handle modal open animation
   useEffect(() => {
@@ -184,11 +162,6 @@ export default function InfoButton({ project }: InfoButtonProps) {
                     <p className="font-['Figtree',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base">
                       {project.description}
                     </p>
-                  </div>
-
-                  {/* Divider line */}
-                  <div className="pt-4 pb-3 w-full">
-                    <PopupLine />
                   </div>
 
                   {/* Video/Image content area */}

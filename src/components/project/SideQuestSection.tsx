@@ -12,6 +12,8 @@ interface TeamMember {
 interface SideQuestSectionProps {
   label?: string;
   title: string;
+  highlightedText?: string;
+  highlightColor?: string;
   subtitle?: string;
   image?: SanityImage;
   teamLabel?: string;
@@ -19,9 +21,38 @@ interface SideQuestSectionProps {
   description?: any[];
 }
 
+// Helper to render text with highlighted portion
+function renderHighlightedText(text: string, highlightedText?: string, highlightColor?: string): React.ReactNode {
+  if (!highlightedText) {
+    return text;
+  }
+  const lowerText = text.toLowerCase();
+  const lowerHighlight = highlightedText.toLowerCase();
+  const index = lowerText.indexOf(lowerHighlight);
+  
+  if (index === -1) {
+    return text;
+  }
+  
+  const before = text.substring(0, index);
+  const match = text.substring(index, index + highlightedText.length);
+  const after = text.substring(index + highlightedText.length);
+  const color = highlightColor || '#3b82f6';
+  
+  return (
+    <>
+      {before}
+      <span style={{ color }}>{match}</span>
+      {after}
+    </>
+  );
+}
+
 export default function SideQuestSection({
   label,
   title,
+  highlightedText,
+  highlightColor,
   subtitle,
   image,
   teamLabel,
@@ -39,7 +70,7 @@ export default function SideQuestSection({
               <p className="text-[#9ca3af] text-base pb-2">{label}</p>
             )}
             {title && (
-              <h3 className="text-2xl text-black">{title}</h3>
+              <h3 className="text-2xl text-black">{renderHighlightedText(title, highlightedText, highlightColor)}</h3>
             )}
             {subtitle && (
               <p className="text-gray-500 text-xl">{subtitle}</p>

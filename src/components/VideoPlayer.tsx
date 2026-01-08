@@ -49,21 +49,38 @@ export default function VideoPlayer({
   const hlsRef = useRef<Hls | null>(null);
   const playerInitTime = useRef(Date.now());
   const hasCalledOnLoaded = useRef(false);
+  
+  // Store callbacks and config in refs to avoid re-running the effect when they change
+  // This prevents video reload when parent component re-renders
+  const onLoadedRef = useRef(onLoaded);
+  const muxEnvKeyRef = useRef(muxEnvKey);
+  const playerNameRef = useRef(playerName);
+  const muxMetadataRef = useRef(muxMetadata);
+  const autoPlayRef = useRef(autoPlay);
+  const mutedRef = useRef(muted);
+  
+  // Update refs on each render to always have latest values
+  onLoadedRef.current = onLoaded;
+  muxEnvKeyRef.current = muxEnvKey;
+  playerNameRef.current = playerName;
+  muxMetadataRef.current = muxMetadata;
+  autoPlayRef.current = autoPlay;
+  mutedRef.current = muted;
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     // IMPORTANT: Set muted state immediately and programmatically for autoplay to work
-    if (muted) {
+    if (mutedRef.current) {
       video.muted = true;
     }
 
     // Handler for when video has enough data to play
     const handleCanPlay = () => {
-      if (onLoaded && !hasCalledOnLoaded.current) {
+      if (onLoadedRef.current && !hasCalledOnLoaded.current) {
         hasCalledOnLoaded.current = true;
-        onLoaded();
+        onLoadedRef.current();
       }
     };
 
@@ -74,17 +91,17 @@ export default function VideoPlayer({
 
     // Function to initialize Mux monitoring
     const initMuxMonitoring = (hlsInstance?: Hls) => {
-      if (!muxEnvKey) {
+      if (!muxEnvKeyRef.current) {
         console.warn("Mux env_key not provided. Video monitoring is disabled.");
         return;
       }
 
       const muxOptions: Record<string, unknown> = {
         data: {
-          env_key: muxEnvKey,
-          player_name: playerName,
+          env_key: muxEnvKeyRef.current,
+          player_name: playerNameRef.current,
           player_init_time: playerInitTime.current,
-          ...muxMetadata,
+          ...muxMetadataRef.current,
         },
       };
 
@@ -122,9 +139,9 @@ export default function VideoPlayer({
           console.log(`Locked to level ${highestLevel}: ${data.levels[highestLevel]?.height}p`);
 
           initMuxMonitoring(hls);
-          if (autoPlay) {
+          if (autoPlayRef.current) {
             // Ensure muted is set right before play for autoplay to work
-            if (muted) {
+            if (mutedRef.current) {
               video.muted = true;
             }
             video.play().catch((err) => {
@@ -172,7 +189,8 @@ export default function VideoPlayer({
         hlsRef.current = null;
       }
     };
-  }, [src, muxEnvKey, playerName, muxMetadata, autoPlay, muted, onLoaded]);
+  // Only re-initialize video when src changes - all other props are stored in refs
+  }, [src]);
 
   return (
     <video

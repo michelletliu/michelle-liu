@@ -21,6 +21,7 @@ import phoneIconSvg from '../../assets/receipt/Screen Time Receipt/src/assets/�
 import saveIconSvg from '../../assets/receipt/Screen Time Receipt/src/assets/save.svg';
 import sendIconSvg from '../../assets/receipt/Screen Time Receipt/src/assets/send.svg';
 import savedCheckSvg from './saved.svg';
+import uploadIconSvg from '../../assets/Upload.svg';
 
 // Import app icons from the receipt assets folder
 import imgInstagramIcon from '../../assets/receipt/Screen Time Receipt/src/assets/fcadb86f9e7ac3194098e501064eb43213cdfff1.png';
@@ -168,11 +169,11 @@ function getRecommendation(totalMinutes: number): { main: string; message: strin
   } else if (hours < 10) {
     return { main: "TIME FOR A BREAK!", message: "Go touch some grass 🌱" };
   } else if (hours < 15) {
-    return { main: "SERIOUSLY?!", message: "Your eyes need a rest! 👀" };
+    return { main: "TIME FOR A BREAK!", message: "Your eyes need a rest! 👀" };
   } else if (hours < 20) {
     return { main: "EMERGENCY!", message: "Touch grass IMMEDIATELY 🌱" };
   } else {
-    return { main: "ARE YOU OKAY?!", message: "There's a world outside! 🌍" };
+    return { main: "ARE YOU OKAY?", message: "There's a world outside! 🌍" };
   }
 }
 
@@ -239,7 +240,8 @@ function GenerateScreen({
   onUploadClick: () => void;
 }) {
   return (
-    <div className="absolute bg-white flex flex-col gap-[24px] items-center left-1/2 px-[48px] py-[32px] rounded-[26px] shadow-[0px_2px_8px_rgba(0,0,0,0.1)] top-1/2 -translate-x-1/2 -translate-y-1/2 max-w-[90%]">
+    <div className="absolute flex flex-col items-center gap-3 justify-center size-full">
+    <div className="bg-white flex flex-col gap-[24px] items-center px-[48px] py-[32px] rounded-[26px] shadow-[0px_2px_8px_rgba(0,0,0,0.1)] max-w-[90%]">
       <div className="bg-[rgba(116,116,128,0.08)] flex flex-col items-center justify-center p-[10px] relative rounded-full shrink-0 size-[120px]">
         <img src={phoneIconSvg} alt="Phone" className="w-[38px] h-[63px]" />
       </div>
@@ -281,15 +283,23 @@ function GenerateScreen({
           </button>
         </div>
       </div>
-      <div className="flex flex-col gap-4">
-      <button
-        onClick={onGenerate}
-        className="bg-[#404040] flex items-center justify-center px-6 py-[10px] relative rounded-full shrink-0 cursor-pointer hover:bg-[#333] transition-colors w-full"
-      >
-        <p className="font-mono leading-normal relative shrink-0 text-[15px] text-center text-nowrap text-white tracking-[0.75px]">GENERATE</p>
-      </button>
-
+      <div className="flex flex-col gap-3">
+        <button
+          onClick={onGenerate}
+          className="bg-[#404040] flex items-center justify-center px-6 py-[10px] relative rounded-full shrink-0 cursor-pointer hover:bg-[#333] transition-colors w-full"
+        >
+          <p className="font-mono leading-normal relative shrink-0 text-[15px] text-center text-nowrap text-white tracking-[0.75px]">GENERATE</p>
+        </button>
+        
       </div>
+    </div>
+    <button
+          onClick={onUploadClick}
+          className="flex items-center justify-center gap-3 px-6 py-2 relative shrink-0 cursor-pointer transition-colors group"
+        >
+          <img src={uploadIconSvg} alt="" className="h-[15px] w-auto opacity-50 group-hover:opacity-70 transition-opacity" />
+          <p className="font-mono leading-normal relative shrink-0 text-[15px] text-center text-nowrap text-gray-500 group-hover:text-gray-700 tracking-[0.5px] transition-colors">UPLOAD YOUR OWN DATA</p>
+        </button>
     </div>
   );
 }
@@ -552,8 +562,8 @@ function ReceiptScreen({
                 </div>
               </div>
               <div className="flex flex-col font-mono gap-[16px] items-start relative shrink-0 text-center w-full ">
-                <p className="leading-[22px] relative shrink-0 text-[17px] font-semibold text-[rgba(0,0,0,0.6)] w-full">{recommendation.main}</p>
-                <div className="leading-[22px] relative shrink-0 text-[15px] text-[rgba(0,0,0,0.4)] font-medium w-full whitespace-pre-line">
+                <p className="leading-[22px] relative shrink-0 text-[17px] font-semibold text-gray-500 w-full">{recommendation.main}</p>
+                <div className="leading-[22px] relative shrink-0 text-[15px] text-gray-400 font-medium w-full whitespace-pre-line">
                   <p className="mb-0">Recommendation:</p>
                   <p>{recommendation.message}</p>
                 </div>
@@ -768,7 +778,7 @@ function UploadInstructions({ onClose, onUploadSuccess }: { onClose: () => void;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/5 animate-fade-in p-4" onClick={onClose}>
-      <div className="bg-white rounded-[20px] py-2 pb-4 w-full max-w-[500px] max-h-[90vh] overflow-y-auto shadow-[0px_4px_20px_rgba(0,0,0,0.2)] animate-slide-in" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-[20px] py-2 pb-4 w-full max-w-[500px] max-h-[90vh] overflow-y-auto shadow-md animate-slide-in" onClick={(e) => e.stopPropagation()}>
         <div className="top-0 bg-white flex items-center justify-center px-12 pt-8 rounded-t-[20px]">
           <h2 className="font-mono text-lg text-black font-semibold">Upload Your Screen Time Data</h2>
         </div>
@@ -778,21 +788,21 @@ function UploadInstructions({ onClose, onUploadSuccess }: { onClose: () => void;
           <div className="space-y-3">
             <h3 className="font-['Figtree'] text-base text-black font-semibold">iPhone</h3>
             <ol className="font-['Figtree'] space-y-3 pl-10 list-decimal text-gray-500 leading-normal">
-              <li>Open the <strong>Settings</strong> app</li>
+              <li>Open <strong>Settings</strong></li>
               <li>Scroll down and tap <strong>Screen Time</strong></li>
               <li>Tap <strong>See All Activity</strong></li>
               <li>Choose <strong>Week</strong> or <strong>Day</strong> at the top</li>
-              <li>Take a screenshot (Press Side Button + Volume Up)</li>
+              <li>Take a screenshot (Side Button + Volume Up)</li>
             </ol>
           </div>
 
           <div className="border-t border-gray-200 pt-6 space-y-3">
             <h3 className="font-mono text-base text-black font-semibold">Android</h3>
             <ol className="font-['Figtree'] space-y-3 pl-10 list-decimal text-gray-500 leading-normal">
-              <li>Open the <strong>Settings</strong> app</li>
+              <li>Open <strong>Settings</strong></li>
               <li>Tap <strong>Digital Wellbeing & parental controls</strong></li>
               <li>Tap the graph to see your screen time details</li>
-              <li>Take a screenshot (usually Power + Volume Down)</li>
+              <li>Take a screenshot (Power + Volume Down)</li>
             </ol>
           </div>
 

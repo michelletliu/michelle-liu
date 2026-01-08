@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
 import { PortableText } from "@portabletext/react";
+import type { PortableTextComponents } from "@portabletext/react";
 import { client, urlFor } from "../../sanity/client";
 import { PROJECT_BY_COMPANY_QUERY } from "../../sanity/queries";
 import { getCachedData } from "../../sanity/preload";
@@ -11,9 +12,30 @@ import ViewAllProjectsButton from "./ViewAllProjectsButton";
 import ProjectCardSection from "./ProjectCardSection";
 import SideQuestSection from "./SideQuestSection";
 import { ScrollReveal } from "../ScrollReveal";
+import { useScrollLock } from "../../utils/useScrollLock";
 import lockIcon from "../../assets/lock.svg";
 import expandIcon from "../../assets/Expand.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
+
+// Custom PortableText components for proper heading and spacing rendering
+const portableTextComponents: PortableTextComponents = {
+  block: {
+    h1: ({ children }) => <h1 className="text-3xl font-semibold mb-4 mt-8 first:mt-0">{children}</h1>,
+    h2: ({ children }) => <h2 className="text-2xl font-medium mb-3 mt-6 first:mt-0">{children}</h2>,
+    h3: ({ children }) => <h3 className="text-xl font-medium mb-3 mt-5 first:mt-0">{children}</h3>,
+    h4: ({ children }) => <h4 className="text-lg font-medium mb-2 mt-4 first:mt-0">{children}</h4>,
+    normal: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
+  },
+  marks: {
+    strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+    em: ({ children }) => <em className="italic">{children}</em>,
+    code: ({ children }) => <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>,
+  },
+  list: {
+    bullet: ({ children }) => <ul className="list-disc ml-5 space-y-2 mb-4">{children}</ul>,
+    number: ({ children }) => <ol className="list-decimal ml-5 space-y-2 mb-4">{children}</ol>,
+  },
+};
 
 // Helper functions for tracking unlocked projects in session
 const UNLOCKED_PROJECTS_KEY = 'unlockedProjects';
@@ -96,6 +118,203 @@ function Breadcrumb({ projectName, onWorkClick, isScrolled = false, isPastHero =
       </div>
     </div>
   );
+}
+
+// YouTube seamless loop component - uses two iframes to crossfade for gapless looping
+function YouTubeSeamlessLoop({ videoId }: { videoId: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const player1Ref = useRef<YTPlayer | null>(null);
+  const player2Ref = useRef<YTPlayer | null>(null);
+  const [activePlayer, setActivePlayer] = useState<1 | 2>(1);
+  const [apiReady, setApiReady] = useState(false);
+  const checkIntervalRef = useRef<number | null>(null);
+  // Unique ID for this instance to support multiple videos on page
+  const instanceId = useRef(`yt-${videoId}-${Math.random().toString(36).substr(2, 9)}`);
+  const player1Id = `${instanceId.current}-1`;
+  const player2Id = `${instanceId.current}-2`;
+
+  // Load YouTube IFrame API
+  useEffect(() => {
+    if (window.YT && window.YT.Player) {
+      setApiReady(true);
+      return;
+    }
+
+    const existingScript = document.querySelector('script[src="https://www.youtube.com/iframe_api"]');
+    if (!existingScript) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    }
+
+    // Check periodically if YT is ready (in case onYouTubeIframeAPIReady was already called)
+    const checkYT = setInterval(() => {
+      if (window.YT && window.YT.Player) {
+        setApiReady(true);
+        clearInterval(checkYT);
+      }
+    }, 100);
+
+    const prevCallback = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      prevCallback?.();
+      setApiReady(true);
+      clearInterval(checkYT);
+    };
+
+    return () => {
+      clearInterval(checkYT);
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Initialize players when API is ready
+  useEffect(() => {
+    if (!apiReady || !window.YT?.Player) return;
+
+    const createPlayer = (elementId: string, ref: React.MutableRefObject<YTPlayer | null>, autoplay: boolean) => {
+      ref.current = new window.YT.Player(elementId, {
+        videoId,
+        playerVars: {
+          autoplay: autoplay ? 1 : 0,
+          mute: 1,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          iv_load_policy: 3,
+          modestbranding: 1,
+          rel: 0,
+          showinfo: 0,
+          playsinline: 1,
+          origin: window.location.origin,
+        },
+        events: {
+          onReady: (event) => {
+            if (autoplay) {
+              event.target.playVideo();
+            }
+          },
+        },
+      });
+    };
+
+    createPlayer(player1Id, player1Ref, true);
+    createPlayer(player2Id, player2Ref, false);
+
+    return () => {
+      player1Ref.current?.destroy();
+      player2Ref.current?.destroy();
+    };
+  }, [apiReady, videoId, player1Id, player2Id]);
+
+  // Monitor playback and seamlessly loop
+  useEffect(() => {
+    if (!apiReady) return;
+
+    const checkAndLoop = () => {
+      const activePlayerRef = activePlayer === 1 ? player1Ref : player2Ref;
+      const standbyPlayerRef = activePlayer === 1 ? player2Ref : player1Ref;
+      const player = activePlayerRef.current;
+      const standby = standbyPlayerRef.current;
+
+      if (!player || !standby) return;
+
+      try {
+        const currentTime = player.getCurrentTime?.();
+        const duration = player.getDuration?.();
+
+        if (currentTime && duration && duration > 0) {
+          // When video is near end (0.3s before), start standby and crossfade
+          if (currentTime >= duration - 0.3) {
+            standby.seekTo(0, true);
+            standby.playVideo();
+            setActivePlayer(activePlayer === 1 ? 2 : 1);
+          }
+        }
+      } catch {
+        // Player not ready yet
+      }
+    };
+
+    checkIntervalRef.current = window.setInterval(checkAndLoop, 50);
+
+    return () => {
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current);
+      }
+    };
+  }, [apiReady, activePlayer]);
+
+  return (
+    <div ref={containerRef} className="aspect-video w-full overflow-hidden rounded-3xl relative pointer-events-none">
+      <div
+        id={player1Id}
+        className={clsx(
+          "absolute inset-0 w-full h-full transition-opacity duration-200 scale-[1.5] [&>iframe]:w-full [&>iframe]:h-full",
+          activePlayer === 1 ? "opacity-100 z-10" : "opacity-0 z-0"
+        )}
+      />
+      <div
+        id={player2Id}
+        className={clsx(
+          "absolute inset-0 w-full h-full transition-opacity duration-200 scale-[1.5] [&>iframe]:w-full [&>iframe]:h-full",
+          activePlayer === 2 ? "opacity-100 z-10" : "opacity-0 z-0"
+        )}
+      />
+    </div>
+  );
+}
+
+// YouTube IFrame API types
+interface YTPlayer {
+  playVideo: () => void;
+  pauseVideo: () => void;
+  seekTo: (seconds: number, allowSeekAhead: boolean) => void;
+  getCurrentTime: () => number;
+  getDuration: () => number;
+  destroy: () => void;
+}
+
+interface YTPlayerEvent {
+  target: YTPlayer;
+}
+
+interface YTPlayerOptions {
+  videoId: string;
+  playerVars?: {
+    autoplay?: number;
+    mute?: number;
+    controls?: number;
+    disablekb?: number;
+    fs?: number;
+    iv_load_policy?: number;
+    modestbranding?: number;
+    rel?: number;
+    showinfo?: number;
+    playsinline?: number;
+    origin?: string;
+  };
+  events?: {
+    onReady?: (event: YTPlayerEvent) => void;
+  };
+}
+
+interface YTPlayerConstructor {
+  new (elementId: string, options: YTPlayerOptions): YTPlayer;
+}
+
+interface YTAPI {
+  Player: YTPlayerConstructor;
+}
+
+// Extend Window interface for YouTube API
+declare global {
+  interface Window {
+    YT: YTAPI;
+    onYouTubeIframeAPIReady: () => void;
+  }
 }
 
 // Close icon SVG
@@ -234,6 +453,7 @@ export default function ProjectModal({
   const [isClosing, setIsClosing] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isPastHero, setIsPastHero] = useState(false);
+  const [showSkipLink, setShowSkipLink] = useState(false);
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -241,6 +461,8 @@ export default function ProjectModal({
   const [isUnlocked, setIsUnlocked] = useState(() => isProjectUnlocked(projectId));
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const heroRef = React.useRef<HTMLDivElement>(null);
+  const skipStartRef = React.useRef<HTMLDivElement>(null);
+  const skipEndRef = React.useRef<HTMLDivElement>(null);
   
   // Fullscreen state is controlled by URL via initialFullscreen prop
   const isFullscreen = initialFullscreen;
@@ -279,32 +501,8 @@ export default function ProjectModal({
     fetchProject();
   }, [projectId]);
 
-  // Lock body scroll when modal is open (popup mode only)
-  // Preserve scroll position to prevent flicker on close
-  useEffect(() => {
-    if (!isFullscreen) {
-      const scrollY = window.scrollY;
-      
-      // Lock scroll while preserving position
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      
-      return () => {
-        // Remove fixed positioning styles
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        
-        // Immediately restore scroll position synchronously to prevent flicker
-        // Using both methods for cross-browser compatibility
-        document.documentElement.scrollTop = scrollY;
-        document.body.scrollTop = scrollY;
-      };
-    }
-  }, [isFullscreen]);
+  // Lock body scroll when modal is open (popup mode only, flicker-free implementation)
+  useScrollLock(!isFullscreen);
 
   // Trigger enter animation on mount
   useEffect(() => {
@@ -317,15 +515,53 @@ export default function ProjectModal({
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
     if (!scrollContainer) return;
-
-    const handleScroll = () => {
-      const scrollTop = scrollContainer.scrollTop;
-      setIsScrolled(scrollTop > 20);
+    
+    let scrollHandler: (() => void) | null = null;
+    
+    // Helper to get element's position relative to scroll container
+    const getOffsetTop = (element: HTMLElement, container: HTMLElement): number => {
+      let offsetTop = 0;
+      let currentElement: HTMLElement | null = element;
+      
+      while (currentElement && currentElement !== container) {
+        offsetTop += currentElement.offsetTop;
+        currentElement = currentElement.offsetParent as HTMLElement | null;
+      }
+      
+      return offsetTop;
     };
+    
+    // Wait a bit for content to render
+    const timeoutId = setTimeout(() => {
+      scrollHandler = () => {
+        const scrollTop = scrollContainer.scrollTop;
+        setIsScrolled(scrollTop > 20);
+        
+        // Check if we should show the skip link (between configured start and end sections)
+        if (skipStartRef.current && skipEndRef.current) {
+          const startTop = getOffsetTop(skipStartRef.current, scrollContainer);
+          const endTop = getOffsetTop(skipEndRef.current, scrollContainer);
+          const scrollPosition = scrollTop;
+          
+          // Show link if we've scrolled past start section but not yet reached end section
+          setShowSkipLink(scrollPosition >= (startTop - 200) && scrollPosition < (endTop - 200));
+        }
+      };
 
-    scrollContainer.addEventListener("scroll", handleScroll);
-    return () => scrollContainer.removeEventListener("scroll", handleScroll);
-  }, []);
+      if (scrollHandler) {
+        scrollContainer.addEventListener("scroll", scrollHandler);
+        // Run once immediately to check initial state
+        scrollHandler();
+      }
+    }, 100);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      if (scrollHandler) {
+        scrollContainer.removeEventListener("scroll", scrollHandler);
+      }
+    };
+  }, [project, loading]);
 
   // Observe when hero section leaves the viewport (for hiding breadcrumb)
   useEffect(() => {
@@ -397,13 +633,42 @@ export default function ProjectModal({
     // The fullscreen page will naturally start from the top
     if (!isFullscreen && onExpandToFullscreen) {
       onExpandToFullscreen();
+      // Also scroll after a brief delay to ensure fullscreen mode has rendered
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }, 50);
     } else {
-      // Already in fullscreen - scroll to top
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTo({ top: 0, behavior: 'instant' });
-      }
-      // Also scroll window to top for fullscreen mode
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      // Already in fullscreen - scroll to top after content re-renders
+      // Use requestAnimationFrame to wait for the next paint cycle
+      requestAnimationFrame(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTo({ top: 0, behavior: 'instant' });
+        }
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      });
+    }
+  };
+
+  // Handle skip to final designs
+  // Handle skip to final designs
+  const handleSkipToFinalDesigns = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (skipEndRef.current && scrollContainerRef.current) {
+      // Use the same getOffsetTop helper to get correct position
+      const getOffsetTop = (element: HTMLElement, container: HTMLElement): number => {
+        let offsetTop = 0;
+        let currentElement: HTMLElement | null = element;
+        
+        while (currentElement && currentElement !== container) {
+          offsetTop += currentElement.offsetTop;
+          currentElement = currentElement.offsetParent as HTMLElement | null;
+        }
+        
+        return offsetTop;
+      };
+      
+      const skipEndTop = getOffsetTop(skipEndRef.current, scrollContainerRef.current);
+      scrollContainerRef.current.scrollTo({ top: skipEndTop - 20, behavior: 'smooth' });
     }
   };
 
@@ -462,9 +727,26 @@ export default function ProjectModal({
             </div>
           )}
 
+          {/* Skip to Final Designs Link */}
+          <a
+            href="#final-designs"
+            onClick={handleSkipToFinalDesigns}
+            className={clsx(
+              "fixed z-[100] font-medium text-gray-700 hover:text-blue-500 cursor-pointer leading-tight",
+              "transition-all duration-300 ease-in-out",
+              showSkipLink ? "opacity-100" : "opacity-0 pointer-events-none",
+              isFullscreen ? "top-16 left-14 max-md:left-6" : "top-16 left-8"
+            )}
+          >
+            <div className="flex flex-col gap-0.5 items-start">
+              <span className="text-[0.8rem]">↓ SKIP TO</span>
+              <span className="text-[0.8rem]">FINAL DESIGNS</span>
+            </div>
+          </a>
+
           {/* Scrollable content */}
           <div ref={scrollContainerRef} className={clsx(
-            "overflow-y-auto flex-1",
+            "overflow-y-auto overflow-x-hidden flex-1",
             !isFullscreen && "rounded-t-[26px]"
           )}>
           {/* Fullscreen header - INSIDE scroll container so sticky works and gradient fades content */}
@@ -652,10 +934,25 @@ export default function ProjectModal({
                   // Testimonials have interactive expand/collapse - skip ScrollReveal
                   // to prevent animation from replaying when clicking "Read more"
                   section._type === "testimonialSection" ? (
-                    <ContentBlock key={section._key} section={section} isFullscreen={isFullscreen} isUnlocked={isUnlocked} onUnlock={handleUnlock} />
+                    <ContentBlock 
+                      key={section._key} 
+                      section={section} 
+                      isFullscreen={isFullscreen} 
+                      isUnlocked={isUnlocked} 
+                      onUnlock={handleUnlock}
+                      skipStartRef={skipStartRef}
+                      skipEndRef={skipEndRef}
+                    />
                   ) : (
                     <ScrollReveal key={section._key}>
-                      <ContentBlock section={section} isFullscreen={isFullscreen} isUnlocked={isUnlocked} onUnlock={handleUnlock} />
+                      <ContentBlock 
+                        section={section} 
+                        isFullscreen={isFullscreen} 
+                        isUnlocked={isUnlocked} 
+                        onUnlock={handleUnlock}
+                        skipStartRef={skipStartRef}
+                        skipEndRef={skipEndRef}
+                      />
                     </ScrollReveal>
                   )
                 );
@@ -663,7 +960,7 @@ export default function ProjectModal({
 
               {/* Also Check Out Section */}
               {project.relatedProjects && project.relatedProjects.length > 0 && (
-                <div className="content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
+                <div className="content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
                   <div className="content-stretch flex flex-col gap-8 items-start relative shrink-0 w-full">
                     {/* Section Title */}
                     <ScrollReveal variant="fade">
@@ -773,6 +1070,8 @@ const ExpandArrowIcon = () => (
 type TestimonialBlockProps = {
   sectionLabel?: string;
   sectionTitle?: string;
+  highlightedText?: string;
+  highlightColor?: string;
   quote?: string;
   fullQuote?: string[];
   authorName?: string;
@@ -785,6 +1084,8 @@ type TestimonialBlockProps = {
 function TestimonialBlock({
   sectionLabel = "Feedback",
   sectionTitle = "Kind words from my manager",
+  highlightedText,
+  highlightColor,
   quote,
   fullQuote,
   authorName,
@@ -825,7 +1126,7 @@ function TestimonialBlock({
   return (
     <div 
       ref={sectionRef}
-      className="content-stretch flex flex-col items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full scroll-mt-8"
+      className="content-stretch flex flex-col items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full scroll-mt-8"
     >
       <div className="content-stretch flex flex-col gap-[100px] max-md:gap-16 items-start relative shrink-0 w-full">
         {/* Header Section */}
@@ -834,7 +1135,7 @@ function TestimonialBlock({
             {sectionLabel}
           </p>
           <p className="leading-7 min-w-full relative shrink-0 text-2xl text-black whitespace-pre-wrap">
-            {sectionTitle}
+            {sectionTitle && renderHighlightedText(sectionTitle, highlightedText, highlightColor)}
           </p>
         </div>
 
@@ -908,14 +1209,14 @@ function TestimonialBlock({
             <div className="relative w-[424px] max-md:w-full">
               {/* Short Quote - shown when collapsed */}
               {!isExpanded && (
-                <div className="leading-[26px] text-[#1f2937] text-xl whitespace-pre-wrap">
+                <div className="leading-normal text-[#1f2937] text-xl whitespace-pre-wrap">
                   <p>{quote}</p>
                 </div>
               )}
 
               {/* Full Quote - shown when expanded */}
               {isExpanded && (
-                <div className="leading-[26px] text-[#1f2937] text-xl whitespace-pre-wrap">
+                <div className="leading-normal text-[#1f2937] text-xl whitespace-pre-wrap">
                   {fullQuote?.map((paragraph, index) => (
                     <p
                       key={index}
@@ -959,8 +1260,51 @@ function TestimonialBlock({
   );
 }
 
+// Helper to render text with highlighted portion
+function renderHighlightedText(text: string, highlightedText?: string, highlightColor?: string): React.ReactNode {
+  if (!highlightedText) {
+    return text;
+  }
+  // Case-insensitive search
+  const lowerText = text.toLowerCase();
+  const lowerHighlight = highlightedText.toLowerCase();
+  const index = lowerText.indexOf(lowerHighlight);
+  
+  if (index === -1) {
+    return text;
+  }
+  
+  // Use the original case from the text
+  const before = text.substring(0, index);
+  const match = text.substring(index, index + highlightedText.length);
+  const after = text.substring(index + highlightedText.length);
+  const color = highlightColor || '#3b82f6';
+  
+  return (
+    <>
+      {before}
+      <span style={{ color }}>{match}</span>
+      {after}
+    </>
+  );
+}
+
 // Content section renderer component
-function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnlock }: { section: ContentSection; isFullscreen?: boolean; isUnlocked?: boolean; onUnlock?: () => void }) {
+function ContentBlock({ 
+  section, 
+  isFullscreen = false, 
+  isUnlocked = false, 
+  onUnlock,
+  skipStartRef,
+  skipEndRef
+}: { 
+  section: ContentSection; 
+  isFullscreen?: boolean; 
+  isUnlocked?: boolean; 
+  onUnlock?: () => void;
+  skipStartRef?: React.RefObject<HTMLDivElement | null>;
+  skipEndRef?: React.RefObject<HTMLDivElement | null>;
+}) {
   const renderContent = () => {
     switch (section._type) {
       case "missionSection":
@@ -968,46 +1312,17 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
       const hasDescription = section.missionDescription && section.missionDescription.length > 0;
       const hasImage = !!section.missionImage;
       
-      // Helper to render title with highlighted text
-      const renderTitle = (title: string, highlightedText?: string, highlightColor?: string) => {
-        if (!highlightedText) {
-          return title;
-        }
-        // Case-insensitive search
-        const lowerTitle = title.toLowerCase();
-        const lowerHighlight = highlightedText.toLowerCase();
-        const index = lowerTitle.indexOf(lowerHighlight);
-        
-        if (index === -1) {
-          return title;
-        }
-        
-        // Use the original case from the title
-        const before = title.substring(0, index);
-        const match = title.substring(index, index + highlightedText.length);
-        const after = title.substring(index + highlightedText.length);
-        const color = highlightColor || '#3b82f6';
-        
-        return (
-          <>
-            {before}
-            <span style={{ color }}>{match}</span>
-            {after}
-          </>
-        );
-      };
-      
       // Centered layout when image is provided
       if (hasImage) {
         return (
-          <div className="flex flex-col items-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
+          <div className="flex flex-col items-center px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
             {/* Label + Title */}
             <div className="flex flex-col gap-5 items-center text-center w-[410px] max-md:w-full">
               <p className="leading-5 text-[#9ca3af] text-base">
                 {section.sectionLabel || "The Mission"}
               </p>
               <p className="leading-7 text-2xl text-black whitespace-pre-wrap text-pretty">
-                {renderTitle(section.missionTitle, section.highlightedText, section.highlightColor)}
+                {renderHighlightedText(section.missionTitle, section.highlightedText, section.highlightColor)}
               </p>
             </div>
 
@@ -1023,8 +1338,8 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
             {/* Description */}
             {hasDescription && (
               <div className="flex flex-col gap-8 mt-8 w-[410px] max-md:w-full px-8 max-md:px-0">
-                <div className="leading-normal text-[#4b5563] text-base whitespace-pre-wrap prose prose-p:my-4 first:prose-p:mt-0 last:prose-p:mb-0">
-                  <PortableText value={section.missionDescription} />
+                <div className="leading-normal text-[#4b5563] text-base whitespace-pre-wrap prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
+                  <PortableText value={section.missionDescription} components={portableTextComponents} />
                 </div>
 
                 {/* Italic Note */}
@@ -1049,7 +1364,7 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
       // Original layout (no image)
       return (
         <div className={clsx(
-          "content-stretch items-start px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full",
+          "content-stretch items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full",
           // Use flex column layout when no description
           !hasDescription && "flex flex-col gap-5 justify-center",
           // Use grid layout when there is description (two-column)
@@ -1066,26 +1381,32 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
               {section.sectionLabel || "The Mission"}
             </p>
             <p className="leading-7 w-full relative shrink-0 text-2xl text-black whitespace-pre-wrap text-pretty">
-              {renderTitle(section.missionTitle, section.highlightedText, section.highlightColor)}
+              {renderHighlightedText(section.missionTitle, section.highlightedText, section.highlightColor)}
             </p>
           </div>
 
           {/* Right: Description - only shown when there is description content */}
           {hasDescription && (
-            <div className="leading-normal relative text-[#4b5563] text-base whitespace-pre-wrap col-start-3 max-md:col-start-auto max-md:w-full prose prose-p:my-4 first:prose-p:mt-0 last:prose-p:mb-0">
-              <PortableText value={section.missionDescription} />
+            <div className="leading-normal relative text-[#4b5563] text-base whitespace-pre-wrap col-start-3 max-md:col-start-auto max-md:w-full prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
+              <PortableText value={section.missionDescription} components={portableTextComponents} />
             </div>
           )}
         </div>
       );
 
     case "protectedSection":
-      // Don't show the protected section UI when content is unlocked
-      if (isUnlocked) return null;
+      // Check visibility setting
+      const shouldShowProtected = 
+        section.visibility === 'both' || 
+        (section.visibility === 'locked' && !isUnlocked) || 
+        (section.visibility === 'unlocked' && isUnlocked) ||
+        (!section.visibility && !isUnlocked); // Default behavior: show when locked
+      
+      if (!shouldShowProtected) return null;
       
       const hasPassword = !!(section.showPasswordProtection && section.password);
       return (
-        <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
+        <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
           <div className="bg-gray-100 content-stretch flex flex-col items-center justify-center overflow-clip p-16 max-md:p-8 relative rounded-[26px] shrink-0 w-full">
             <div className={clsx(
               "content-stretch flex flex-col items-start relative shrink-0 w-full",
@@ -1132,6 +1453,201 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
         </div>
       );
 
+    case "featureSection":
+      const featureImageSrc = section.externalImageUrl
+        ? section.externalImageUrl
+        : section.image
+          ? urlFor(section.image).width(2400).url()
+          : null;
+
+      const hasVideo = section.mediaType === 'video' && section.muxPlaybackId;
+      const isStacked = section.layout === 'stacked';
+      const mediaOnLeft = section.mediaPosition === 'left';
+      
+      // Determine vertical padding
+      const paddingMap = {
+        small: 'py-10',
+        normal: 'py-16',
+        large: 'py-20',
+      };
+      const verticalPadding = paddingMap[section.verticalPadding || 'normal'];
+
+      if (isStacked) {
+        // Stacked layout - text above (two-col format), media below (full width)
+        return (
+          <div className="flex flex-col py-6">
+            <div
+              className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full"
+              style={{ backgroundColor: section.backgroundColor || '#f9fafb' }}
+            >
+              <div className={clsx("content-stretch flex flex-col justify-between relative shrink-0 w-full", verticalPadding)}>
+                {/* Text content in two-column grid */}
+                <div className="flex flex-row items-start gap-32 w-full max-md:flex max-md:flex-col max-md:gap-8">
+                  {/* Left column: Labels and heading */}
+                  <div className="content-stretch flex w-120 flex-col gap-3 items-start relative col-start-1">
+                    {/* Section Number + Label */}
+                    {(section.sectionNumber || section.sectionLabel) && (
+                      <div className="flex items-center gap-2">
+                        {section.sectionNumber && (
+                          <p className="leading-5 relative shrink-0 text-[#3b82f6] text-base font-medium">
+                            {section.sectionNumber}
+                          </p>
+                        )}
+                        {section.sectionLabel && (
+                          <p className="leading-5 relative shrink-0 text-[#3b82f6] text-base">
+                            {section.sectionLabel}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Problem Label */}
+                    {section.problemLabel && (
+                      <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
+                        {section.problemLabel}
+                      </p>
+                    )}
+
+                    {/* Heading */}
+                    {section.heading && (
+                      <p className="leading-7 min-w-120 relative shrink-0 text-2xl text-black whitespace-pre-wrap">
+                        {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Right column: Description */}
+                  {section.description && section.description.length > 0 && (
+                    <div className="leading-normal max-w-120 relative text-gray-500 text-base whitespace-pre-wrap col-start-3 max-md:col-start-auto max-md:w-full prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
+                      <PortableText value={section.description} components={portableTextComponents} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Media content - full width */}
+                <div className="w-full">
+                  {/* Video */}
+                  {hasVideo && (
+                    <div className="w-full overflow-hidden rounded-[26px]">
+                      <div className="aspect-video w-full">
+                        <VideoPlayer
+                          src={`https://stream.mux.com/${section.muxPlaybackId}.m3u8`}
+                          className="w-full h-full object-cover"
+                          controls={false}
+                          autoPlay
+                          muted
+                          loop
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Image */}
+                  {!hasVideo && featureImageSrc && (
+                    <div className="overflow-hidden rounded-[26px] w-full">
+                      <img
+                        className="w-full object-cover"
+                        alt={section.imageAlt || ""}
+                        src={featureImageSrc}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Side-by-side layout (original)
+      return (
+        <div className="flex flex-col py-6">
+        <div
+          className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full"
+          style={{ backgroundColor: section.backgroundColor || '#f9fafb' }}
+        >
+          <div className={clsx(
+            "content-stretch items-center flex flex-col gap-32 relative shrink-0 w-full md:flex-row max-md:gap-8",
+            mediaOnLeft && "md:flex-row-reverse",
+            verticalPadding
+          )}>
+            {/* Left: Number, Label, and Heading */}
+            <div className="min-w-120 shrink-0 content-stretch flex flex-col gap-3 items-start relative col-start-1 max-md:w-full max-md:min-w-0">
+              {/* Section Number + Label */}
+              {(section.sectionNumber || section.sectionLabel) && (
+                <div className="flex items-center gap-2">
+                  {section.sectionNumber && (
+                    <p className="leading-5 relative shrink-0 text-[#3b82f6] text-base font-medium">
+                      {section.sectionNumber}
+                    </p>
+                  )}
+                  {section.sectionLabel && (
+                    <p className="leading-5 relative shrink-0 text-[#3b82f6] text-base">
+                      {section.sectionLabel}
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {/* Problem Label */}
+              {section.problemLabel && (
+                <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
+                  {section.problemLabel}
+                </p>
+              )}
+              
+              {/* Heading */}
+              {section.heading && (
+                <p className="leading-7 min-w-120 relative shrink-0 text-2xl text-black whitespace-pre-wrap">
+                  {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
+                </p>
+              )}
+
+              {/* Description */}
+            {section.description && section.description.length > 0 && (
+                <div className="pt-6 max-w-120 whitespace-pre-wrap prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 text-gray-500">
+                  <PortableText value={section.description} components={portableTextComponents} />
+                </div>
+              )}
+            </div>
+
+            {/* Right: Image/Video and Description */}
+            <div className="leading-5 max-w-120 flex-items-center relative text-[#4b5563] text-base whitespace-pre-wrap items-center flex flex-col gap-8">
+              {/* Video */}
+              {hasVideo && (
+                <div className="w-full min-w-200 overflow-hidden rounded-[26px] ">
+                  <div className="aspect-video w-full">
+                    <VideoPlayer
+                      src={`https://stream.mux.com/${section.muxPlaybackId}.m3u8`}
+                      className="w-full h-full object-cover"
+                      controls={false}
+                      autoPlay
+                      muted
+                      loop
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Image */}
+              {!hasVideo && featureImageSrc && (
+                <div className="overflow-hidden rounded-[26px] w-full">
+                  <img
+                    className="w-full object-cover"
+                    alt={section.imageAlt || ""}
+                    src={featureImageSrc}
+                  />
+                </div>
+              )}
+              
+              
+            </div>
+          
+          </div>
+        </div>
+        </div>
+      );
+
     case "gallerySection":
       const colsClass =
         section.layout === "2-col"
@@ -1140,7 +1656,7 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
           ? "grid-cols-3"
           : "grid-cols-4";
       return (
-        <div className="content-stretch flex flex-col gap-4 px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
+        <div className="content-stretch flex flex-col gap-4 px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
           {/* Image Grid */}
           <div
             className={`content-stretch grid gap-4 items-center relative w-full max-md:grid-cols-2 ${colsClass}`}
@@ -1163,7 +1679,7 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
           
           {/* Caption/Title below gallery */}
           {section.title && (
-            <p className="font-normal pt-4 leading-5 relative shrink-0 text-[#9ca3af] text-base text-center w-full">
+            <p className="font-normal pt-4 leading-5 relative shrink-0 text-gray-400 text-base text-center w-full">
               {section.title}
             </p>
           )}
@@ -1173,8 +1689,61 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
     case "textSection":
       if (section.layout === "two-col") {
         return (
-          <div className="content-stretch grid grid-cols-[2fr_1fr_2fr] items-start px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full max-md:flex max-md:flex-col max-md:gap-8">
-            <div className="content-stretch flex flex-col gap-5 items-start relative col-start-1">
+<div className="
+  flex
+  justify-between
+  items-start
+  gap-10
+  px-8 md:px-[8%] xl:px-[175px]
+  py-10
+  relative
+  shrink-0
+  w-full
+  max-md:flex max-md:flex-col
+">
+            <div className="content-stretch flex flex-col gap-3 items-start relative col-start-1">
+              {section.label && (
+                <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
+                  {section.label}
+                </p>
+              )}
+              {section.heading && (
+                <p className="leading-7 min-w-120 relative shrink-0 text-2xl text-black whitespace-pre-wrap">
+                  {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
+                </p>
+              )}
+            </div>
+            <div className="leading-normal relative max-w-120 text-[#4b5563] text-base whitespace-pre-wrap col-start-3 max-md:col-start-auto max-md:w-full prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
+              {section.body && <PortableText value={section.body} components={portableTextComponents} />}
+            </div>
+          </div>
+        );
+      }
+      if (section.layout === "centered") {
+        return (
+          <div className="content-stretch flex flex-col gap-4 items-center px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
+            {section.label && (
+              <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base text-center">
+                {section.label}
+              </p>
+            )}
+            {section.heading && (
+              <p className="leading-7 relative shrink-0 text-2xl text-black text-center whitespace-pre-line">
+                {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
+              </p>
+            )}
+            {section.body && (
+              <div className="leading-normal relative text-[#4b5563] text-base whitespace-pre-wrap text-center prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 max-w-[600px]">
+                <PortableText value={section.body} components={portableTextComponents} />
+              </div>
+            )}
+          </div>
+        );
+      }
+      if (section.layout === "single-col") {
+        return (
+          <div className="content-stretch grid grid-cols-[2fr_1fr_2fr] items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full max-md:flex max-md:flex-col max-md:gap-8">
+            <div className="content-stretch flex flex-col gap-3 items-start relative col-start-1">
               {section.label && (
                 <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
                   {section.label}
@@ -1182,31 +1751,33 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
               )}
               {section.heading && (
                 <p className="leading-7 min-w-full relative shrink-0 text-2xl text-black whitespace-pre-wrap">
-                  {section.heading}
+                  {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                 </p>
               )}
-            </div>
-            <div className="leading-5 relative text-[#4b5563] text-base whitespace-pre-wrap col-start-3 max-md:col-start-auto max-md:w-full prose prose-p:my-4 first:prose-p:mt-0 last:prose-p:mb-0">
-              {section.body && <PortableText value={section.body} />}
+              {section.body && (
+                <div className="leading-normal pt-4 relative text-[#4b5563] max-w-100 text-base whitespace-pre-wrap prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 w-full">
+                  <PortableText value={section.body} components={portableTextComponents} />
+                </div>
+              )}
             </div>
           </div>
         );
       }
       return (
-        <div className="content-stretch flex flex-col gap-4 items-start px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
+        <div className="content-stretch flex flex-col gap-4 items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
           {section.label && (
             <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
               {section.label}
             </p>
           )}
           {section.heading && (
-            <p className="leading-7 relative shrink-0 text-2xl text-black">
-              {section.heading}
+            <p className="leading-7 relative shrink-0 text-2xl text-black whitespace-pre-line">
+              {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
             </p>
           )}
           {section.body && (
-            <div className="leading-5 relative text-[#4b5563] text-base whitespace-pre-wrap prose prose-p:my-4 first:prose-p:mt-0 last:prose-p:mb-0">
-              <PortableText value={section.body} />
+            <div className="leading-normal relative text-[#4b5563] text-base whitespace-pre-wrap prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
+              <PortableText value={section.body} components={portableTextComponents} />
             </div>
           )}
         </div>
@@ -1217,17 +1788,32 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
       const imageSrc = section.externalImageUrl 
         ? section.externalImageUrl 
         : section.image 
-          ? urlFor(section.image).width(1200).url()
+          ? urlFor(section.image).width(2400).url()
           : null;
       
       if (!imageSrc) return null;
       
+      // Determine size classes based on section.size
+      const sizeClasses = {
+        full: "w-full",
+        large: "w-full max-w-[900px]",
+        medium: "w-full max-w-[600px]",
+        small: "w-full max-w-[400px]",
+      };
+      const imageSize = section.size || "large";
+      const sizeClass = sizeClasses[imageSize as keyof typeof sizeClasses] || sizeClasses.large;
+      
       return (
-        <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
+        <div className={clsx(
+          "content-stretch flex flex-col py-10 relative shrink-0 w-full",
+          imageSize === "full" ? "items-start px-8 md:px-[8%] xl:px-[175px]" : "items-center px-8"
+        )}>
           <div
-            className={`overflow-hidden w-full ${
-              section.rounded !== false ? "rounded-[26px]" : ""
-            }`}
+            className={clsx(
+              "overflow-hidden",
+              sizeClass,
+              section.rounded !== false && "rounded-[26px]"
+            )}
           >
             <img
               className="w-full object-cover"
@@ -1236,19 +1822,144 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
             />
           </div>
           {section.caption && (
-            <p className="mt-3 text-center w-full text-[#6b7280]">{section.caption}</p>
+            <p className={clsx("mt-3 text-center text-gray-400", sizeClass)}>{section.caption}</p>
           )}
         </div>
       );
 
-    case "videoSection":
+    case "overlayImageSection":
+      // Support both Sanity images and external URLs for base and overlay
+      const baseImageSrc = section.externalBaseImageUrl 
+        ? section.externalBaseImageUrl 
+        : section.baseImage 
+          ? urlFor(section.baseImage).width(2400).url()
+          : null;
+      
+      const overlayImageSrc = section.externalOverlayImageUrl 
+        ? section.externalOverlayImageUrl 
+        : section.overlayImage 
+          ? urlFor(section.overlayImage).width(800).url()
+          : null;
+      
+      if (!baseImageSrc) return null;
+      
+      // Determine size classes
+      const overlaySizeClasses = {
+        full: "w-full",
+        large: "w-full max-w-[900px]",
+        medium: "w-full max-w-[600px]",
+        small: "w-full max-w-[400px]",
+      };
+      const overlayImageSize = section.size || "large";
+      const overlaySizeClass = overlaySizeClasses[overlayImageSize as keyof typeof overlaySizeClasses] || overlaySizeClasses.large;
+      
+      // Overlay size mapping
+      const overlayWidthClass = section.overlaySize === 'small' ? 'w-80' : section.overlaySize === 'large' ? 'w-120' : 'w-100';
+      
+      // Get position values
+      const overlayX = section.overlayPosition?.x ?? 50;
+      const overlayY = section.overlayPosition?.y ?? 50;
+      
+      // Conditional padding based on background color
+      const hasBgColor = !!section.backgroundColor;
+      
       return (
-        <div className="content-stretch flex flex-col items-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
+        <div 
+          className={clsx(
+            "content-stretch flex flex-col relative shrink-0 w-full",
+            hasBgColor && "py-10"
+          )}
+        >
+          <div
+            className={clsx(
+              "flex flex-col relative shrink-0 w-full",
+              overlayImageSize === "full" ? "items-start px-8 md:px-[8%] xl:px-[175px]" : "items-center px-8",
+              !hasBgColor && "py-10"
+            )}
+            style={{ backgroundColor: section.backgroundColor || 'transparent' }}
+          >
+          <div
+            className={clsx(
+              "relative",
+              overlaySizeClass,
+              section.rounded !== false && "rounded-[26px]"
+            )}
+          >
+            {/* Base Image */}
+            <img
+              className={clsx(
+                "w-full object-cover",
+                section.rounded !== false && "rounded-[26px]"
+              )}
+              alt=""
+              src={baseImageSrc}
+            />
+            
+            {/* Overlay Image */}
+            {overlayImageSrc && (
+              <img
+                src={overlayImageSrc}
+                alt=""
+                className={clsx(
+                  "absolute",
+                  overlayWidthClass,
+                  "pointer-events-none"
+                )}
+                style={{
+                  left: `${overlayX}%`,
+                  top: `${overlayY}%`,
+                  transform: 'translate(-50%, -50%)'
+                }}
+              />
+            )}
+          </div>
+          </div>
+        </div>
+      );
+
+    case "videoSection":
+      // Extract YouTube video ID from various URL formats
+      const getYouTubeId = (url: string): string | null => {
+        const patterns = [
+          /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+        ];
+        for (const pattern of patterns) {
+          const match = url.match(pattern);
+          if (match) return match[1];
+        }
+        return null;
+      };
+
+      // Extract Vimeo video ID from URL
+      const getVimeoId = (url: string): string | null => {
+        const match = url.match(/vimeo\.com\/(\d+)/);
+        return match ? match[1] : null;
+      };
+
+      const youtubeId = section.youtubeUrl ? getYouTubeId(section.youtubeUrl) : null;
+      const vimeoId = section.vimeoUrl ? getVimeoId(section.vimeoUrl) : null;
+      
+      // Determine size class
+      const videoSize = section.size || 'full';
+      const videoSizeClass = videoSize === 'medium' ? 'max-w-[800px]' : 'w-full';
+      
+      // Adjust padding based on background color
+      const videoPaddingClass = section.backgroundColor ? 'py-0' : 'py-10';
+
+      return (
+        <div 
+          className={clsx(
+            "content-stretch flex flex-col items-center px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full",
+            videoPaddingClass
+          )}
+          style={{ backgroundColor: section.backgroundColor || 'transparent' }}
+        >
+          <div className={clsx("w-full", videoSizeClass)}>
           {section.videoType === "mux" && section.muxPlaybackId && (
-            <div className="aspect-video w-full overflow-hidden rounded-[26px] bg-black">
+            <div className="aspect-video w-full overflow-hidden rounded-3xl">
               <VideoPlayer
                 src={`https://stream.mux.com/${section.muxPlaybackId}.m3u8`}
-                className="w-full h-full"
+                className="w-full h-full object-cover"
                 controls={false}
                 autoPlay
                 muted
@@ -1258,6 +1969,19 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
                     ? urlFor(section.posterImage).width(1200).url()
                     : `https://image.mux.com/${section.muxPlaybackId}/thumbnail.png`
                 }
+              />
+            </div>
+          )}
+          {section.videoType === "youtube" && youtubeId && (
+            <YouTubeSeamlessLoop videoId={youtubeId} />
+          )}
+          {section.videoType === "vimeo" && vimeoId && (
+            <div className="aspect-video w-full overflow-hidden rounded-3xl relative pointer-events-none">
+              <iframe
+                src={`https://player.vimeo.com/video/${vimeoId}?autoplay=1&muted=1&loop=1&controls=0&background=1`}
+                className="absolute inset-0 w-full h-full scale-[1.5]"
+                allow="autoplay; fullscreen; picture-in-picture"
+                title={section.title || "Video"}
               />
             </div>
           )}
@@ -1271,6 +1995,7 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
               )}
             </div>
           )}
+          </div>
         </div>
       );
 
@@ -1281,6 +2006,8 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
           <TestimonialBlock
             sectionLabel={section.sectionLabel}
             sectionTitle={section.sectionTitle}
+            highlightedText={section.highlightedText}
+            highlightColor={section.highlightColor}
             quote={section.quote}
             fullQuote={section.fullQuote}
             authorName={section.authorName}
@@ -1301,6 +2028,8 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
           <SideQuestSection
             label={section.label}
             title={section.title}
+            highlightedText={section.highlightedText}
+            highlightColor={section.highlightColor}
             subtitle={section.subtitle}
             image={section.image}
             teamLabel={section.teamLabel}
@@ -1315,6 +2044,179 @@ function ContentBlock({ section, isFullscreen = false, isUnlocked = false, onUnl
             <div className="h-px relative shrink-0 w-full">
               <div className="absolute bg-[#e5e7eb] inset-0" />
             </div>
+          </div>
+        );
+
+      case "phoneVideoSection":
+        const isVideoLeft = section.layout !== 'video-right';
+        const isVideo = section.mediaType !== 'gif';
+        const gifSrc = section.externalGifUrl 
+          ? section.externalGifUrl 
+          : section.gifImage 
+            ? urlFor(section.gifImage).width(800).url()
+            : null;
+        
+        return (
+          <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
+            <div className={clsx(
+              "flex items-center gap-20 w-full",
+              isVideoLeft ? "flex-row" : "flex-row-reverse",
+              "max-md:flex-col"
+            )}>
+              {/* Media Container - Black rounded square */}
+              <div 
+                className="flex items-center justify-center w-[49%] aspect-[1/1] rounded-[26px] shrink-0 max-md:w-full max-md:h-auto max-md:aspect-square overflow-hidden p-6"
+                style={{ backgroundColor: section.backgroundColor || '#000000' }}
+              >
+                <div className="w-full h-full flex items-center justify-center">
+                  {/* Video */}
+                  {isVideo && section.muxPlaybackId && (
+                    <div className="w-full h-full max-w-[90%] max-h-[90%] flex items-center justify-center">
+                    <VideoPlayer
+                      src={`https://stream.mux.com/${section.muxPlaybackId}.m3u8`}
+                      className="w-full h-full object-contain rounded-3xl"
+                      controls={false}
+                      autoPlay
+                      muted
+                      loop
+                    />
+                    </div>
+                  )}
+                  
+                  {/* GIF/Image */}
+                  {!isVideo && gifSrc && (
+                    <img
+                      src={gifSrc}
+                      alt=""
+                      className="max-h-[90%] max-w-[90%] object-contain"
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Text Content */}
+              <div className="flex flex-col gap-6 flex-1">
+                {/* Emoji */}
+                {section.emoji && (
+                  <div className="text-5xl">
+                    {section.emoji}
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-1">
+
+                {/* Section Number + Heading */}
+                <div className="flex flex-row gap-2 items-center">
+                  {section.sectionNumber && (
+                    <p className="text-xl font-normal text-gray-400">
+                      {section.sectionNumber}
+                    </p>
+                  )}
+                  
+                  {section.heading && (
+                    <h3 className="text-xl font-normal text-black leading-normal whitespace-pre-line">
+                      {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
+                    </h3>
+                  )}
+                </div>
+
+                {/* Subheading */}
+                {section.subheading && (
+                  <p className="text-base text-gray-500 max-w-100 leading-normal whitespace-pre-line">
+                    {section.subheading}
+                  </p>
+                )}
+
+                {/* Bullet Points */}
+                {section.bulletPoints && section.bulletPoints.length > 0 && (
+                  <ul className="flex flex-col gap-3">
+                    {section.bulletPoints.map((point, index) => (
+                      <li key={index} className="flex items-start gap-3 text-gray-600">
+                        <span className="text-gray-600 mt-0.5 font-bold">•</span>
+                        <span className="flex-1 leading-normal">{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "learningsSection":
+        return (
+          <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
+            {section.sectionTitle && (
+              <h3 className="text-2xl font-normal text-black mb-8">
+                {section.sectionTitle}
+              </h3>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+              {section.learnings?.map((learning) => (
+                <div
+                  key={learning._key}
+                  className="flex flex-col gap-3 py-6 px-6 rounded-3xl"
+                >
+                  {/* Emoji */}
+                  {learning.emoji && (
+                    <div className="text-4xl">
+                      {learning.emoji}
+                    </div>
+                  )}
+                  
+                  <div className="flex flex-col gap-1">
+                  {/* Title */}
+                  <h4 className="text-xl font-medium text-gray-700">
+                    {learning.title}
+                  </h4>
+                  
+                  {/* Description */}
+                  {learning.description && (
+                    <p className="text-base text-gray-400 leading-relaxed">
+                      {learning.description}
+                    </p>
+                  )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case "sectionTitleSection":
+        // Add refs based on skip link flags
+        const sectionRef = section.isSkipLinkStart ? skipStartRef : section.isSkipLinkEnd ? skipEndRef : undefined;
+        
+        return (
+          <div 
+            ref={sectionRef}
+            className="content-stretch flex flex-col gap-5 items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full"
+          >
+            {/* Number + Title */}
+            <div className="content-stretch flex font-normal gap-5 items-start leading-7 relative shrink-0 text-2xl w-full">
+              {section.number && (
+                <p className="relative shrink-0" style={{ color: section.numberColor || '#7fa2ff' }}>
+                  {section.number}
+                </p>
+              )}
+              {section.title && (
+                <p className="relative shrink-0" style={{ color: section.titleColor || '#2e5ede' }}>
+                  {section.title}
+                </p>
+              )}
+            </div>
+            
+            {/* Line */}
+            {section.showLine !== false && (
+              <div className="h-px relative shrink-0 w-full">
+                <div 
+                  className="absolute inset-0" 
+                  style={{ backgroundColor: section.lineColor || '#e5e7eb' }}
+                />
+              </div>
+            )}
           </div>
         );
 

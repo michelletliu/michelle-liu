@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Routes, Route, useParams, useNavigate, useLocation } from "react-router-dom";
 import svgPaths from "./imports/svg-2tsxp86msm";
 import clsx from "clsx";
@@ -18,6 +18,7 @@ import PageHeader from "./components/PageHeader";
 import { client } from "./sanity/client";
 import { PROJECTS_QUERY } from "./sanity/queries";
 import { ArrowUpRight } from "./components/ArrowUpRight";
+import { useScrollLock } from "./utils/useScrollLock";
 
 // CSS for fade up animation
 const fadeUpStyles = `
@@ -47,6 +48,7 @@ function TextScramble({ text, className }: TextScrambleProps) {
   const isAnimatingRef = useRef(false);
   const textRef = useRef(text);
   const isVisibleRef = useRef(false);
+  const hasRevealedOnceRef = useRef(false);
   
   const chars = '!@#$%^&*()_+-;:,.<>?ADELPSTUadelpstu0123456789';
 
@@ -137,14 +139,23 @@ function TextScramble({ text, className }: TextScrambleProps) {
           if (entry.isIntersecting && !isVisibleRef.current) {
             // Element just became visible - trigger unscramble animation
             isVisibleRef.current = true;
+            hasRevealedOnceRef.current = true;
             setTimeout(() => {
               runScrambleAnimation();
             }, 300);
           } else if (!entry.isIntersecting && isVisibleRef.current) {
-            // Element left the viewport - reset to scrambled state
-            isVisibleRef.current = false;
-            if (!isAnimatingRef.current) {
-              el.innerText = generateScrambledText(text);
+            // Element left the viewport
+            // Only reset if user actually scrolled away (not during modal transitions)
+            // Check if the element is truly out of viewport vs just a layout shift
+            const rect = el.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            const isTrulyOutOfView = rect.bottom < -100 || rect.top > windowHeight + 100;
+            
+            if (isTrulyOutOfView) {
+              isVisibleRef.current = false;
+              if (!isAnimatingRef.current) {
+                el.innerText = generateScrambledText(text);
+              }
             }
           }
         });
@@ -278,7 +289,8 @@ type ProjectMediaProps = {
   videoSrc?: string;
 };
 
-function ProjectMedia({ imageSrc, videoSrc }: ProjectMediaProps) {
+// Memoize ProjectMedia to prevent re-renders when parent state changes (e.g., modal open/close)
+const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: ProjectMediaProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
@@ -352,7 +364,7 @@ function ProjectMedia({ imageSrc, videoSrc }: ProjectMediaProps) {
       />
     </div>
   );
-}
+});
 
 function SocialLinksBackgroundImage({ children }: React.PropsWithChildren<{}>) {
   return (
@@ -409,11 +421,12 @@ function TagBackgroundImageAndText({ text, active = false, onClick }: TagBackgro
 
 type ProjectCardProps = {
   project: Project;
-  onClick: () => void;
+  onProjectClick: (projectId: string) => void;
   featured?: boolean;
 };
 
-function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
+// Memoize ProjectCard to prevent re-renders when parent state changes
+const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, featured = false }: ProjectCardProps) {
   const hasTryItOut = project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime';
   
   // Handle click - navigate directly for polaroid/library, otherwise open modal
@@ -421,7 +434,7 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
     if (hasTryItOut) {
       window.location.href = project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : '/library';
     } else {
-      onClick();
+      onProjectClick(project.id);
     }
   };
 
@@ -529,7 +542,7 @@ function ProjectCard({ project, onClick, featured = false }: ProjectCardProps) {
       </div>
     </button>
   );
-}
+});
 
 type ProjectModalProps = {
   project: Project;
@@ -551,30 +564,8 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
 
-  // Lock body scroll when modal is open
-  // Preserve scroll position to prevent flicker on close
-  useEffect(() => {
-    const scrollY = window.scrollY;
-    
-    // Lock scroll while preserving position
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-    
-    return () => {
-      // Remove fixed positioning styles
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      
-      // Immediately restore scroll position synchronously to prevent flicker
-      // Using both methods for cross-browser compatibility
-      document.documentElement.scrollTop = scrollY;
-      document.body.scrollTop = scrollY;
-    };
-  }, []);
+  // Lock body scroll when modal is open (flicker-free implementation)
+  useScrollLock();
 
   // Trigger enter animation on mount
   useEffect(() => {
@@ -856,10 +847,11 @@ function HomePage() {
     }, 600);
   };
 
-  const handleProjectClick = (project: Project) => {
+  // Memoize to prevent ProjectCard re-renders when other state changes
+  const handleProjectClick = useCallback((projectId: string) => {
     // Navigate to the project overlay URL
-    navigate(`/project/${project.id}`);
-  };
+    navigate(`/project/${projectId}`);
+  }, [navigate]);
 
   const handleModalClose = () => {
     // Navigate back to home
@@ -997,7 +989,7 @@ function HomePage() {
             >
               <ProjectCard 
                 project={project} 
-                onClick={() => handleProjectClick(project)} 
+                onProjectClick={handleProjectClick} 
                 featured={index < 4} // First 4 cards use featured style on desktop
               />
             </ScrollReveal>
@@ -1014,7 +1006,7 @@ function HomePage() {
             >
               <ProjectCard 
                 project={project} 
-                onClick={() => handleProjectClick(project)} 
+                onProjectClick={handleProjectClick} 
                 featured={index < 4}
               />
             </ScrollReveal>

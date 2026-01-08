@@ -81,11 +81,36 @@ export interface MissionSection {
 export interface ProtectedSection {
   _key: string;
   _type: "protectedSection";
+  visibility?: SectionVisibility;
   title?: string;
   message?: string;
   contactEmail?: string;
   showPasswordProtection?: boolean;
   password?: string;
+}
+
+export interface FeatureSection {
+  _key: string;
+  _type: "featureSection";
+  visibility?: SectionVisibility;
+  backgroundColor?: string;
+  verticalPadding?: "normal" | "small" | "large";
+  layout?: "side-by-side" | "stacked";
+  mediaPosition?: "left" | "right";
+  sectionNumber?: string;
+  sectionLabel?: string;
+  problemLabel?: string;
+  heading: string;
+  highlightedText?: string;
+  highlightColor?: string;
+  mediaType?: "image" | "video";
+  image?: SanityImage;
+  externalImageUrl?: string;
+  muxPlaybackId?: string;
+  imageAlt?: string;
+  description?: any[]; // Portable Text
+  descriptionHighlightedText?: string;
+  descriptionHighlightColor?: string;
 }
 
 export interface GalleryImage {
@@ -113,8 +138,10 @@ export interface TextSection {
   visibility?: SectionVisibility;
   label?: string;
   heading?: string;
+  highlightedText?: string;
+  highlightColor?: string;
   body?: any[]; // Portable Text
-  layout?: "full" | "two-col" | "centered";
+  layout?: "full" | "two-col" | "centered" | "single-col";
 }
 
 export interface ImageSection {
@@ -125,7 +152,7 @@ export interface ImageSection {
   externalImageUrl?: string;
   alt?: string;
   caption?: string;
-  size?: "full" | "large" | "medium";
+  size?: "full" | "large" | "medium" | "small";
   rounded?: boolean;
 }
 
@@ -133,6 +160,8 @@ export interface VideoSection {
   _key: string;
   _type: "videoSection";
   visibility?: SectionVisibility;
+  backgroundColor?: string;
+  size?: "full" | "medium";
   title?: string;
   videoType?: "mux" | "youtube" | "vimeo";
   muxPlaybackId?: string;
@@ -149,6 +178,8 @@ export interface TestimonialSection {
   visibility?: SectionVisibility;
   sectionLabel?: string;
   sectionTitle?: string;
+  highlightedText?: string;
+  highlightColor?: string;
   quote: string;
   fullQuote?: string[];
   authorName: string;
@@ -185,6 +216,8 @@ export interface SideQuestSection {
   visibility?: SectionVisibility;
   label?: string;
   title: string;
+  highlightedText?: string;
+  highlightColor?: string;
   subtitle?: string;
   image?: SanityImage;
   teamLabel?: string;
@@ -199,12 +232,83 @@ export interface DividerSection {
   style?: string;
 }
 
+export interface SectionTitleSection {
+  _key: string;
+  _type: "sectionTitleSection";
+  visibility?: SectionVisibility;
+  number?: string;
+  numberColor?: string;
+  title: string;
+  titleColor?: string;
+  lineColor?: string;
+  showLine?: boolean;
+  isSkipLinkStart?: boolean;
+  isSkipLinkEnd?: boolean;
+}
+
+export interface PhoneVideoSection {
+  _key: string;
+  _type: "phoneVideoSection";
+  visibility?: SectionVisibility;
+  backgroundColor?: string;
+  layout?: "video-left" | "video-right";
+  mediaType?: "video" | "gif";
+  muxPlaybackId?: string;
+  gifImage?: SanityImage;
+  externalGifUrl?: string;
+  emoji?: string;
+  sectionNumber?: string;
+  heading?: string;
+  highlightedText?: string;
+  highlightColor?: string;
+  subheading?: string;
+  bulletPoints?: string[];
+}
+
+export interface LearningItem {
+  _key: string;
+  emoji?: string;
+  title: string;
+  description?: string;
+}
+
+export interface LearningsSection {
+  _key: string;
+  _type: "learningsSection";
+  visibility?: SectionVisibility;
+  sectionTitle?: string;
+  learnings?: LearningItem[];
+}
+
+export interface OverlayImageSection {
+  _key: string;
+  _type: "overlayImageSection";
+  visibility?: SectionVisibility;
+  backgroundColor?: string;
+  baseImage?: SanityImage;
+  externalBaseImageUrl?: string;
+  overlayImage?: SanityImage;
+  externalOverlayImageUrl?: string;
+  overlayPosition?: {
+    x: number;
+    y: number;
+  };
+  overlaySize?: "small" | "medium" | "large";
+  size?: "full" | "large" | "medium" | "small";
+  rounded?: boolean;
+}
+
 export type ContentSection =
   | MissionSection
   | ProtectedSection
+  | FeatureSection
+  | PhoneVideoSection
+  | LearningsSection
+  | SectionTitleSection
   | GallerySection
   | TextSection
   | ImageSection
+  | OverlayImageSection
   | VideoSection
   | TestimonialSection
   | ProjectCardSection
