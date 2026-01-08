@@ -958,19 +958,19 @@ export default function ProjectModal({
 
               {/* Also Check Out Section */}
               {project.relatedProjects && project.relatedProjects.length > 0 && (
-                <div className="content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
-                  <div className="content-stretch flex flex-col gap-8 items-start relative shrink-0 w-full">
+                <div className="flex flex-col items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-10 w-full">
+                  <div className="flex flex-col gap-8 items-start w-full mb-10">
                     {/* Section Title */}
                     <ScrollReveal variant="fade">
-                      <p className="font-normal leading-7 relative shrink-0 text-[#6b7280] text-xl w-full whitespace-pre-wrap">
+                      <p className="font-normal leading-7 text-[#6b7280] text-xl w-full">
                         Also check out...
                       </p>
                     </ScrollReveal>
 
                     {/* Projects Grid */}
-                    <div className="content-stretch flex gap-4 items-center relative shrink-0 w-full max-md:flex-col max-md:gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-6 w-full">
                       {project.relatedProjects.map((related) => (
-                        <ScrollReveal key={related._id} className="flex-[1_0_0] min-h-px min-w-px max-md:w-full">
+                        <ScrollReveal key={related._id} className="w-full">
                           <button
                             type="button"
                             onClick={(e) => {
@@ -978,25 +978,25 @@ export default function ProjectModal({
                               e.preventDefault();
                               handleProjectClick(related.company);
                             }}
-                            className="content-stretch flex flex-col gap-3 items-start relative shrink-0 cursor-pointer group text-left w-full z-10"
+                            className="flex flex-col gap-3 items-start cursor-pointer group text-left w-full"
                           >
                             {related.heroImage && (
-                              <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full transition-transform duration-300 group-hover:scale-[0.99]">
-                                <div className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full">
+                              <div className="w-full overflow-hidden rounded-[26px] transition-transform duration-300 group-hover:scale-[0.99]">
+                                <div className="aspect-[678/367.625] w-full relative">
                                   <img
-                                    className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full"
+                                    className="absolute inset-0 object-cover rounded-[26px] w-full h-full"
                                     alt=""
                                     src={urlFor(related.heroImage).width(800).height(434).url()}
                                   />
                                 </div>
                               </div>
                             )}
-                            <div className="content-stretch flex flex-col font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base whitespace-pre-wrap w-full">
-                              <p className="relative shrink-0 text-[#111827] w-full">
+                            <div className="flex flex-col font-medium items-start leading-[1.4] px-[13px] text-base w-full">
+                              <p className="text-[#111827] w-full">
                                 <span>{related.title} </span>
                                 <span className="text-[#9ca3af]">• {related.year}</span>
                               </p>
-                              <p className="relative shrink-0 text-[#9ca3af] w-full font-normal project-card-text opacity-0 translate-y-1 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:translate-y-0">
+                              <p className="text-[#9ca3af] w-full font-normal project-card-text opacity-0 translate-y-1 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:translate-y-0 max-md:opacity-100 max-md:translate-y-0">
                                 {related.shortDescription}
                               </p>
                             </div>
