@@ -26,20 +26,20 @@ function ProjectCard({ project, className, onClick }: ProjectCardProps) {
         onClick?.();
       }}
       className={clsx(
-        "flex flex-col gap-3 items-start relative cursor-pointer group text-left z-10",
+        "flex flex-col gap-3 items-start cursor-pointer group text-left w-full",
         className
       )}
     >
-      <div className="flex flex-col items-start overflow-clip relative rounded-xl w-full transition-transform duration-300 group-hover:scale-[0.99]">
-        <div className="aspect-[678/368] relative rounded-xl w-full">
+      <div className="w-full overflow-hidden rounded-xl transition-transform duration-300 group-hover:scale-[0.99]">
+        <div className="aspect-[678/368] w-full relative">
           <img
-            className="absolute inset-0 object-cover pointer-events-none rounded-xl w-full h-full"
+            className="absolute inset-0 object-cover rounded-xl w-full h-full"
             alt=""
             src={project.imageSrc}
           />
         </div>
       </div>
-      <div className="flex flex-col font-medium items-start px-2 gap-2 sm:px-[13px] relative text-sm sm:text-base">
+      <div className="flex flex-col font-medium items-start px-2 gap-2 sm:px-[13px] text-sm sm:text-base w-full">
         <p className="text-[#111827] text-base">
           <span>{project.title}</span>
           <span className="text-[#9ca3af] text-base"> • {project.year}</span>
@@ -72,15 +72,15 @@ export default function AlsoCheckOut({
   const displayProjects = projects.slice(0, 2);
 
   return (
-    <div className="flex flex-col gap-10 sm:gap-16 items-start justify-center py-10 sm:py-16 px-6 sm:px-8 md:px-12 lg:px-[175px] w-full max-w-[1440px] mx-auto">
-      <div className="flex flex-col gap-6 sm:gap-8 items-start w-full">
+    <div className="flex flex-col items-start justify-center py-10 sm:py-16 px-6 sm:px-8 md:px-12 lg:px-[175px] w-full max-w-[1440px] mx-auto">
+      <div className="flex flex-col gap-8 sm:gap-10 items-start w-full mb-10 sm:mb-16">
         {/* Section Title */}
         <p className="font-normal leading-7 text-[#6b7280] text-lg sm:text-xl">
           Also check out...
         </p>
 
         {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-4 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-6 w-full">
           {displayProjects.map((project) => (
             <ProjectCard
               key={project.id}

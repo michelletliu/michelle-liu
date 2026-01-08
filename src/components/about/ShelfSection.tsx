@@ -151,7 +151,7 @@ export default function ShelfSection({
                 
                 {/* Dropdown menu */}
                 {isDropdownOpen && (
-                  <div className="absolute left-0 top-[calc(100%+4px)] bg-white rounded-lg shadow-lg border border-gray-100 z-[100] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="absolute left-0 top-[calc(100%+4px)] bg-white rounded-lg shadow-lg border border-gray-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200">
                     <div className="flex flex-col py-1.5 px-1.5">
                       {/* Favorites option */}
                       <button
