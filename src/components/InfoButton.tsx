@@ -100,7 +100,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
           
           {/* Modal Content */}
           <div 
-            className={`relative bg-white rounded-3xl flex flex-col w-[calc(100%*6/12)] max-md:w-[90%] max-h-[80vh] overflow-hidden transition-all duration-300 ease-out ${
+            className={`relative bg-white rounded-3xl flex flex-col w-[calc(100%*6/12)] max-md:w-[95%] max-h-[80vh] overflow-hidden transition-all duration-300 ease-out ${
               isVisible 
                 ? 'opacity-100 translate-y-0' 
                 : isClosing 

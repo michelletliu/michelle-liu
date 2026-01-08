@@ -104,7 +104,7 @@ export default function PageHeader({
               </ScrollReveal>
               {children && (
                 <ScrollReveal variant="fade" delay={150} rootMargin="0px" disabled={heroAnimationPlayed}>
-                  <div className="font-['Figtree',sans-serif] font-normal tracking-wide leading-6.5 text-[#9ca3af] text-lg max-md:text-lg w-full whitespace-pre-wrap mt-1 max-md:mt-1">
+                  <div className="font-['Figtree',sans-serif] font-normal tracking-wide leading-6.5 text-[#9ca3af] text-lg max-md:text-lg w-full max-md:max-w-[280px] whitespace-pre-wrap mt-1 max-md:mt-1">
                     {children}
                   </div>
                 </ScrollReveal>

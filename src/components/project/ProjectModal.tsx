@@ -968,7 +968,7 @@ export default function ProjectModal({
                     </ScrollReveal>
 
                     {/* Projects Grid */}
-                    <div className="content-stretch flex gap-4 items-center relative shrink-0 w-full max-md:flex-col">
+                    <div className="content-stretch flex gap-4 items-center relative shrink-0 w-full max-md:flex-col max-md:gap-8">
                       {project.relatedProjects.map((related) => (
                         <ScrollReveal key={related._id} className="flex-[1_0_0] min-h-px min-w-px max-md:w-full">
                           <button
