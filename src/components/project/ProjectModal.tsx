@@ -450,11 +450,33 @@ const EyeOffIcon = () => (
   </svg>
 );
 
+// Laptop icon for mobile not available message
+const LaptopIcon = () => (
+  <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="8" y="12" width="44" height="30" rx="2" stroke="#9ca3af" strokeWidth="2" fill="none"/>
+    <rect x="12" y="16" width="36" height="22" rx="1" fill="#e5e7eb"/>
+    <path d="M4 42h52v2a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-2z" fill="#d1d5db"/>
+  </svg>
+);
+
 // Password input component with local state
 function PasswordInput({ expectedPassword, onUnlock }: { expectedPassword: string; onUnlock?: () => void }) {
   const [passwordValue, setPasswordValue] = useState("");
   const [error, setError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      // Check for mobile breakpoint (768px is Tailwind's md breakpoint)
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -480,6 +502,18 @@ function PasswordInput({ expectedPassword, onUnlock }: { expectedPassword: strin
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
+
+  // Show mobile not available message on mobile devices
+  if (isMobile) {
+    return (
+      <div className="flex flex-col items-center gap-4 w-full text-center">
+        <LaptopIcon />
+        <p className="text-[#6b7280] text-base leading-6">
+          Sorry! This page isn't available on mobile yet—you can view it on desktop instead. 😊
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-[313px]">
@@ -1086,6 +1120,7 @@ export default function ProjectModal({
                       onUnlock={handleUnlock}
                       skipStartRef={skipStartRef}
                       skipEndRef={skipEndRef}
+                      scrollContainerRef={scrollContainerRef}
                     />
                   ) : (
                     <ScrollReveal key={section._key}>
@@ -1096,6 +1131,7 @@ export default function ProjectModal({
                         onUnlock={handleUnlock}
                         skipStartRef={skipStartRef}
                         skipEndRef={skipEndRef}
+                        scrollContainerRef={scrollContainerRef}
                       />
                     </ScrollReveal>
                   )
@@ -1377,7 +1413,8 @@ function ContentBlock({
   isUnlocked = false, 
   onUnlock,
   skipStartRef,
-  skipEndRef
+  skipEndRef,
+  scrollContainerRef
 }: { 
   section: ContentSection; 
   isFullscreen?: boolean; 
@@ -1385,6 +1422,7 @@ function ContentBlock({
   onUnlock?: () => void;
   skipStartRef?: React.RefObject<HTMLDivElement | null>;
   skipEndRef?: React.RefObject<HTMLDivElement | null>;
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
 }) {
   const renderContent = () => {
     switch (section._type) {
@@ -2257,6 +2295,7 @@ function ContentBlock({
         return (
           <div 
             ref={sectionRef}
+            data-section-number={section.number}
             className="content-stretch flex flex-col gap-5 items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full"
           >
             {/* Number + Title */}
@@ -2280,6 +2319,424 @@ function ContentBlock({
                   className="absolute inset-0" 
                   style={{ backgroundColor: section.lineColor || '#e5e7eb' }}
                 />
+              </div>
+            )}
+          </div>
+        );
+
+      case "statsCardSection":
+        const statsStatColor = section.statColor || '#ec4899';
+        const statsTitleColor = section.titleColor || '#9ca3af';
+        
+        // Layout classes
+        const statsLayoutMap = {
+          '2-col': 'grid-cols-1 md:grid-cols-2',
+          '3-col': 'grid-cols-1 md:grid-cols-3',
+          '4-col': 'grid-cols-2 md:grid-cols-4',
+        };
+        const statsLayout = statsLayoutMap[section.layout || '3-col'];
+        
+        // Helper to render description with **bold** syntax
+        const renderStatsDescription = (text: string) => {
+          const parts = text.split(/(\*\*[^*]+\*\*)/g);
+          return parts.map((part, index) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return <strong key={index} className="font-semibold">{part.slice(2, -2)}</strong>;
+            }
+            return part;
+          });
+        };
+        
+        return (
+          <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
+            {/* Section Title with optional divider line */}
+            {section.sectionTitle && (
+              <div className="flex items-center gap-6 w-full mb-10">
+                <span 
+                  className="text-xl italic whitespace-nowrap"
+                  style={{ color: statsTitleColor }}
+                >
+                  {section.sectionTitle}
+                </span>
+                {section.showDividerLine !== false && (
+                  <div className="flex-1 h-px bg-gray-200" />
+                )}
+              </div>
+            )}
+            
+            {/* Stats Grid */}
+            {section.cards && section.cards.length > 0 && (
+              <div className={clsx("grid gap-8 w-full", statsLayout)}>
+                {section.cards.map((card) => {
+                  const cardStatColor = card.statColorOverride || statsStatColor;
+                  
+                  return (
+                    <div
+                      key={card._key}
+                      className="flex items-start gap-4"
+                    >
+                      {/* Stat Value */}
+                      <span 
+                        className="text-5xl font-light italic leading-none shrink-0"
+                        style={{ color: cardStatColor }}
+                      >
+                        {card.statValue}
+                      </span>
+                      
+                      {/* Description */}
+                      {card.description && (
+                        <p className="text-base text-gray-700 leading-snug pt-2">
+                          {renderStatsDescription(card.description)}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+
+      case "highlightCardSection":
+        const highlightBgColor = section.backgroundColor || 'transparent';
+        
+        // Layout classes
+        const highlightLayoutMap = {
+          '2-col': 'grid-cols-1 md:grid-cols-2',
+          '3-col': 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+          'stacked': 'grid-cols-1 max-w-2xl mx-auto',
+        };
+        const highlightLayout = highlightLayoutMap[section.layout || '2-col'];
+        
+        // Card style classes
+        const getCardStyleClasses = (style: string, cardBgColor?: string) => {
+          if (style === 'with-border') {
+            return 'border border-gray-200 rounded-2xl';
+          }
+          if (style === 'no-bg') {
+            return '';
+          }
+          // with-bg (default)
+          return cardBgColor ? 'rounded-2xl' : 'bg-gray-50 rounded-2xl';
+        };
+        
+        // Aspect ratio classes
+        const aspectRatioMap = {
+          'square': 'aspect-square',
+          'landscape': 'aspect-video',
+          'portrait': 'aspect-[3/4]',
+          'auto': '',
+        };
+        
+        return (
+          <div 
+            className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full"
+            style={{ backgroundColor: highlightBgColor }}
+          >
+            {section.cards && section.cards.length > 0 && (
+              <div className={clsx("grid gap-8 w-full", highlightLayout)}>
+                {section.cards.map((card) => {
+                  const cardImgSrc = card.externalImageUrl 
+                    ? card.externalImageUrl 
+                    : card.image 
+                      ? urlFor(card.image).width(800).url()
+                      : null;
+                  
+                  const cardStyle = getCardStyleClasses(
+                    section.cardStyle || 'with-bg', 
+                    card.cardBackgroundColor
+                  );
+                  
+                  const aspectRatio = aspectRatioMap[card.imageAspectRatio || 'landscape'];
+                  const isStackedLayout = card.cardLayout !== 'side-by-side';
+                  const imageOnLeft = card.imagePosition !== 'right';
+                  
+                  // Stacked layout (image above text)
+                  if (isStackedLayout) {
+                    return (
+                      <div
+                        key={card._key}
+                        className={clsx("flex flex-col gap-4 p-6", cardStyle)}
+                        style={{ backgroundColor: card.cardBackgroundColor }}
+                      >
+                        {/* Headline */}
+                        <h3 
+                          className="text-xl font-semibold leading-tight"
+                          style={{ color: card.headlineColor || '#111827' }}
+                        >
+                          {card.headline}
+                        </h3>
+                        
+                        {/* Image */}
+                        {cardImgSrc && (
+                          <div className={clsx(
+                            "w-full overflow-hidden rounded-xl",
+                            aspectRatio
+                          )}>
+                            <img
+                              src={cardImgSrc}
+                              alt=""
+                              className={clsx(
+                                "w-full object-cover",
+                                aspectRatio ? "h-full" : "h-auto"
+                              )}
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Description */}
+                        {card.description && (
+                          <p className="text-base text-gray-600 leading-relaxed">
+                            {card.description}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }
+                  
+                  // Side-by-side layout (image next to text)
+                  return (
+                    <div
+                      key={card._key}
+                      className={clsx(
+                        "flex gap-6 p-6 items-start",
+                        imageOnLeft ? "flex-row" : "flex-row-reverse",
+                        "max-md:flex-col",
+                        cardStyle
+                      )}
+                      style={{ backgroundColor: card.cardBackgroundColor }}
+                    >
+                      {/* Image */}
+                      {cardImgSrc && (
+                        <div className={clsx(
+                          "w-24 h-24 shrink-0 overflow-hidden rounded-xl max-md:w-full max-md:h-auto",
+                          !aspectRatio && "max-md:aspect-video"
+                        )}>
+                          <img
+                            src={cardImgSrc}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Text Content */}
+                      <div className="flex flex-col gap-2 flex-1">
+                        {/* Headline */}
+                        <h3 
+                          className="text-xl font-semibold leading-tight"
+                          style={{ color: card.headlineColor || '#111827' }}
+                        >
+                          {card.headline}
+                        </h3>
+                        
+                        {/* Description */}
+                        {card.description && (
+                          <p className="text-base text-gray-600 leading-relaxed">
+                            {card.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+
+      case "sectionHeaderBar":
+        const headerBgColor = section.backgroundColor || '#fdf2f8';
+        const headerTextColor = section.textColor || '#ec4899';
+        
+        // Image size classes
+        const headerImageSizeMap = {
+          small: 'w-8 h-8',
+          medium: 'w-12 h-12',
+          large: 'w-16 h-16',
+        };
+        const headerImageSize = headerImageSizeMap[section.imageSize || 'medium'];
+        
+        // Padding classes
+        const headerPaddingMap = {
+          small: 'py-4',
+          normal: 'py-6',
+          large: 'py-10',
+        };
+        const headerPadding = headerPaddingMap[section.verticalPadding || 'normal'];
+        
+        // Get image sources
+        const headerLeftImgSrc = section.leftImageUrl 
+          ? section.leftImageUrl 
+          : section.leftImage 
+            ? urlFor(section.leftImage).width(128).height(128).url()
+            : null;
+        
+        const headerRightImgSrc = section.rightImageUrl 
+          ? section.rightImageUrl 
+          : section.rightImage 
+            ? urlFor(section.rightImage).width(128).height(128).url()
+            : null;
+        
+        return (
+          <div 
+            className={clsx(
+              "content-stretch flex items-center justify-between px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full",
+              headerPadding
+            )}
+            style={{ backgroundColor: headerBgColor }}
+          >
+            {/* Left side: Optional image + Number */}
+            <div className="flex items-center gap-4">
+              {headerLeftImgSrc && (
+                <div className={clsx("rounded-lg overflow-hidden shrink-0", headerImageSize)}>
+                  <img
+                    src={headerLeftImgSrc}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              {section.number && (
+                <span 
+                  className="text-2xl font-normal"
+                  style={{ color: headerTextColor }}
+                >
+                  {section.number}
+                </span>
+              )}
+            </div>
+            
+            {/* Center: Title */}
+            {section.title && (
+              <span 
+                className="text-2xl font-semibold"
+                style={{ color: headerTextColor }}
+              >
+                {section.title}
+              </span>
+            )}
+            
+            {/* Right side: Subtitle + Optional image */}
+            <div className="flex items-center gap-4">
+              {section.subtitle && (
+                <span 
+                  className="text-2xl font-normal"
+                  style={{ color: headerTextColor }}
+                >
+                  {section.subtitle}
+                </span>
+              )}
+              {headerRightImgSrc && (
+                <div className={clsx("rounded-lg overflow-hidden shrink-0", headerImageSize)}>
+                  <img
+                    src={headerRightImgSrc}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      case "tableOfContentsSection":
+        const tocBgColor = section.backgroundColor || '#fef2f2';
+        const tocAccentColor = section.accentColor || '#ec4899';
+        
+        return (
+          <div 
+            className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full"
+            style={{ backgroundColor: tocBgColor }}
+          >
+            {/* Header: Number + Title + Subtitle */}
+            <div className="flex items-center gap-4 mb-8">
+              {section.sectionNumber && (
+                <span 
+                  className="text-2xl font-normal"
+                  style={{ color: tocAccentColor }}
+                >
+                  {section.sectionNumber}
+                </span>
+              )}
+              {section.sectionTitle && (
+                <span 
+                  className="text-2xl font-semibold"
+                  style={{ color: tocAccentColor }}
+                >
+                  {section.sectionTitle}
+                </span>
+              )}
+              {section.subtitle && (
+                <span 
+                  className="text-2xl font-normal"
+                  style={{ color: tocAccentColor }}
+                >
+                  {section.subtitle}
+                </span>
+              )}
+            </div>
+
+            {/* Hint Text */}
+            {section.hintText && (
+              <div className="flex items-center gap-2 mb-8 text-gray-500">
+                <span className="text-lg">💡</span>
+                <span className="text-base">{section.hintText}</span>
+              </div>
+            )}
+
+            {/* TOC Items Grid */}
+            {section.items && section.items.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full">
+                {section.items.map((item) => {
+                  const itemImageSrc = item.externalImageUrl 
+                    ? item.externalImageUrl 
+                    : item.image 
+                      ? urlFor(item.image).width(200).height(200).url()
+                      : null;
+                  
+                  return (
+                    <button
+                      key={item._key}
+                      type="button"
+                      onClick={() => {
+                        // Scroll to target section if specified
+                        if (item.targetSectionId && scrollContainerRef?.current) {
+                          const targetElement = scrollContainerRef.current.querySelector(
+                            `[data-section-number="${item.targetSectionId}"]`
+                          );
+                          if (targetElement) {
+                            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }
+                        }
+                      }}
+                      className="flex flex-col items-start gap-3 p-4 bg-white rounded-2xl border border-gray-100 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-pointer text-left group"
+                    >
+                      {/* Image/Icon */}
+                      {itemImageSrc && (
+                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100">
+                          <img
+                            src={itemImageSrc}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Number */}
+                      {item.number && (
+                        <span className="text-sm text-gray-400 font-normal">
+                          {item.number}
+                        </span>
+                      )}
+                      
+                      {/* Title */}
+                      <span className="text-base font-semibold text-gray-900 leading-tight">
+                        {item.title}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

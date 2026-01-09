@@ -317,6 +317,87 @@ export interface TwoColumnImageSection {
   rounded?: boolean;
 }
 
+export interface TocItem {
+  _key: string;
+  image?: SanityImage;
+  externalImageUrl?: string;
+  number?: string;
+  title: string;
+  targetSectionId?: string;
+}
+
+export interface TableOfContentsSection {
+  _key: string;
+  _type: "tableOfContentsSection";
+  visibility?: SectionVisibility;
+  sectionNumber?: string;
+  sectionTitle?: string;
+  subtitle?: string;
+  backgroundColor?: string;
+  accentColor?: string;
+  hintText?: string;
+  items?: TocItem[];
+}
+
+export interface SectionHeaderBar {
+  _key: string;
+  _type: "sectionHeaderBar";
+  visibility?: SectionVisibility;
+  backgroundColor?: string;
+  textColor?: string;
+  number?: string;
+  title?: string;
+  subtitle?: string;
+  leftImage?: SanityImage;
+  leftImageUrl?: string;
+  rightImage?: SanityImage;
+  rightImageUrl?: string;
+  imageSize?: "small" | "medium" | "large";
+  verticalPadding?: "small" | "normal" | "large";
+}
+
+export interface HighlightCard {
+  _key: string;
+  cardLayout?: "stacked" | "side-by-side";
+  imagePosition?: "left" | "right";
+  headline: string;
+  headlineColor?: string;
+  image?: SanityImage;
+  externalImageUrl?: string;
+  imageAspectRatio?: "square" | "landscape" | "portrait" | "auto";
+  description?: string;
+  cardBackgroundColor?: string;
+}
+
+export interface HighlightCardSection {
+  _key: string;
+  _type: "highlightCardSection";
+  visibility?: SectionVisibility;
+  backgroundColor?: string;
+  layout?: "2-col" | "3-col" | "stacked";
+  cardStyle?: "with-bg" | "no-bg" | "with-border";
+  cards?: HighlightCard[];
+}
+
+export interface StatCard {
+  _key: string;
+  statValue: string;
+  statColorOverride?: string;
+  description?: string;
+}
+
+export interface StatsCardSection {
+  _key: string;
+  _type: "statsCardSection";
+  visibility?: SectionVisibility;
+  sectionTitle?: string;
+  titleColor?: string;
+  showDividerLine?: boolean;
+  statColor?: string;
+  layout?: "2-col" | "3-col" | "4-col";
+  cards?: StatCard[];
+}
+
 export type ContentSection =
   | MissionSection
   | ProtectedSection
@@ -333,7 +414,11 @@ export type ContentSection =
   | ProjectCardSection
   | SideQuestSection
   | DividerSection
-  | TwoColumnImageSection;
+  | TwoColumnImageSection
+  | TableOfContentsSection
+  | SectionHeaderBar
+  | HighlightCardSection
+  | StatsCardSection;
 
 export interface Project {
   _id: string;
