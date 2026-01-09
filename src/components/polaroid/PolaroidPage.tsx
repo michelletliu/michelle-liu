@@ -10,9 +10,10 @@ import imgMailIcon from '../../assets/polaroid/7d8c54338d14a1f9afdfff1bec90c4237
 import imgXIcon from '../../assets/polaroid/a643fce02520f3d992e6b432fa72fab473a1ca7e.png';
 import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';
+import { useExperimentProject } from '../../hooks/useExperimentProject';
 
-// Project info for the info button modal
-const POLAROID_PROJECT = {
+// Default project info (fallback if Sanity fetch fails)
+const DEFAULT_POLAROID_PROJECT = {
   id: 'polaroid',
   title: 'Polaroid Studio',
   year: '2025',
@@ -21,6 +22,12 @@ const POLAROID_PROJECT = {
   videoSrc: 'https://stream.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w.m3u8',
   xLink: 'https://x.com/michelletliu/status/1991201412072734777',
   tryItOutHref: '/polaroid',
+  toolCategories: [
+    { label: 'Design', tools: ['Figma'] },
+    { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
+    { label: 'Styling', tools: ['Tailwind CSS'] },
+    { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+  ],
 };
 
 type ColorOption = {
@@ -213,6 +220,10 @@ function ColorButton({
 
 export default function PolaroidPage() {
   const navigate = useNavigate();
+  
+  // Fetch project info from Sanity (with fallback to defaults)
+  const projectInfo = useExperimentProject('polaroid', DEFAULT_POLAROID_PROJECT);
+  
   const [selectedColor, setSelectedColor] = useState<ColorOption | null>(null);
   const [showDate, setShowDate] = useState(false);
   const [showText, setShowText] = useState(false);
@@ -489,7 +500,7 @@ export default function PolaroidPage() {
       </button>
 
       {/* Info Button - fixed top right */}
-      <InfoButton project={POLAROID_PROJECT} />
+      <InfoButton project={projectInfo} />
 
       <div 
         className={`polaroid-page-container relative w-full min-h-screen min-h-[100dvh] px-4 flex flex-col items-center transition-all ${

@@ -1483,7 +1483,7 @@ function ContentBlock({
       // Original layout (no image)
       return (
         <div className={clsx(
-          "content-stretch items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full",
+          "content-stretch items-start px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full",
           // Use flex column layout when no description
           !hasDescription && "flex flex-col gap-5 justify-center",
           // Use grid layout when there is description (two-column)
@@ -2641,47 +2641,64 @@ function ContentBlock({
         );
 
       case "tableOfContentsSection":
-        const tocBgColor = section.backgroundColor || '#fef2f2';
+        const tocBgColor = section.backgroundColor || '#f3f4f6';
         const tocAccentColor = section.accentColor || '#ec4899';
+        const hasHeaderContent = section.sectionNumber || section.sectionTitle || section.subtitle || section.hintText || section.sectionDescription;
         
         return (
           <div 
-            className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full"
+            className="content-stretch flex flex-col items-start gap-12 px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full"
             style={{ backgroundColor: tocBgColor }}
           >
-            {/* Header: Number + Title + Subtitle */}
-            <div className="flex items-center gap-4 mb-8">
-              {section.sectionNumber && (
-                <span 
-                  className="text-2xl font-normal"
-                  style={{ color: tocAccentColor }}
-                >
-                  {section.sectionNumber}
-                </span>
-              )}
-              {section.sectionTitle && (
-                <span 
-                  className="text-2xl font-semibold"
-                  style={{ color: tocAccentColor }}
-                >
-                  {section.sectionTitle}
-                </span>
-              )}
-              {section.subtitle && (
-                <span 
-                  className="text-2xl font-normal"
-                  style={{ color: tocAccentColor }}
-                >
-                  {section.subtitle}
-                </span>
-              )}
-            </div>
+            {/* Only render header wrapper if there's content */}
+            {hasHeaderContent && (
+              <div className="w-full mx-auto gap-2 flex flex-col items-start">
+                {/* Header: Number + Title + Subtitle */}
+                {(section.sectionNumber || section.sectionTitle || section.subtitle) && (
+                  <div className="flex items-center gap-4">
+                    {section.sectionNumber && (
+                      <span 
+                        className="text-2xl font-normal"
+                        style={{ color: tocAccentColor }}
+                      >
+                        {section.sectionNumber}
+                      </span>
+                    )}
+                    {section.sectionTitle && (
+                      <span 
+                        className="text-2xl font-semibold"
+                        style={{ color: tocAccentColor }}
+                      >
+                        {section.sectionTitle}
+                      </span>
+                    )}
+                    {section.subtitle && (
+                      <span 
+                        className="text-2xl font-normal"
+                        style={{ color: tocAccentColor }}
+                      >
+                        {section.subtitle}
+                      </span>
+                    )}
+                  </div>
+                )}
 
-            {/* Hint Text */}
-            {section.hintText && (
-              <div className="flex items-center gap-2 mb-8 text-gray-500">
-                <span className="text-lg">💡</span>
-                <span className="text-base">{section.hintText}</span>
+                {/* Hint Text */}
+                {section.hintText && (
+                  <div className="flex items-center text-gray-500">
+                    <span className="text-base">{section.hintText}</span>
+                  </div>
+                )}
+
+                {/* Section Description - below horizontal line */}
+                {section.sectionDescription && (
+                  <>
+                    <div className="w-full h-px bg-gray-300 mt-4" />
+                    <p className="text-base text-gray-400 mt-4 whitespace-pre-wrap">
+                      {section.sectionDescription}
+                    </p>
+                  </>
+                )}
               </div>
             )}
 
@@ -2710,11 +2727,11 @@ function ContentBlock({
                           }
                         }
                       }}
-                      className="flex flex-col items-start gap-3 p-4 bg-white rounded-2xl border border-gray-100 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-pointer text-left group"
+                      className="flex flex-col items-start gap-3 p-8 py-12 bg-white rounded-3xl shadow-xs hover:shadow-sm hover:scale-[1.01] transition-all duration-200 cursor-pointer text-left group"
                     >
                       {/* Image/Icon */}
                       {itemImageSrc && (
-                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100">
+                        <div className="w-16 h-16 shadow-none rounded-xl overflow-hidden bg-gray-100">
                           <img
                             src={itemImageSrc}
                             alt=""
@@ -2723,17 +2740,19 @@ function ContentBlock({
                         </div>
                       )}
                       
+                      <div className="flex flex-col gap-1">
                       {/* Number */}
                       {item.number && (
-                        <span className="text-sm text-gray-400 font-normal">
+                        <span className="text-xl text-gray-400">
                           {item.number}
                         </span>
                       )}
                       
                       {/* Title */}
-                      <span className="text-base font-semibold text-gray-900 leading-tight">
+                      <span className="text-xl text-gray-900">
                         {item.title}
                       </span>
+                      </div>
                     </button>
                   );
                 })}
@@ -2768,9 +2787,9 @@ function ContentBlock({
             style={{ backgroundColor: section.backgroundColor || 'transparent' }}
           >
             {/* Two Column Layout: Left content + Right image */}
-            <div className={clsx("flex w-full justify-between max-md:flex-col items-center", twoColImageGap)}>
+            <div className={clsx("flex w-full justify-between gap-12 max-md:flex-col items-center", twoColImageGap)}>
               {/* Left Column: Text + Smaller Image */}
-              <div className="w-[480px] max-md:w-full shrink-0 flex flex-col justify-center gap-12">
+              <div className="w-2/5 max-md:w-full shrink-0 flex flex-col justify-center gap-12">
                 {/* Label and Heading */}
                 {(section.label || section.heading) && (
                   <div className="flex flex-col gap-3">
@@ -2780,7 +2799,7 @@ function ContentBlock({
                       </p>
                     )}
                     {section.heading && (
-                      <h3 className="leading-5 text-2xl text-black whitespace-pre-wrap">
+                      <h3 className="leading-normal text-2xl text-black whitespace-pre-wrap">
                         {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                       </h3>
                     )}
@@ -2813,7 +2832,7 @@ function ContentBlock({
               {/* Right Column: Fixed height image */}
               {twoColRightImageSrc && (
                 <div className={clsx(
-                  "overflow-hidden w-[480px] justify-center h-full max-md:h-auto",
+                  "overflow-hidden w-1/2 justify-center h-full max-md:h-auto",
                   section.rounded !== false && "rounded-[26px]"
                 )}>
                   <img

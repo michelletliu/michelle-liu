@@ -336,6 +336,7 @@ export interface TableOfContentsSection {
   backgroundColor?: string;
   accentColor?: string;
   hintText?: string;
+  sectionDescription?: string;
   items?: TocItem[];
 }
 

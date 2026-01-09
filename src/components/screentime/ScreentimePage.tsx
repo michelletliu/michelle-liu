@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { domToPng } from 'modern-screenshot';
 import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';
+import { useExperimentProject } from '../../hooks/useExperimentProject';
 
-// Project info for the info button modal
-const SCREENTIME_PROJECT = {
+// Default project info (fallback if Sanity fetch fails)
+const DEFAULT_SCREENTIME_PROJECT = {
   id: 'screentime',
   title: 'Screentime Receipt',
   year: '2025',
@@ -14,6 +15,12 @@ const SCREENTIME_PROJECT = {
   videoSrc: 'https://stream.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI.m3u8',
   xLink: 'https://x.com/michelletliu/status/2000987498550383032',
   tryItOutHref: '/screentime',
+  toolCategories: [
+    { label: 'Design', tools: ['Figma'] },
+    { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
+    { label: 'Styling', tools: ['Tailwind CSS'] },
+    { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+  ],
 };
 
 // Import SVG icons
@@ -23,19 +30,19 @@ import sendIconSvg from '../../assets/receipt/Screen Time Receipt/src/assets/sen
 import savedCheckSvg from './saved.svg';
 import uploadIconSvg from '../../assets/Upload.svg';
 
-// Import app icons from the receipt assets folder
-import imgInstagramIcon from '../../assets/receipt/Screen Time Receipt/src/assets/fcadb86f9e7ac3194098e501064eb43213cdfff1.png';
-import imgTwitterIcon from '../../assets/receipt/Screen Time Receipt/src/assets/a643fce02520f3d992e6b432fa72fab473a1ca7e.png';
-import imgLinkedInIcon from '../../assets/receipt/Screen Time Receipt/src/assets/f81f194aee98efdd62a97e659006efa986492874.png';
-import imgMessagesIcon from '../../assets/receipt/Screen Time Receipt/src/assets/dd3b1a5ed7db644c197314328f647774bd86226e.png';
-import imgCalendarIcon from '../../assets/receipt/Screen Time Receipt/src/assets/d215490446b5a00cb8bffe9167cdce65067a29ac.png';
-import imgSlackIcon from '../../assets/receipt/Screen Time Receipt/src/assets/6d01b65a3f6d80963e9f7bc16d4214b718f19e63.png';
-import imgNotesIcon from '../../assets/receipt/Screen Time Receipt/src/assets/a96b215a3998f46bd64e605040650bcf6eeedb40.png';
-import imgMailIcon from '../../assets/receipt/Screen Time Receipt/src/assets/ed242d6b65d5ccb5cf614e9ecb48eb47cf46d29b.png';
-import imgNotionIcon from '../../assets/receipt/Screen Time Receipt/src/assets/7e1b9c12f8851b2eb04dc3a6cde488912f9c1662.png';
-import imgYoutubeIcon from '../../assets/receipt/Screen Time Receipt/src/assets/b8fbffbd38baca46478d9cc48b9ea8682aec011f.png';
-import imgNetflixIcon from '../../assets/receipt/Screen Time Receipt/src/assets/d05a38e2f2b65e25e0e7c6f7fc308cfd490b8aef.png';
-import imgSpotifyIcon from '../../assets/receipt/Screen Time Receipt/src/assets/c5d11845c52c0f03f2dbc26a4acdc83f8e1c322d.png';
+// Import app icons - optimized versions
+import imgInstagramIcon from '../../assets/receipt/icons-optimized/instagram.png';
+import imgTwitterIcon from '../../assets/receipt/icons-optimized/twitter.png';
+import imgLinkedInIcon from '../../assets/receipt/icons-optimized/linkedin.png';
+import imgMessagesIcon from '../../assets/receipt/icons-optimized/messages.png';
+import imgCalendarIcon from '../../assets/receipt/icons-optimized/calendar.png';
+import imgSlackIcon from '../../assets/receipt/icons-optimized/slack.png';
+import imgNotesIcon from '../../assets/receipt/icons-optimized/notes.png';
+import imgMailIcon from '../../assets/receipt/icons-optimized/mail.png';
+import imgNotionIcon from '../../assets/receipt/icons-optimized/notion.png';
+import imgYoutubeIcon from '../../assets/receipt/icons-optimized/youtube.png';
+import imgNetflixIcon from '../../assets/receipt/icons-optimized/netflix.png';
+import imgSpotifyIcon from '../../assets/receipt/icons-optimized/spotify.png';
 
 const APP_ICONS = {
   instagram: imgInstagramIcon,
@@ -854,6 +861,10 @@ function UploadInstructions({ onClose, onUploadSuccess }: { onClose: () => void;
 // Main Screentime Page Component
 export default function ScreentimePage() {
   const navigate = useNavigate();
+  
+  // Fetch project info from Sanity (with fallback to defaults)
+  const projectInfo = useExperimentProject('screentime', DEFAULT_SCREENTIME_PROJECT);
+  
   const [screen, setScreen] = useState<Screen>('generate');
   const [period, setPeriod] = useState<'daily' | 'weekly'>('daily');
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
@@ -945,7 +956,7 @@ export default function ScreentimePage() {
       </button>
 
       {/* Info Button - fixed top right */}
-      <InfoButton project={SCREENTIME_PROJECT} />
+      <InfoButton project={projectInfo} />
 
       <div 
         className={`screentime-page-container relative w-full min-h-screen min-h-[100dvh] px-4 flex flex-col items-center transition-all ${

@@ -15,6 +15,8 @@ import {
   SHELF_ITEMS_QUERY,
   QUOTES_QUERY,
   LORE_ITEMS_QUERY,
+  SHELF_BOOKS_QUERY,
+  BOOK_YEARS_QUERY,
 } from "./queries";
 import type {
   Project,
@@ -164,6 +166,37 @@ async function preloadAboutPage(): Promise<void> {
 }
 
 /**
+ * Preload library page data
+ */
+async function preloadLibraryPage(): Promise<void> {
+  const cacheKeys = {
+    books: "library:books",
+    years: "library:years",
+  };
+
+  // Skip if all data is already cached
+  if (getCachedData(cacheKeys.books) && getCachedData(cacheKeys.years)) {
+    return;
+  }
+
+  try {
+    const [books, years] = await Promise.all([
+      !getCachedData(cacheKeys.books)
+        ? client.fetch(SHELF_BOOKS_QUERY)
+        : Promise.resolve(null),
+      !getCachedData(cacheKeys.years)
+        ? client.fetch<string[]>(BOOK_YEARS_QUERY)
+        : Promise.resolve(null),
+    ]);
+
+    if (books) setCachedData(cacheKeys.books, books);
+    if (years) setCachedData(cacheKeys.years, years);
+  } catch (err) {
+    console.warn("Failed to preload library page:", err);
+  }
+}
+
+/**
  * Preload all likely pages when user enters homepage
  * Uses requestIdleCallback for non-blocking preloading
  */
@@ -173,7 +206,7 @@ export function preloadLikelyPages(): void {
 
   const doPreload = async () => {
     // Preload all likely pages in parallel
-    // Priority: All main work projects, Art and About are main nav items
+    // Priority: All main work projects, Art and About are main nav items, Library is a side project
     await Promise.all([
       preloadProject("apple"),
       preloadProject("roblox"),
@@ -181,6 +214,7 @@ export function preloadLikelyPages(): void {
       preloadProject("nasa"),
       preloadArtPage(),
       preloadAboutPage(),
+      preloadLibraryPage(),
     ]);
 
     preloadingInProgress = false;

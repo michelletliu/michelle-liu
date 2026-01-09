@@ -1,5 +1,6 @@
 // Document types
 import {project} from './project'
+import {experimentProject} from './experimentProject'
 import {artPiece} from './artPiece'
 import {sketchbook} from './sketchbook'
 import {mural} from './mural'
@@ -38,6 +39,7 @@ import {statsCardSection} from './objects/statsCardSection'
 export const schemaTypes = [
   // Documents
   project,
+  experimentProject,
   artPiece,
   sketchbook,
   mural,
