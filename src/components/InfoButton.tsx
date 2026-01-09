@@ -128,7 +128,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
               <div className="overflow-y-auto flex-1">
                 {/* Content area with horizontal padding */}
                 <div className="content-stretch flex flex-col gap-1 items-start px-8 max-md:px-6 pt-4 pb-8 max-md:py-4 relative shrink-0 w-full">
-                  {/* Title row with View on X link */}
+                  {/* Title row with View on X link (desktop only) */}
                   <div className="flex items-center justify-between w-full">
                     {/* Title */}
                     <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
@@ -143,13 +143,13 @@ export default function InfoButton({ project }: InfoButtonProps) {
                       </p>
                     </div>
 
-                    {/* View on X link - top right */}
+                    {/* View on X link - top right (hidden on mobile) */}
                     {project.xLink && (
                       <a
                         href={project.xLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="content-stretch flex items-center relative shrink-0 group/xlink"
+                        className="hidden md:flex content-stretch items-center relative shrink-0 group/xlink"
                       >
                         <div className="content-stretch flex gap-[2px] items-center relative shrink-0">
                           <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
@@ -177,6 +177,33 @@ export default function InfoButton({ project }: InfoButtonProps) {
                       {project.description}
                     </p>
                   </div>
+
+                  {/* View on X link - under description (mobile only) */}
+                  {project.xLink && (
+                    <a
+                      href={project.xLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="md:hidden content-stretch flex items-center relative shrink-0 group/xlink -mt-1 mb-1"
+                    >
+                      <div className="content-stretch flex gap-[2px] items-center relative shrink-0">
+                        <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
+                          View on
+                        </p>
+                        <div className="content-stretch flex items-center justify-center px-[4.667px] py-[6.667px] relative shrink-0 -mr-0.5">
+                          <svg 
+                            className="block w-[16px] h-[16px] fill-[#9ca3af] group-hover/xlink:fill-blue-500 transition-colors" 
+                            viewBox="0 0 19 18"
+                          >
+                            <path d={xLogoPath} />
+                          </svg>
+                        </div>
+                        <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
+                          <ArrowUpRight />
+                        </p>
+                      </div>
+                    </a>
+                  )}
 
                   {/* Video/Image content area */}
                   <div className="relative rounded-[16px] w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 mt-3">

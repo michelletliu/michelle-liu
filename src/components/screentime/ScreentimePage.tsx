@@ -295,7 +295,7 @@ function GenerateScreen({
     </div>
     <button
           onClick={onUploadClick}
-          className="flex items-center justify-center gap-3 px-6 py-2 relative shrink-0 cursor-pointer transition-colors group"
+          className="flex items-center justify-center gap-3.5 px-6 py-2 relative shrink-0 cursor-pointer transition-colors group"
         >
           <img src={uploadIconSvg} alt="" className="h-[15px] w-auto opacity-50 group-hover:opacity-70 transition-opacity" />
           <p className="font-mono leading-normal relative shrink-0 text-[15px] text-center text-nowrap text-gray-500 group-hover:text-gray-700 tracking-[0.5px] transition-colors">UPLOAD YOUR OWN DATA</p>
@@ -777,7 +777,7 @@ function UploadInstructions({ onClose, onUploadSuccess }: { onClose: () => void;
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/5 animate-fade-in p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-10000 flex items-center justify-center bg-black/5 animate-fade-in p-4" onClick={onClose}>
       <div className="bg-white rounded-[20px] py-2 pb-4 w-full max-w-[500px] max-h-[90vh] overflow-y-auto shadow-md animate-slide-in" onClick={(e) => e.stopPropagation()}>
         <div className="top-0 bg-white flex items-center justify-center px-12 pt-8 rounded-t-[20px]">
           <h2 className="font-mono text-lg text-black font-semibold">Upload Your Screen Time Data</h2>
@@ -1020,7 +1020,7 @@ export default function ScreentimePage() {
         }
         
         .animate-slide-in {
-          animation: slideInFromBottom 0.5s ease-out;
+          animation: slideInFromBottom 1.5s ease-out;
         }
         
         .animate-fade-in {

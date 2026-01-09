@@ -70,7 +70,7 @@ export default function AboutSidebar({
         >
           <span
             className={clsx(
-              "text-base font-medium tracking-normal leading-5 transition-colors",
+              "text-base font-medium tracking-wide leading-5 transition-colors",
               activeCategory === cat.id
                 ? "text-blue-500"
                 : "text-gray-400 hover:text-gray-500"
@@ -94,7 +94,7 @@ export default function AboutSidebar({
       >
         <span
           className={clsx(
-            "text-base font-medium tracking-normal leading-5 transition-colors",
+            "text-base font-medium tracking-wide leading-5 transition-colors",
             isCommunityActive ? "text-gray-500" : "text-gray-400 hover:text-gray-500"
           )}
         >
@@ -124,7 +124,7 @@ export default function AboutSidebar({
               >
                 <span
                   className={clsx(
-                    "text-base font-medium tracking-normal leading-5 text-left transition-colors",
+                    "text-base font-medium tracking-wide leading-5 text-left transition-colors",
                     isActive ? "text-blue-500" : "text-gray-400 hover:text-gray-500"
                   )}
                 >
@@ -143,7 +143,7 @@ export default function AboutSidebar({
       >
         <span
           className={clsx(
-            "text-base font-medium tracking-normal leading-5 transition-colors",
+            "text-base font-medium tracking-wide leading-5 transition-colors",
             activeCategory === "philosophy"
               ? "text-blue-500"
               : "text-gray-400 hover:text-gray-500"
@@ -164,7 +164,7 @@ export default function AboutSidebar({
       >
         <span
           className={clsx(
-            "text-base font-medium tracking-normal leading-5 transition-colors",
+            "text-base font-medium tracking-wide leading-5 transition-colors",
             isShelfActive ? "text-gray-500" : "text-gray-400 hover:text-gray-500"
           )}
         >
@@ -195,7 +195,7 @@ export default function AboutSidebar({
             >
               <span
                 className={clsx(
-                  "text-base font-medium tracking-normal leading-5 text-left transition-colors",
+                  "text-base font-medium tracking-wide leading-5 text-left transition-colors",
                   isActive ? "text-blue-500" : "text-gray-400 hover:text-gray-500"
                 )}
               >
@@ -216,7 +216,7 @@ export default function AboutSidebar({
       >
         <span
           className={clsx(
-            "text-base font-medium tracking-normal leading-5 transition-colors",
+            "text-base font-medium tracking-wide leading-5 transition-colors",
             activeCategory === "lore"
               ? "text-blue-500"
               : "text-gray-400 hover:text-gray-500"
