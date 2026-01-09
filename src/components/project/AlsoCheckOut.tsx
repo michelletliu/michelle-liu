@@ -73,7 +73,7 @@ export default function AlsoCheckOut({
 
   return (
     <div className="flex flex-col items-start justify-center py-10 sm:py-16 px-8 md:px-[8%] xl:px-[175px] w-full max-w-[1440px] mx-auto">
-      <div className="flex flex-col gap-8 sm:gap-10 items-start w-full mb-10 sm:mb-16">
+      <div className={clsx("flex flex-col gap-8 sm:gap-10 items-start w-full", onViewAll && "mb-10 sm:mb-16")}>
         {/* Section Title */}
         <p className="font-normal leading-7 text-[#6b7280] text-lg sm:text-xl">
           Also check out...
