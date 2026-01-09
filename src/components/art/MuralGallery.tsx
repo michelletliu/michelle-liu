@@ -164,7 +164,7 @@ export default function MuralGallery({
       {/* Header section */}
       <div className="flex flex-col items-start w-full">
         {/* Title */}
-        <p className="font-medium leading-normal text-gray-900 text-lg mb-4">
+        <p className="font-medium leading-normal pt-4 text-gray-900 text-lg mb-4">
           {data.title}
         </p>
 
@@ -184,7 +184,7 @@ export default function MuralGallery({
           
           {/* Description */}
           {data.description && (
-            <p className="font-normal leading-normal  text-gray-400 max-w-[366px] whitespace-pre-wrap">
+            <p className="font-normal leading-normal pb-4 text-gray-400 max-w-[366px] mb-2 whitespace-pre-wrap">
               {data.description}
             </p>
           )}

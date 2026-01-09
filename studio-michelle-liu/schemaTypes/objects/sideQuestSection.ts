@@ -64,6 +64,12 @@ export const sideQuestSection = defineType({
       },
     }),
     defineField({
+      name: 'imageCaption',
+      title: 'Image Caption (Popup Only)',
+      description: 'Caption displayed only when the image is clicked to expand',
+      type: 'string',
+    }),
+    defineField({
       name: 'teamLabel',
       title: 'Team Section Label',
       description: 'e.g., "Team"',

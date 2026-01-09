@@ -18,25 +18,107 @@ import lockIcon from "../../assets/lock.svg";
 import expandIcon from "../../assets/Expand.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
 
-// Custom PortableText components for proper heading and spacing rendering
-const portableTextComponents: PortableTextComponents = {
-  block: {
-    h1: ({ children }) => <h1 className="text-3xl font-normal mb-4 mt-8 first:mt-0">{children}</h1>,
-    h2: ({ children }) => <h2 className="text-2xl font-normal mb-3 mt-6 first:mt-0">{children}</h2>,
-    h3: ({ children }) => <h3 className="text-xl font-normal mb-3 mt-5 first:mt-0">{children}</h3>,
-    h4: ({ children }) => <h4 className="text-lg font-normal mb-2 mt-4 first:mt-0">{children}</h4>,
-    normal: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
-  },
-  marks: {
-    strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-    em: ({ children }) => <em className="italic">{children}</em>,
-    code: ({ children }) => <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>,
-  },
-  list: {
-    bullet: ({ children }) => <ul className="list-disc ml-5 space-y-2 mb-4">{children}</ul>,
-    number: ({ children }) => <ol className="list-decimal ml-5 space-y-2 mb-4">{children}</ol>,
-  },
-};
+// Helper to render text with highlighted portion
+function renderHighlightedText(text: string, highlightedText?: string, highlightColor?: string): React.ReactNode {
+  if (!highlightedText) {
+    return text;
+  }
+  // Case-insensitive search
+  const lowerText = text.toLowerCase();
+  const lowerHighlight = highlightedText.toLowerCase();
+  const index = lowerText.indexOf(lowerHighlight);
+  
+  if (index === -1) {
+    return text;
+  }
+  
+  // Use the original case from the text
+  const before = text.substring(0, index);
+  const match = text.substring(index, index + highlightedText.length);
+  const after = text.substring(index + highlightedText.length);
+  const color = highlightColor || '#3b82f6';
+  
+  return (
+    <>
+      {before}
+      <span style={{ color }}>{match}</span>
+      {after}
+    </>
+  );
+}
+
+// Factory function to create PortableText components with highlighting support
+function createPortableTextComponents(highlightedText?: string, highlightColor?: string): PortableTextComponents {
+  // Helper to extract text content from React nodes
+  const getTextContent = (node: React.ReactNode): string => {
+    if (typeof node === 'string') return node;
+    if (Array.isArray(node)) return node.map(getTextContent).join('');
+    return '';
+  };
+
+  // Helper to check if this node should be highlighted
+  const shouldHighlight = (children: React.ReactNode): boolean => {
+    if (!highlightedText) return false;
+    const textContent = getTextContent(children);
+    return textContent.toLowerCase().includes(highlightedText.toLowerCase());
+  };
+
+  // Helper to apply highlighting to specific text within children
+  const applyHighlight = (children: React.ReactNode): React.ReactNode => {
+    if (!highlightedText) {
+      return children;
+    }
+    
+    // Get the text content to check if highlight text exists
+    const textContent = getTextContent(children);
+    const lowerText = textContent.toLowerCase();
+    const lowerHighlight = highlightedText.toLowerCase();
+    
+    // If highlight text not found, return original children
+    if (!lowerText.includes(lowerHighlight)) {
+      return children;
+    }
+    
+    // Apply highlighting to the specific text content
+    return renderHighlightedText(textContent, highlightedText, highlightColor);
+  };
+
+  const color = highlightColor || '#3b82f6';
+
+  return {
+    block: {
+      h1: ({ children }) => <h1 className="text-3xl font-semibold mb-4 mt-8 first:mt-0">{applyHighlight(children)}</h1>,
+      h2: ({ children }) => <h2 className="text-2xl font-medium mb-3 mt-6 first:mt-0">{applyHighlight(children)}</h2>,
+      h3: ({ children }) => <h3 className="text-xl font-medium mb-3 mt-5 first:mt-0">{applyHighlight(children)}</h3>,
+      h4: ({ children }) => {
+        // If this h4 contains the highlight text, apply color to the whole element and remove text color class
+        if (shouldHighlight(children)) {
+          return <h4 className="font-normal mb-2 mt-4 first:mt-0" style={{ fontSize: '1.125rem', lineHeight: '1.75rem', color }}>{children}</h4>;
+        }
+        return <h4 className="text-lg font-normal mb-2 mt-4 first:mt-0">{children}</h4>;
+      },
+      normal: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
+    },
+    marks: {
+      strong: ({ children }) => {
+        // If this strong contains the highlight text, apply color to the whole element
+        if (shouldHighlight(children)) {
+          return <strong className="font-semibold" style={{ color }}>{children}</strong>;
+        }
+        return <strong className="font-semibold">{children}</strong>;
+      },
+      em: ({ children }) => <em className="italic">{children}</em>,
+      code: ({ children }) => <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>,
+    },
+    list: {
+      bullet: ({ children }) => <ul className="list-disc ml-5 space-y-2 mb-4">{children}</ul>,
+      number: ({ children }) => <ol className="list-decimal ml-5 space-y-2 mb-4">{children}</ol>,
+    },
+  };
+}
+
+// Default PortableText components (without highlighting)
+const portableTextComponents = createPortableTextComponents();
 
 // Helper functions for tracking unlocked projects in session
 const UNLOCKED_PROJECTS_KEY = 'unlockedProjects';
@@ -681,32 +763,34 @@ export default function ProjectModal({
     markProjectUnlocked(projectId);
     setIsUnlocked(true);
     
+    // Scroll to top helper - aggressive scrolling for all scrollable elements
+    const scrollToTop = () => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = 0;
+        scrollContainerRef.current.scrollTo({ top: 0, behavior: 'instant' });
+      }
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+    
     // If in modal mode, expand to fullscreen
     // The fullscreen page will naturally start from the top
     if (!isFullscreen && onExpandToFullscreen) {
       onExpandToFullscreen();
-      // Also scroll after a brief delay to ensure fullscreen mode has rendered
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      }, 50);
+      // Scroll after fullscreen mode has rendered
+      setTimeout(scrollToTop, 50);
+      setTimeout(scrollToTop, 100);
+      setTimeout(scrollToTop, 200);
     } else {
       // Already in fullscreen - scroll to top after content re-renders
-      // Use multiple attempts to ensure scroll happens after React re-renders
-      const scrollToTop = () => {
-        if (scrollContainerRef.current) {
-          scrollContainerRef.current.scrollTop = 0;
-        }
-        window.scrollTo(0, 0);
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-      };
-      
-      // Immediate scroll
+      // Use multiple attempts with increasing delays to ensure scroll happens after React re-renders
       scrollToTop();
-      // After short delay for initial re-render
       setTimeout(scrollToTop, 50);
-      // After longer delay for content to fully load
-      setTimeout(scrollToTop, 150);
+      setTimeout(scrollToTop, 100);
+      setTimeout(scrollToTop, 200);
+      setTimeout(scrollToTop, 300);
+      setTimeout(scrollToTop, 500);
     }
   };
 
@@ -858,7 +942,7 @@ export default function ProjectModal({
           )}
 
           {!loading && !error && project && (
-            <div className="flex flex-col pb-32">
+            <div className="flex flex-col pb-16">
               {/* Project Hero Header */}
               <div className="content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] pt-32 pb-16 relative shrink-0 w-full">
                 {/* Logo */}
@@ -889,7 +973,7 @@ export default function ProjectModal({
                       {project.metadata.map((item) => (
                         <ScrollReveal key={item._key} variant="fade" delay={160} rootMargin="0px" className="flex-[1_0_0] min-h-px min-w-px">
                           <div className="content-stretch flex flex-col gap-3 items-start leading-5 relative shrink-0 text-base whitespace-pre-wrap">
-                            <p className="font-semibold relative shrink-0 text-[#9ca3af]">
+                            <p className="font-medium relative shrink-0 text-[#9ca3af]">
                               {item.label}
                             </p>
                             <p className="font-normal relative shrink-0 text-black">
@@ -1286,35 +1370,6 @@ function TestimonialBlock({
   );
 }
 
-// Helper to render text with highlighted portion
-function renderHighlightedText(text: string, highlightedText?: string, highlightColor?: string): React.ReactNode {
-  if (!highlightedText) {
-    return text;
-  }
-  // Case-insensitive search
-  const lowerText = text.toLowerCase();
-  const lowerHighlight = highlightedText.toLowerCase();
-  const index = lowerText.indexOf(lowerHighlight);
-  
-  if (index === -1) {
-    return text;
-  }
-  
-  // Use the original case from the text
-  const before = text.substring(0, index);
-  const match = text.substring(index, index + highlightedText.length);
-  const after = text.substring(index + highlightedText.length);
-  const color = highlightColor || '#3b82f6';
-  
-  return (
-    <>
-      {before}
-      <span style={{ color }}>{match}</span>
-      {after}
-    </>
-  );
-}
-
 // Content section renderer component
 function ContentBlock({ 
   section, 
@@ -1457,11 +1512,11 @@ function ContentBlock({
                       <>
                         <a
                           href={`mailto:${section.contactEmail}`}
-                          className="text-[#4b5563] hover:text-blue-500 transition-colors"
+                          className="underline decoration-solid hover:text-blue-500 transition-colors"
                         >
                           email me
                         </a>
-                        <span className="text-[#9ca3af]">!</span>
+                        !
                       </>
                     ) : (
                       "email me!"
@@ -1545,7 +1600,7 @@ function ContentBlock({
                   {/* Right column: Description */}
                   {section.description && section.description.length > 0 && (
                     <div className="leading-normal max-w-120 relative text-gray-500 text-base whitespace-pre-wrap col-start-3 max-md:col-start-auto max-md:w-full prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
-                      <PortableText value={section.description} components={portableTextComponents} />
+                      <PortableText value={section.description} components={createPortableTextComponents(section.descriptionHighlightedText, section.descriptionHighlightColor)} />
                     </div>
                   )}
                 </div>
@@ -1632,7 +1687,7 @@ function ContentBlock({
               {/* Description */}
             {section.description && section.description.length > 0 && (
                 <div className="pt-6 max-w-120 whitespace-pre-wrap prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 text-gray-500">
-                  <PortableText value={section.description} components={portableTextComponents} />
+                  <PortableText value={section.description} components={createPortableTextComponents(section.descriptionHighlightedText, section.descriptionHighlightColor)} />
                 </div>
               )}
             </div>
@@ -1715,31 +1770,20 @@ function ContentBlock({
     case "textSection":
       if (section.layout === "two-col") {
         return (
-<div className="
-  flex
-  justify-between
-  items-start
-  gap-10
-  px-8 md:px-[8%] xl:px-[175px]
-  py-10
-  relative
-  shrink-0
-  w-full
-  max-md:flex max-md:flex-col
-">
-            <div className="content-stretch flex flex-col gap-3 items-start relative col-start-1">
+          <div className="flex gap-20 items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full max-md:flex-col max-md:gap-8">
+            <div className="w-[49%] shrink-0 content-stretch flex flex-col gap-3 items-start relative max-md:w-full">
               {section.label && (
                 <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
                   {section.label}
                 </p>
               )}
               {section.heading && (
-                <p className="leading-7 min-w-120 relative shrink-0 text-2xl text-black whitespace-pre-wrap">
+                <p className="leading-7 relative shrink-0 text-2xl text-black whitespace-pre-wrap">
                   {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                 </p>
               )}
             </div>
-            <div className="leading-normal relative max-w-120 text-[#4b5563] text-base whitespace-pre-wrap col-start-3 max-md:col-start-auto max-md:w-full max-md:pr-0 prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 prose-p:break-words">
+            <div className="flex-1 leading-normal relative text-[#4b5563] text-base whitespace-pre-wrap max-md:w-full prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
               {section.body && <PortableText value={section.body} components={portableTextComponents} />}
             </div>
           </div>
@@ -1969,15 +2013,9 @@ function ContentBlock({
       const videoSize = section.size || 'full';
       const videoSizeClass = videoSize === 'medium' ? 'max-w-[800px]' : 'w-full';
       
-      // Adjust padding based on background color
-      const videoPaddingClass = section.backgroundColor ? 'py-0' : 'py-10';
-
       return (
-        <div 
-          className={clsx(
-            "content-stretch flex flex-col items-center px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full",
-            videoPaddingClass
-          )}
+        <div
+          className="content-stretch flex flex-col items-center px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full"
           style={{ backgroundColor: section.backgroundColor || 'transparent' }}
         >
           <div className={clsx("w-full", videoSizeClass)}>
@@ -2058,6 +2096,7 @@ function ContentBlock({
             highlightColor={section.highlightColor}
             subtitle={section.subtitle}
             image={section.image}
+            imageCaption={section.imageCaption}
             teamLabel={section.teamLabel}
             teamMembers={section.teamMembers}
             description={section.description}
@@ -2087,37 +2126,37 @@ function ContentBlock({
             <div className={clsx(
               "flex items-center gap-20 w-full",
               isVideoLeft ? "flex-row" : "flex-row-reverse",
-              "max-md:flex-col"
+              "max-md:flex-col max-md:gap-8"
             )}>
               {/* Media Container - Black rounded square */}
               <div 
-                className="flex items-center justify-center w-[49%] aspect-[1/1] rounded-[26px] shrink-0 max-md:w-full max-md:h-auto max-md:aspect-square overflow-hidden p-6"
+                className="flex items-center justify-center w-[49%] aspect-[1/1] rounded-[26px] shrink-0 max-md:w-full max-md:h-auto max-md:aspect-square p-6"
                 style={{ backgroundColor: section.backgroundColor || '#000000' }}
               >
-                <div className="w-full h-full flex items-center justify-center">
-                  {/* Video */}
-                  {isVideo && section.muxPlaybackId && (
-                    <div className="w-full h-full max-w-[90%] max-h-[90%] flex items-center justify-center rounded-3xl overflow-hidden">
+                {/* Video */}
+                {isVideo && section.muxPlaybackId && (
+                  <div className="w-[90%] h-[90%] overflow-hidden rounded-3xl flex items-center justify-center">
                     <VideoPlayer
                       src={`https://stream.mux.com/${section.muxPlaybackId}.m3u8`}
-                      className="w-full h-full object-contain"
+                      className="max-h-full max-w-full object-contain rounded-3xl"
                       controls={false}
                       autoPlay
                       muted
                       loop
                     />
-                    </div>
-                  )}
-                  
-                  {/* GIF/Image */}
-                  {!isVideo && gifSrc && (
+                  </div>
+                )}
+                
+                {/* GIF/Image */}
+                {!isVideo && gifSrc && (
+                  <div className="w-[90%] h-[90%] overflow-hidden rounded-3xl flex items-center justify-center">
                     <img
                       src={gifSrc}
                       alt=""
-                      className="max-h-[90%] max-w-[90%] object-contain rounded-3xl"
+                      className="max-h-full max-w-full object-contain"
                     />
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
 
               {/* Text Content */}
@@ -2243,6 +2282,91 @@ function ContentBlock({
                 />
               </div>
             )}
+          </div>
+        );
+
+      case "twoColumnImageSection":
+        const twoColLeftImageSrc = section.leftImageUrl 
+          ? section.leftImageUrl 
+          : section.leftImage 
+            ? urlFor(section.leftImage).width(800).url()
+            : null;
+        
+        const twoColRightImageSrc = section.rightImageUrl 
+          ? section.rightImageUrl 
+          : section.rightImage 
+            ? urlFor(section.rightImage).width(1200).url()
+            : null;
+        
+        const twoColGapMap = {
+          small: 'gap-4',
+          normal: 'gap-8',
+          large: 'gap-12',
+        };
+        const twoColImageGap = twoColGapMap[section.imageGap || 'normal'];
+        
+        return (
+          <div 
+            className="content-stretch flex flex-col items-start justify-between px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full"
+            style={{ backgroundColor: section.backgroundColor || 'transparent' }}
+          >
+            {/* Two Column Layout: Left content + Right image */}
+            <div className={clsx("flex w-full justify-between max-md:flex-col items-center", twoColImageGap)}>
+              {/* Left Column: Text + Smaller Image */}
+              <div className="w-[480px] max-md:w-full shrink-0 flex flex-col justify-center gap-12">
+                {/* Label and Heading */}
+                {(section.label || section.heading) && (
+                  <div className="flex flex-col gap-3">
+                    {section.label && (
+                      <p className="leading-5 text-[#9ca3af] text-base uppercase">
+                        {section.label}
+                      </p>
+                    )}
+                    {section.heading && (
+                      <h3 className="leading-5 text-2xl text-black whitespace-pre-wrap">
+                        {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
+                      </h3>
+                    )}
+                  </div>
+                )}
+
+                
+                {/* Description */}
+                {section.description && section.description.length > 0 && (
+                  <div className="leading-normal pb-1 text-[#4b5563] text-base whitespace-pre-wrap prose prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
+                    <PortableText value={section.description} components={portableTextComponents} />
+                  </div>
+                )}
+                
+                {/* Left Image (smaller) */}
+                {twoColLeftImageSrc && (
+                  <div className={clsx(
+                    "overflow-hidden w-full",
+                    section.rounded !== false && "rounded-[26px]"
+                  )}>
+                    <img
+                      className="w-full h-auto object-contain"
+                      alt=""
+                      src={twoColLeftImageSrc}
+                    />
+                  </div>
+                )}
+              </div>
+              
+              {/* Right Column: Fixed height image */}
+              {twoColRightImageSrc && (
+                <div className={clsx(
+                  "overflow-hidden w-[480px] justify-center h-full max-md:h-auto",
+                  section.rounded !== false && "rounded-[26px]"
+                )}>
+                  <img
+                    className="w-full h-full object-cover object-top"
+                    alt=""
+                    src={twoColRightImageSrc}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         );
 

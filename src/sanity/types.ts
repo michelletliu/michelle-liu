@@ -220,6 +220,7 @@ export interface SideQuestSection {
   highlightColor?: string;
   subtitle?: string;
   image?: SanityImage;
+  imageCaption?: string;
   teamLabel?: string;
   teamMembers?: TeamMember[];
   description?: any[];
@@ -298,6 +299,24 @@ export interface OverlayImageSection {
   rounded?: boolean;
 }
 
+export interface TwoColumnImageSection {
+  _key: string;
+  _type: "twoColumnImageSection";
+  visibility?: SectionVisibility;
+  backgroundColor?: string;
+  label?: string;
+  heading?: string;
+  highlightedText?: string;
+  highlightColor?: string;
+  description?: any[]; // Portable Text
+  leftImage?: SanityImage;
+  leftImageUrl?: string;
+  rightImage?: SanityImage;
+  rightImageUrl?: string;
+  imageGap?: "small" | "normal" | "large";
+  rounded?: boolean;
+}
+
 export type ContentSection =
   | MissionSection
   | ProtectedSection
@@ -313,7 +332,8 @@ export type ContentSection =
   | TestimonialSection
   | ProjectCardSection
   | SideQuestSection
-  | DividerSection;
+  | DividerSection
+  | TwoColumnImageSection;
 
 export interface Project {
   _id: string;

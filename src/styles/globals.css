@@ -168,12 +168,6 @@ input[type="button"]:hover,
           pointer;
 }
 
-/* Force hardware acceleration for smoother cursor rendering */
-body {
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-}
-
 /* Disable custom cursor on touch devices where it causes issues */
 @media (hover: none) and (pointer: coarse) {
   body, a {

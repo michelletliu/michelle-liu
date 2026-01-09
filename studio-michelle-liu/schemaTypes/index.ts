@@ -29,6 +29,7 @@ import {sectionTitleSection} from './objects/sectionTitleSection'
 import {phoneVideoSection} from './objects/phoneVideoSection'
 import {overlayImageSection} from './objects/overlayImageSection'
 import {learningsSection} from './objects/learningsSection'
+import {twoColumnImageSection} from './objects/twoColumnImageSection'
 
 export const schemaTypes = [
   // Documents
@@ -62,4 +63,5 @@ export const schemaTypes = [
   phoneVideoSection,
   overlayImageSection,
   learningsSection,
+  twoColumnImageSection,
 ]
