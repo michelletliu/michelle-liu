@@ -62,6 +62,13 @@ export const tableOfContentsSection = defineType({
       initialValue: 'Click on any image to skip to a section!',
     }),
     defineField({
+      name: 'sectionDescription',
+      title: 'Section Description',
+      description: 'Optional description text shown below the header (displayed in gray)',
+      type: 'text',
+      rows: 2,
+    }),
+    defineField({
       name: 'items',
       title: 'TOC Items',
       description: 'Add table of contents items',

@@ -16,7 +16,7 @@ import { TryItOutButton } from "./components/TryItOutButton";
 import { preloadLikelyPages } from "./sanity/preload";
 import PageHeader from "./components/PageHeader";
 import { client } from "./sanity/client";
-import { PROJECTS_QUERY } from "./sanity/queries";
+import { PROJECTS_QUERY, EXPERIMENT_PROJECTS_QUERY } from "./sanity/queries";
 import { ArrowUpRight } from "./components/ArrowUpRight";
 import { useScrollLock } from "./utils/useScrollLock";
 import { initCursorCompatibility } from "./utils/cursorCompat";
@@ -195,6 +195,12 @@ function TextScramble({ text, className }: TextScrambleProps) {
   );
 }
 
+// Tool category type for the tools section
+type ToolCategory = {
+  label: string;
+  tools: string[];
+};
+
 // Project data type
 type Project = {
   id: string;
@@ -204,6 +210,7 @@ type Project = {
   imageSrc: string;
   videoSrc?: string; // Optional HLS video URL
   xLink?: string; // Optional X (Twitter) link
+  toolCategories?: ToolCategory[]; // Optional tools section
 };
 
 // Helper to generate Mux URLs from playback ID
@@ -256,6 +263,12 @@ const staticProjects: Project[] = [
     imageSrc: "https://image.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w/thumbnail.png",
     videoSrc: "https://stream.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w.m3u8",
     xLink: "https://x.com/michelletliu/status/1991201412072734777",
+    toolCategories: [
+      { label: 'Design', tools: ['Figma'] },
+      { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
+      { label: 'Styling', tools: ['Tailwind CSS'] },
+      { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+    ],
   },
   {
     id: "screentime",
@@ -265,6 +278,12 @@ const staticProjects: Project[] = [
     imageSrc: "https://image.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI/thumbnail.png",
     videoSrc: "https://stream.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI.m3u8",
     xLink: "https://x.com/michelletliu/status/2000987498550383032",
+    toolCategories: [
+      { label: 'Design', tools: ['Figma'] },
+      { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
+      { label: 'Styling', tools: ['Tailwind CSS'] },
+      { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+    ],
   },
   {
     id: "sketchbook",
@@ -273,6 +292,12 @@ const staticProjects: Project[] = [
     description: "A digital home for sketches and visual journaling. Live app coming soon!",
     imageSrc: "https://image.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg/thumbnail.png",
     videoSrc: "https://stream.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg.m3u8",
+    toolCategories: [
+      { label: 'Design', tools: ['Figma'] },
+      { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
+      { label: 'Styling', tools: ['Tailwind CSS'] },
+      { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+    ],
   },
   {
     id: "library",
@@ -282,6 +307,12 @@ const staticProjects: Project[] = [
     imageSrc: "https://image.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo/thumbnail.png",
     videoSrc: "https://stream.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo.m3u8",
     xLink: "https://x.com/michelletliu/status/1981030966044061894",
+    toolCategories: [
+      { label: 'Design', tools: ['Figma'] },
+      { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
+      { label: 'Styling', tools: ['Tailwind CSS'] },
+      { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+    ],
   },
 ];
 
@@ -571,6 +602,33 @@ function PopupLine() {
   );
 }
 
+// Tools Section component - 4-column grid for project modals
+function ToolsSection({ categories }: { categories: ToolCategory[] }) {
+  if (!categories || categories.length === 0) return null;
+  
+  return (
+    <>
+      <PopupLine />
+      <div className="font-['Figtree',sans-serif] font-normal gap-4 grid grid-cols-4 max-md:grid-cols-2 max-md:gap-y-4 relative shrink-0 text-[15px] w-full mt-2">
+        {categories.map((category, idx) => (
+          <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
+            <p className="leading-5 relative shrink-0 text-[#9ca3af]">
+              {category.label}
+            </p>
+            <div className="content-stretch flex flex-col gap-1 items-start leading-[0] relative shrink-0 text-[#4b5563] tracking-[-0.31px]">
+              {category.tools.map((tool, toolIdx) => (
+                <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
+                  <p className="leading-[21px] whitespace-nowrap">{tool}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
 function ProjectModal({ project, onClose }: ProjectModalProps) {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
@@ -639,10 +697,10 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
           {/* Scrollable content area */}
           <div className="overflow-y-auto flex-1">
             {/* Content area with horizontal padding */}
-            <div className="content-stretch flex flex-col gap-3 items-start px-44 max-md:px-10 pt-16 max-md:pt-0 pb-8 max-md:pb-6 relative shrink-0 w-full">
+            <div className="content-stretch flex flex-col gap-5 items-start px-44 max-md:px-10 pt-16 max-md:pt-4 pb-8 max-md:pb-10 relative shrink-0 w-full">
           {/* Title, Description, and Try It Out button section */}
           {/* Desktop: row layout with button on right */}
-          <div className="hidden md:flex gap-[6px] items-start relative shrink-0 w-full">
+          <div className="hidden md:flex gap-2 items-start relative shrink-0 w-full">
             {/* Title and Description - left side */}
             <div className="content-stretch flex flex-[1_0_0] flex-col gap-[6px] items-start min-h-px min-w-px relative shrink-0">
               {/* Title row: Project Title • Year */}
@@ -707,9 +765,6 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
             )}
           </div>
 
-          {/* Divider line */}
-          <PopupLine />
-
           {/* View on X link - only shown if xLink exists */}
           {project.xLink && (
             <a
@@ -736,6 +791,11 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
                 </p>
               </div>
             </a>
+          )}
+
+          {/* Tools Section */}
+          {project.toolCategories && project.toolCategories.length > 0 && (
+            <ToolsSection categories={project.toolCategories} />
           )}
 
           {/* Video/Image content area with rounded corners */}
@@ -780,6 +840,19 @@ type SanityProject = {
   heroVideo?: string;
 };
 
+// Sanity experiment project type for fetching
+type SanityExperimentProject = {
+  _id: string;
+  projectId: string;
+  title: string;
+  year: string;
+  description: string;
+  muxPlaybackId?: string;
+  xLink?: string;
+  tryItOutHref?: string;
+  toolCategories?: ToolCategory[];
+};
+
 // Main HomePage component that handles the portfolio display and modal routing
 function HomePage() {
   const navigate = useNavigate();
@@ -800,18 +873,31 @@ function HomePage() {
   useEffect(() => {
     async function fetchSanityProjects() {
       try {
-        const sanityProjects = await client.fetch<SanityProject[]>(PROJECTS_QUERY);
-        
-        // Create a map of company -> heroVideo
+        // Fetch both main projects and experiment projects in parallel
+        const [sanityProjects, experimentProjects] = await Promise.all([
+          client.fetch<SanityProject[]>(PROJECTS_QUERY),
+          client.fetch<SanityExperimentProject[]>(EXPERIMENT_PROJECTS_QUERY),
+        ]);
+
+        // Create a map of company -> heroVideo for main projects
         const heroVideoMap: Record<string, string> = {};
         sanityProjects.forEach((sp) => {
           if (sp.company && sp.heroVideo) {
             heroVideoMap[sp.company] = sp.heroVideo;
           }
         });
-        
-        // Merge Sanity heroVideo data with static projects
+
+        // Create a map of projectId -> experiment project data
+        const experimentMap: Record<string, SanityExperimentProject> = {};
+        experimentProjects.forEach((ep) => {
+          if (ep.projectId) {
+            experimentMap[ep.projectId] = ep;
+          }
+        });
+
+        // Merge Sanity data with static projects
         const mergedProjects = staticProjects.map((project) => {
+          // Main projects: merge heroVideo
           if (MAIN_PROJECT_IDS.includes(project.id)) {
             const heroVideo = heroVideoMap[project.id];
             if (heroVideo) {
@@ -823,16 +909,37 @@ function HomePage() {
               };
             }
           }
+          
+          // Side/experiment projects: merge all Sanity data
+          if (SIDE_PROJECT_IDS.includes(project.id)) {
+            const experimentData = experimentMap[project.id];
+            if (experimentData) {
+              const muxUrls = experimentData.muxPlaybackId 
+                ? getMuxUrls(experimentData.muxPlaybackId)
+                : { imageSrc: project.imageSrc, videoSrc: project.videoSrc };
+              return {
+                ...project,
+                title: experimentData.title,
+                year: experimentData.year,
+                description: experimentData.description,
+                imageSrc: muxUrls.imageSrc,
+                videoSrc: muxUrls.videoSrc,
+                xLink: experimentData.xLink || project.xLink,
+                toolCategories: experimentData.toolCategories || project.toolCategories,
+              };
+            }
+          }
+          
           return project;
         });
-        
+
         setProjects(mergedProjects);
       } catch (error) {
         console.error("Error fetching Sanity projects:", error);
         // Keep static projects on error
       }
     }
-    
+
     fetchSanityProjects();
   }, []);
   

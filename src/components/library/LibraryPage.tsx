@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { client, urlFor } from "../../sanity/client";
 import { SHELF_BOOKS_QUERY, BOOK_YEARS_QUERY } from "../../sanity/queries";
+import { getCachedData } from "../../sanity/preload";
 import { BookCard } from "./BookCard";
 import { BookDetailModal } from "./BookDetailModal";
 import { AddBookModal } from "./AddBookModal";
@@ -10,9 +11,10 @@ import { ChevronDownIcon, PlusIcon } from "./icons";
 import type { Book, ShelfBookData } from "./types";
 import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';
+import { useExperimentProject } from '../../hooks/useExperimentProject';
 
-// Project info for the info button modal
-const LIBRARY_PROJECT = {
+// Default project info (fallback if Sanity fetch fails)
+const DEFAULT_LIBRARY_PROJECT = {
   id: 'library',
   title: 'Personal Library',
   year: '2025',
@@ -21,6 +23,12 @@ const LIBRARY_PROJECT = {
   videoSrc: 'https://stream.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo.m3u8',
   xLink: 'https://x.com/michelletliu/status/1981030966044061894',
   tryItOutHref: '/library',
+  toolCategories: [
+    { label: 'Design', tools: ['Figma'] },
+    { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
+    { label: 'Styling', tools: ['Tailwind CSS'] },
+    { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+  ],
 };
 
 // Transform shelfItem book data to component format
@@ -57,6 +65,10 @@ type FilterOption = {
 
 export default function LibraryPage() {
   const navigate = useNavigate();
+  
+  // Fetch project info from Sanity (with fallback to defaults)
+  const projectInfo = useExperimentProject('library', DEFAULT_LIBRARY_PROJECT);
+  
   const [books, setBooks] = useState<Book[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>([{ value: 'favorites', label: 'favorites', isFavorites: true }]);
   const [activeFilter, setActiveFilter] = useState<string>("favorites");
@@ -97,14 +109,18 @@ export default function LibraryPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showFilterDropdown]);
 
-  // Fetch books from Sanity (using shelfItem schema)
+  // Fetch books from Sanity (using shelfItem schema) - uses preloaded cache if available
   useEffect(() => {
     async function fetchBooks() {
       try {
-        // Fetch books and years in parallel
+        // Check for preloaded/cached data first
+        const cachedBooks = getCachedData<ShelfBookData[]>("library:books");
+        const cachedYears = getCachedData<string[]>("library:years");
+        
+        // Use cached data if available, otherwise fetch
         const [booksData, yearsData] = await Promise.all([
-          client.fetch<ShelfBookData[]>(SHELF_BOOKS_QUERY),
-          client.fetch<string[]>(BOOK_YEARS_QUERY),
+          cachedBooks ? Promise.resolve(cachedBooks) : client.fetch<ShelfBookData[]>(SHELF_BOOKS_QUERY),
+          cachedYears ? Promise.resolve(cachedYears) : client.fetch<string[]>(BOOK_YEARS_QUERY),
         ]);
         
         const transformedBooks = booksData.map(transformShelfBook);
@@ -161,7 +177,7 @@ export default function LibraryPage() {
   return (
     <>
       {/* Info Button - fixed top right */}
-      <InfoButton project={LIBRARY_PROJECT} />
+      <InfoButton project={projectInfo} />
 
       {/* Logo - outside animated container so it stays in place during transitions */}
       <div className="absolute top-0 left-0 pt-8 px-8 md:px-16 z-10">

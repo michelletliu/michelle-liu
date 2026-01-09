@@ -392,7 +392,7 @@ export default function ArtPage() {
       </PageHeader>
 
       {/* Navigation */}
-      <div className="content-stretch flex flex-col items-center pb-6 pt-0 px-0 relative shrink-0 w-full">
+      <div className="content-stretch flex flex-col items-center pb-4 pt-0 px-0 relative shrink-0 w-full">
         <ScrollReveal variant="fade" delay={280} rootMargin="0px" className="relative shrink-0 w-full" disabled={heroAnimationPlayed}>
           <div className="size-full">
             <div className="content-stretch flex flex-col gap-3 items-start pb-0 pt-4 px-16 max-md:px-8 relative w-full">

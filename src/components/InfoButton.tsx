@@ -24,7 +24,13 @@ function PopupLine() {
   );
 }
 
-type ProjectInfo = {
+// Tool category type for the tools section
+export type ToolCategory = {
+  label: string;
+  tools: string[];
+};
+
+export type ProjectInfo = {
   id: string;
   title: string;
   year: string;
@@ -33,7 +39,35 @@ type ProjectInfo = {
   videoSrc?: string;
   xLink?: string;
   tryItOutHref: string;
+  toolCategories?: ToolCategory[];
 };
+
+// Tools Section component - 4-column grid
+function ToolsSection({ categories }: { categories: ToolCategory[] }) {
+  if (!categories || categories.length === 0) return null;
+  
+  return (
+    <>
+      <PopupLine />
+      <div className="font-['Figtree',sans-serif] font-normal gap-3 grid grid-cols-4 max-md:grid-cols-2 max-md:gap-y-6 relative shrink-0 text-[15px] w-full mt-2">
+        {categories.map((category, idx) => (
+          <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
+            <p className="leading-5 text-sm relative shrink-0 text-[#9ca3af]">
+              {category.label}
+            </p>
+            <div className="content-stretch flex flex-col gap-1 items-start leading-[0] relative shrink-0 text-gray-500">
+              {category.tools.map((tool, toolIdx) => (
+                <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
+                  <p className="leading-[21px] whitespace-nowrap">{tool}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
 
 type InfoButtonProps = {
   project: ProjectInfo;
@@ -114,7 +148,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
           
           {/* Modal Content */}
           <div 
-            className={`relative bg-white rounded-3xl flex flex-col w-[calc(100%*6/12)] max-md:w-[95%] max-h-[80vh] overflow-hidden transition-all duration-300 ease-out ${
+            className={`relative bg-white rounded-3xl flex flex-col w-[calc(100%*6/12)] max-md:w-[95%] transition-all duration-300 ease-out ${
               isVisible 
                 ? 'opacity-100 translate-y-0' 
                 : isClosing 
@@ -122,110 +156,113 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   : 'opacity-0 translate-y-8'
             }`}
           >
-            {/* Inner container */}
-            <div className="flex flex-col flex-1 min-h-0 pt-2 max-md:pt-1 max-md:pb-2">
-              {/* Scrollable content area */}
-              <div className="overflow-y-auto flex-1">
-                {/* Content area with horizontal padding */}
-                <div className="content-stretch flex flex-col gap-1 items-start px-8 max-md:px-6 pt-4 pb-8 max-md:py-4 relative shrink-0 w-full">
-                  {/* Title row with View on X link (desktop only) */}
-                  <div className="flex items-center justify-between w-full">
-                    {/* Title */}
-                    <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
-                      <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-lg text-black">
-                        {project.title}
+            {/* Content area with padding */}
+            {/* Content area with padding */}
+            <div className="content-stretch flex flex-col max-md:gap-3 gap-4 items-start px-8 max-md:px-6 pt-6 pb-8 max-md:py-5 relative shrink-0 w-full">
+              {/* Title row with View on X link (desktop only) */}
+              <div className="w-full flex flex-col gap-1">
+              <div className="flex items-center justify-between w-full">
+                {/* Title */}
+                <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
+                  <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-lg text-black">
+                    {project.title}
+                  </p>
+                  <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
+                    •
+                  </p>
+                  <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-lg">
+                    {project.year}
+                  </p>
+                </div>
+
+                {/* View on X link - top right (hidden on mobile) */}
+                {project.xLink && (
+                  <a
+                    href={project.xLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hidden md:flex content-stretch items-center relative shrink-0 group/xlink"
+                  >
+                    <div className="content-stretch flex gap-[2px] items-center relative shrink-0">
+                      <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
+                        View on
                       </p>
-                      <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
-                        •
-                      </p>
-                      <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-lg">
-                        {project.year}
+                      <div className="content-stretch flex items-center justify-center px-[4.667px] py-[6.667px] relative shrink-0 -mr-0.5">
+                        <svg 
+                          className="block w-[13px] h-[13px] fill-[#9ca3af] stroke-[#9ca3af] group-hover/xlink:fill-blue-500 group-hover/xlink:stroke-blue-500 transition-colors" 
+                          viewBox="0 0 19 18"
+                          strokeWidth={0.8}
+                        >
+                          <path d={xLogoPath} />
+                        </svg>
+                      </div>
+                      <p className="font-['Figtree',sans-serif] font-normal pt-0.5 leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
+                        <ArrowUpRight />
                       </p>
                     </div>
+                  </a>
+                )}
+              </div>
 
-                    {/* View on X link - top right (hidden on mobile) */}
-                    {project.xLink && (
-                      <a
-                        href={project.xLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hidden md:flex content-stretch items-center relative shrink-0 group/xlink"
+              {/* Description */}
+              <div className="content-stretch flex gap-2 items-start relative w-full max-md:mt-0 -mt-1 mb-1">
+                <p className="font-['Figtree',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base">
+                  {project.description}
+                </p>
+              </div>
+              </div>
+
+              {/* View on X link - under description (mobile only) */}
+              {project.xLink && (
+                <a
+                  href={project.xLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="md:hidden content-stretch flex items-center relative shrink-0 group/xlink -mt-2 mb-1"
+                >
+                  <div className="content-stretch flex gap-[2px] items-center relative shrink-0">
+                    <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
+                      View on
+                    </p>
+                    <div className="content-stretch flex items-center justify-center px-[4.667px] py-[6.667px] relative shrink-0 -mr-0.5">
+                      <svg 
+                        className="block w-[14px] h-[14px] fill-[#9ca3af] group-hover/xlink:fill-blue-500 transition-colors" 
+                        viewBox="0 0 19 18"
                       >
-                        <div className="content-stretch flex gap-[2px] items-center relative shrink-0">
-                          <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
-                            View on
-                          </p>
-                          <div className="content-stretch flex items-center justify-center px-[4.667px] py-[6.667px] relative shrink-0 -mr-0.5">
-                            <svg 
-                              className="block w-[16px] h-[16px] fill-[#9ca3af] group-hover/xlink:fill-blue-500 transition-colors" 
-                              viewBox="0 0 19 18"
-                            >
-                              <path d={xLogoPath} />
-                            </svg>
-                          </div>
-                          <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
-                            <ArrowUpRight />
-                          </p>
-                        </div>
-                      </a>
-                    )}
-                  </div>
-
-                  {/* Description */}
-                  <div className="content-stretch flex gap-2 items-start relative w-full -mt-1 mb-1">
-                    <p className="font-['Figtree',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base">
-                      {project.description}
+                        <path d={xLogoPath} />
+                      </svg>
+                    </div>
+                    <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
+                      <ArrowUpRight />
                     </p>
                   </div>
+                </a>
+              )}
 
-                  {/* View on X link - under description (mobile only) */}
-                  {project.xLink && (
-                    <a
-                      href={project.xLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="md:hidden content-stretch flex items-center relative shrink-0 group/xlink -mt-1 mb-1"
-                    >
-                      <div className="content-stretch flex gap-[2px] items-center relative shrink-0">
-                        <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
-                          View on
-                        </p>
-                        <div className="content-stretch flex items-center justify-center px-[4.667px] py-[6.667px] relative shrink-0 -mr-0.5">
-                          <svg 
-                            className="block w-[16px] h-[16px] fill-[#9ca3af] group-hover/xlink:fill-blue-500 transition-colors" 
-                            viewBox="0 0 19 18"
-                          >
-                            <path d={xLogoPath} />
-                          </svg>
-                        </div>
-                        <p className="font-['Figtree',sans-serif] font-normal leading-5 relative shrink-0 text-[#9ca3af] text-base group-hover/xlink:text-blue-500 transition-colors">
-                          <ArrowUpRight />
-                        </p>
-                      </div>
-                    </a>
-                  )}
+              {/* Tools Section */}
+              {project.toolCategories && project.toolCategories.length > 0 && (
+                <ToolsSection categories={project.toolCategories} />
+              )}
 
-                  {/* Video/Image content area */}
-                  <div className="relative rounded-[16px] w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 mt-3">
-                    <img
-                      alt=""
-                      className="absolute object-cover size-full rounded-[16px]"
-                      src={project.imageSrc}
-                    />
-                    {project.videoSrc && videoReady && (
-                      <VideoPlayer
-                        key={project.id}
-                        src={project.videoSrc}
-                        className="absolute object-cover size-full rounded-[16px]"
-                        autoPlay
-                        muted
-                        loop
-                        controls={false}
-                        muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
-                      />
-                    )}
-                  </div>
-                </div>
+              {/* Video/Image content area */}
+              <div className="relative rounded-[16px] w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 mt-3">
+                <img
+                  alt=""
+                  className="absolute object-cover size-full rounded-[16px]"
+                  src={project.imageSrc}
+                />
+                {project.videoSrc && videoReady && (
+                  <VideoPlayer
+                    key={project.id}
+                    src={project.videoSrc}
+                    className="absolute object-cover size-full rounded-[16px]"
+                    autoPlay
+                    muted
+                    loop
+                    controls={false}
+                    muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+                  />
+                )}
               </div>
             </div>
           </div>
