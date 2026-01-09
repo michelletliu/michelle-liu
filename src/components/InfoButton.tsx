@@ -132,13 +132,13 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   <div className="flex items-center justify-between w-full">
                     {/* Title */}
                     <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
-                      <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
+                      <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-lg text-black">
                         {project.title}
                       </p>
                       <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
                         •
                       </p>
-                      <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-xl">
+                      <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-lg">
                         {project.year}
                       </p>
                     </div>

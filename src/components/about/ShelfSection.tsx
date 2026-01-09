@@ -113,7 +113,7 @@ export default function ShelfSection({
                     "bg-gray-500/10"
                   )}
                 >
-                  <span className="font-['Figtree',sans-serif] font-semibold text-sm tracking-wide whitespace-nowrap text-gray-500">
+                  <span className="font-['Figtree',sans-serif] font-medium text-sm tracking-wide whitespace-nowrap text-gray-500">
                     {!activeYear ? (
                       <>
                         {title}
@@ -165,7 +165,7 @@ export default function ShelfSection({
                         )}
                       >
                         <span className={clsx(
-                          "font-['Figtree',sans-serif] font-semibold text-sm tracking-wide",
+                          "font-['Figtree',sans-serif] font-medium text-sm tracking-wide",
                           !activeYear ? "text-gray-600" : "text-gray-400"
                         )}>
                           {title}
@@ -191,7 +191,7 @@ export default function ShelfSection({
                             )}
                           >
                             <span className={clsx(
-                              "font-['Figtree',sans-serif] font-semibold text-sm tracking-wide",
+                              "font-['Figtree',sans-serif] font-medium text-sm tracking-wide",
                               isActive ? "text-gray-600" : "text-gray-400"
                             )}>
                               {filter.year}
@@ -220,7 +220,7 @@ export default function ShelfSection({
                 )}
               >
                 <span className={clsx(
-                  "font-['Figtree',sans-serif] font-semibold text-sm tracking-wide whitespace-nowrap",
+                  "font-['Figtree',sans-serif] font-medium text-sm tracking-wide whitespace-nowrap",
                   !activeYear ? "text-gray-500" : "text-gray-400"
                 )}>
                   {title}
@@ -245,7 +245,7 @@ export default function ShelfSection({
                 )}
               >
                 <span className={clsx(
-                  "font-['Figtree',sans-serif] font-semibold text-base tracking-wide whitespace-nowrap",
+                  "font-['Figtree',sans-serif] font-medium text-base tracking-wide whitespace-nowrap",
                   !activeYear ? "text-gray-500" : "text-gray-400"
                 )}>
                   {title}
@@ -269,7 +269,7 @@ export default function ShelfSection({
                   >
                     <span
                       className={clsx(
-                        "font-['Figtree',sans-serif] text-base font-semibold tracking-wide whitespace-nowrap",
+                        "font-['Figtree',sans-serif] text-base font-medium tracking-wide whitespace-nowrap",
                         isActive ? "text-gray-600" : "text-gray-400"
                       )}
                     >

@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PortableText } from "@portabletext/react";
 import { urlFor } from "../../sanity/client";
+import { useScrollLock } from "../../utils/useScrollLock";
 import type { SanityImage } from "../../sanity/types";
 
 interface TeamMember {
@@ -16,6 +18,7 @@ interface SideQuestSectionProps {
   highlightColor?: string;
   subtitle?: string;
   image?: SanityImage;
+  imageCaption?: string;
   teamLabel?: string;
   teamMembers?: TeamMember[];
   description?: any[];
@@ -55,10 +58,33 @@ export default function SideQuestSection({
   highlightColor,
   subtitle,
   image,
+  imageCaption,
   teamLabel,
   teamMembers,
   description,
 }: SideQuestSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Lock body scroll when modal is open
+  useScrollLock(isExpanded);
+
+  // Handle escape key to close expanded view
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isExpanded) {
+        setIsExpanded(false);
+      }
+    };
+
+    if (isExpanded) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isExpanded]);
+
   return (
     <div className="px-8 md:px-[8%] xl:px-[175px] py-16 w-full">
       <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_2fr] gap-12 md:gap-0">
@@ -77,10 +103,13 @@ export default function SideQuestSection({
             )}
           </div>
 
-          {/* Tilted Image */}
+          {/* Tilted Image - clickable to expand */}
           {image && (
             <div className="mt-8">
-              <div className="relative inline-block transform -rotate-2 transition-transform hover:rotate-0 duration-300">
+              <div 
+                className="relative inline-block transform -rotate-2 transition-transform hover:rotate-0 duration-300 cursor-pointer"
+                onClick={() => setIsExpanded(true)}
+              >
                 <img
                   src={urlFor(image).width(600).url()}
                   alt={title}
@@ -150,6 +179,67 @@ export default function SideQuestSection({
           )}
         </div>
       </div>
+
+      {/* Expanded Image Modal - renders via portal to cover entire page */}
+      {isExpanded && image &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-[fadeIn_200ms_ease-out]"
+            onClick={() => setIsExpanded(false)}
+          >
+            {/* Light grey translucent overlay */}
+            <div className="absolute inset-0 bg-gray-100/95" />
+
+            {/* Close button - fixed to top right of screen */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded(false);
+              }}
+              className="fixed right-4 top-4 z-[10000] flex h-10 w-10 items-center justify-center transition-all duration-200 hover:scale-110 animate-[fadeSlideDown_300ms_ease-out]"
+              aria-label="Close expanded image"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 14 14"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M1 1L13 13M1 13L13 1"
+                  stroke="#9ca3af"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+
+            {/* Expanded image container */}
+            <div
+              className="relative z-10 flex max-h-[85vh] max-w-[90vw] flex-col items-center animate-[scaleIn_300ms_ease-out]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Image - no additional border/shadow since image already has it */}
+              <img
+                src={urlFor(image).width(1200).url()}
+                alt={title}
+                className="max-h-[70vh] w-auto object-contain"
+              />
+              
+              {/* Caption - only shown in popup mode */}
+              {imageCaption && (
+                <p
+                  className="mt-6 max-w-[600px] text-center font-['DM_Sans'] text-base font-normal leading-relaxed text-gray-600 animate-[fadeSlideUp_300ms_ease-out_100ms_both]"
+                  style={{ fontVariationSettings: "'opsz' 9" }}
+                >
+                  {imageCaption}
+                </p>
+              )}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

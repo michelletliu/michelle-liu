@@ -286,7 +286,7 @@ function GenerateScreen({
       <div className="flex flex-col gap-3">
         <button
           onClick={onGenerate}
-          className="bg-[#404040] flex items-center justify-center px-6 py-[10px] relative rounded-full shrink-0 cursor-pointer hover:bg-[#333] transition-colors w-full"
+          className="bg-zinc-900 flex items-center justify-center px-6 py-[10px] relative rounded-full shrink-0 cursor-pointer hover:bg-zinc-700 transition-colors w-full"
         >
           <p className="font-mono leading-normal relative shrink-0 text-[15px] text-center text-nowrap text-white tracking-[0.75px]">GENERATE</p>
         </button>
@@ -1004,13 +1004,13 @@ export default function ScreentimePage() {
         }
         
         @keyframes slideInFromBottom {
-          from {
+          0% {
+            transform: translateY(100%);
             opacity: 0;
-            transform: translateY(20px);
           }
-          to {
-            opacity: 1;
+          100% {
             transform: translateY(0);
+            opacity: 1;
           }
         }
         
@@ -1020,7 +1020,7 @@ export default function ScreentimePage() {
         }
         
         .animate-slide-in {
-          animation: slideInFromBottom 1.5s ease-out;
+          animation: slideInFromBottom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         
         .animate-fade-in {

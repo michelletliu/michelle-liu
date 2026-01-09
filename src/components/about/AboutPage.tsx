@@ -528,7 +528,7 @@ export default function AboutPage() {
       {/* Header */}
       <PageHeader variant="about" heroAnimationPlayed={heroAnimationPlayed}>
         <>
-          <p>Product, design, & everything in between.</p>
+          <p>Product, design, &lt;dev&gt;, &amp; everything in between.</p>
           <p>Graduating from UCLA in June 2026. ⋆˙⟡</p>
         </>
       </PageHeader>

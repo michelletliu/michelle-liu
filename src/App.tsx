@@ -19,6 +19,7 @@ import { client } from "./sanity/client";
 import { PROJECTS_QUERY } from "./sanity/queries";
 import { ArrowUpRight } from "./components/ArrowUpRight";
 import { useScrollLock } from "./utils/useScrollLock";
+import { initCursorCompatibility } from "./utils/cursorCompat";
 
 // CSS for fade up animation
 const fadeUpStyles = `
@@ -1080,6 +1081,11 @@ function HomePage() {
 }
 
 export default function App() {
+  // Initialize cursor compatibility checks on mount
+  useEffect(() => {
+    initCursorCompatibility();
+  }, []);
+
   return (
     <Routes>
       {/* Home page layout - stays mounted for all project modals */}

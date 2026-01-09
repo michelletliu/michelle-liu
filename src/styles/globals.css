@@ -134,9 +134,24 @@
   }
 }
 
-/* Custom cursor */
+/* Custom cursor with cross-browser compatibility */
+/* 
+ * Note: Different browsers/OS have different cursor size limits:
+ * - Windows: 32x32px max (STRICT - will fail silently if exceeded)
+ * - macOS: 128x128px max
+ * - Linux: varies by distribution
+ * 
+ * Strategy: Try larger cursor first (macOS), fallback to 32x32 (Windows), then system cursor
+ * Hotspot coordinates must be within the cursor dimensions
+ */
+
 body, a {
-  cursor: url("../assets/cursor-default.svg") 20 20, auto;
+  /* Try larger cursor first (works on macOS) */
+  cursor: url("../assets/cursor-default.svg") 20 20,
+          /* Fallback to smaller cursor (works on Windows) */
+          url("../assets/cursor-default-small.svg") 16 16,
+          /* Final fallback to system cursor */
+          auto;
 }
 
 a:hover,
@@ -145,7 +160,43 @@ button:hover,
 input[type="submit"]:hover,
 input[type="button"]:hover,
 .cursor-pointer:hover {
-  cursor: url("../assets/cursor-hover.svg") 23 23, auto;
+  /* Try larger cursor first (works on macOS) */
+  cursor: url("../assets/cursor-hover.svg") 23 23,
+          /* Fallback to smaller cursor (works on Windows) */
+          url("../assets/cursor-hover-small.svg") 16 16,
+          /* Final fallback to system pointer */
+          pointer;
+}
+
+/* Disable custom cursor on touch devices where it causes issues */
+@media (hover: none) and (pointer: coarse) {
+  body, a {
+    cursor: auto !important;
+  }
+  
+  a:hover,
+  button:hover,
+  [role="button"]:hover,
+  input[type="submit"]:hover,
+  input[type="button"]:hover,
+  .cursor-pointer:hover {
+    cursor: pointer !important;
+  }
+}
+
+/* Debug helper - add 'debug-cursor' class to body to test */
+.debug-cursor body::after {
+  content: 'Cursor: ' attr(data-cursor-status);
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  z-index: 10000;
+  pointer-events: none;
 }
 
 /**

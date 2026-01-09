@@ -196,10 +196,10 @@ export default function Testimonial({
               {/* Short Quote */}
               <div
                 className={clsx(
-                  "transition-all duration-400 ease-out",
+                  "transition-all duration-400 ease-out origin-top",
                   isExpanded
-                    ? "opacity-0 max-h-0 pointer-events-none"
-                    : "opacity-100 max-h-[500px]"
+                    ? "opacity-0 max-h-0 pointer-events-none scale-95"
+                    : "opacity-100 max-h-[500px] scale-100"
                 )}
               >
                 <p className="leading-[26px] text-[#1f2937] text-xl whitespace-pre-wrap">
@@ -210,10 +210,10 @@ export default function Testimonial({
               {/* Full Quote */}
               <div
                 className={clsx(
-                  "transition-all duration-400 ease-out",
+                  "transition-all duration-400 ease-out origin-top",
                   isExpanded
-                    ? "opacity-100 max-h-[2000px]"
-                    : "opacity-0 max-h-0 pointer-events-none absolute top-0 left-0"
+                    ? "opacity-100 max-h-[2000px] scale-100"
+                    : "opacity-0 max-h-0 pointer-events-none absolute top-0 left-0 scale-95"
                 )}
               >
                 <div className="leading-[26px] text-[#1f2937] text-xl whitespace-pre-wrap">
