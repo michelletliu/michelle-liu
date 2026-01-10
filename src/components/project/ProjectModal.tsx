@@ -503,20 +503,8 @@ function PasswordInput({ expectedPassword, onUnlock }: { expectedPassword: strin
     setShowPassword(!showPassword);
   };
 
-  // Show mobile not available message on mobile devices
-  if (isMobile) {
-    return (
-      <div className="flex flex-col items-center gap-4 w-full text-center">
-        <LaptopIcon />
-        <p className="text-[#6b7280] text-base leading-6">
-          Sorry! This page isn't available on mobile yet—you can view it on desktop instead. 😊
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-[313px]">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-full max-w-[313px]">
       <div className={clsx(
         "bg-white border border-solid content-stretch flex items-center justify-between pl-4 pr-3 py-2 relative rounded-full shrink-0 w-full transition-colors duration-200",
         error ? "border-[#f87171]" : "border-[#e5e7eb]"
@@ -613,6 +601,17 @@ export default function ProjectModal({
   const [error, setError] = useState<string | null>(null);
   // Check if project was previously unlocked in this session
   const [isUnlocked, setIsUnlocked] = useState(() => isProjectUnlocked(projectId));
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const heroRef = React.useRef<HTMLDivElement>(null);
   const skipStartRef = React.useRef<HTMLDivElement>(null);
@@ -977,7 +976,19 @@ export default function ProjectModal({
 
           {!loading && !error && project && (
             <div className="flex flex-col pb-16">
-              {/* Project Hero Header */}
+              {/* Mobile not available message - shown only after unlocking on mobile */}
+              {isUnlocked && isMobile && (
+                <div className="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center">
+                  <LaptopIcon />
+                  <p className="text-[#6b7280] text-base leading-6 px-12 mt-4">
+                    This page isn't available on mobile yet. You can view it on desktop instead! {";)"}
+                  </p>
+                </div>
+              )}
+              
+              {/* Project Hero Header - hidden on mobile when unlocked */}
+              {!(isUnlocked && isMobile) && (
+              <>
               <div className="content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] pt-32 pb-16 relative shrink-0 w-full">
                 {/* Logo */}
                 {project.logo && (
@@ -1154,6 +1165,8 @@ export default function ProjectModal({
                     onViewAll={isFullscreen ? onViewAllProjects : undefined}
                   />
                 </ScrollReveal>
+              )}
+              </>
               )}
             </div>
           )}

@@ -24,13 +24,13 @@ export default function ArtGallery({
     <div 
       className={clsx(
         "w-full max-w-full",
-        // 2 columns on mobile, 3 columns on desktop
-        "columns-2 gap-4 lg:columns-3",
+        // Use grid for mobile (2 columns) to align tops, columns for desktop masonry (3 columns)
+        "grid grid-cols-2 gap-4 lg:block lg:columns-3",
         className
       )}
     >
       {items.map((item) => (
-        <ScrollReveal key={item.id} className="break-inside-avoid">
+        <ScrollReveal key={item.id} className="lg:break-inside-avoid lg:mb-4">
           <ArtCard
             data={item}
             onClick={() => onItemClick?.(item)}
