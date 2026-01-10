@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import MediaCard, { type MediaCardData } from "./MediaCard";
 import { ArrowUpRight } from "../ArrowUpRight";
 
@@ -65,11 +66,81 @@ export default function ShelfSection({
   // Mobile dropdown state
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const rafRef = useRef<number>();
+  
+  // Function to calculate dropdown position - optimized with RAF
+  const updateDropdownPosition = () => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
+    
+    rafRef.current = requestAnimationFrame(() => {
+      if (buttonRef.current && dropdownRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        const newTop = rect.bottom + 4;
+        const newLeft = rect.left;
+        
+        // Directly update DOM for smooth performance
+        dropdownRef.current.style.transform = `translate(${newLeft}px, ${newTop}px)`;
+      }
+    });
+  };
+  
+  // Initial position setup
+  const initializePosition = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 4,
+        left: rect.left,
+      });
+    }
+  };
+  
+  // Close dropdown when viewport crosses lg breakpoint (1024px)
+  useEffect(() => {
+    if (isDropdownOpen) {
+      const handleResize = () => {
+        // Close dropdown if viewport becomes lg or larger (desktop)
+        if (window.innerWidth >= 1024) {
+          setIsDropdownOpen(false);
+        }
+      };
+      
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, [isDropdownOpen]);
+  
+  // Update dropdown position when it opens and on scroll
+  useEffect(() => {
+    if (isDropdownOpen) {
+      initializePosition();
+      
+      // Small delay to ensure portal is mounted before we start updating
+      const timeoutId = setTimeout(() => {
+        window.addEventListener("scroll", updateDropdownPosition, true);
+        window.addEventListener("resize", updateDropdownPosition);
+      }, 0);
+      
+      return () => {
+        clearTimeout(timeoutId);
+        window.removeEventListener("scroll", updateDropdownPosition, true);
+        window.removeEventListener("resize", updateDropdownPosition);
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+        }
+      };
+    }
+  }, [isDropdownOpen]);
   
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+          buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
     }
@@ -105,9 +176,15 @@ export default function ShelfSection({
         <div className="flex items-center pb-2">
           {/* Mobile/Tablet: Dropdown for year filters - outside overflow container */}
           {yearFilters.length > 0 && (
-            <div className="relative lg:hidden shrink-0" ref={dropdownRef}>
+            <div className="relative lg:hidden shrink-0">
                 <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  ref={buttonRef}
+                  onClick={() => {
+                    if (!isDropdownOpen) {
+                      initializePosition();
+                    }
+                    setIsDropdownOpen(!isDropdownOpen);
+                  }}
                   className={clsx(
                     "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 transition-colors cursor-pointer",
                     "bg-gray-500/10"
@@ -149,9 +226,18 @@ export default function ShelfSection({
                   </svg>
                 </button>
                 
-                {/* Dropdown menu */}
-                {isDropdownOpen && (
-                  <div className="absolute left-0 top-[calc(100%+4px)] bg-white rounded-lg shadow-lg border border-gray-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200">
+                {/* Dropdown menu - rendered via portal */}
+                {isDropdownOpen && createPortal(
+                  <div 
+                    ref={dropdownRef}
+                    className="fixed bg-white rounded-lg shadow-lg border border-gray-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200"
+                    style={{
+                      top: 0,
+                      left: 0,
+                      transform: `translate(${dropdownPosition.left}px, ${dropdownPosition.top}px)`,
+                      willChange: 'transform',
+                    }}
+                  >
                     <div className="flex flex-col py-1.5 px-1.5">
                       {/* Favorites option */}
                       <button
@@ -205,7 +291,8 @@ export default function ShelfSection({
                         );
                       })}
                     </div>
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
             )}
