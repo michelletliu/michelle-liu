@@ -604,7 +604,7 @@ export default function AboutPage() {
             {/* Bio Content */}
             <div className="flex flex-col pt-8 gap-6 flex-1">
               <ScrollReveal variant="fade" delay={150}>
-                <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-3xl md:text-4xl">
+                <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-3xl md:text-3xl">
                   Hi, I'm Michelle!
                 </h2>
               </ScrollReveal>
@@ -683,7 +683,7 @@ export default function AboutPage() {
           <section ref={experienceRef} className="flex flex-col gap-16 md:flex-row md:justify-between md:gap-0 w-full scroll-mt-8">
             <ScrollReveal variant="fade">
               <div className="flex flex-col">
-                <h2 className="font-['Figtree',sans-serif] font-medium text-gray-700 text-[40px] leading-normal shrink-0">
+                <h2 className="font-['Figtree',sans-serif] font-medium text-gray-700 text-3xl leading-normal shrink-0">
                   Experience
                 </h2>
                 <a
@@ -718,7 +718,7 @@ export default function AboutPage() {
           <section ref={communityRef} className="flex flex-col gap-8 w-full scroll-mt-8">
             <ScrollReveal variant="fade">
               <div className="flex flex-col">
-                <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-[40px] leading-normal shrink-0">
+                <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-3xl leading-normal shrink-0">
                   My Communities
                 </h2>
                 <p className="font-['Figtree',sans-serif] tracking-wide font-normal text-gray-400 text-lg flex items-center gap-1.5">
@@ -761,7 +761,7 @@ export default function AboutPage() {
           <section ref={philosophyRef} className="flex flex-col gap-12 w-full scroll-mt-8">
             <ScrollReveal variant="fade">
               <div className="flex flex-col">
-                <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-[40px] leading-normal shrink-0">
+                <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-3xl leading-normal shrink-0">
                   My Favorite Quotes
                 </h2>
                 <p className="font-['Figtree',sans-serif] tracking-wide font-normal text-gray-400 text-lg">
@@ -786,7 +786,7 @@ export default function AboutPage() {
           <section ref={shelfRef} className="flex flex-col gap-6 w-full scroll-mt-8">
             <ScrollReveal variant="fade">
               <div className="flex flex-col">
-                <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-[40px] leading-normal shrink-0">
+                <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-3xl leading-normal shrink-0">
                   Shelf
                 </h2>
                 <p className="font-['Figtree',sans-serif] tracking-wide font-normal text-gray-400 text-lg">
@@ -867,7 +867,7 @@ export default function AboutPage() {
           <section ref={loreRef} className="flex flex-col gap-12 w-full scroll-mt-8">
             <ScrollReveal variant="fade">
               <div className="flex flex-col">
-                <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-[40px] leading-normal shrink-0">
+                <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-3xl leading-normal shrink-0">
                 Lore ⟡˙⋆
                 </h2>
                 <p className="font-['Figtree',sans-serif] tracking-wide font-normal text-gray-400 text-lg">

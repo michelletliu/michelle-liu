@@ -87,7 +87,7 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
         </div>
         {/* Description - always visible on mobile, fade up on hover for desktop */}
         {data.description && (
-          <p className="whitespace-pre-wrap font-normal text-sm sm:text-base text-gray-400 md:opacity-0 md:translate-y-1 md:transition-all md:duration-300 md:ease-out md:group-hover:opacity-100 md:group-hover:translate-y-0">{data.description}</p>
+          <p className="whitespace-pre-wrap font-normal text-sm sm:text-base leading-tight text-gray-400 md:opacity-0 md:translate-y-1 md:transition-all md:duration-300 md:ease-out md:group-hover:opacity-100 md:group-hover:translate-y-0">{data.description}</p>
         )}
       </div>
     </button>
