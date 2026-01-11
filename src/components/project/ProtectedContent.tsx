@@ -40,6 +40,8 @@ type ProtectedContentProps = {
   onPasswordSubmit?: (password: string) => void;
   /** Whether to show error state */
   error?: boolean;
+  /** Project slug for custom messaging */
+  projectSlug?: string;
 };
 
 export default function ProtectedContent({
@@ -49,6 +51,7 @@ export default function ProtectedContent({
   hasPassword = false,
   onPasswordSubmit,
   error = false,
+  projectSlug,
 }: ProtectedContentProps) {
   const [passwordValue, setPasswordValue] = useState("");
   const isDesktop = device === "Default";
@@ -92,7 +95,18 @@ export default function ProtectedContent({
                 {isPassword ? "This case study is password-protected." : "Confidential"}
               </p>
               <p className="leading-6 relative shrink-0 text-[#6b7280] text-lg">
-                {isPassword ? (
+                {projectSlug === "apple" ? (
+                  <>
+                    Please{" "}
+                    <a
+                      href={`mailto:${email}`}
+                      className="underline decoration-solid hover:text-blue-500 transition-colors"
+                    >
+                      email me
+                    </a>
+                    {" "}if you'd like to chat!
+                  </>
+                ) : isPassword ? (
                   <>
                     Curious? Feel free to{" "}
                     <a

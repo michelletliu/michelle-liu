@@ -188,7 +188,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
         
         {/* Description on the right */}
         {data.description && (
-          <p className="max-w-xs xl:max-w-sm mr-12 shrink-0 whitespace-pre-wrap text-base font-normal leading-[1.4] text-gray-400">
+          <p className="max-w-xs xl:max-w-sm mr-12 shrink-0 whitespace-pre-wrap text-base tracking-[0.005em] font-normal leading-[1.4] text-gray-400">
             {data.description}
           </p>
         )}
@@ -421,7 +421,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                 </div>
                 {expandedPhoto.caption && (
                   <p
-                    className="mt-6 max-w-[600px] text-center font-['DM_Sans'] text-base font-normal leading-relaxed text-gray-600 animate-[fadeSlideUp_300ms_ease-out_100ms_both]"
+                    className="mt-6 max-w-[600px] text-center font-['DM_Sans'] text-base tracking-[0.005em] font-normal leading-relaxed text-gray-600 animate-[fadeSlideUp_300ms_ease-out_100ms_both]"
                     style={{ fontVariationSettings: "'opsz' 9" }}
                   >
                     {expandedPhoto.caption}

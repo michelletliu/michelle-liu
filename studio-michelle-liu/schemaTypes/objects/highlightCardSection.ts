@@ -57,6 +57,13 @@ export const highlightCardSection = defineType({
       initialValue: 'with-bg',
     }),
     defineField({
+      name: 'showDividers',
+      title: 'Show Lines Between Cards',
+      type: 'boolean',
+      description: 'Add dividing lines between cards',
+      initialValue: false,
+    }),
+    defineField({
       name: 'cards',
       title: 'Highlight Cards',
       description: 'Add cards with headline, image, and description',
@@ -97,8 +104,22 @@ export const highlightCardSection = defineType({
             defineField({
               name: 'headline',
               title: 'Headline',
-              type: 'string',
+              type: 'text',
+              rows: 3,
               validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: 'highlightedText',
+              title: 'Highlighted Text',
+              type: 'string',
+              description: 'Text within the headline to highlight',
+            }),
+            defineField({
+              name: 'highlightColor',
+              title: 'Highlight Color',
+              type: 'string',
+              description: 'Color for highlighted text (default: #3b82f6)',
+              initialValue: '#3b82f6',
             }),
             defineField({
               name: 'headlineColor',
@@ -136,10 +157,38 @@ export const highlightCardSection = defineType({
               initialValue: 'landscape',
             }),
             defineField({
+              name: 'imageRoundedCorners',
+              title: 'Image Rounded Corners',
+              type: 'string',
+              description: 'Border radius for the image',
+              options: {
+                list: [
+                  {title: 'None (Square)', value: 'none'},
+                  {title: 'Small', value: 'small'},
+                  {title: 'Medium', value: 'medium'},
+                  {title: 'Large', value: 'large'},
+                  {title: 'Full (Circle)', value: 'full'},
+                ],
+                layout: 'radio',
+              },
+              initialValue: 'medium',
+            }),
+            defineField({
               name: 'description',
               title: 'Description',
-              type: 'text',
-              rows: 3,
+              type: 'array',
+              of: [
+                {
+                  type: 'block',
+                  marks: {
+                    decorators: [
+                      { title: 'Strong', value: 'strong' },
+                      { title: 'Emphasis', value: 'em' },
+                      { title: 'Underline', value: 'underline' },
+                    ],
+                  },
+                },
+              ],
             }),
             defineField({
               name: 'cardBackgroundColor',
@@ -151,13 +200,12 @@ export const highlightCardSection = defineType({
           preview: {
             select: {
               title: 'headline',
-              subtitle: 'description',
               media: 'image',
             },
-            prepare({title, subtitle, media}) {
+            prepare({title, media}) {
               return {
                 title: title || 'Untitled Card',
-                subtitle: subtitle ? subtitle.substring(0, 50) + '...' : '',
+                subtitle: 'Highlight Card',
                 media,
               }
             },

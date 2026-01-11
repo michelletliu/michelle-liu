@@ -106,6 +106,7 @@ export const project = defineType({
         defineArrayMember({type: 'sideQuestSection'}),
         defineArrayMember({type: 'dividerSection'}),
         defineArrayMember({type: 'twoColumnImageSection'}),
+        defineArrayMember({type: 'twoColumnTextImageSection'}),
         defineArrayMember({type: 'tableOfContentsSection'}),
         defineArrayMember({type: 'sectionHeaderBar'}),
         defineArrayMember({type: 'highlightCardSection'}),

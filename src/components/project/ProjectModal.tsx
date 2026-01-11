@@ -12,6 +12,7 @@ import ViewAllProjectsButton from "./ViewAllProjectsButton";
 import AlsoCheckOut from "./AlsoCheckOut";
 import ProjectCardSection from "./ProjectCardSection";
 import SideQuestSection from "./SideQuestSection";
+import { TwoColumnImageSectionComponent } from "./TwoColumnImageSection";
 import { ScrollReveal } from "../ScrollReveal";
 import { useScrollLock } from "../../utils/useScrollLock";
 import lockIcon from "../../assets/lock.svg";
@@ -97,7 +98,7 @@ function createPortableTextComponents(highlightedText?: string, highlightColor?:
         }
         return <h4 className="text-lg font-normal mb-2 mt-4 first:mt-0">{children}</h4>;
       },
-      normal: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
+      normal: ({ children }) => <p className="mb-6 last:mb-0">{children}</p>,
     },
     marks: {
       strong: ({ children }) => {
@@ -614,6 +615,7 @@ export default function ProjectModal({
   }, []);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const heroRef = React.useRef<HTMLDivElement>(null);
+  const missionRef = React.useRef<HTMLDivElement>(null);
   const skipStartRef = React.useRef<HTMLDivElement>(null);
   const skipEndRef = React.useRef<HTMLDivElement>(null);
   
@@ -716,23 +718,21 @@ export default function ProjectModal({
     };
   }, [project, loading]);
 
-  // Observe when hero section leaves the viewport (for hiding breadcrumb)
+  // Observe when mission section leaves the viewport (for hiding breadcrumb)
   useEffect(() => {
-    const heroElement = heroRef.current;
+    const missionElement = missionRef.current;
     const scrollContainer = scrollContainerRef.current;
-    if (!heroElement || !scrollContainer || !isFullscreen) return;
+    if (!missionElement || !scrollContainer || !isFullscreen) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // Check if hero has scrolled OUT OF VIEW (above the viewport)
-          // entry.boundingClientRect.bottom < 0 means the hero is above the viewport
-          // We also check !entry.isIntersecting to ensure it's truly out of view
-          const heroTop = entry.boundingClientRect.top;
+          // Check if mission has scrolled OUT OF VIEW (above the viewport)
+          const missionTop = entry.boundingClientRect.top;
           const rootTop = entry.rootBounds?.top ?? 0;
           
-          // Hero is past when its bottom is above the visible area (scrolled up and out)
-          const isPast = !entry.isIntersecting && heroTop < rootTop;
+          // Mission is past when its bottom is above the visible area (scrolled up and out)
+          const isPast = !entry.isIntersecting && missionTop < rootTop;
           setIsPastHero(isPast);
         });
       },
@@ -743,7 +743,7 @@ export default function ProjectModal({
       }
     );
 
-    observer.observe(heroElement);
+    observer.observe(missionElement);
     return () => observer.disconnect();
   }, [isFullscreen, project]);
 
@@ -1118,15 +1118,17 @@ export default function ProjectModal({
                   // Testimonials have interactive expand/collapse - skip ScrollReveal
                   // to prevent animation from replaying when clicking "Read more"
                   section._type === "testimonialSection" ? (
-                    <ContentBlock 
-                      key={section._key} 
-                      section={section} 
-                      isFullscreen={isFullscreen} 
-                      isUnlocked={isUnlocked} 
+                    <ContentBlock
+                      key={section._key}
+                      section={section}
+                      isFullscreen={isFullscreen}
+                      isUnlocked={isUnlocked}
                       onUnlock={handleUnlock}
+                      projectId={projectId}
                       skipStartRef={skipStartRef}
                       skipEndRef={skipEndRef}
                       scrollContainerRef={scrollContainerRef}
+                      missionRef={missionRef}
                     />
                   ) : (
                     <ScrollReveal key={section._key}>
@@ -1138,6 +1140,8 @@ export default function ProjectModal({
                         skipStartRef={skipStartRef}
                         skipEndRef={skipEndRef}
                         scrollContainerRef={scrollContainerRef}
+                        projectId={projectId}
+                        missionRef={missionRef}
                       />
                     </ScrollReveal>
                   )
@@ -1285,7 +1289,7 @@ function TestimonialBlock({
       <div className="content-stretch flex flex-col gap-[100px] max-md:gap-16 items-start relative shrink-0 w-full">
         {/* Header Section */}
         <div className="content-stretch flex flex-col gap-5 items-start relative shrink-0 w-full">
-          <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
+          <p className="leading-5 relative shrink-0 text-[#9ca3af] uppercase text-base">
             {sectionLabel}
           </p>
           <p className="leading-7 min-w-full relative shrink-0 text-2xl text-black whitespace-pre-wrap">
@@ -1422,7 +1426,9 @@ function ContentBlock({
   onUnlock,
   skipStartRef,
   skipEndRef,
-  scrollContainerRef
+  scrollContainerRef,
+  projectId,
+  missionRef
 }: { 
   section: ContentSection; 
   isFullscreen?: boolean; 
@@ -1431,6 +1437,8 @@ function ContentBlock({
   skipStartRef?: React.RefObject<HTMLDivElement | null>;
   skipEndRef?: React.RefObject<HTMLDivElement | null>;
   scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
+  projectId?: string;
+  missionRef?: React.RefObject<HTMLDivElement | null>;
 }) {
   const renderContent = () => {
     switch (section._type) {
@@ -1442,10 +1450,10 @@ function ContentBlock({
       // Centered layout when image is provided
       if (hasImage) {
         return (
-          <div className="flex flex-col items-center px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
+          <div ref={missionRef} className="flex flex-col items-center px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
             {/* Label + Title */}
             <div className="flex flex-col gap-5 items-center text-center w-[410px] max-md:w-full">
-              <p className="leading-5 text-[#9ca3af] text-base">
+              <p className="leading-5 text-[#9ca3af] uppercase text-base">
                 {section.sectionLabel || "The Mission"}
               </p>
               <p className="leading-7 text-2xl text-black whitespace-pre-wrap text-pretty">
@@ -1490,7 +1498,7 @@ function ContentBlock({
       
       // Original layout (no image)
       return (
-        <div className={clsx(
+        <div ref={missionRef} className={clsx(
           "content-stretch items-start px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full",
           // Use flex column layout when no description
           !hasDescription && "flex flex-col gap-5 justify-center",
@@ -1504,7 +1512,7 @@ function ContentBlock({
             !hasDescription && "max-w-[646px] w-full",
             hasDescription && "col-start-1"
           )}>
-            <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
+            <p className="leading-5 relative shrink-0 text-[#9ca3af] uppercase text-base">
               {section.sectionLabel || "The Mission"}
             </p>
             <p className="leading-7 w-full relative shrink-0 text-2xl text-black whitespace-pre-wrap text-pretty">
@@ -1550,10 +1558,10 @@ function ContentBlock({
                 {/* Text Content */}
                 <div className="content-stretch flex flex-col gap-2 items-start relative shrink-0 w-full">
                   <p className="leading-7 relative shrink-0 text-2xl text-black">
-                    {(section.title || (hasPassword ? "This case study is password-protected." : "Confidential")).replace(/\n/g, ' ')}
+                    {(section.title || (projectId === "apple" ? "This work is confidential." : hasPassword ? "This case study is password-protected." : "Confidential")).replace(/\n/g, ' ')}
                   </p>
                   <p className="leading-6 relative shrink-0 text-[#9ca3af] text-lg">
-                    {hasPassword ? "Curious? Feel free to " : (section.message || "Interested? Please ")}
+                    {projectId === "apple" ? "Please " : hasPassword ? "Curious? Feel free to " : (section.message || "Interested? Please ")}
                     {section.contactEmail ? (
                       <>
                         <a
@@ -1562,10 +1570,10 @@ function ContentBlock({
                         >
                           email me
                         </a>
-                        !
+                        {projectId === "apple" ? " if you'd like to chat!" : "!"}
                       </>
                     ) : (
-                      "email me!"
+                      projectId === "apple" ? "email me if you'd like to chat!" : "email me!"
                     )}
                   </p>
                 </div>
@@ -1600,56 +1608,61 @@ function ContentBlock({
       const verticalPadding = paddingMap[section.verticalPadding || 'normal'];
 
       if (isStacked) {
+        // Check if there's any text content
+        const hasTextContent = section.sectionNumber || section.sectionLabel || section.problemLabel || section.heading || (section.description && section.description.length > 0);
+        
         // Stacked layout - text above (two-col format), media below (full width)
         return (
-          <div className="flex flex-col py-6">
+          <div className="flex flex-col">
             <div
               className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full"
               style={{ backgroundColor: section.backgroundColor || '#f9fafb' }}
             >
               <div className={clsx("content-stretch flex flex-col justify-between relative shrink-0 w-full", verticalPadding)}>
-                {/* Text content in two-column grid */}
-                <div className="flex flex-row items-start gap-32 w-full max-md:flex max-md:flex-col max-md:gap-8">
-                  {/* Left column: Labels and heading */}
-                  <div className="content-stretch flex w-120 flex-col gap-3 items-start relative col-start-1">
-                    {/* Section Number + Label */}
-                    {(section.sectionNumber || section.sectionLabel) && (
-                      <div className="flex items-center gap-2">
-                        {section.sectionNumber && (
-                          <p className="leading-5 relative shrink-0 text-[#3b82f6] text-base font-medium">
-                            {section.sectionNumber}
-                          </p>
-                        )}
-                        {section.sectionLabel && (
-                          <p className="leading-5 relative shrink-0 text-[#3b82f6] text-base">
-                            {section.sectionLabel}
-                          </p>
-                        )}
+                {/* Text content in two-column grid - only render if there's text */}
+                {hasTextContent && (
+                  <div className="flex flex-row items-start gap-32 w-full max-md:flex max-md:flex-col max-md:gap-8 mb-8">
+                    {/* Left column: Labels and heading */}
+                    <div className="content-stretch flex w-120 flex-col gap-3 items-start relative col-start-1">
+                      {/* Section Number + Label */}
+                      {(section.sectionNumber || section.sectionLabel) && (
+                        <div className="flex items-center gap-2">
+                          {section.sectionNumber && (
+                            <p className="leading-5 relative shrink-0 text-[#3b82f6] uppercase text-base font-medium">
+                              {section.sectionNumber}
+                            </p>
+                          )}
+                          {section.sectionLabel && (
+                            <p className="leading-5 relative shrink-0 uppercase text-base">
+                              {section.sectionLabel}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Problem Label */}
+                      {section.problemLabel && (
+                        <p className="leading-5 relative shrink-0 uppercase text-[#9ca3af] text-base">
+                          {section.problemLabel}
+                        </p>
+                      )}
+
+                      {/* Heading */}
+                      {section.heading && (
+                        <p className="leading-7 min-w-120 relative shrink-0 text-2xl text-black whitespace-pre-wrap">
+                          {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Right column: Description */}
+                    {section.description && section.description.length > 0 && (
+                      <div className="leading-normal max-w-120 relative text-gray-500 text-base col-start-3 max-md:col-start-auto max-md:w-full prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 [&>p]:whitespace-pre-wrap">
+                        <PortableText value={section.description} components={createPortableTextComponents(section.descriptionHighlightedText, section.descriptionHighlightColor)} />
                       </div>
                     )}
-
-                    {/* Problem Label */}
-                    {section.problemLabel && (
-                      <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
-                        {section.problemLabel}
-                      </p>
-                    )}
-
-                    {/* Heading */}
-                    {section.heading && (
-                      <p className="leading-7 min-w-120 relative shrink-0 text-2xl text-black whitespace-pre-wrap">
-                        {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
-                      </p>
-                    )}
                   </div>
-
-                  {/* Right column: Description */}
-                  {section.description && section.description.length > 0 && (
-                    <div className="leading-normal max-w-120 relative text-gray-500 text-base whitespace-pre-wrap col-start-3 max-md:col-start-auto max-md:w-full prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
-                      <PortableText value={section.description} components={createPortableTextComponents(section.descriptionHighlightedText, section.descriptionHighlightColor)} />
-                    </div>
-                  )}
-                </div>
+                )}
 
                 {/* Media content - full width */}
                 <div className="w-full">
@@ -1687,8 +1700,11 @@ function ContentBlock({
       }
 
       // Side-by-side layout (original)
+      // Check if there's any text content
+      const hasTextContent = section.sectionNumber || section.sectionLabel || section.problemLabel || section.heading || (section.description && section.description.length > 0);
+      
       return (
-        <div className="flex flex-col py-6">
+        <div className="flex flex-col">
         <div
           className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full"
           style={{ backgroundColor: section.backgroundColor || '#f9fafb' }}
@@ -1696,10 +1712,12 @@ function ContentBlock({
           <div className={clsx(
             "content-stretch items-center flex flex-col gap-32 relative shrink-0 w-full md:flex-row max-md:gap-8",
             mediaOnLeft && "md:flex-row-reverse",
-            verticalPadding
+            verticalPadding,
+            !hasTextContent && "justify-center"
           )}>
-            {/* Left: Number, Label, and Heading */}
-            <div className="min-w-120 shrink-0 content-stretch flex flex-col gap-3 items-start relative col-start-1 max-md:w-full max-md:min-w-0">
+            {/* Left: Number, Label, and Heading - only render if there's text */}
+            {hasTextContent && (
+              <div className="min-w-120 shrink-0 content-stretch flex flex-col gap-3 items-start relative col-start-1 max-md:w-full max-md:min-w-0">
               {/* Section Number + Label */}
               {(section.sectionNumber || section.sectionLabel) && (
                 <div className="flex items-center gap-2">
@@ -1709,7 +1727,7 @@ function ContentBlock({
                     </p>
                   )}
                   {section.sectionLabel && (
-                    <p className="leading-5 relative shrink-0 text-[#3b82f6] text-base">
+                    <p className="leading-5 relative shrink-0 uppercase text-base">
                       {section.sectionLabel}
                     </p>
                   )}
@@ -1718,7 +1736,7 @@ function ContentBlock({
               
               {/* Problem Label */}
               {section.problemLabel && (
-                <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
+                <p className="leading-5 relative shrink-0 uppercase text-[#9ca3af] text-base">
                   {section.problemLabel}
                 </p>
               )}
@@ -1732,11 +1750,12 @@ function ContentBlock({
 
               {/* Description */}
             {section.description && section.description.length > 0 && (
-                <div className="pt-6 max-w-120 whitespace-pre-wrap prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 text-gray-500">
+                <div className="pt-6 max-w-120 prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 text-gray-500 [&>p]:whitespace-pre-wrap">
                   <PortableText value={section.description} components={createPortableTextComponents(section.descriptionHighlightedText, section.descriptionHighlightColor)} />
                 </div>
               )}
             </div>
+            )}
 
             {/* Right: Image/Video and Description */}
             <div className="leading-5 max-w-120 flex-items-center relative text-[#4b5563] text-base whitespace-pre-wrap items-center flex flex-col gap-8">
@@ -1819,7 +1838,7 @@ function ContentBlock({
           <div className="flex gap-20 items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full max-md:flex-col max-md:gap-8">
             <div className="w-[49%] shrink-0 content-stretch flex flex-col gap-3 items-start relative max-md:w-full">
               {section.label && (
-                <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
+                <p className="leading-5 relative uppercase shrink-0 text-[#9ca3af] text-base">
                   {section.label}
                 </p>
               )}
@@ -1839,7 +1858,7 @@ function ContentBlock({
         return (
           <div className="content-stretch flex flex-col gap-4 items-center px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
             {section.label && (
-              <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base text-center">
+              <p className="leading-5 relative shrink-0 uppercase text-[#9ca3af] text-base text-center">
                 {section.label}
               </p>
             )}
@@ -1861,7 +1880,7 @@ function ContentBlock({
           <div className="content-stretch grid grid-cols-[2fr_1fr_2fr] items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full max-md:flex max-md:flex-col max-md:gap-8">
             <div className="content-stretch flex flex-col gap-3 items-start relative col-start-1">
               {section.label && (
-                <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
+                <p className="leading-5 relative shrink-0 uppercase text-[#9ca3af] text-base">
                   {section.label}
                 </p>
               )}
@@ -1882,7 +1901,7 @@ function ContentBlock({
       return (
         <div className="content-stretch flex flex-col gap-4 items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
           {section.label && (
-            <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
+            <p className="leading-5 relative shrink-0 uppercase text-[#9ca3af] text-base">
               {section.label}
             </p>
           )}
@@ -2329,6 +2348,58 @@ function ContentBlock({
                 />
               </div>
             )}
+            
+            {/* Subtitle */}
+            {section.subtitle && (
+              <p className="text-lg -mt-1 text-gray-400 font-normal whitespace-pre-wrap">
+                {section.subtitle}
+              </p>
+            )}
+          </div>
+        );
+
+      case "twoColumnTextImageSection":
+        const textImageBgColor = section.backgroundColor || '#FFFFFF';
+        const textImageSrc = section.imageUrl 
+          ? section.imageUrl 
+          : section.image 
+            ? urlFor(section.image).width(1200).url()
+            : null;
+
+        return (
+          <div
+            className="content-stretch flex flex-col py-8 max-md:flex-col w-full relative shrink-0"
+          >
+            {/* Left: Text Content */}
+            <div className="max-md:w-full px-8 md:px-[8%] xl:px-[175px] flex flex-col ">
+              {/* Heading */}
+              {section.heading && (
+                <h2 className="text-lg font-normal text-gray-600 whitespace-pre-wrap">
+                  {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
+                </h2>
+              )}
+
+              {/* Text Content */}
+              {section.textContent && section.textContent.length > 0 && (
+                <div className="text-base text-gray-600 leading-normal prose prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2">
+                  <PortableText value={section.textContent} components={portableTextComponents} />
+                </div>
+              )}
+            </div>
+
+{/* Background with Image */}
+<div className="max-md:w-full relative -mt-3 max-md:min-h-[300px] flex items-center justify-center px-8 md:px-[8%] xl:px-[175px] py-8">
+  {textImageSrc && (
+    <div className="inline-block rounded-3xl"             style={{ backgroundColor: textImageBgColor }}>
+      <img
+        src={textImageSrc}
+        alt=""
+        className="block max-w-full max-h-full object-contain rounded-lg"
+      />
+    </div>
+  )}
+</div>
+
           </div>
         );
 
@@ -2410,22 +2481,22 @@ function ContentBlock({
         
         // Layout classes
         const highlightLayoutMap = {
-          '2-col': 'grid-cols-1 md:grid-cols-2',
-          '3-col': 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-          'stacked': 'grid-cols-1 max-w-2xl mx-auto',
+          '2-col': 'grid-cols-1 md:grid-cols-2 px-8 md:px-[8%] xl:px-[175px]',
+          '3-col': 'grid-cols-1 md:grid-cols-2 gap-4 lg:grid-cols-3 px-8 md:px-[8%] xl:px-[175px]',
+          'stacked': 'grid-cols-1',
         };
         const highlightLayout = highlightLayoutMap[section.layout || '2-col'];
         
         // Card style classes
         const getCardStyleClasses = (style: string, cardBgColor?: string) => {
           if (style === 'with-border') {
-            return 'border border-gray-200 rounded-2xl';
+            return 'border border-gray-50 shadow-default rounded-3xl';
           }
           if (style === 'no-bg') {
             return '';
           }
           // with-bg (default)
-          return cardBgColor ? 'rounded-2xl' : 'bg-gray-50 rounded-2xl';
+          return cardBgColor ? 'rounded-3xl' : 'bg-gray-50 rounded-3xl';
         };
         
         // Aspect ratio classes
@@ -2435,14 +2506,28 @@ function ContentBlock({
           'portrait': 'aspect-[3/4]',
           'auto': '',
         };
+
+        // Rounded corners classes
+        const roundedCornersMap = {
+          'none': 'rounded-none',
+          'small': 'rounded-lg',
+          'medium': 'rounded-xl',
+          'large': 'rounded-2xl',
+          'full': 'rounded-full',
+        };
         
         return (
-          <div 
-            className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full"
+          <div
+            className="content-stretch flex flex-col px-0 pb-10 relative shrink-0 w-full"
             style={{ backgroundColor: highlightBgColor }}
           >
             {section.cards && section.cards.length > 0 && (
-              <div className={clsx("grid gap-8 w-full", highlightLayout)}>
+              <div className={clsx(
+                "grid w-full",
+                highlightLayout,
+                section.layout === 'stacked' ? 'px-8 md:px-[8%] xl:px-[175px]' : '',
+                section.showDividers ? 'divide-y divide-gray-200 [&>*]:py-16' : 'gap-12'
+              )}>
                 {section.cards.map((card) => {
                   const cardImgSrc = card.externalImageUrl 
                     ? card.externalImageUrl 
@@ -2458,46 +2543,57 @@ function ContentBlock({
                   const aspectRatio = aspectRatioMap[card.imageAspectRatio || 'landscape'];
                   const isStackedLayout = card.cardLayout !== 'side-by-side';
                   const imageOnLeft = card.imagePosition !== 'right';
+                  const imageRounded = roundedCornersMap[card.imageRoundedCorners || 'medium'];
                   
                   // Stacked layout (image above text)
                   if (isStackedLayout) {
                     return (
                       <div
                         key={card._key}
-                        className={clsx("flex flex-col gap-4 p-6", cardStyle)}
+                        className={clsx(
+                          "flex gap-6 p-12 py-16 items-start",
+                          imageOnLeft ? "flex-col" : "flex-col-reverse",
+                          "max-md:flex-col",
+                          cardStyle,
+                          section.showDividers && "py-8"
+                        )}
                         style={{ backgroundColor: card.cardBackgroundColor }}
                       >
-                        {/* Headline */}
-                        <h3 
-                          className="text-xl font-semibold leading-tight"
-                          style={{ color: card.headlineColor || '#111827' }}
-                        >
-                          {card.headline}
-                        </h3>
-                        
                         {/* Image */}
                         {cardImgSrc && (
                           <div className={clsx(
-                            "w-full overflow-hidden rounded-xl",
-                            aspectRatio
+                            "w-20 h-20 shrink-0 overflow-hidden max-md:w-full max-md:h-auto",
+                            imageRounded,
+                            !aspectRatio && "max-md:aspect-video"
                           )}>
                             <img
                               src={cardImgSrc}
                               alt=""
-                              className={clsx(
-                                "w-full object-cover",
-                                aspectRatio ? "h-full" : "h-auto"
-                              )}
+                              className="w-full h-full object-cover"
                             />
                           </div>
                         )}
                         
-                        {/* Description */}
-                        {card.description && (
-                          <p className="text-base text-gray-600 leading-relaxed">
-                            {card.description}
-                          </p>
-                        )}
+                        {/* Text Content */}
+                        <div className="flex flex-col gap-2 flex-1">
+                          {/* Headline */}
+                          <h3 
+                            className={clsx(
+                              card.headline.length < 5 ? "text-3xl" : "text-xl",
+                              "font-normal leading-tight whitespace-pre-wrap"
+                            )}
+                            style={{ color: card.headlineColor || '#111827' }}
+                          >
+                            {renderHighlightedText(card.headline, card.highlightedText, card.highlightColor)}
+                          </h3>
+                          
+                          {/* Description */}
+                          {card.description && card.description.length > 0 && (
+                            <div className="text-base text-gray-600 leading-relaxed">
+                              <PortableText value={card.description} components={portableTextComponents} />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   }
@@ -2507,43 +2603,36 @@ function ContentBlock({
                     <div
                       key={card._key}
                       className={clsx(
-                        "flex gap-6 p-6 items-start",
-                        imageOnLeft ? "flex-row" : "flex-row-reverse",
-                        "max-md:flex-col",
-                        cardStyle
+                        "flex flex-1 flex-row w-full gap-12 px-8 p-6", 
+                        cardStyle,
+                        section.showDividers && "py-8"
                       )}
                       style={{ backgroundColor: card.cardBackgroundColor }}
                     >
+                      {/* Headline */}
+                      <h3 
+                        className={clsx(
+                          card.headline.length < 5 ? "text-3xl" : "text-xl",
+                          "w-56 font-normal leading-normal whitespace-pre-wrap"
+                        )}
+                        style={{ color: card.headlineColor || '#111827' }}
+                      >
+                        {renderHighlightedText(card.headline, card.highlightedText, card.highlightColor)}
+                      </h3>
+                      
                       {/* Image */}
                       {cardImgSrc && (
-                        <div className={clsx(
-                          "w-24 h-24 shrink-0 overflow-hidden rounded-xl max-md:w-full max-md:h-auto",
-                          !aspectRatio && "max-md:aspect-video"
-                        )}>
-                          <img
-                            src={cardImgSrc}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
+<div className={clsx("h-24 shrink-0 object-center overflow-hidden", imageRounded)}>
+<img src={cardImgSrc} alt="" className="h-full w-auto object-contain" />
+</div>
+)}
+                      <div className="flex flex-1 flex-col justify-center items-stretch">
+                      {/* Description */}
+                      {card.description && card.description.length > 0 && (
+                        <div className="text-base text-gray-500 self-end max-w-120 leading-relaxed">
+                          <PortableText value={card.description} components={portableTextComponents} />
                         </div>
                       )}
-                      
-                      {/* Text Content */}
-                      <div className="flex flex-col gap-2 flex-1">
-                        {/* Headline */}
-                        <h3 
-                          className="text-xl font-semibold leading-tight"
-                          style={{ color: card.headlineColor || '#111827' }}
-                        >
-                          {card.headline}
-                        </h3>
-                        
-                        {/* Description */}
-                        {card.description && (
-                          <p className="text-base text-gray-600 leading-relaxed">
-                            {card.description}
-                          </p>
-                        )}
                       </div>
                     </div>
                   );
@@ -2655,7 +2744,7 @@ function ContentBlock({
         
         return (
           <div 
-            className="content-stretch flex flex-col items-start gap-12 px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full"
+            className="content-stretch flex flex-col items-start gap-12 px-6 md:px-6 xl:px-[175px] py-16 relative shrink-0 w-full"
             style={{ backgroundColor: tocBgColor }}
           >
             {/* Only render header wrapper if there's content */}
@@ -2712,7 +2801,7 @@ function ContentBlock({
 
             {/* TOC Items Grid */}
             {section.items && section.items.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full">
+              <div className="flex gap-12 w-full">
                 {section.items.map((item) => {
                   const itemImageSrc = item.externalImageUrl 
                     ? item.externalImageUrl 
@@ -2735,7 +2824,7 @@ function ContentBlock({
                           }
                         }
                       }}
-                      className="flex flex-col items-start gap-3 p-8 py-12 bg-white rounded-3xl shadow-xs hover:shadow-sm hover:scale-[1.01] transition-all duration-200 cursor-pointer text-left group"
+                      className="flex flex-col items-start gap-3 p-8 py-12 bg-white rounded-3xl shadow-default hover:shadow-2xl hover:scale-[1.005] transition-all duration-200 cursor-pointer text-left group flex-1"
                     >
                       {/* Image/Icon */}
                       {itemImageSrc && (
@@ -2770,88 +2859,12 @@ function ContentBlock({
         );
 
       case "twoColumnImageSection":
-        const twoColLeftImageSrc = section.leftImageUrl 
-          ? section.leftImageUrl 
-          : section.leftImage 
-            ? urlFor(section.leftImage).width(800).url()
-            : null;
-        
-        const twoColRightImageSrc = section.rightImageUrl 
-          ? section.rightImageUrl 
-          : section.rightImage 
-            ? urlFor(section.rightImage).width(1200).url()
-            : null;
-        
-        const twoColGapMap = {
-          small: 'gap-4',
-          normal: 'gap-8',
-          large: 'gap-12',
-        };
-        const twoColImageGap = twoColGapMap[section.imageGap || 'normal'];
-        
         return (
-          <div 
-            className="content-stretch flex flex-col items-start justify-between px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full"
-            style={{ backgroundColor: section.backgroundColor || 'transparent' }}
-          >
-            {/* Two Column Layout: Left content + Right image */}
-            <div className={clsx("flex w-full justify-between gap-12 max-md:flex-col items-center", twoColImageGap)}>
-              {/* Left Column: Text + Smaller Image */}
-              <div className="w-2/5 max-md:w-full shrink-0 flex flex-col justify-center gap-12">
-                {/* Label and Heading */}
-                {(section.label || section.heading) && (
-                  <div className="flex flex-col gap-3">
-                    {section.label && (
-                      <p className="leading-5 text-[#9ca3af] text-base uppercase">
-                        {section.label}
-                      </p>
-                    )}
-                    {section.heading && (
-                      <h3 className="leading-normal text-2xl text-black whitespace-pre-wrap">
-                        {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
-                      </h3>
-                    )}
-                  </div>
-                )}
-
-                
-                {/* Description */}
-                {section.description && section.description.length > 0 && (
-                  <div className="leading-normal pb-1 text-[#4b5563] text-base whitespace-pre-wrap prose prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
-                    <PortableText value={section.description} components={portableTextComponents} />
-                  </div>
-                )}
-                
-                {/* Left Image (smaller) */}
-                {twoColLeftImageSrc && (
-                  <div className={clsx(
-                    "overflow-hidden w-full",
-                    section.rounded !== false && "rounded-[26px]"
-                  )}>
-                    <img
-                      className="w-full h-auto object-contain"
-                      alt=""
-                      src={twoColLeftImageSrc}
-                    />
-                  </div>
-                )}
-              </div>
-              
-              {/* Right Column: Fixed height image */}
-              {twoColRightImageSrc && (
-                <div className={clsx(
-                  "overflow-hidden w-1/2 justify-center h-full max-md:h-auto",
-                  section.rounded !== false && "rounded-[26px]"
-                )}>
-                  <img
-                    className="w-full h-full object-cover object-top"
-                    alt=""
-                    src={twoColRightImageSrc}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
+          <TwoColumnImageSectionComponent
+            section={section}
+            renderHighlightedText={renderHighlightedText}
+            portableTextComponents={portableTextComponents}
+          />
         );
 
       default:

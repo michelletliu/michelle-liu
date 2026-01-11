@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Custom shadow utility */
+.shadow-default {
+  box-shadow: 0px 4px 16px 0px rgba(209, 213, 219, 0.65);
+}
+
 /* Prevent horizontal scrolling on the page - use clip instead of hidden to preserve sticky */
 body {
   overflow-x: clip;

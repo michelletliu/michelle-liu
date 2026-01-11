@@ -20,6 +20,8 @@ import { PROJECTS_QUERY, EXPERIMENT_PROJECTS_QUERY } from "./sanity/queries";
 import { ArrowUpRight } from "./components/ArrowUpRight";
 import { useScrollLock } from "./utils/useScrollLock";
 import { initCursorCompatibility } from "./utils/cursorCompat";
+import ContactBadge from "./components/ContactBadge";
+import NavigationTabs from "./components/NavigationTabs";
 
 // CSS for fade up animation
 const fadeUpStyles = `
@@ -434,35 +436,6 @@ function LinksBackgroundImageAndText({ text }: LinksBackgroundImageAndTextProps)
   );
 }
 
-type TagBackgroundImageAndTextProps = {
-  text: string;
-  active?: boolean;
-  onClick?: () => void;
-};
-
-function TagBackgroundImageAndText({ text, active = false, onClick }: TagBackgroundImageAndTextProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={clsx(
-        "content-stretch flex items-center justify-center px-4 pt-[5px] pb-[3px] relative rounded-full shrink-0 cursor-pointer transition-all duration-100 ease-out border border-transparent",
-        !active && "hover:bg-gray-200/40 hover:pt-[3px] hover:pb-[1px] hover:my-[2px]",
-        active && "bg-gray-200/60 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.02)] !border-white/50"
-      )}
-    >
-      <p
-        className={clsx(
-          "font-['Figtree',sans-serif] font-medium leading-normal relative shrink-0 text-lg text-nowrap",
-          active ? "text-[#4b5563]" : "text-[#9ca3af]"
-        )}
-      >
-        {text}
-      </p>
-    </button>
-  );
-}
-
-
 type ProjectCardProps = {
   project: Project;
   onProjectClick: (projectId: string) => void;
@@ -495,8 +468,8 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
           <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
           {/* Floating title pill inside the card - desktop only */}
           <div className="absolute bottom-0 left-0 p-3 hidden md:block">
-            <div className="bg-white border border-[#f3f4f6] border-solid flex items-center justify-center px-3 py-1.5 rounded-full">
-              <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] text-[#111827] text-base">
+            <div className="bg-white border border-[#f3f4f6] border-solid flex items-center justify-center px-3 pt-[5px] pb-[4.8px] rounded-full">
+              <p className="font-['Figtree',sans-serif] font-medium tracking-[0.005em] leading-[1.4] text-[#111827] text-base">
                 <span>{project.title}</span>
                 {/* Show year only for non-Try It Out projects */}
                 {!hasTryItOut && (
@@ -520,11 +493,11 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
           </div>
         </div>
         {/* Desktop: just description */}
-        <div className="hidden md:flex content-stretch items-start px-[13px] py-0 -mt-0.5 relative shrink-0 w-full">
-          <p className="font-['Figtree',sans-serif] font-normal leading-[1] text-[#9ca3af] text-base text-left project-hover-text">{project.description}</p>
+        <div className="hidden md:flex content-stretch items-start px-[13px] py-0 -mt-1 relative shrink-0 w-full">
+          <p className="font-['Figtree',sans-serif] font-normal leading-[1] text-[#9ca3af] text-base tracking-[0.005em] text-left project-hover-text">{project.description}</p>
         </div>
         {/* Mobile: title + description */}
-        <div className="md:hidden content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base gap-1">
+        <div className="md:hidden content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.01em] gap-1">
           <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
             <span>{project.title}</span>
             {/* Show year only for non-Try It Out projects */}
@@ -562,7 +535,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
       >
         <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
       </div>
-      <div className="content-stretch flex font-['Figtree',sans-serif] -mt-1 font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base w-full">
+      <div className="content-stretch flex font-['Figtree',sans-serif] -mt-1 font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.005em] w-full">
         <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
           <span>{project.title}</span>
           {/* Show year only for non-Try It Out projects */}
@@ -709,7 +682,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
                   <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
                     {project.title}
                   </p>
-                  <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
+                  <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base tracking-[0.005em]">
                     •
                   </p>
                   <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-xl">
@@ -720,7 +693,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               
               {/* Description */}
               <div className="content-stretch flex gap-2 items-start relative w-full">
-                <p className="font-['Figtree',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base">
+                <p className="font-['Figtree',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base tracking-[0.005em]">
                   {project.description}
                 </p>
               </div>
@@ -742,7 +715,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
                   <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
                     {project.title}
                   </p>
-                  <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
+                  <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base tracking-[0.005em]">
                     •
                   </p>
                   <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-xl">
@@ -753,7 +726,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               
               {/* Description */}
               <div className="content-stretch flex gap-2 items-start relative w-full">
-                <p className="font-['Figtree',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base">
+                <p className="font-['Figtree',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base tracking-[0.005em]">
                   {project.description}
                 </p>
               </div>
@@ -773,7 +746,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               rel="noopener noreferrer"
               className="bg-blue-500 border border-blue-400 border-solid content-stretch flex gap-1 items-center justify-center px-4 py-1.5 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out mt-1"
             >
-              <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-base text-white whitespace-nowrap">
+              <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-base tracking-[0.005em] text-white whitespace-nowrap">
                 View on
               </span>
               {/* X logo - white */}
@@ -853,9 +826,6 @@ type SanityExperimentProject = {
 function HomePage() {
   const navigate = useNavigate();
   const { slug, mode } = useParams<{ slug?: string; mode?: string }>();
-  
-  const [badgeHovered, setBadgeHovered] = useState(false);
-  const badgeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // State for projects with Sanity data merged in
   const [projects, setProjects] = useState<Project[]>(staticProjects);
@@ -961,20 +931,6 @@ function HomePage() {
   // Determine if we're in fullscreen mode based on URL
   const isFullscreenFromUrl = mode === "full";
 
-  const handleBadgeMouseEnter = () => {
-    if (badgeTimeoutRef.current) {
-      clearTimeout(badgeTimeoutRef.current);
-      badgeTimeoutRef.current = null;
-    }
-    setBadgeHovered(true);
-  };
-
-  const handleBadgeMouseLeave = () => {
-    badgeTimeoutRef.current = setTimeout(() => {
-      setBadgeHovered(false);
-    }, 100);
-  };
-
   // Memoize to prevent ProjectCard re-renders when other state changes
   const handleProjectClick = useCallback((projectId: string) => {
     // On mobile, go straight to fullscreen (except for sketchbook)
@@ -1044,6 +1000,7 @@ function HomePage() {
       {/* Header */}
       <PageHeader variant="work" heroAnimationPlayed={heroAnimationPlayed}>
         <>
+          <div>
                   <span>
                     Designing useful products to spark moments of{" "}</span>
                   <span>delight</span>
@@ -1065,57 +1022,16 @@ function HomePage() {
                   <span>{`, & `}</span>
                   <span className="text-[#374151]">NASA</span>
                   <span>.</span>
-                  <span 
-                    className={clsx(
-                      "relative inline-flex items-center justify-center rounded-[999px] align-middle -translate-y-[2px] transition-all duration-300 ease-in-out [cursor:inherit] before:content-[''] before:absolute before:-inset-[2px] before:rounded-[999px] before:pointer-events-none",
-                      "max-md:hidden",
-                      badgeHovered ? "gap-2 bg-[#ecfdf5] pl-1.5 pr-3.5 py-0.5 -my-0.5 md:ml-1" : "md:gap-0 md:bg-transparent md:p-0 md:ml-2.5"
-                    )}
-                    onMouseEnter={handleBadgeMouseEnter}
-                    onMouseLeave={handleBadgeMouseLeave}
-                  >
-                    <span className="relative shrink-0 size-[16px] overflow-visible">
-                      {/* Pulsing ring behind the badge */}
-                      <span className={badgeHovered ? "green-pulse-ring-off" : "green-pulse-ring"} />
-                      <svg className="block size-full relative z-10" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-                        <g id="Background">
-                          <rect fill="var(--fill-0, #A7F3D0)" height="16" rx="8" width="16" />
-                          <circle cx="8" cy="8" fill="var(--fill-0, #10B981)" id="Ellipse 1" r="4" />
-                        </g>
-                      </svg>
-                    </span>
-                    <span className={clsx(
-                      "font-['Figtree:Medium',sans-serif] font-normal text-[#10b981] text-base text-nowrap overflow-hidden transition-all duration-300 ease-in-out",
-                      badgeHovered ? "max-w-[500px] opacity-100" : "max-w-0 opacity-0"
-                    )}>
-                      <span>Working on something cool? Get in</span>{" "}
-                      <a href="mailto:michelletheresaliu@gmail.com" className="[text-decoration-skip-ink:none] [text-underline-position:from-font] decoration-solid underline hover:!text-emerald-600 transition-colors">touch</a>!
-                    </span>
-                  </span>
+                  <ContactBadge hoverMode className="max-md:hidden" />
+          </div>
         </>
       </PageHeader>
 
       {/* Navigation */}
-      <div className="content-stretch flex flex-col items-center pb-4 pt-0 px-0 relative shrink-0 w-full">
-        <ScrollReveal variant="fade" delay={280} rootMargin="0px" className="relative shrink-0 w-full" disabled={heroAnimationPlayed}>
-          <div className="size-full">
-            <div className="content-stretch flex flex-col gap-3 items-start pb-0 pt-4 px-16 max-md:px-8 relative w-full">
-              <div className="content-stretch flex gap-1 items-start relative shrink-0">
-                <TagBackgroundImageAndText text="Work" active />
-                <TagBackgroundImageAndText text="Art" onClick={() => navigate("/art")} />
-                <TagBackgroundImageAndText text="About" onClick={() => navigate("/about")} />
-              </div>
-            </div>
-          </div>
-        </ScrollReveal>
+      <NavigationTabs activeTab="work" heroAnimationPlayed={heroAnimationPlayed} />
 
-        {/* Divider line */}
-        <div className="px-17 max-md:px-8 w-full pt-3">
-          <div className="bg-zinc-100 h-px shrink-0 w-full" />
-        </div>
-
-        {/* Projects Grid - Desktop (2 columns) */}
-        <div className="hidden md:grid gap-6 grid-cols-2 px-16 py-4 pt-6 relative shrink-0 w-full">
+      {/* Projects Grid - Desktop (2 columns) */}
+      <div className="hidden md:grid gap-6 grid-cols-2 px-16 pt-2.5 pb-2 relative shrink-0 w-full">
           {projects.map((project, index) => (
             <ScrollReveal 
               key={project.id} 
@@ -1148,7 +1064,6 @@ function HomePage() {
             </ScrollReveal>
           ))}
         </div>
-      </div>
 
       {/* Footer */}
       <Footer />

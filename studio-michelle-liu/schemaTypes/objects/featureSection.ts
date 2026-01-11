@@ -95,7 +95,6 @@ export const featureSection = defineType({
       title: 'Heading',
       type: 'string',
       description: 'Main heading',
-      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'highlightedText',

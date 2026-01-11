@@ -38,8 +38,9 @@ export const twoColumnImageSection = defineType({
     defineField({
       name: 'heading',
       title: 'Heading',
-      type: 'string',
-      description: 'Main heading text',
+      type: 'text',
+      rows: 3,
+      description: 'Main heading text (supports line breaks)',
     }),
     defineField({
       name: 'highlightedText',
@@ -62,6 +63,52 @@ export const twoColumnImageSection = defineType({
       description: 'Text content below heading',
     }),
     defineField({
+      name: 'layout',
+      title: 'Layout',
+      type: 'string',
+      description: 'Choose which side the text content appears',
+      options: {
+        list: [
+          {title: 'Text on Left, Large Image on Right', value: 'text-left'},
+          {title: 'Large Image on Left, Text on Right', value: 'text-right'},
+          {title: 'Text Between Two Images (3 columns)', value: 'three-column'},
+          {title: 'Two Images Only (no text)', value: 'two-images'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'text-left',
+    }),
+    defineField({
+      name: 'leftImageSize',
+      title: 'Left Image Width',
+      type: 'string',
+      description: 'Control the size of the left image',
+      options: {
+        list: [
+          {title: 'Small (20%)', value: 'small'},
+          {title: 'Medium (40%)', value: 'medium'},
+          {title: 'Large (60%)', value: 'large'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'medium',
+    }),
+    defineField({
+      name: 'rightImageSize',
+      title: 'Right Image Width',
+      type: 'string',
+      description: 'Control the size of the right image',
+      options: {
+        list: [
+          {title: 'Small (20%)', value: 'small'},
+          {title: 'Medium (40%)', value: 'medium'},
+          {title: 'Large (60%)', value: 'large'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'large',
+    }),
+    defineField({
       name: 'leftImage',
       title: 'Left Image',
       type: 'image',
@@ -75,6 +122,12 @@ export const twoColumnImageSection = defineType({
       title: 'Left Image URL',
       type: 'string',
       description: 'Alternative: Use external URL for left image',
+    }),
+    defineField({
+      name: 'leftImageCaption',
+      title: 'Left Image Caption',
+      type: 'string',
+      description: 'Optional caption for the left image',
     }),
     defineField({
       name: 'rightImage',
@@ -92,15 +145,21 @@ export const twoColumnImageSection = defineType({
       description: 'Alternative: Use external URL for right image',
     }),
     defineField({
+      name: 'rightImageCaption',
+      title: 'Right Image Caption',
+      type: 'string',
+      description: 'Optional caption for the right image',
+    }),
+    defineField({
       name: 'imageGap',
       title: 'Gap Between Images',
       type: 'string',
       description: 'Space between the two images',
       options: {
         list: [
-          {title: 'Small (1rem)', value: 'small'},
-          {title: 'Normal (2rem)', value: 'normal'},
-          {title: 'Large (3rem)', value: 'large'},
+          {title: 'Small (3rem / 48px)', value: 'small'},
+          {title: 'Medium (4rem / 64px)', value: 'medium'},
+          {title: 'Large (5rem / 80px)', value: 'large'},
         ],
         layout: 'radio',
       },

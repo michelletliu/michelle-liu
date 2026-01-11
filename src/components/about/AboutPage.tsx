@@ -13,6 +13,8 @@ import MediaCard from "./MediaCard";
 import AboutSidebar from "./AboutSidebar";
 import Footer from "../Footer";
 import { ArrowUpRight } from "../ArrowUpRight";
+import ContactBadge from "../ContactBadge";
+import NavigationTabs from "../NavigationTabs";
 
 import type { AboutCategory, ShelfSubcategory, CommunitySidebarItem } from "./AboutSidebar";
 
@@ -62,34 +64,6 @@ const fadeUpStyles = `
   animation: fadeUp 400ms ease-out forwards;
 }
 `;
-
-type TagBackgroundImageAndTextProps = {
-  text: string;
-  active?: boolean;
-  onClick?: () => void;
-};
-
-function TagBackgroundImageAndText({ text, active = false, onClick }: TagBackgroundImageAndTextProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={clsx(
-        "content-stretch flex items-center justify-center px-4 pt-[5px] pb-[3px] relative rounded-full shrink-0 cursor-pointer transition-all duration-100 ease-out border border-transparent",
-        !active && "hover:bg-gray-200/40 hover:pt-[3px] hover:pb-[1px] hover:my-[2px]",
-        active && "bg-gray-200/60 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.02)] !border-white/50"
-      )}
-    >
-      <p
-        className={clsx(
-          "font-['Figtree',sans-serif] font-medium leading-normal relative shrink-0 text-lg text-nowrap",
-          active ? "text-[#4b5563]" : "text-[#9ca3af]"
-        )}
-      >
-        {text}
-      </p>
-    </button>
-  );
-}
 
 // Profile photo component
 function ProfilePhoto({ imageSrc, caption }: { imageSrc?: string; caption?: React.ReactNode }) {
@@ -228,10 +202,6 @@ export default function AboutPage() {
   const musicRef = useRef<HTMLDivElement>(null);
   const moviesRef = useRef<HTMLDivElement>(null);
   
-  // Badge expansion state - animates from dot to full on scroll
-  const badgeRef = useRef<HTMLSpanElement>(null);
-  const [badgeExpanded, setBadgeExpanded] = useState(false);
-  
   // Active community ID state (will be set to first community when data loads)
   const [activeCommunityId, setActiveCommunityId] = useState<string | undefined>();
   
@@ -303,32 +273,6 @@ export default function AboutPage() {
       }
     }
   }, [communities, activeCommunityId]);
-
-  // Badge scroll-triggered expansion animation
-  useEffect(() => {
-    const badge = badgeRef.current;
-    if (!badge) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !badgeExpanded) {
-            // Delay the expansion slightly for a nice effect
-            setTimeout(() => {
-              setBadgeExpanded(true);
-            }, 400);
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    observer.observe(badge);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [badgeExpanded]);
 
   // Handle category click - scroll to section
   const handleCategoryClick = (category: AboutCategory) => {
@@ -528,30 +472,22 @@ export default function AboutPage() {
       {/* Header */}
       <PageHeader variant="about" heroAnimationPlayed={heroAnimationPlayed}>
         <>
-          <p>Product, design, &lt;dev&gt;, &amp; everything in between.</p>
-          <p>Graduating from UCLA in June 2026. ⋆˙⟡</p>
+          {/* Desktop */}
+          <div className="hidden md:block">
+            <p>Product, design, &lt;dev&gt;, &amp; everything in between.</p>
+            <p>Graduating from UCLA in June 2026. ⋆˙⟡</p>
+          </div>
+          {/* Mobile */}
+          <div className="md:hidden">
+            <p className="mb-0">Product, design, &lt;dev&gt;,</p>
+            <p> &amp; everything in between.</p>
+            <p>Graduating from UCLA in June 2026. ⋆˙⟡</p>
+          </div>
         </>
       </PageHeader>
 
       {/* Navigation */}
-      <div className="content-stretch flex flex-col items-center pb-4 pt-0 px-0 relative shrink-0 w-full">
-        <ScrollReveal variant="fade" delay={280} rootMargin="0px" className="relative shrink-0 w-full" disabled={heroAnimationPlayed}>
-          <div className="size-full">
-            <div className="content-stretch flex flex-col gap-3 items-start pb-0 pt-4 px-16 max-md:px-8 relative w-full">
-              <div className="content-stretch flex gap-1 items-start relative shrink-0">
-                <TagBackgroundImageAndText text="Work" onClick={() => navigate("/")} />
-                <TagBackgroundImageAndText text="Art" onClick={() => navigate("/art")} />
-                <TagBackgroundImageAndText text="About" active />
-              </div>
-            </div>
-          </div>
-        </ScrollReveal>
-
-        {/* Divider line */}
-        <div className="px-16 max-md:px-8 w-full pt-3">
-          <div className="bg-zinc-100 h-px shrink-0 w-full" />
-        </div>
-      </div>
+      <NavigationTabs activeTab="about" heroAnimationPlayed={heroAnimationPlayed} />
 
       {/* Main Content Area */}
       <div className="flex flex-col lg:flex-row gap-4 items-start px-16 max-md:px-8 pt-2 relative shrink-0 w-full">
@@ -611,7 +547,7 @@ export default function AboutPage() {
 
               {/* Location & Education */}
               <ScrollReveal variant="fade" delay={200}>
-                <div className="flex flex-wrap gap-2 md:gap-6 text-base tracking-wide text-gray-400">
+                <div className="flex flex-wrap gap-2 md:gap-6 text-base tracking-[0.005em] text-gray-400">
                   <div className="flex items-center gap-2">
                     <img src={mapPinIcon} alt="" className="w-4 h-4" />
                     <span className="text-gray-400">SF — LA — NYC</span>
@@ -625,7 +561,7 @@ export default function AboutPage() {
 
               {/* Bio Paragraphs */}
               <ScrollReveal variant="fade" delay={250}>
-                <div className="flex flex-col gap-4 text-gray-600 text-base leading-relaxed">
+                <div className="flex flex-col gap-4 text-gray-600 text-base tracking-[0.005em] leading-relaxed">
                   <p>
                     I love art, business, technology, & the ways that they can work together to
                     create extraordinary products for people.
@@ -633,12 +569,12 @@ export default function AboutPage() {
                   <p>
                     I believe thoughtful design makes life more intuitive (& beautiful). I want to
                     bring more of it into the world—whether through my creations or the
-                    communities I'm helping to build. I like to think of it as my <a href="https://en.wikipedia.org/wiki/Ikigai" target="_blank" rel="noopener noreferrer" className="text-gray-900 font-emdium no-underline hover:text-blue-600 transition-colors">ikigai</a>: the constant
-                    pursuit of an intersection between passion, profession, and personal mission.
+                    communities I'm helping to build. I like to think of it as my <a href="https://en.wikipedia.org/wiki/Ikigai" target="_blank" rel="noopener noreferrer" className="text-gray-600 font-semibold no-underline hover:text-blue-600 transition-colors">ikigai</a>: the constant
+                    pursuit of an intersection between passion, profession, & personal mission.
                   </p>
                   <p>
                     I also love discovering new hidden food spots, getting excited about
-                    beautifully designed stationery, and listening to audiobooks on long drives.
+                    beautifully designed stationery, & listening to audiobooks on long drives.
                   </p>
                   <p>
                     3 words to describe me: <em>Golden Retriever Energy.</em> (even on the bad days)
@@ -648,33 +584,7 @@ export default function AboutPage() {
 
               {/* CTA Badge - Animates from dot to full on scroll */}
               <ScrollReveal variant="fade" delay={300}>
-                <span 
-                  ref={badgeRef}
-                  className={clsx(
-                    "relative inline-flex items-center justify-center rounded-[999px] transition-all duration-[800ms] ease-out mt-2 w-fit bg-[#ecfdf5]",
-                    badgeExpanded 
-                      ? "gap-1.5 pl-1.5 pr-2.5 py-1" 
-                      : "gap-0 p-1"
-                  )}
-                >
-                  <span className="relative shrink-0 size-[16px] overflow-visible">
-                    {/* Pulsing ring behind the badge - only when minimized */}
-                    <span className={badgeExpanded ? "green-pulse-ring-off" : "green-pulse-ring"} />
-                    <svg className="block size-full relative z-10" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-                      <g id="Background">
-                        <rect fill="var(--fill-0, #A7F3D0)" height="16" rx="8" width="16" />
-                        <circle cx="8" cy="8" fill="var(--fill-0, #10B981)" id="Ellipse 1" r="4" />
-                      </g>
-                    </svg>
-                  </span>
-                  <span className={clsx(
-                    "font-['Figtree:Medium',sans-serif] font-normal text-[#10b981] text-base text-nowrap overflow-hidden transition-all duration-[800ms] ease-out",
-                    badgeExpanded ? "max-w-[500px] opacity-100" : "max-w-0 opacity-0"
-                  )}>
-                    <span>Working on something cool? Get in</span>{" "}
-                    <a href="mailto:michelletheresaliu@gmail.com" className="[text-decoration-skip-ink:none] [text-underline-position:from-font] decoration-solid underline hover:!text-emerald-600 transition-colors">touch</a>!
-                  </span>
-                </span>
+                <ContactBadge scrollExpandMode className="mt-2" />
               </ScrollReveal>
             </div>
           </section>

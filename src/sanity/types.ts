@@ -243,6 +243,7 @@ export interface SectionTitleSection {
   titleColor?: string;
   lineColor?: string;
   showLine?: boolean;
+  subtitle?: string;
   isSkipLinkStart?: boolean;
   isSkipLinkEnd?: boolean;
 }
@@ -299,6 +300,19 @@ export interface OverlayImageSection {
   rounded?: boolean;
 }
 
+export interface TwoColumnTextImageSection {
+  _key: string;
+  _type: "twoColumnTextImageSection";
+  visibility?: SectionVisibility;
+  heading?: string;
+  highlightedText?: string;
+  highlightColor?: string;
+  textContent?: any[]; // Portable Text
+  backgroundColor?: string;
+  image?: SanityImage;
+  imageUrl?: string;
+}
+
 export interface TwoColumnImageSection {
   _key: string;
   _type: "twoColumnImageSection";
@@ -309,11 +323,16 @@ export interface TwoColumnImageSection {
   highlightedText?: string;
   highlightColor?: string;
   description?: any[]; // Portable Text
+  layout?: "text-left" | "text-right" | "three-column" | "two-images";
+  leftImageSize?: "small" | "medium" | "large";
+  rightImageSize?: "small" | "medium" | "large";
   leftImage?: SanityImage;
   leftImageUrl?: string;
+  leftImageCaption?: string;
   rightImage?: SanityImage;
   rightImageUrl?: string;
-  imageGap?: "small" | "normal" | "large";
+  rightImageCaption?: string;
+  imageGap?: "small" | "medium" | "large";
   rounded?: boolean;
 }
 
@@ -362,11 +381,14 @@ export interface HighlightCard {
   cardLayout?: "stacked" | "side-by-side";
   imagePosition?: "left" | "right";
   headline: string;
+  highlightedText?: string;
+  highlightColor?: string;
   headlineColor?: string;
   image?: SanityImage;
   externalImageUrl?: string;
   imageAspectRatio?: "square" | "landscape" | "portrait" | "auto";
-  description?: string;
+  imageRoundedCorners?: "none" | "small" | "medium" | "large" | "full";
+  description?: any[]; // Portable Text (rich text)
   cardBackgroundColor?: string;
 }
 
@@ -377,6 +399,7 @@ export interface HighlightCardSection {
   backgroundColor?: string;
   layout?: "2-col" | "3-col" | "stacked";
   cardStyle?: "with-bg" | "no-bg" | "with-border";
+  showDividers?: boolean;
   cards?: HighlightCard[];
 }
 
@@ -416,6 +439,7 @@ export type ContentSection =
   | SideQuestSection
   | DividerSection
   | TwoColumnImageSection
+  | TwoColumnTextImageSection
   | TableOfContentsSection
   | SectionHeaderBar
   | HighlightCardSection

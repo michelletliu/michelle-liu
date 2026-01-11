@@ -64,6 +64,13 @@ export const sectionTitleSection = defineType({
       initialValue: true,
     }),
     defineField({
+      name: 'subtitle',
+      title: 'Subtitle',
+      type: 'text',
+      rows: 2,
+      description: 'Optional subtitle text below the horizontal line (gray text)',
+    }),
+    defineField({
       name: 'isSkipLinkStart',
       title: 'Skip Link Start',
       type: 'boolean',

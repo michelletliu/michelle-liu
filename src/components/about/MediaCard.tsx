@@ -171,7 +171,7 @@ export default function MediaCard({
           )}
 
           {/* Quote Text & Author */}
-          <div className="flex flex-col items-start text-base md:text-base">
+          <div className="flex flex-col items-start text-base tracking-[0.005em] md:text-base">
             {data?.quoteText && (
               <p className="font-['Figtree'] font-normal text-gray-500 mb-0.5">
                 <QuoteTextWithUnderline

@@ -131,7 +131,7 @@ export default function Testimonial({
       >
         {/* Header Section */}
         <div className="content-stretch flex flex-col gap-5 items-start relative shrink-0 w-full">
-          <p className="leading-5 relative shrink-0 text-[#9ca3af] text-base">
+          <p className="leading-5 relative shrink-0 text-[#9ca3af] uppercase text-base">
             {label}
           </p>
           <p className="leading-7 min-w-full relative shrink-0 text-2xl text-black whitespace-pre-wrap">

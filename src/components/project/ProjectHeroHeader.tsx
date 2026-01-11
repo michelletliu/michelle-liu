@@ -79,7 +79,7 @@ export default function ProjectHeroHeader({
             <div
               key={item.label}
               className={clsx(
-                "content-stretch flex flex-col gap-3 items-start leading-5 relative shrink-0 text-base",
+                "content-stretch flex flex-col gap-3 items-start leading-normal relative shrink-0 text-base",
                 isDesktop && "w-[202px]",
                 isMobile && index % 2 === 0 && "col-[1] self-start",
                 isMobile && index % 2 === 1 && "col-[2] self-start",
@@ -89,10 +89,10 @@ export default function ProjectHeroHeader({
                 "whitespace-pre-wrap"
               )}
             >
-              <p className="font-medium relative shrink-0 text-[#9ca3af]">
+              <p className="font-medium relative shrink-0 text-gray-400">
                 {item.label}
               </p>
-              <p className="font-normal relative shrink-0 text-black">
+              <p className="font-normal relative leading-relaxed shrink-0 text-black">
                 {Array.isArray(item.value) ? (
                   item.value.map((v, i) => (
                     <React.Fragment key={i}>

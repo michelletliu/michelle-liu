@@ -345,7 +345,7 @@ export default function Footer() {
           </ScrollReveal>
           <ScrollReveal variant="fade" delay={200} className="content-stretch flex flex-col gap-0.5 items-center relative shrink-0">
             <p className="font-['Figtree',sans-serif] font-normal leading-7 relative shrink-0 text-gray-500 text-sm">
-              <span>{`Built with React & `}</span>
+              <span>{`Built with Next.js & `}</span>
               <span className="group">
                 <a
                   className="[text-underline-position:from-font] cursor-pointer decoration-solid underline group-hover:!text-emerald-600 transition-colors"
