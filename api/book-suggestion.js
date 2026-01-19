@@ -1,5 +1,6 @@
+const { createClient } = require('@sanity/client');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -17,8 +18,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { createClient } = await import('@sanity/client');
-    
     const client = createClient({
       projectId: 'am3v0x1c',
       dataset: 'production',
@@ -37,6 +36,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, id: result._id });
   } catch (error) {
     console.error('Error creating book suggestion:', error);
-    return res.status(500).json({ error: 'Failed to submit suggestion', details: error.message });
+    return res.status(500).json({ error: 'Failed to submit suggestion', details: String(error) });
   }
-}
+};
