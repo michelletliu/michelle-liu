@@ -172,13 +172,15 @@ export default function LibraryPage() {
 
   const handleAddBook = async (title: string) => {
     try {
-      const { writeClient } = await import('@/sanity/client');
-      await writeClient.create({
-        _type: 'bookSuggestion',
-        bookTitle: title.trim(),
-        submittedAt: new Date().toISOString(),
-        status: 'new',
+      const response = await fetch('/api/book-suggestion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookTitle: title.trim() }),
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to submit suggestion');
+      }
     } catch (error) {
       console.error('Error submitting book suggestion:', error);
     }

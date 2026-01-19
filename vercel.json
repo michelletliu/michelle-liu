@@ -5,7 +5,7 @@
     { "source": "/work", "destination": "/", "permanent": true }
   ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    { "source": "/((?!api/).*)", "destination": "/" }
   ]
 }
 
