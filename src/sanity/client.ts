@@ -9,12 +9,17 @@ export const client = createClient({
 });
 
 // Write client for mutations (book suggestions)
+const writeToken = import.meta.env.VITE_SANITY_WRITE_TOKEN;
+if (!writeToken) {
+  console.warn('VITE_SANITY_WRITE_TOKEN is not set - book suggestions will fail');
+}
+
 export const writeClient = createClient({
   projectId: "am3v0x1c",
   dataset: "production",
   apiVersion: "2026-01-06",
   useCdn: false,
-  token: import.meta.env.VITE_SANITY_WRITE_TOKEN,
+  token: writeToken,
 });
 
 const builder = imageUrlBuilder(client);
