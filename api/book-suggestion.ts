@@ -1,18 +1,25 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@sanity/client';
 
-const client = createClient({
-  projectId: 'am3v0x1c',
-  dataset: 'production',
-  apiVersion: '2026-01-06',
-  useCdn: false,
-  token: process.env.SANITY_WRITE_TOKEN,
-});
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  const token = process.env.SANITY_WRITE_TOKEN;
+  
+  if (!token) {
+    console.error('SANITY_WRITE_TOKEN environment variable is not set');
+    return res.status(500).json({ error: 'Server configuration error: missing token' });
+  }
+
+  const client = createClient({
+    projectId: 'am3v0x1c',
+    dataset: 'production',
+    apiVersion: '2026-01-06',
+    useCdn: false,
+    token,
+  });
 
   const { bookTitle } = req.body;
 
