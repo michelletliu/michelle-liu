@@ -361,7 +361,7 @@ export default function SketchbookPage() {
   const currentEntry = entries[currentIndex];
   
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col max-sm:overflow-hidden max-sm:h-screen">
       {/* Logo - fixed position matching /polaroid */}
       <button
         onClick={() => navigate('/')}
@@ -379,7 +379,7 @@ export default function SketchbookPage() {
       <InfoButton project={DEFAULT_SKETCHBOOK_PROJECT} />
       
       {/* Title and date */}
-      <div className="text-center px-6 pt-16 pb-12 [@media(min-height:800px)]:pt-32 [@media(min-height:800px)]:pb-24 overflow-hidden relative">
+      <div className="text-center px-6 pt-16 pb-12 max-sm:pt-32 max-sm:pb-24 [@media(min-height:800px)]:pt-32 [@media(min-height:800px)]:pb-24 overflow-hidden relative">
         {/* Location title - crossfades between entries */}
         <div className="relative h-6">
           {/* Previous location */}
@@ -455,12 +455,12 @@ export default function SketchbookPage() {
       <div className="flex-1 flex flex-col items-center justify-center overflow-hidden relative">
         {/* Left gradient overlay - white fading to transparent */}
         <div 
-          className="absolute left-0 top-0 bottom-0 w-[30%] sm:w-[25%] z-10 pointer-events-none"
+          className="absolute left-0 top-0 bottom-0 w-[15%] sm:w-[25%] z-10 pointer-events-none"
           style={{ background: 'linear-gradient(to right, white 0%, white 50%, transparent 100%)' }}
         />
         {/* Right gradient overlay - white fading to transparent */}
         <div 
-          className="absolute right-0 top-0 bottom-0 w-[30%] sm:w-[25%] z-10 pointer-events-none"
+          className="absolute right-0 top-0 bottom-0 w-[15%] sm:w-[25%] z-10 pointer-events-none"
           style={{ background: 'linear-gradient(to left, white 0%, white 50%, transparent 100%)' }}
         />
         
