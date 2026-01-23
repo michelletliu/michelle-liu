@@ -361,7 +361,7 @@ export default function SketchbookPage() {
   const currentEntry = entries[currentIndex];
   
   return (
-    <div className="min-h-screen bg-white flex flex-col max-sm:overflow-hidden max-sm:h-screen">
+    <div className="min-h-screen bg-white flex flex-col max-sm:overflow-hidden max-sm:h-screen max-sm:fixed max-sm:inset-0 max-sm:overscroll-none">
       {/* Logo - fixed position matching /polaroid */}
       <button
         onClick={() => navigate('/')}
