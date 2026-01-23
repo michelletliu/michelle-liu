@@ -361,7 +361,7 @@ export default function SketchbookPage() {
   const currentEntry = entries[currentIndex];
   
   return (
-    <div className="min-h-screen bg-white flex flex-col max-sm:overflow-hidden max-sm:h-screen max-sm:fixed max-sm:inset-0 max-sm:overscroll-none">
+    <div className="min-h-screen bg-white flex flex-col max-sm:overflow-hidden max-sm:h-screen max-sm:fixed max-sm:inset-0 max-sm:overscroll-none max-sm:touch-none">
       {/* Logo - fixed position matching /polaroid */}
       <button
         onClick={() => navigate('/')}
@@ -379,7 +379,7 @@ export default function SketchbookPage() {
       <InfoButton project={DEFAULT_SKETCHBOOK_PROJECT} />
       
       {/* Title and date */}
-      <div className="text-center px-6 pt-16 pb-12 max-sm:pt-32 max-sm:pb-24 [@media(min-height:800px)]:pt-32 [@media(min-height:800px)]:pb-24 overflow-hidden relative">
+      <div className="text-center px-6 pt-16 pb-12 max-sm:pt-24 max-sm:pb-8 [@media(min-height:800px)]:pt-32 [@media(min-height:800px)]:pb-24 overflow-hidden relative">
         {/* Location title - crossfades between entries */}
         <div className="relative h-6">
           {/* Previous location */}
@@ -435,21 +435,22 @@ export default function SketchbookPage() {
             </motion.p>
           )}
         </div>
+        {/* "More sketches coming soon!" on last sketch - positioned below date */}
+        <div className="h-6 mt-1">
+          {currentIndex === entries.length - 1 && entries.length > 0 && (
+            <motion.p 
+              className="text-gray-400 text-base pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              style={{ opacity: comingSoonOpacity }}
+            >
+              more sketches coming soon! :)
+            </motion.p>
+          )}
+        </div>
       </div>
-      
-      {/* "More sketches coming soon!" on last sketch - absolutely positioned to not affect layout */}
-      {currentIndex === entries.length - 1 && entries.length > 0 && (
-        <motion.p 
-          className="text-gray-400 text-base text-center absolute left-0 right-0 top-36 [@media(min-height:800px)]:top-56 pointer-events-none"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          style={{ opacity: comingSoonOpacity }}
-        >
-          more sketches coming soon! :)
-        </motion.p>
-      )}
       
       {/* Main carousel area - shows current, prev, and next images */}
       <div className="flex-1 flex flex-col items-center justify-center overflow-hidden relative">
