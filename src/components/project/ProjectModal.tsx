@@ -3003,7 +3003,7 @@ function ContentBlock({
         return (
           <div
             ref={tocRef}
-            className="content-stretch flex flex-col items-start gap-6 md:gap-12 px-6 md:px-8 xl:px-[175px] py-10 md:py-16 relative shrink-0 w-full"
+            className="content-stretch flex flex-col items-start gap-6 md:gap-12 px-8 md:px-[8%] xl:px-[175px] py-10 md:py-16 relative shrink-0 w-full"
             style={{ backgroundColor: tocBgColor }}
           >
             {/* Only render header wrapper if there's content */}

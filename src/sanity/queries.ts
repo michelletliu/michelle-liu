@@ -64,6 +64,17 @@ export const SKETCHBOOKS_QUERY = `
   }
 `;
 
+// Query for flatlay sketchbook entries - ordered by date ascending (earliest first)
+export const FLATLAY_SKETCHBOOKS_QUERY = `
+  *[_type == "flatlaySketchbook" && isPublished == true] | order(date asc) {
+    _id,
+    image,
+    date,
+    location,
+    note
+  }
+`;
+
 // Query for all murals
 export const MURALS_QUERY = `
   *[_type == "mural" && isPublished == true] | order(order asc) {

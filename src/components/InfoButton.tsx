@@ -200,7 +200,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
               </div>
 
               {/* Description */}
-              <div className="content-stretch -mt-1.5 flex gap-2 items-start relative w-full max-md:mt-0 -mt-1 mb-1">
+              <div className="content-stretch flex gap-2 items-start relative w-full mb-1">
                 <p className="font-['Figtree',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base">
                   {project.description}
                 </p>

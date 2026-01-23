@@ -12,6 +12,7 @@ import { AboutPage } from "./components/about";
 import { PolaroidPage } from "./components/polaroid";
 import { LibraryPage } from "./components/library";
 import { ScreentimePage } from "./components/screentime";
+import { SketchbookPage } from "./components/sketchbook";
 import { ScrollReveal } from "./components/ScrollReveal";
 import { TryItOutButton } from "./components/TryItOutButton";
 import { preloadLikelyPages } from "./sanity/preload";
@@ -293,7 +294,7 @@ const staticProjects: Project[] = [
     id: "sketchbook",
     title: "Digital Sketchbook",
     year: "2025",
-    description: "A digital home for sketches and visual journaling. Live app coming soon!",
+    description: "A digital home for sketches and visual journaling.",
     imageSrc: "https://image.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg/thumbnail.png",
     videoSrc: "https://stream.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg.m3u8",
     toolCategories: [
@@ -446,12 +447,12 @@ type ProjectCardProps = {
 
 // Memoize ProjectCard to prevent re-renders when parent state changes
 const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, featured = false }: ProjectCardProps) {
-  const hasTryItOut = project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime';
+  const hasTryItOut = project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime' || project.id === 'sketchbook';
   
-  // Handle click - navigate directly for polaroid/library, otherwise open modal
+  // Handle click - navigate directly for polaroid/library/sketchbook, otherwise open modal
   const handleClick = () => {
     if (hasTryItOut) {
-      window.location.href = project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : '/library';
+      window.location.href = project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library';
     } else {
       onProjectClick(project.id);
     }
@@ -482,7 +483,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                   <>
                     <span className="text-[#9ca3af] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
                     <a 
-                      href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : '/library'}
+                      href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
                       onClick={(e) => e.stopPropagation()}
                       className="text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
                     >
@@ -511,7 +512,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
               <>
                 <span className="text-[#9ca3af]"> • </span>
                 <a 
-                  href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : '/library'}
+                  href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
                   onClick={(e) => e.stopPropagation()}
                   className="text-blue-400 hover:text-blue-300"
                 >
@@ -549,7 +550,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
             <>
               <span className="text-[#9ca3af] md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
               <a 
-                href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : '/library'}
+                href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
                 onClick={(e) => e.stopPropagation()}
                 className="text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
               >
@@ -702,8 +703,8 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
             </div>
 
             {/* Try It Out button - desktop */}
-            {(project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime') && (
-              <TryItOutButton href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : '/library'} />
+            {(project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime' || project.id === 'sketchbook') && (
+              <TryItOutButton href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'} />
             )}
           </div>
 
@@ -735,8 +736,8 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
             </div>
 
             {/* Try It Out button - mobile */}
-            {(project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime') && (
-              <TryItOutButton href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : '/library'} />
+            {(project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime' || project.id === 'sketchbook') && (
+              <TryItOutButton href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'} />
             )}
           </div>
 
@@ -1137,6 +1138,9 @@ export default function App() {
 
       {/* Screentime Receipt page */}
       <Route path="/screentime" element={<ScreentimePage />} />
+
+      {/* Sketchbook page */}
+      <Route path="/sketchbook" element={<SketchbookPage />} />
 
       {/* Redirects */}
       <Route path="/home" element={<Navigate to="/" replace />} />

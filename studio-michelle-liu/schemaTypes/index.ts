@@ -4,6 +4,7 @@ import {experimentProject} from './experimentProject'
 import {artPiece} from './artPiece'
 import {sketchbook} from './sketchbook'
 import {mural} from './mural'
+import {flatlaySketchbook} from './flatlaySketchbook'
 
 // About page document types
 import {aboutPage} from './aboutPage'
@@ -45,6 +46,7 @@ export const schemaTypes = [
   artPiece,
   sketchbook,
   mural,
+  flatlaySketchbook,
   
   // About page
   aboutPage,

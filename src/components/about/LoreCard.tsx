@@ -33,23 +33,14 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
   const hasImage = !!data.imageSrc;
   const bgColor = data.imageBackground || "#e3dff4";
 
-  const handleClick = () => {
-    if (data.link) {
-      window.open(data.link, "_blank", "noopener,noreferrer");
-    } else if (onClick) {
-      onClick();
-    }
-  };
+  const sharedClassName = clsx(
+    "group flex w-full flex-col items-start text-left",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2",
+    className
+  );
 
-  return (
-    <button
-      onClick={handleClick}
-      className={clsx(
-        "group flex w-full flex-col items-start text-left",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2",
-        className
-      )}
-    >
+  const content = (
+    <>
       {/* Image */}
       <div className="relative h-[140px] md:h-[200px] w-full shrink-0 rounded-2xl sm:rounded-3xl">
         {hasImage ? (
@@ -90,8 +81,30 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
           <p className="whitespace-pre-wrap max-md:pt-1 font-normal text-sm sm:text-base tracking-[0.005em] leading-tight text-gray-400 md:opacity-0 md:translate-y-1 md:transition-all md:duration-300 md:ease-out md:group-hover:opacity-100 md:group-hover:translate-y-0">{data.description}</p>
         )}
       </div>
+    </>
+  );
+
+  // Use anchor tag for external links to avoid about:blank flash
+  if (data.link) {
+    return (
+      <a
+        href={data.link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={sharedClassName}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  // Fallback to button for onClick handlers
+  return (
+    <button
+      onClick={onClick}
+      className={sharedClassName}
+    >
+      {content}
     </button>
   );
 }
-
-

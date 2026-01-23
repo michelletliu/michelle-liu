@@ -83,6 +83,12 @@ export const structure = (S: StructureBuilder) =>
         .schemaType('mural')
         .child(S.documentTypeList('mural').title('Murals')),
 
+      // Flatlay Sketchbook
+      S.listItem()
+        .title('Flatlay Sketchbook')
+        .schemaType('flatlaySketchbook')
+        .child(S.documentTypeList('flatlaySketchbook').title('Flatlay Sketchbooks')),
+
       // About Page
       S.listItem()
         .title('About Page')
