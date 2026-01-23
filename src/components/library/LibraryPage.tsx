@@ -172,7 +172,7 @@ export default function LibraryPage() {
 
   const handleAddBook = async (title: string) => {
     try {
-      const { writeClient } = await import('@/sanity/client');
+      const { writeClient } = await import('../../sanity/client');
       await writeClient.create({
         _type: 'bookSuggestion',
         bookTitle: title.trim(),
