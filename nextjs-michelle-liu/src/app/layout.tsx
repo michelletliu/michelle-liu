@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: "%s | michelle liu",
   },
   description:
-    "Product designer crafting useful products that spark moments of delight & human connection. Previously at Apple, Roblox, and NASA.",
+    "Product designer crafting useful products to spark moments of delight & human connection. Previously at Apple, Roblox, and NASA.",
   keywords: [
     "Michelle Liu",
     "Product Designer",
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "michelle liu",
     description:
-      "Product designer crafting useful products that spark moments of delight & human connection. Previously at Apple, Roblox, and NASA.",
+      "Product designer crafting useful products to spark moments of delight & human connection. Previously at Apple, Roblox, and NASA.",
     images: ["/og-image.png"],
   },
   robots: {
