@@ -1510,7 +1510,7 @@ export default function ScreentimePage() {
       {/* Logo - fixed outside transitioning container, animates in smoothly */}
       <button
         onClick={handleBackToHome}
-        className={`fixed top-8 left-8 md:left-16 z-40 cursor-pointer transition-all duration-300 ease-out hover:opacity-80 ${
+        className={`fixed top-8 left-6 md:left-16 z-40 cursor-pointer transition-all duration-300 ease-out hover:opacity-80 ${
           isEntering ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
         }`}
         aria-label="Go back to home"
