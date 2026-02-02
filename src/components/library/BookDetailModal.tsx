@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import type { Book } from "./types";
 import { useScrollLock } from "../../utils/useScrollLock";
@@ -109,9 +109,32 @@ function formatReview(text: string): React.ReactNode[] {
 
 export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDetailModalProps) {
   const [isClosing, setIsClosing] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   // Lock body scroll when modal is open (flicker-free implementation)
   useScrollLock();
+
+  // Show scrollbar only when actively scrolling
+  useEffect(() => {
+    const modal = modalRef.current;
+    if (!modal) return;
+    
+    let scrollTimeout: ReturnType<typeof setTimeout>;
+    
+    const handleScroll = () => {
+      modal.classList.add('is-scrolling');
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        modal.classList.remove('is-scrolling');
+      }, 1000);
+    };
+    
+    modal.addEventListener('scroll', handleScroll);
+    return () => {
+      modal.removeEventListener('scroll', handleScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, []);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -131,7 +154,8 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
       
       {/* Modal */}
       <div 
-        className={`fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] flex flex-col rounded-2xl overflow-y-auto bg-white border border-[rgba(0,0,0,0.1)] shadow-[0px_4px_36px_0px_rgba(0,0,0,0.15)] ${
+        ref={modalRef}
+        className={`fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] flex flex-col rounded-2xl overflow-y-auto modal-scroll-container bg-white border border-[rgba(0,0,0,0.1)] shadow-[0px_4px_36px_0px_rgba(0,0,0,0.15)] ${
           isPopupMode 
             ? 'gap-4 sm:gap-5 p-12 sm:p-16 w-[min(700px,85vw)] max-h-[70vh]' 
             : 'gap-6 sm:gap-8 md:gap-10 px-12 py-12 sm:p-10 md:p-16 lg:p-20 w-[calc(100vw-32px)] sm:w-[calc(100vw-80px)] md:w-[min(1137px,90vw)] max-h-[80vh] sm:max-h-[90vh]'

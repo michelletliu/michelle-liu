@@ -742,13 +742,13 @@ export default function PolaroidPage() {
             <div 
               className={`absolute content-stretch flex items-center px-[6.5px] md:px-[8px] py-[3.25px] md:py-[4px] ${
                 isPopupMode 
-                  ? 'left-[7px] md:left-[9px] top-[182px] md:top-[224px]' 
-                  : 'left-[10px] md:left-[12.3px] top-[260.2px] md:top-[320.29px]'
+                  ? 'left-[7px] md:left-[9px] right-[7px] md:right-[9px] top-[182px] md:top-[224px]' 
+                  : 'left-[10px] md:left-[12.3px] right-[10px] md:right-[12.3px] top-[260.2px] md:top-[320.29px]'
               }`}
             >
-              <div className="content-stretch flex items-center relative shrink-0">
+              <div className="content-stretch flex items-center relative w-full overflow-hidden">
                 <div 
-                  className={`flex flex-col justify-center leading-[0] not-italic relative shrink-0 text-black text-center text-nowrap tracking-[0.15em] ${
+                  className={`flex flex-col justify-center leading-[0] not-italic relative text-black text-center text-nowrap tracking-[0.15em] overflow-hidden text-ellipsis ${
                     isPopupMode ? 'text-[10px] md:text-[12px]' : 'text-[14.6px] md:text-[18px]'
                   }`}
                   style={{ fontFamily: "'Courier New', monospace" }}
@@ -786,7 +786,7 @@ export default function PolaroidPage() {
                   placeholder=""
                   className="absolute inset-0 opacity-0 cursor-text"
                   style={{ width: '300px' }}
-                  maxLength={20}
+                  maxLength={isPopupMode ? 28 : 30}
                 />
               </div>
             </div>
