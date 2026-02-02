@@ -572,7 +572,7 @@ export default function SketchbookPage() {
       </div>
     <div 
       ref={pageContainerRef}
-      className={`sketchbook-page-container flex flex-col relative ${isFullscreen ? 'h-screen overflow-hidden pt-8 pb-8 justify-center max-[650px]:gap-8' : 'h-screen overflow-hidden pb-16 justify-center max-[650px]:gap-8'}`}
+      className={`sketchbook-page-container flex flex-col relative ${isFullscreen ? 'h-screen overflow-hidden pt-8 pb-8 justify-center max-[650px]:gap-12' : 'h-screen overflow-hidden pb-16 justify-center max-[650px]:gap-12'}`}
       style={{ backgroundColor: DEFAULT_SKETCHBOOK_PROJECT.backgroundColor || '#ffffff' }}
     >
       {/* Logo - fixed position matching /polaroid, animates in smoothly */}
