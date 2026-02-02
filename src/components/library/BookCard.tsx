@@ -9,10 +9,10 @@ export function BookCard({ book, onClick }: BookCardProps) {
   return (
     <button
       onClick={onClick}
-      className="relative flex flex-col items-center w-full md:w-[148px] lg:w-[160px] aspect-[1/2] md:h-[320px] lg:h-[350px] group overflow-visible cursor-pointer"
+      className="relative flex flex-col items-center w-[120px] sm:w-[136px] md:w-[148px] lg:w-[160px] h-[250px] sm:h-[280px] md:h-[320px] lg:h-[350px] group overflow-visible cursor-pointer"
     >
       {/* Book cover - default state */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-0 w-full md:w-[148px] lg:w-[160px] aspect-[2/3] md:h-[222px] lg:h-[246.753px] rounded-sm shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] transition-all duration-[400ms] ease-out md:group-hover:top-[-16px] lg:group-hover:top-[-18px] md:group-hover:h-[227px] lg:group-hover:h-[253px] md:group-hover:w-[152px] lg:group-hover:w-[164px] md:group-hover:shadow-none">
+      <div className="absolute left-1/2 -translate-x-1/2 top-0 h-[172px] sm:h-[197px] md:h-[222px] lg:h-[246.753px] w-[120px] sm:w-[136px] md:w-[148px] lg:w-[160px] rounded-sm shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] transition-all duration-[400ms] ease-out group-hover:top-[-12px] group-hover:sm:top-[-14px] group-hover:md:top-[-16px] group-hover:lg:top-[-18px] group-hover:h-[176px] group-hover:sm:h-[202px] group-hover:md:h-[227px] group-hover:lg:h-[253px] group-hover:w-[123px] group-hover:sm:w-[139px] group-hover:md:w-[152px] group-hover:lg:w-[164px] group-hover:shadow-none">
         <img
           alt={`${book.title} by ${book.author}`}
           className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-sm size-full"
@@ -20,10 +20,10 @@ export function BookCard({ book, onClick }: BookCardProps) {
         />
       </div>
 
-      {/* Text content - appears on hover, centered with cover (desktop only) */}
-      <div className="absolute top-[225px] lg:top-[250px] left-1/2 -translate-x-1/2 w-[150px] lg:w-[160px] hidden md:flex flex-col items-center text-center leading-[0] opacity-0 transition-opacity duration-[400ms] ease-out group-hover:opacity-100">
-        <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-medium justify-center relative shrink-0 text-base text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
-          <p className="leading-normal line-clamp-2">{book.title}</p>
+      {/* Text content - appears on hover, centered with cover */}
+      <div className="absolute top-[175px] sm:top-[200px] md:top-[225px] lg:top-[250px] left-1/2 -translate-x-1/2 w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex flex-col items-center text-center leading-[0] opacity-0 transition-opacity duration-[400ms] ease-out group-hover:opacity-100">
+        <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-base text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
+          <p className="leading-normal">{book.title}</p>
         </div>
         <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-base text-gray-500" style={{ fontVariationSettings: "'wdth' 100" }}>
           <p className="leading-normal">{book.author}</p>

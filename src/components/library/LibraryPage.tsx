@@ -3,33 +3,12 @@ import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { client, urlFor } from "../../sanity/client";
 import { SHELF_BOOKS_QUERY, BOOK_YEARS_QUERY } from "../../sanity/queries";
-import { getCachedData } from "../../sanity/preload";
 import { BookCard } from "./BookCard";
 import { BookDetailModal } from "./BookDetailModal";
 import { AddBookModal } from "./AddBookModal";
 import { ChevronDownIcon, PlusIcon } from "./icons";
 import type { Book, ShelfBookData } from "./types";
 import imgLogo from '../../assets/logo.png';
-import InfoButton from '../InfoButton';
-import { useExperimentProject } from '../../hooks/useExperimentProject';
-
-// Default project info (fallback if Sanity fetch fails)
-const DEFAULT_LIBRARY_PROJECT = {
-  id: 'library',
-  title: 'Personal Library',
-  year: '2025',
-  description: 'My dream digital bookshelf',
-  imageSrc: 'https://image.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo/thumbnail.png',
-  videoSrc: 'https://stream.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo.m3u8',
-  xLink: 'https://x.com/michelletliu/status/1981030966044061894',
-  tryItOutHref: '/library',
-  toolCategories: [
-    { label: 'Design', tools: ['Figma'] },
-    { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
-    { label: 'Styling', tools: ['Tailwind CSS'] },
-    { label: 'AI', tools: ['Figma Make', 'Cursor'] },
-  ],
-};
 
 // Transform shelfItem book data to component format
 function transformShelfBook(item: ShelfBookData): Book {
@@ -50,10 +29,6 @@ function transformShelfBook(item: ShelfBookData): Book {
     year: item.year,
     isFavorite: item.isLibraryFavorite || false,
     goodreadsUrl: item.goodreadsUrl,
-    review: item.review,
-    dateRead: item.dateRead,
-    dateStarted: item.dateStarted,
-    dateFinished: item.dateFinished,
   };
 }
 
@@ -67,10 +42,6 @@ type FilterOption = {
 
 export default function LibraryPage() {
   const navigate = useNavigate();
-  
-  // Fetch project info from Sanity (with fallback to defaults)
-  const projectInfo = useExperimentProject('library', DEFAULT_LIBRARY_PROJECT);
-  
   const [books, setBooks] = useState<Book[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>([{ value: 'favorites', label: 'favorites', isFavorites: true }]);
   const [activeFilter, setActiveFilter] = useState<string>("favorites");
@@ -111,18 +82,14 @@ export default function LibraryPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showFilterDropdown]);
 
-  // Fetch books from Sanity (using shelfItem schema) - uses preloaded cache if available
+  // Fetch books from Sanity (using shelfItem schema)
   useEffect(() => {
     async function fetchBooks() {
       try {
-        // Check for preloaded/cached data first
-        const cachedBooks = getCachedData<ShelfBookData[]>("library:books");
-        const cachedYears = getCachedData<string[]>("library:years");
-        
-        // Use cached data if available, otherwise fetch
+        // Fetch books and years in parallel
         const [booksData, yearsData] = await Promise.all([
-          cachedBooks ? Promise.resolve(cachedBooks) : client.fetch<ShelfBookData[]>(SHELF_BOOKS_QUERY),
-          cachedYears ? Promise.resolve(cachedYears) : client.fetch<string[]>(BOOK_YEARS_QUERY),
+          client.fetch<ShelfBookData[]>(SHELF_BOOKS_QUERY),
+          client.fetch<string[]>(BOOK_YEARS_QUERY),
         ]);
         
         const transformedBooks = booksData.map(transformShelfBook);
@@ -170,41 +137,14 @@ export default function LibraryPage() {
     }, 280);
   };
 
-  const handleAddBook = async (title: string) => {
-    try {
-      const { writeClient } = await import('../../sanity/client');
-      await writeClient.create({
-        _type: 'bookSuggestion',
-        bookTitle: title.trim(),
-        submittedAt: new Date().toISOString(),
-        status: 'new',
-      });
-    } catch (error) {
-      console.error('Error submitting book suggestion:', error);
-    }
+  const handleAddBook = (title: string) => {
+    // Handle book suggestion submission
+    console.log("Book suggestion:", title);
+    // You could add this to a database or state here
   };
 
   return (
     <>
-      {/* Info Button - fixed top right */}
-      <InfoButton project={projectInfo} />
-
-      {/* Logo - outside animated container so it stays in place during transitions */}
-      <div className="absolute top-0 left-0 pt-8 px-8 md:px-16 z-10">
-        <button
-          ref={logoRef}
-          onClick={handleBackToHome}
-          className="cursor-pointer transition-opacity duration-200 hover:opacity-80"
-          aria-label="Go back to home"
-        >
-          <img
-            src={imgLogo}
-            alt="Michelle Liu Logo"
-            className="size-[44px] object-contain"
-          />
-        </button>
-      </div>
-
       <div 
         className={`relative min-h-screen w-full bg-white transition-all ${
           isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
@@ -217,10 +157,20 @@ export default function LibraryPage() {
       >
         {/* Header */}
         <div className="pt-8 px-8 md:px-16">
-          {/* Spacer for logo height */}
           <div className="flex flex-col gap-10 md:gap-12 items-start pb-5 md:pb-6">
-            {/* Logo spacer - matches the logo size */}
-            <div className="size-[44px] shrink-0" />
+            {/* Logo */}
+            <button
+              ref={logoRef}
+              onClick={handleBackToHome}
+              className="cursor-pointer transition-opacity duration-200 hover:opacity-80"
+              aria-label="Go back to home"
+            >
+              <img
+                src={imgLogo}
+                alt="Michelle Liu Logo"
+                className="size-[44px] object-cover"
+              />
+            </button>
           
           <div className="flex items-start justify-between w-full">
           {/* Title and Filter */}
@@ -233,7 +183,7 @@ export default function LibraryPage() {
                   onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                   className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors cursor-pointer bg-gray-500/10"
                 >
-                  <span className="font-['Figtree',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap text-gray-500">
+                  <span className="font-['Figtree',sans-serif] font-semibold text-base tracking-[0.01em] whitespace-nowrap text-gray-500">
                     {activeFilter}
                     <span className="text-gray-400"> ({filteredBooks.length})</span>
                   </span>
@@ -245,7 +195,7 @@ export default function LibraryPage() {
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    strokeWidth={3}
+                    strokeWidth={2}
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
@@ -281,7 +231,7 @@ export default function LibraryPage() {
                             )}
                           >
                             <span className={clsx(
-                              "font-['Figtree',sans-serif] font-medium text-base tracking-[0.01em]",
+                              "font-['Figtree',sans-serif] font-semibold text-base tracking-[0.01em]",
                               isActive ? "text-gray-600" : "text-gray-400"
                             )}>
                               {option.label}
@@ -335,7 +285,7 @@ export default function LibraryPage() {
             </div>
           ) : (
             <div 
-              className="grid grid-cols-4 md:grid-cols-[repeat(6,auto)] gap-x-8 gap-y-2 md:gap-x-0 md:gap-y-8 md:justify-between"
+              className="grid grid-cols-[repeat(3,auto)] md:grid-cols-[repeat(6,auto)] gap-y-[60px] sm:gap-y-[80px] md:gap-y-[100px] justify-between"
             >
               {filteredBooks.map((book) => (
                 <BookCard key={book.id} book={book} onClick={() => setSelectedBook(book)} />
