@@ -212,8 +212,12 @@ export default function VideoPlayer({
       autoPlay={autoPlay}
       muted={muted}
       loop={loop}
-      controls={controls}
+      controls={false}
       playsInline
+      webkit-playsinline="true"
+      x-webkit-airplay="deny"
+      disablePictureInPicture
+      disableRemotePlayback
     />
   );
 }

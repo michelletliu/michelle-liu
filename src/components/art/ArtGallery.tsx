@@ -8,6 +8,8 @@ type ArtGalleryProps = {
   items: ArtCardData[];
   /** Callback when an art card is clicked */
   onItemClick?: (item: ArtCardData) => void;
+  /** Reverse column fill so first column is longer (mobile only) */
+  reverseColumnsMobile?: boolean;
 };
 
 /**
@@ -18,19 +20,22 @@ type ArtGalleryProps = {
 export default function ArtGallery({ 
   className, 
   items,
-  onItemClick 
+  onItemClick,
+  reverseColumnsMobile = false
 }: ArtGalleryProps) {
   return (
     <div 
       className={clsx(
         "w-full max-w-full",
-        // Use grid for mobile (2 columns) to align tops, columns for desktop masonry (3 columns)
-        "grid grid-cols-2 gap-4 lg:block lg:columns-3",
+        // Use CSS columns for masonry effect on all screen sizes
+        "columns-2 gap-4 lg:columns-3",
+        // Reverse column fill on mobile so first column is longer
+        reverseColumnsMobile && "max-lg:direction-rtl",
         className
       )}
     >
       {items.map((item) => (
-        <ScrollReveal key={item.id} className="lg:break-inside-avoid lg:mb-4">
+        <ScrollReveal key={item.id} className={clsx("break-inside-avoid mb-4", reverseColumnsMobile && "max-lg:direction-ltr")}>
           <ArtCard
             data={item}
             onClick={() => onItemClick?.(item)}
