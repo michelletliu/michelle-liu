@@ -644,7 +644,7 @@ export default function AboutPage() {
                 <span className="text-gray-400 text-sm">Loading...</span>
               </div>
             ) : experiences.length > 0 ? (
-              <div className="flex flex-col gap-8 md:gap-8 w-full md:w-[560px]">
+              <div className="flex flex-col gap-8 md:gap-8">
                 {experiences.map((exp, index) => (
                   <ScrollReveal key={exp.id} delay={index * 80}>
                     <ExperienceCard data={exp} />
