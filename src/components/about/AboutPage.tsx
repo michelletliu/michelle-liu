@@ -661,7 +661,7 @@ export default function AboutPage() {
     Freelance Practice
   </p>
                         <p className="text-base text-gray-500 tracking-[0.005em]">
-                          Early & growth-stage startups<span className="text-gray-400 font-normal">, 2023 - Present</span>
+                          Design Contracts<span className="text-gray-400 font-normal">, 2023 - Present</span>
                         </p>
                       </div>
                       {/* Startup logos row */}
