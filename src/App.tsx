@@ -1056,7 +1056,7 @@ function HomePage() {
       <NavigationTabs activeTab="work" heroAnimationPlayed={heroAnimationPlayed} />
 
       {/* Projects Grid - Desktop (2 columns) */}
-      <div className="hidden md:grid gap-6 grid-cols-2 px-16 pt-2.5 pb-2 relative shrink-0 w-full">
+      <div className="hidden md:grid gap-6 grid-cols-2 px-16 max-md:px-8 pt-2.5 pb-2 relative shrink-0 w-full">
           {projects.map((project, index) => (
             <ScrollReveal 
               key={project.id} 
@@ -1074,7 +1074,7 @@ function HomePage() {
         </div>
 
         {/* Projects Grid - Mobile (1 column) */}
-        <div className="md:hidden flex flex-col gap-8 px-8 py-4 relative shrink-0 w-full">
+        <div className="md:hidden flex flex-col gap-8 px-6 py-4 relative shrink-0 w-full">
           {projects.map((project, index) => (
             <ScrollReveal 
               key={project.id} 

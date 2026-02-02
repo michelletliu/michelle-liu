@@ -376,7 +376,7 @@ export default function ArtPage() {
       <NavigationTabs activeTab="art" heroAnimationPlayed={heroAnimationPlayed} />
 
       {/* Main Content Area */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start px-16 max-md:px-8 pt-2 relative shrink-0 w-full">
+      <div className="flex flex-col lg:flex-row gap-4 items-start px-16 max-md:px-6 pt-2 relative shrink-0 w-full">
         {/* Sidebar - hidden on mobile, visible on desktop */}
         <div className="hidden lg:block lg:sticky lg:top-8 pb-8 w-[202px] shrink-0">
           <ArtSidebar
@@ -438,6 +438,7 @@ export default function ArtPage() {
                     <ArtGallery 
                       items={artPiecesByType.painting} 
                       onItemClick={handleArtItemClick}
+                      reverseColumnsMobile
                     />
                   </ScrollReveal>
                 ) : (

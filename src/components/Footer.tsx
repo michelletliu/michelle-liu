@@ -197,7 +197,7 @@ export default function Footer() {
   return (
     <div className="relative shrink-0 w-full">
       <div className="flex flex-col items-center size-full">
-        <div className="content-stretch flex flex-col gap-16 items-center px-16 max-md:px-8 pt-8 pb-8 max-md:pb-16 max-md:pt-4 relative w-full">
+        <div className="content-stretch flex flex-col gap-16 items-center px-16 max-md:px-6 pt-8 pb-8 max-md:pb-16 max-md:pt-4 relative w-full">
           <ScrollReveal className="content-stretch flex flex-col gap-5 items-start relative shrink-0 w-full">
             <div className="bg-gray-200 h-px shrink-0 w-full" />
             
@@ -231,9 +231,9 @@ export default function Footer() {
                 <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start relative shrink-0 text-gray-400 w-full">
                   <p className="leading-6 min-w-full relative shrink-0 text-base w-[min-content]">Let's work together!</p>
                   <p className="leading-6 relative shrink-0 text-base break-all">
-                    <a href="mailto:studio@liumichelle.com" className="group/email hover:text-blue-500 text-gray-500 transition-colors duration-200">
+                    <a href="mailto:studio@liumichelle.com" className="group/email hover:text-blue-500 text-gray-600 font-medium transition-colors duration-200">
                       <span>{`studio@liumichelle.com`}</span>
-                      <span className="font-['Figtree',sans-serif] font-bold inline-block ml-1 opacity-0 -translate-x-2 group-hover/email:opacity-100 group-hover/email:translate-x-0 transition-all duration-200"><ArrowUpRight /></span>
+                      <span className="font-['Figtree',sans-serif] font-bold ml-1 opacity-0 group-hover/email:opacity-100 transition-opacity duration-150 ease-out"><ArrowUpRight /></span>
                     </a>
                   </p>
                 </div>
@@ -298,7 +298,7 @@ export default function Footer() {
                     <p className="leading-6 relative shrink-0 text-base w-full break-all">
                       <a href="mailto:studio@liumichelle.com" className="group/email hover:text-blue-500 text-gray-500 transition-colors duration-200">
                         <span>{`studio@liumichelle.com`}</span>
-                        <span className="font-['Figtree',sans-serif] font-bold inline-block opacity-0 -translate-x-2 group-hover/email:opacity-100 group-hover/email:translate-x-0 transition-all duration-200"><ArrowUpRight /></span>
+                        <span className="font-['Figtree',sans-serif] font-bold opacity-0 group-hover/email:opacity-100 transition-opacity duration-150 ease-out"><ArrowUpRight /></span>
                       </a>
                     </p>
                   </div>
@@ -348,7 +348,7 @@ export default function Footer() {
               <span>{`Built with Next.js & `}</span>
               <span className="group">
                 <a
-                  className="[text-underline-position:from-font] cursor-pointer decoration-solid underline group-hover:!text-emerald-600 transition-colors"
+                  className="[text-underline-position:from-font] cursor-pointer font-medium text-gray-600 group-hover:!text-emerald-600 transition-colors"
                   href="https://www.rockysmatcha.com/blogs/matcha-guide/how-to-make-matcha-guide"
                   target="_blank"
                   rel="noopener noreferrer"

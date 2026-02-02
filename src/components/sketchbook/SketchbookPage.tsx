@@ -282,41 +282,98 @@ export default function SketchbookPage() {
   // Spacing between images - smaller in fullscreen to keep adjacent visible, larger in popup
   const slideDistance = pageWidth < 640 ? cardWidth * 1.7 : (isFullscreen ? cardWidth * 2.1 : cardWidth * 1.7);
   
+  // Use a ref so transform closures always get the latest slideDistance
+  const slideDistanceRef = useRef(slideDistance);
+  slideDistanceRef.current = slideDistance;
+  
   // Current image: starts at center (0), moves with drag
-  // When x = -slideDistance, current should be at -slideDistance (off left)
-  // When x = slideDistance, current should be at slideDistance (off right)
   const currentImageX = useTransform(x, (value) => value);
   
   // Next image (right): starts at slideDistance, ends at 0 when x = -slideDistance
-  const nextImageX = useTransform(x, (value) => slideDistance + value);
+  const nextImageX = useTransform(x, (value) => slideDistanceRef.current + value);
   
   // Previous image (left): starts at -slideDistance, ends at 0 when x = slideDistance
-  const prevImageX = useTransform(x, (value) => -slideDistance + value);
+  const prevImageX = useTransform(x, (value) => -slideDistanceRef.current + value);
   
   // Far next image (2 positions right): starts at 2*slideDistance
-  const farNextImageX = useTransform(x, (value) => slideDistance * 2 + value);
+  const farNextImageX = useTransform(x, (value) => slideDistanceRef.current * 2 + value);
   
   // Far previous image (2 positions left): starts at -2*slideDistance
-  const farPrevImageX = useTransform(x, (value) => -slideDistance * 2 + value);
+  const farPrevImageX = useTransform(x, (value) => -slideDistanceRef.current * 2 + value);
   
   // Date opacities - crossfade between current, next, and previous dates
-  const currentDateOpacity = useTransform(x, [-slideDistance/2, 0, slideDistance/2], [0, 1, 0]);
-  const nextDateOpacity = useTransform(x, [-slideDistance/2, 0], [1, 0]);
-  const prevDateOpacity = useTransform(x, [0, slideDistance/2], [0, 1]);
+  const currentDateOpacity = useTransform(x, (xVal) => {
+    const sd = slideDistanceRef.current;
+    const half = sd / 2;
+    if (xVal <= -half) return 0;
+    if (xVal >= half) return 0;
+    if (xVal < 0) return 1 + xVal / half;
+    return 1 - xVal / half;
+  });
+  const nextDateOpacity = useTransform(x, (xVal) => {
+    const half = slideDistanceRef.current / 2;
+    if (xVal >= 0) return 0;
+    return Math.min(1, -xVal / half);
+  });
+  const prevDateOpacity = useTransform(x, (xVal) => {
+    const half = slideDistanceRef.current / 2;
+    if (xVal <= 0) return 0;
+    return Math.min(1, xVal / half);
+  });
   
   // Image opacities - smooth transition between current and adjacent images
   // Side images always visible at 0.5 opacity, fade to 1 when becoming center
-  const currentImageOpacity = useTransform(x, [-slideDistance, 0, slideDistance], [0.5, 1, 0.5]);
-  const nextImageOpacity = useTransform(x, [-slideDistance, 0, slideDistance], [1, 0.5, 0.5]);
-  const prevImageOpacity = useTransform(x, [-slideDistance, 0, slideDistance], [0.5, 0.5, 1]);
+  const currentImageOpacity = useTransform(x, (xVal) => {
+    const sd = slideDistanceRef.current;
+    const progress = Math.min(1, Math.abs(xVal) / sd);
+    return 1 - progress * 0.5;
+  });
+  const nextImageOpacity = useTransform(x, (xVal) => {
+    const sd = slideDistanceRef.current;
+    if (xVal >= 0) return 0.5;
+    const progress = Math.min(1, -xVal / sd);
+    return 0.5 + progress * 0.5;
+  });
+  const prevImageOpacity = useTransform(x, (xVal) => {
+    const sd = slideDistanceRef.current;
+    if (xVal <= 0) return 0.5;
+    const progress = Math.min(1, xVal / sd);
+    return 0.5 + progress * 0.5;
+  });
   
   // Image scales - smooth size transition (0.85 for side images, 1 for center)
-  const currentImageScale = useTransform(x, [-slideDistance, 0, slideDistance], [0.85, 1, 0.85]);
-  const nextImageScale = useTransform(x, [-slideDistance, 0, slideDistance], [1, 0.85, 0.85]);
-  const prevImageScale = useTransform(x, [-slideDistance, 0, slideDistance], [0.85, 0.85, 1]);
+  const currentImageScale = useTransform(x, (xVal) => {
+    const sd = slideDistanceRef.current;
+    const progress = Math.min(1, Math.abs(xVal) / sd);
+    return 1 - progress * 0.15;
+  });
+  const nextImageScale = useTransform(x, (xVal) => {
+    const sd = slideDistanceRef.current;
+    if (xVal >= 0) return 0.85;
+    const progress = Math.min(1, -xVal / sd);
+    return 0.85 + progress * 0.15;
+  });
+  const prevImageScale = useTransform(x, (xVal) => {
+    const sd = slideDistanceRef.current;
+    if (xVal <= 0) return 0.85;
+    const progress = Math.min(1, xVal / sd);
+    return 0.85 + progress * 0.15;
+  });
   
   // "More sketches coming soon!" opacity - fades out when swiping in either direction
-  const comingSoonOpacity = useTransform(x, [-slideDistance/3, 0, slideDistance/3], [0, 1, 0]);
+  const comingSoonOpacity = useTransform(x, (xVal) => {
+    const third = slideDistanceRef.current / 3;
+    if (Math.abs(xVal) >= third) return 0;
+    return 1 - Math.abs(xVal) / third;
+  });
+  
+  // Force transforms to re-evaluate when slideDistance changes
+  useEffect(() => {
+    // Trigger a tiny x change to force transforms to re-evaluate with new slideDistance
+    const currentX = x.get();
+    x.set(currentX + 0.001);
+    requestAnimationFrame(() => x.set(currentX));
+  }, [slideDistance, x]);
   
   // Detect fullscreen mode
   useEffect(() => {
@@ -550,7 +607,7 @@ export default function SketchbookPage() {
         {/* Current entry text */}
         <motion.div style={{ opacity: currentDateOpacity }}>
           <h1 className="text-lg font-medium text-gray-900 h-7">
-            {currentEntry?.location || 'sketchbook'}
+            {currentEntry?.location || ''}
           </h1>
           <p className="text-gray-400 text-lg h-6">
             {currentEntry && formatDate(currentEntry.date)}
@@ -562,7 +619,7 @@ export default function SketchbookPage() {
           style={{ opacity: nextDateOpacity }}
         >
           <h1 className="text-lg font-medium text-gray-900 h-7">
-            {entries[currentIndex + 1]?.location || 'sketchbook'}
+            {entries[currentIndex + 1]?.location || ''}
           </h1>
           <p className="text-gray-400 text-lg h-6">
             {entries[currentIndex + 1] && formatDate(entries[currentIndex + 1].date)}
@@ -574,7 +631,7 @@ export default function SketchbookPage() {
           style={{ opacity: prevDateOpacity }}
         >
           <h1 className="text-lg font-medium text-gray-900 h-7">
-            {entries[currentIndex - 1]?.location || 'sketchbook'}
+            {entries[currentIndex - 1]?.location || ''}
           </h1>
           <p className="text-gray-400 text-lg h-6">
             {entries[currentIndex - 1] && formatDate(entries[currentIndex - 1].date)}

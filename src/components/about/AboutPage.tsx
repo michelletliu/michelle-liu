@@ -522,7 +522,7 @@ export default function AboutPage() {
       <NavigationTabs activeTab="about" heroAnimationPlayed={heroAnimationPlayed} />
 
       {/* Main Content Area */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start px-16 max-md:px-8 pt-2 relative shrink-0 w-full">
+      <div className="flex flex-col lg:flex-row gap-4 items-start px-16 max-md:px-6 pt-2 relative shrink-0 w-full">
         {/* Sidebar - hidden on mobile */}
         <div className="hidden lg:block lg:sticky lg:top-8 pb-4 lg:pb-8 w-[202px] shrink-0">
           <AboutSidebar
@@ -654,18 +654,18 @@ export default function AboutPage() {
                 {/* Startups Section */}
                 {startups.length > 0 && (
                   <ScrollReveal delay={experiences.length * 80}>
-                    <div className="flex flex-col gap-6 pt-4">
+                    <div className="flex flex-col gap-8 pt-4">
                       {/* Header */}
                       <div className="flex flex-col">
-                        <p className="text-base md:text-lg font-medium text-gray-700 tracking-[0.005em]">
-                          Startup Contracts
-                        </p>
-                        <p className="text-base text-gray-400 tracking-[0.005em]">
-                          2023-Present
+                      <p className="text-base md:text-lg font-medium text-gray-700 tracking-[0.005em]">
+    Freelance Practice
+  </p>
+                        <p className="text-base text-gray-500 tracking-[0.005em]">
+                          Early & growth-stage startups<span className="text-gray-400 font-normal">, 2023 - Present</span>
                         </p>
                       </div>
                       {/* Startup logos row */}
-                      <div className="flex flex-wrap justify-between gap-y-6 pr-4">
+                      <div className="flex flex-wrap justify-between gap-y-4 max-md:pr-2 md:justify-start md:gap-x-10">
                         {startups.map((startup) => (
                           <StartupCard key={startup.id} data={startup} />
                         ))}

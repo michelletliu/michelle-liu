@@ -54,7 +54,7 @@ export default function PageHeader({
       {/* Logo */}
       <div className="relative shrink-0 w-full" style={{ zIndex: 2 }}>
         <div className="size-full">
-          <div className="content-stretch flex flex-col items-start px-16 pt-8 pb-8 max-md:px-8 max-md:pt-8 max-md:pb-4 relative w-full">
+          <div className="content-stretch flex flex-col items-start px-16 pt-8 pb-8 max-md:px-6 max-md:pt-8 max-md:pb-4 relative w-full">
             <div className="content-stretch flex items-start justify-between relative shrink-0 w-full">
               {isHomePage ? (
                 <motion.div 
@@ -86,7 +86,7 @@ export default function PageHeader({
       {/* Hero Text */}
       <div className="relative shrink-0 w-full" style={{ zIndex: 2 }}>
         <div className="size-full">
-          <div className="content-stretch flex flex-col gap-4 items-start pb-6 pt-14 px-16 max-md:px-8 max-md:pt-20 max-md:pb-2 relative w-full max-md:h-[210px] md:h-[176px]">
+          <div className="content-stretch flex flex-col gap-4 items-start pb-6 pt-14 px-16 max-md:px-6 max-md:pt-20 max-md:pb-2 relative w-full max-md:h-[210px] md:h-[176px]">
             <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
               <ScrollReveal variant="fade" rootMargin="0px" disabled={heroAnimationPlayed}>
                 {nameAddon ? (

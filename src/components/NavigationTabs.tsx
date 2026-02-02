@@ -45,10 +45,10 @@ export default function NavigationTabs({ activeTab, heroAnimationPlayed = false 
   const navigate = useNavigate();
 
   return (
-    <div className="content-stretch flex flex-col items-center pb-4 pt-0 px-0 relative shrink-0 w-full">
+    <div className="content-stretch flex flex-col items-center pb-4 max-md:pb-1.75 pt-0 px-0 relative shrink-0 w-full">
       <ScrollReveal variant="fade" delay={280} rootMargin="0px" className="relative shrink-0 w-full" disabled={heroAnimationPlayed}>
         <div className="size-full">
-          <div className="content-stretch flex flex-col gap-3 items-start pb-0 pt-4 px-16 max-md:px-8 relative w-full">
+          <div className="content-stretch flex flex-col gap-3 items-start pb-0 pt-4 px-16 max-md:px-6 relative w-full">
             <div className="content-stretch flex gap-1 items-start relative shrink-0">
               <TagBackgroundImageAndText 
                 text="Work" 
@@ -71,7 +71,7 @@ export default function NavigationTabs({ activeTab, heroAnimationPlayed = false 
       </ScrollReveal>
 
       {/* Divider line */}
-      <div className="px-16 max-md:px-8 w-full pt-3">
+      <div className="px-16 max-md:px-6 w-full pt-3">
         <div className="bg-zinc-100 h-px shrink-0 w-full" />
       </div>
     </div>
