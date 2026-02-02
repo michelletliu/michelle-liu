@@ -211,16 +211,23 @@ export default function LibraryPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle navigation back to home (or to popup mode if in fullscreen)
+  // Handle navigation back to home
   const handleBackToHome = () => {
-    // If we're in fullscreen mode (/project/library/full), go to popup mode immediately (no exit animation)
     const isFullscreen = window.location.pathname.includes('/full');
+    const isMobile = window.innerWidth < 768;
+    
     if (isFullscreen) {
-      navigate('/project/library');
+      if (isMobile) {
+        // Mobile fullscreen: go directly to homepage
+        navigate('/');
+      } else {
+        // Desktop fullscreen: go to popup mode
+        navigate('/project/library');
+      }
       return;
     }
     
-    // Otherwise animate exit then go to home
+    // Popup mode: animate exit then go to home
     setIsExiting(true);
     setTimeout(() => {
       navigate('/');
@@ -261,7 +268,7 @@ export default function LibraryPage() {
         <InfoButton project={projectInfo} />
 
         {/* Logo - scrolls with content */}
-        <div className="absolute top-0 left-0 pt-8 px-8 md:px-16 z-10">
+        <div className="absolute top-0 left-0 pt-8 px-6 md:px-16 z-10">
           <button
             ref={logoRef}
             onClick={handleBackToHome}
@@ -395,7 +402,7 @@ export default function LibraryPage() {
             </div>
           ) : (
             <div 
-              className="library-book-grid grid grid-cols-4 md:grid-cols-[repeat(6,auto)] gap-x-8 gap-y-2 md:gap-x-0 md:gap-y-8 md:justify-between w-full"
+              className="library-book-grid grid grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-8 gap-y-2 md:gap-x-8 md:gap-y-8 w-full"
             >
               {filteredBooks.map((book) => (
                 <BookCard key={book.id} book={book} onClick={() => {

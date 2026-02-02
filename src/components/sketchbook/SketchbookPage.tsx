@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { useNavigate } from 'react-router-dom';
 import InfoButton from '../InfoButton';
 import imgLogo from '../../assets/logo.png';
+import { useExperimentProject } from '../../hooks/useExperimentProject';
 import { client, urlFor } from '../../sanity/client';
 import { FLATLAY_SKETCHBOOKS_QUERY } from '../../sanity/queries';
 
@@ -19,10 +20,10 @@ const DEFAULT_SKETCHBOOK_PROJECT = {
   tryItOutHref: '/sketchbook',
   backgroundColor: '#ffffff',
   toolCategories: [
-    { label: 'Design', tools: ['Figma', 'Origami Studio'] },
+    { label: 'Design', tools: ['Figma'] },
     { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
-    { label: 'AI', tools: ['Windsurf','Claude Opus 4.5'] },
-    { label: 'Animation', tools: ['Framer Motion'] },
+    { label: 'Styling', tools: ['Tailwind CSS'] },
+    { label: 'AI', tools: ['Figma Make', 'Cursor'] },
   ],
 };
 
@@ -260,6 +261,9 @@ function PageIndicatorBar({
 // Main page component
 export default function SketchbookPage() {
   const navigate = useNavigate();
+  
+  // Fetch project info from Sanity (with fallback to defaults)
+  const projectInfo = useExperimentProject('sketchbook', DEFAULT_SKETCHBOOK_PROJECT);
   const [entries, setEntries] = useState<FlatlaySketchbook[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -573,7 +577,7 @@ export default function SketchbookPage() {
     <div 
       ref={pageContainerRef}
       className={`sketchbook-page-container flex flex-col relative ${isFullscreen ? 'h-screen overflow-hidden pt-8 pb-8 justify-center max-[650px]:gap-12' : 'h-screen overflow-hidden pb-16 justify-center max-[650px]:gap-12'}`}
-      style={{ backgroundColor: DEFAULT_SKETCHBOOK_PROJECT.backgroundColor || '#ffffff' }}
+      style={{ backgroundColor: projectInfo.backgroundColor || '#ffffff' }}
     >
       {/* Logo - fixed position matching /polaroid, animates in smoothly */}
       <motion.button
@@ -585,7 +589,7 @@ export default function SketchbookPage() {
             navigate('/');
           }
         }}
-        className="fixed top-8 left-8 md:left-16 z-40 cursor-pointer hover:opacity-80"
+        className="fixed top-8 left-6 md:left-16 z-40 cursor-pointer hover:opacity-80"
         aria-label="Go back to home"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -599,7 +603,7 @@ export default function SketchbookPage() {
       </motion.button>
 
       {/* Info Button - fixed top right */}
-      <InfoButton project={DEFAULT_SKETCHBOOK_PROJECT} />
+      <InfoButton project={projectInfo} />
       
       {/* Title and date - opacity responds to drag position */}
       <div className={`text-center px-6 shrink-0 relative ${isFullscreen ? 'pb-16' : 'pb-8 max-[650px]:pb-16'}`}>
@@ -641,12 +645,12 @@ export default function SketchbookPage() {
       {/* Left gradient overlay - fixed to viewport edge */}
       <div 
         className="fixed left-0 top-0 bottom-0 w-[15vw] z-10 pointer-events-none"
-        style={{ background: `linear-gradient(to right, ${DEFAULT_SKETCHBOOK_PROJECT.backgroundColor || '#ffffff'} 0%, ${DEFAULT_SKETCHBOOK_PROJECT.backgroundColor || '#ffffff'} 10%, transparent 100%)` }}
+        style={{ background: `linear-gradient(to right, ${projectInfo.backgroundColor || '#ffffff'} 0%, ${projectInfo.backgroundColor || '#ffffff'} 10%, transparent 100%)` }}
       />
       {/* Right gradient overlay - fixed to viewport edge */}
       <div 
         className="fixed right-0 top-0 bottom-0 w-[15vw] z-10 pointer-events-none"
-        style={{ background: `linear-gradient(to left, ${DEFAULT_SKETCHBOOK_PROJECT.backgroundColor || '#ffffff'} 0%, ${DEFAULT_SKETCHBOOK_PROJECT.backgroundColor || '#ffffff'} 10%, transparent 100%)` }}
+        style={{ background: `linear-gradient(to left, ${projectInfo.backgroundColor || '#ffffff'} 0%, ${projectInfo.backgroundColor || '#ffffff'} 10%, transparent 100%)` }}
       />
       
       {/* Main carousel area - shows current, prev, and next images */}

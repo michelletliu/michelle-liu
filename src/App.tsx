@@ -1073,9 +1073,17 @@ function HomePage() {
           ))}
         </div>
 
-        {/* Projects Grid - Mobile (1 column) */}
+        {/* Projects Grid - Mobile (1 column) - reorder library before sketchbook */}
         <div className="md:hidden flex flex-col gap-8 px-6 py-4 relative shrink-0 w-full">
-          {projects.map((project, index) => (
+          {projects
+            .map((p, i) => ({ project: p, originalIndex: i }))
+            .sort((a, b) => {
+              // Swap sketchbook and library positions on mobile
+              if (a.project.id === 'sketchbook' && b.project.id === 'library') return 1;
+              if (a.project.id === 'library' && b.project.id === 'sketchbook') return -1;
+              return a.originalIndex - b.originalIndex;
+            })
+            .map(({ project }, index) => (
             <ScrollReveal 
               key={project.id} 
               delay={Math.min(index * 60, 300)}
