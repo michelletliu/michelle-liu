@@ -296,7 +296,7 @@ export default function Footer() {
                   <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start relative shrink-0 text-gray-400 w-[326px]">
                     <p className="leading-6 relative shrink-0 text-base w-full">Let's work together!</p>
                     <p className="leading-6 relative shrink-0 text-base w-full break-all">
-                      <a href="mailto:studio@liumichelle.com" className="group/email hover:text-blue-500 text-gray-500 transition-colors duration-200">
+                      <a href="mailto:studio@liumichelle.com" className="group/email hover:text-blue-500 text-gray-600 font-medium transition-colors duration-200">
                         <span>{`studio@liumichelle.com`}</span>
                         <span className="font-['Figtree',sans-serif] font-bold opacity-0 group-hover/email:opacity-100 transition-opacity duration-150 ease-out"><ArrowUpRight /></span>
                       </a>
