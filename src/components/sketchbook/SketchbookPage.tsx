@@ -434,9 +434,9 @@ export default function SketchbookPage() {
       const isInModal = !!container;
       
       if (vw < 640) {
-        setCardWidth(vw * 0.4); // Mobile - smaller
+        setCardWidth(vw * 0.8); // Mobile - 2x larger (was 0.4)
       } else if (isInModal) {
-        setCardWidth(Math.min(320, vw * 0.25)); // Popup mode - smaller (2/3 of fullscreen)
+        setCardWidth(Math.min(320, vw * 0.25)); // Popup mode
       } else {
         setCardWidth(Math.min(800, vw * 0.55)); // Fullscreen - full size
       }
@@ -572,7 +572,7 @@ export default function SketchbookPage() {
       </div>
     <div 
       ref={pageContainerRef}
-      className={`sketchbook-page-container h-screen flex flex-col overflow-hidden relative ${isFullscreen ? 'pt-8 pb-8 justify-center' : 'pb-16 justify-center'}`}
+      className={`sketchbook-page-container flex flex-col relative ${isFullscreen ? 'h-screen overflow-hidden pt-8 pb-8 justify-center max-[650px]:gap-8' : 'h-screen overflow-hidden pb-16 justify-center max-[650px]:gap-8'}`}
       style={{ backgroundColor: DEFAULT_SKETCHBOOK_PROJECT.backgroundColor || '#ffffff' }}
     >
       {/* Logo - fixed position matching /polaroid, animates in smoothly */}
@@ -602,7 +602,7 @@ export default function SketchbookPage() {
       <InfoButton project={DEFAULT_SKETCHBOOK_PROJECT} />
       
       {/* Title and date - opacity responds to drag position */}
-      <div className={`text-center px-6 shrink-0 relative ${isFullscreen ? 'pb-16' : 'pb-8'}`}>
+      <div className={`text-center px-6 shrink-0 relative ${isFullscreen ? 'pb-16' : 'pb-8 max-[650px]:pb-16'}`}>
         {/* Current entry text */}
         <motion.div style={{ opacity: currentDateOpacity }}>
           <h1 className="text-lg font-medium text-gray-900 h-7">
@@ -692,7 +692,7 @@ export default function SketchbookPage() {
                   <img 
                     src={getImageUrl(entries[currentIndex - 2])} 
                     alt={entries[currentIndex - 2].note || `Sketch`}
-                    className="w-full h-auto max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
+                    className="w-full h-auto max-h-[45vh] sm:max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
                     draggable={false}
                     loading="eager"
                   />
@@ -713,7 +713,7 @@ export default function SketchbookPage() {
                   <img 
                     src={getImageUrl(entries[currentIndex - 1])} 
                     alt={entries[currentIndex - 1].note || `Sketch`}
-                    className="w-full h-auto max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
+                    className="w-full h-auto max-h-[45vh] sm:max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
                     draggable={false}
                     loading="eager"
                   />
@@ -733,7 +733,7 @@ export default function SketchbookPage() {
                   <img 
                     src={getImageUrl(currentEntry)} 
                     alt={currentEntry.note || `Sketch from ${formatDate(currentEntry.date)}`}
-                    className="w-full h-auto max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
+                    className="w-full h-auto max-h-[45vh] sm:max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
                     draggable={false}
                   />
                 ) : (
@@ -755,7 +755,7 @@ export default function SketchbookPage() {
                   <img 
                     src={getImageUrl(entries[currentIndex + 1])} 
                     alt={entries[currentIndex + 1].note || `Sketch`}
-                    className="w-full h-auto max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
+                    className="w-full h-auto max-h-[45vh] sm:max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
                     draggable={false}
                     loading="eager"
                   />
@@ -776,7 +776,7 @@ export default function SketchbookPage() {
                   <img 
                     src={getImageUrl(entries[currentIndex + 2])} 
                     alt={entries[currentIndex + 2].note || `Sketch`}
-                    className="w-full h-auto max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
+                    className="w-full h-auto max-h-[45vh] sm:max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
                     draggable={false}
                     loading="eager"
                   />
@@ -788,7 +788,7 @@ export default function SketchbookPage() {
       </div>
       
       {/* Page indicator - always render container to prevent layout shift */}
-      <div className={`shrink-0 ${isFullscreen ? 'pt-24' : 'pt-12'}`}>
+      <div className={`shrink-0 ${isFullscreen ? 'pt-24' : 'pt-12 max-[650px]:pt-24'}`}>
         {!loading && entries.length > 0 && (
           <PageIndicator 
             total={entries.length} 
