@@ -27,9 +27,21 @@ body {
 
 /* Aesthetic focus rings - subtle radius and offset for keyboard navigation */
 *:focus-visible {
-  outline: 2px solid currentColor;
+  outline: 2px solid #d1d5db; /* gray-300 */
   outline-offset: 2px;
   border-radius: 2px;
+}
+
+/* Remove focus outline from text inputs */
+input[type="text"]:focus,
+input[type="text"]:focus-visible,
+input[type="email"]:focus,
+input[type="email"]:focus-visible,
+input[type="password"]:focus,
+input[type="password"]:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  outline: none;
 }
 
 /* Hide native video controls and play button on iOS/Safari */

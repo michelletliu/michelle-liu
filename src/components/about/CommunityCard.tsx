@@ -133,7 +133,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
             )}
           </div>
           {data.description && (
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-400 mr-12">
               {data.description}
             </p>
           )}
@@ -188,7 +188,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
         
         {/* Description on the right */}
         {data.description && (
-          <p className="max-w-xs xl:max-w-sm mr-12 shrink-0 whitespace-pre-wrap text-base tracking-[0.005em] font-normal leading-[1.4] text-gray-400">
+          <p className="max-w-xs xl:max-w-sm shrink-0 whitespace-pre-wrap text-base tracking-[0.005em] font-normal leading-[1.4] text-gray-400">
             {data.description}
           </p>
         )}
