@@ -59,16 +59,16 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
       </div>
 
       {/* Caption */}
-      <div className="flex w-full flex-col px-1 font-['Figtree',sans-serif] pt-2 max-md:pb-4 text-base tracking-[0.005em]">
+      <div className="flex w-full flex-col px-1 font-['Figtree',sans-serif] pt-2 max-md:pb-4 text-base tracking-[0.005em] leading-tight">
         {/* Headline row with arrow */}
         <div className="flex w-full items-start justify-between">
-          <div className="flex flex-col md:flex-row md:gap-1 md:items-center md:flex-wrap">
-            <span className="text-gray-600 text-base font-medium md:text-lg">{data.headline}</span>
+          <div className="flex flex-col gap-0 max-md:gap-0.5">
+            <span className="text-gray-600 text-base font-medium md:text-lg leading-5">
+              {data.headline}
+              {data.date && <span className="hidden md:inline text-gray-400 text-base font-normal"> • {data.date}</span>}
+            </span>
             {data.date && (
-              <>
-                <span className="hidden md:inline text-gray-400 text-base font-normal"> • {data.date}</span>
-                <span className="md:hidden text-gray-400 font-normal text-sm">{data.date}</span>
-              </>
+              <span className="md:hidden text-gray-400 font-normal text-base leading-tight">{data.date}</span>
             )}
           </div>
           {/* Arrow - always visible on mobile, hover on desktop */}
@@ -78,7 +78,7 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
         </div>
         {/* Description - always visible on mobile, fade up on hover for desktop */}
         {data.description && (
-          <p className="whitespace-pre-wrap max-md:pt-1 font-normal text-sm sm:text-base tracking-[0.005em] leading-tight text-gray-400 md:opacity-0 md:translate-y-1 md:transition-all md:duration-300 md:ease-out md:group-hover:opacity-100 md:group-hover:translate-y-0">{data.description}</p>
+          <p className="whitespace-pre-wrap max-md:pt-0.5 pt-0.5 font-normal text-sm sm:text-base tracking-[0.005em] leading-5 text-gray-400 md:opacity-0 md:translate-y-1 md:transition-all md:duration-300 md:ease-out md:group-hover:opacity-100 md:group-hover:translate-y-0">{data.description}</p>
         )}
       </div>
     </>

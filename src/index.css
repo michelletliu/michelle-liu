@@ -160,6 +160,37 @@ body {
   animation: modalScaleOut 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 
+/* Flex-centered modal animations (no translate needed) */
+@keyframes modalScaleInFlex {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-modal-scale-in-flex {
+  animation: modalScaleInFlex 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalScaleOutFlex {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.animate-modal-scale-out-flex {
+  animation: modalScaleOutFlex 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
 /* Overlay fade out */
 @keyframes overlayFadeOut {
   0% {
@@ -172,4 +203,184 @@ body {
 
 .animate-overlay-out {
   animation: overlayFadeOut 200ms ease-in forwards;
+}
+
+/* Experiment modal embed styles - adjust fixed positioning within modal */
+.experiment-modal-embed {
+  position: relative;
+  height: 100%;
+  /* Contain layout to prevent reflows from affecting parent */
+  contain: layout style;
+}
+
+/* Modal scrollbar styling - prevent scrollbar from being cut off by rounded corners */
+.modal-scroll-container {
+  /* Add padding at top and bottom so scrollbar doesn't touch rounded corners */
+  scrollbar-gutter: stable;
+  /* Prevent horizontal scrolling - content should scale down instead */
+  overflow-x: hidden !important;
+}
+
+
+.modal-scroll-container::-webkit-scrollbar {
+  width: 12px;
+}
+
+.modal-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+  /* Add margin to prevent scrollbar track from being cut off by rounded corners */
+  margin-top: 26px;
+  margin-bottom: 26px;
+  border-radius: 6px;
+}
+
+.modal-scroll-container::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.3s ease;
+}
+
+.modal-scroll-container.is-scrolling::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.modal-scroll-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.modal-scroll-container::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Fullscreen mode - no margin needed since no rounded corners, and no scrollbar-gutter */
+.modal-scroll-container.fullscreen {
+  scrollbar-gutter: auto;
+}
+
+.modal-scroll-container.fullscreen::-webkit-scrollbar-track {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Prevent vertical scrolling on sketchbook page in modal and hide scrollbar */
+.experiment-modal-embed:has(.sketchbook-page-container) {
+  overflow: hidden !important;
+  scrollbar-gutter: auto !important;
+}
+
+.experiment-modal-embed:has(.sketchbook-page-container)::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Prevent vertical scrolling on polaroid page in popup mode (not fullscreen) and hide scrollbar */
+.experiment-modal-embed:not(.fullscreen):has(.polaroid-page-container) {
+  overflow: hidden !important;
+  scrollbar-gutter: auto !important;
+}
+
+.experiment-modal-embed:not(.fullscreen):has(.polaroid-page-container)::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Prevent vertical scrolling on screentime generate screen in popup mode (not fullscreen) and hide scrollbar */
+.experiment-modal-embed:not(.fullscreen):has(.screentime-page-container):not(:has(.receipt-screen-container)) {
+  overflow: hidden !important;
+  scrollbar-gutter: auto !important;
+}
+
+.experiment-modal-embed:not(.fullscreen):has(.screentime-page-container):not(:has(.receipt-screen-container))::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Receipt screen should be scrollable - let the modal-scroll-container handle scrolling */
+.experiment-modal-embed:has(.receipt-screen-container) {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.experiment-modal-embed:has(.receipt-screen-container) .screentime-page-container {
+  overflow: visible !important;
+  height: auto !important;
+  min-height: 100%;
+  justify-content: flex-start !important;
+  align-items: center !important;
+}
+
+/* Hide the logo/back button and info button that come FROM the embedded experiment pages (not the modal's own buttons) */
+/* In fullscreen mode, allow the embedded page's info button to show (it has createPortal for proper centering) */
+.experiment-modal-embed:not(.fullscreen) button[aria-label="Back to home"],
+.experiment-modal-embed:not(.fullscreen) button[aria-label="Go back to home"],
+.experiment-modal-embed:not(.fullscreen) button[aria-label="Project info"]:not([data-info-button]) {
+  display: none !important;
+}
+
+/* Library grid - use fixed columns in popup mode only (fullscreen should use page's default grid) */
+.experiment-modal-embed:not(.fullscreen) .library-book-grid {
+  grid-template-columns: repeat(6, auto) !important;
+  justify-content: space-between !important;
+  gap: 40px 0 !important;
+}
+
+/* Scale down book cards in popup mode */
+.experiment-modal-embed:not(.fullscreen) .library-book-grid > button {
+  width: 100px !important;
+  height: 200px !important;
+  transition: all 500ms ease-out !important;
+}
+
+.experiment-modal-embed:not(.fullscreen) .library-book-grid > button > div:first-child {
+  width: 100px !important;
+  height: 154px !important;
+  background: transparent !important;
+  transition: all 500ms ease-out !important;
+}
+
+.experiment-modal-embed:not(.fullscreen) .library-book-grid > button > div:first-child img {
+  width: 100px !important;
+  height: 154px !important;
+  transition: all 500ms ease-out !important;
+}
+
+/* Ensure smooth transition for fullscreen mode too */
+.library-book-grid > button {
+  transition: all 500ms ease-out;
+}
+
+.library-book-grid > button > div:first-child {
+  transition: all 500ms ease-out;
+}
+
+.library-book-grid > button > div:first-child img {
+  transition: all 500ms ease-out;
+}
+
+/* Scale down hover text in popup mode */
+.experiment-modal-embed:not(.fullscreen) .library-book-grid > button > div:last-child {
+  top: 155px !important;
+  width: 100px !important;
+  font-size: 12px !important;
+}
+
+/* Reduce book cover hover movement in popup mode */
+.experiment-modal-embed:not(.fullscreen) .library-book-grid > button:hover > div:first-child {
+  top: -8px !important;
+}
+
+.experiment-modal-embed:not(.fullscreen) .library-book-grid > button > div:last-child p {
+  font-size: 12px !important;
+  line-height: 1.3 !important;
+}
+
+/* Popover animation - smooth scale and fade */
+@keyframes popoverIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }

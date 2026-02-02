@@ -3,29 +3,38 @@ import { SendIcon, SmileyIcon } from "./icons";
 
 interface AddBookModalProps {
   onClose: () => void;
-  onAddBook: (title: string) => void;
+  onAddBook: (title: string) => Promise<void>;
 }
 
 export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
   const [bookTitle, setBookTitle] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
-    if (bookTitle.trim()) {
-      onAddBook(bookTitle);
-      setIsSubmitted(true);
-      
-      // Auto-close after showing thank you message
-      setTimeout(() => {
-        setBookTitle("");
-        setIsSubmitted(false);
-        onClose();
-      }, 2000);
+  const handleSubmit = async () => {
+    if (bookTitle.trim() && !isSubmitting) {
+      setIsSubmitting(true);
+      try {
+        await onAddBook(bookTitle);
+        setIsSubmitted(true);
+        
+        // Auto-close after showing thank you message
+        setTimeout(() => {
+          setBookTitle("");
+          setIsSubmitted(false);
+          onClose();
+        }, 2000);
+      } catch (error) {
+        console.error('Failed to submit book suggestion:', error);
+        // Keep modal open on error so user can retry
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !isSubmitted) {
+    if (e.key === "Enter" && !isSubmitted && !isSubmitting) {
       handleSubmit();
     }
   };
@@ -87,7 +96,7 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
             
             <button
               onClick={handleSubmit}
-              disabled={!bookTitle.trim() || isSubmitted}
+              disabled={!bookTitle.trim() || isSubmitted || isSubmitting}
               className={`flex items-center justify-center border-blue-400 border rounded-full shrink-0 size-[40px] transition-all duration-300 ${
                 isSubmitted ? "bg-blue-500" : "bg-blue-500 hover:bg-blue-400"
               } disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -96,7 +105,7 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
                 {isSubmitted ? (
                   <SmileyIcon className="w-[20px] h-[20px]" />
                 ) : (
-                  <SendIcon className="pt-0.5 w-[20px] h-[20px]" />
+                  <SendIcon className="pt-0.5 -ml-0.5 w-[20px] h-[20px]" />
                 )}
               </div>
             </button>

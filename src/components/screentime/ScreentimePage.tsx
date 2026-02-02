@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { domToPng } from 'modern-screenshot';
 import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
 import Tesseract from 'tesseract.js';
+
 
 // Default project info (fallback if Sanity fetch fails)
 const DEFAULT_SCREENTIME_PROJECT = {
@@ -16,6 +18,7 @@ const DEFAULT_SCREENTIME_PROJECT = {
   videoSrc: 'https://stream.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI.m3u8',
   xLink: 'https://x.com/michelletliu/status/2000987498550383032',
   tryItOutHref: '/screentime',
+  backgroundColor: '#f3f4f6',
   toolCategories: [
     { label: 'Design', tools: ['Figma'] },
     { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -620,10 +623,10 @@ function GenerateScreen({
   onUploadClick: () => void;
 }) {
   return (
-    <div className="absolute flex flex-col items-center gap-3 justify-center size-full">
-    <div className="bg-white flex flex-col gap-[24px] items-center px-[48px] py-[32px] rounded-3xl shadow-[0px_2px_8px_rgba(0,0,0,0.1)] max-w-[90%]">
-      <div className="bg-[rgba(116,116,128,0.08)] flex flex-col items-center justify-center p-[10px] relative rounded-full shrink-0 size-[120px]">
-        <img src={phoneIconSvg} alt="Phone" className="w-[38px] h-[63px]" />
+    <div className="absolute flex flex-col items-center gap-2 justify-center size-full">
+    <div className="bg-white flex flex-col gap-[16px] items-center px-[36px] py-[24px] rounded-3xl shadow-[0px_2px_8px_rgba(0,0,0,0.1)] max-w-[90%]">
+      <div className="bg-[rgba(116,116,128,0.08)] flex flex-col items-center justify-center p-[8px] relative rounded-full shrink-0 size-[80px]">
+        <img src={phoneIconSvg} alt="Phone" className="w-[25px] h-[42px]" />
       </div>
       <div className="font-mono leading-[28px] relative shrink-0 text-[22px] text-black text-center text-nowrap">
         <p className="mb-0">SCREEN TIME</p>
@@ -861,7 +864,7 @@ function ReceiptScreen({
   const recommendation = getRecommendation(grandTotal);
 
   return (
-    <div className="absolute flex flex-col gap-[24px] items-center left-1/2 top-[86px] md:top-[40px] -translate-x-1/2 w-[337px] max-w-[90%] pb-[100px] animate-slide-in transition-transform duration-400">
+    <div className="receipt-screen-container flex flex-col gap-6 items-center w-[337px] max-w-[90%] pt-16 pb-24 animate-slide-in transition-transform duration-400 mx-auto">
       <div ref={receiptRef} className="bg-white relative shadow-md shrink-0 w-full border border-gray-200">
         <div className="flex flex-col items-center size-full">
           <div className="flex flex-col gap-[32px] items-center px-[24px] py-[32px] relative w-full">
@@ -1313,7 +1316,7 @@ function UploadInstructions({ onClose, onUploadSuccess }: { onClose: () => void;
     reader.readAsDataURL(file);
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
       {/* Overlay */}
       <div 
@@ -1323,7 +1326,7 @@ function UploadInstructions({ onClose, onUploadSuccess }: { onClose: () => void;
       
       {/* Modal Content */}
       <div 
-        className={`relative bg-white rounded-3xl py-2 pb-4 w-full max-w-[440px] max-h-[90vh] overflow-y-auto shadow-md transition-all duration-300 ease-out ${
+        className={`upload-modal-content relative bg-white rounded-3xl py-2 pb-4 w-full max-w-[440px] max-h-[90vh] overflow-y-auto shadow-md transition-all duration-300 ease-out ${
           isVisible 
             ? 'opacity-100 translate-y-0' 
             : isClosing 
@@ -1332,29 +1335,33 @@ function UploadInstructions({ onClose, onUploadSuccess }: { onClose: () => void;
         }`}
         onClick={(e) => e.stopPropagation()}
       >
+        <style>{`
+          .upload-modal-content,
+          .upload-modal-content * {
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+          }
+        `}</style>
         <div className="top-0 bg-white flex items-center justify-center pt-6 w-full rounded-t-[20px]">
-          <h2 className="font-mono text-lg text-black font-semibold">Upload Your Screen Time Data</h2>
+          <h2 className="text-lg text-black font-semibold">Upload Your Screen Time Data</h2>
         </div>
         
-        <div className="px-8 py-5 space-y-5 font-mono text-[15px]">
+        <div className="px-8 py-5 space-y-5 text-[15px]">
         <div className="border-t border-gray-200" />
           <div className="space-y-3">
-            <h3 className="font-['Figtree'] text-base text-black font-semibold">iPhone</h3>
-            <ol className="font-['Figtree'] space-y-1 pl-10 list-decimal text-gray-500 leading-normal">
+            <h3 className="text-base text-black font-semibold">iPhone</h3>
+            <ol className="space-y-1 pl-10 list-decimal text-gray-500 leading-normal">
               <li>Open <strong>Settings</strong></li>
               <li>Scroll down and tap <strong>Screen Time</strong></li>
               <li>Tap <strong>See All Activity</strong></li>
-              <li>Choose <strong>Week</strong> or <strong>Day</strong> at the top</li>
               <li>Take a screenshot (Side Button + Volume Up)</li>
             </ol>
           </div>
 
           <div className="border-t border-gray-200 pt-5 space-y-3">
-            <h3 className="font-mono text-base text-black font-semibold">Android</h3>
-            <ol className="font-['Figtree'] space-y-1 pl-10 list-decimal text-gray-500 leading-normal">
+            <h3 className="text-base text-black font-semibold">Android</h3>
+            <ol className="space-y-1 pl-10 list-decimal text-gray-500 leading-normal">
               <li>Open <strong>Settings</strong></li>
               <li>Tap <strong>Digital Wellbeing & parental controls</strong></li>
-              <li>Tap the graph to see your screen time details</li>
               <li>Take a screenshot (Power + Volume Down)</li>
             </ol>
           </div>
@@ -1363,8 +1370,8 @@ function UploadInstructions({ onClose, onUploadSuccess }: { onClose: () => void;
           {error && (
             <div className="bg-red-50 rounded-xl px-4.5 py-4 flex items-start gap-1">
               <div className="w-full">
-                <p className="font-['Figtree'] text-sm text-red-600 font-semibold">Upload failed</p>
-                <p className="font-['Figtree'] text-sm text-red-500 mt-1.5">{error}</p>
+                <p className="text-sm text-red-600 font-semibold">Upload failed</p>
+                <p className="text-sm text-red-500 mt-1.5">{error}</p>
               </div>
               <button 
                 onClick={() => setError(null)}
@@ -1380,7 +1387,7 @@ function UploadInstructions({ onClose, onUploadSuccess }: { onClose: () => void;
 
           <label className="flex items-center justify-center">
             <div className={`${isProcessing ? 'bg-gray-400' : 'bg-gray-900 hover:bg-gray-800'} transition-colors flex items-center justify-center px-6 py-3 rounded-full cursor-pointer`}>
-              <p className="font-mono text-[15px] text-center text-white tracking-[0.75px]">
+              <p className="text-[15px] text-center text-white tracking-[0.75px]">
                 {isProcessing ? 'PROCESSING...' : 'UPLOAD SCREENSHOT'}
               </p>
             </div>
@@ -1394,7 +1401,8 @@ function UploadInstructions({ onClose, onUploadSuccess }: { onClose: () => void;
           </label>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -1421,8 +1429,16 @@ export default function ScreentimePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle navigation back to home
+  // Handle navigation back to home (or to popup mode if in fullscreen)
   const handleBackToHome = () => {
+    // If we're in fullscreen mode, go to popup mode immediately (no exit animation)
+    const isFullscreen = window.location.pathname.includes('/full');
+    if (isFullscreen) {
+      navigate('/project/screentime');
+      return;
+    }
+    
+    // Otherwise animate exit then go to home
     setIsExiting(true);
     setTimeout(() => {
       navigate('/');
@@ -1466,6 +1482,11 @@ export default function ScreentimePage() {
     setScreen('generate');
     setReceiptData(null);
     setUploadedData(null); // Clear uploaded data to reset to default demo data
+    // Scroll parent modal container to top to reset scroll position
+    const modalContainer = document.querySelector('.modal-scroll-container');
+    if (modalContainer) {
+      modalContainer.scrollTop = 0;
+    }
   };
 
   const handleUpload = () => {
@@ -1486,10 +1507,12 @@ export default function ScreentimePage() {
 
   return (
     <>
-      {/* Logo - fixed outside transitioning container */}
+      {/* Logo - fixed outside transitioning container, animates in smoothly */}
       <button
         onClick={handleBackToHome}
-        className="fixed top-8 left-8 md:left-16 z-40 cursor-pointer transition-opacity duration-200 hover:opacity-80"
+        className={`fixed top-8 left-8 md:left-16 z-40 cursor-pointer transition-all duration-300 ease-out hover:opacity-80 ${
+          isEntering ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+        }`}
         aria-label="Go back to home"
       >
         <img 
@@ -1503,16 +1526,18 @@ export default function ScreentimePage() {
       <InfoButton project={projectInfo} />
 
       <div 
-        className={`screentime-page-container relative w-full min-h-screen min-h-[100dvh] px-4 flex flex-col items-center transition-all ${
+        className={`screentime-page-container relative w-full h-screen overflow-hidden px-4 flex flex-col items-center transition-all ${
+          screen === 'generate' ? 'justify-center' : 'justify-start'
+        } ${
           isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
         }`}
         style={{ 
-          backgroundColor: '#f3f4f6',
+          backgroundColor: projectInfo.backgroundColor || '#f3f4f6',
           transitionDuration: isExiting ? '280ms' : '300ms',
           transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out'
         }}
       >
-        <div className="relative w-full max-w-[402px] min-h-screen mx-auto bg-[#f3f4f6]">
+        <div className="relative w-full max-w-[402px] mx-auto bg-gray-100">
           {/* Hide status bar on mobile - users already have their real one */}
           <div className="hidden md:block">
             <StatusBar />

@@ -137,7 +137,7 @@ export default function RootLayout({
       >
         <span
           dangerouslySetInnerHTML={{
-            __html: "<!-- ✨ thanks for stopping by! say hi: michelletheresaliu@gmail.com -->",
+            __html: "<!-- ✨ thanks for stopping by! say hi: studio@liumichelle.com -->",
           }}
           style={{ display: "none" }}
         />

@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import clsx from "clsx";
 import { client, urlFor } from "../../sanity/client";
 import { SHELF_BOOKS_QUERY, BOOK_YEARS_QUERY } from "../../sanity/queries";
-import { getCachedData } from "../../sanity/preload";
 import { BookCard } from "./BookCard";
 import { BookDetailModal } from "./BookDetailModal";
 import { AddBookModal } from "./AddBookModal";
@@ -23,6 +22,7 @@ const DEFAULT_LIBRARY_PROJECT = {
   videoSrc: 'https://stream.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo.m3u8',
   xLink: 'https://x.com/michelletliu/status/1981030966044061894',
   tryItOutHref: '/library',
+  backgroundColor: '#ffffff',
   toolCategories: [
     { label: 'Design', tools: ['Figma'] },
     { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -67,10 +67,10 @@ type FilterOption = {
 
 export default function LibraryPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   // Fetch project info from Sanity (with fallback to defaults)
   const projectInfo = useExperimentProject('library', DEFAULT_LIBRARY_PROJECT);
-  
   const [books, setBooks] = useState<Book[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>([{ value: 'favorites', label: 'favorites', isFavorites: true }]);
   const [activeFilter, setActiveFilter] = useState<string>("favorites");
@@ -81,8 +81,10 @@ export default function LibraryPage() {
   const [isExiting, setIsExiting] = useState(false);
   const [isEntering, setIsEntering] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPopupMode, setIsPopupMode] = useState(false);
   const logoRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Handle dropdown animation
   useEffect(() => {
@@ -96,6 +98,39 @@ export default function LibraryPage() {
       setIsDropdownVisible(false);
     }
   }, [showFilterDropdown]);
+
+  // Detect popup mode (inside experiment modal but not fullscreen)
+  useEffect(() => {
+    const checkPopupMode = () => {
+      if (containerRef.current) {
+        const isInModal = containerRef.current.closest('.experiment-modal-embed:not(.fullscreen)') !== null;
+        const wasPopupMode = isPopupMode;
+        setIsPopupMode(isInModal);
+        
+        // Reset exiting state when transitioning from popup to fullscreen
+        if (wasPopupMode && !isInModal) {
+          setIsExiting(false);
+          setIsEntering(false);
+        }
+      }
+    };
+    
+    checkPopupMode();
+    window.addEventListener('resize', checkPopupMode);
+    
+    // Watch for class changes on the modal embed (for fullscreen transitions)
+    const modalEmbed = containerRef.current?.closest('.experiment-modal-embed');
+    let observer: MutationObserver | null = null;
+    if (modalEmbed) {
+      observer = new MutationObserver(checkPopupMode);
+      observer.observe(modalEmbed, { attributes: true, attributeFilter: ['class'] });
+    }
+    
+    return () => {
+      window.removeEventListener('resize', checkPopupMode);
+      observer?.disconnect();
+    };
+  }, [isPopupMode]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -111,18 +146,14 @@ export default function LibraryPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showFilterDropdown]);
 
-  // Fetch books from Sanity (using shelfItem schema) - uses preloaded cache if available
+  // Fetch books from Sanity (using shelfItem schema)
   useEffect(() => {
     async function fetchBooks() {
       try {
-        // Check for preloaded/cached data first
-        const cachedBooks = getCachedData<ShelfBookData[]>("library:books");
-        const cachedYears = getCachedData<string[]>("library:years");
-        
-        // Use cached data if available, otherwise fetch
+        // Fetch books and years in parallel
         const [booksData, yearsData] = await Promise.all([
-          cachedBooks ? Promise.resolve(cachedBooks) : client.fetch<ShelfBookData[]>(SHELF_BOOKS_QUERY),
-          cachedYears ? Promise.resolve(cachedYears) : client.fetch<string[]>(BOOK_YEARS_QUERY),
+          client.fetch<ShelfBookData[]>(SHELF_BOOKS_QUERY),
+          client.fetch<string[]>(BOOK_YEARS_QUERY),
         ]);
         
         const transformedBooks = booksData.map(transformShelfBook);
@@ -153,18 +184,44 @@ export default function LibraryPage() {
     ? books.filter(book => book.isFavorite)
     : books.filter(book => book.year === activeFilter);
 
-  // Handle entrance animation
+  // Handle book query param from URL (when navigating from popup to fullscreen)
   useEffect(() => {
+    const bookId = searchParams.get('book');
+    if (bookId && books.length > 0 && !selectedBook) {
+      const book = books.find(b => b.id === bookId);
+      if (book) {
+        setSelectedBook(book);
+        // Clear the query param after selecting the book
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [searchParams, books, selectedBook, setSearchParams]);
+
+  // Handle entrance animation and reset exit state when in fullscreen
+  useEffect(() => {
+    const isFullscreen = window.location.pathname.includes('/full');
+    // If we're in fullscreen mode, ensure we're not in exiting state
+    if (isFullscreen) {
+      setIsExiting(false);
+    }
+    
     const timer = setTimeout(() => {
       setIsEntering(false);
     }, 50);
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle navigation back to home
+  // Handle navigation back to home (or to popup mode if in fullscreen)
   const handleBackToHome = () => {
+    // If we're in fullscreen mode (/project/library/full), go to popup mode immediately (no exit animation)
+    const isFullscreen = window.location.pathname.includes('/full');
+    if (isFullscreen) {
+      navigate('/project/library');
+      return;
+    }
+    
+    // Otherwise animate exit then go to home
     setIsExiting(true);
-
     setTimeout(() => {
       navigate('/');
     }, 280);
@@ -173,39 +230,24 @@ export default function LibraryPage() {
   const handleAddBook = async (title: string) => {
     try {
       const { writeClient } = await import('../../sanity/client');
-      await writeClient.create({
+      console.log('Submitting book suggestion:', title.trim());
+      const result = await writeClient.create({
         _type: 'bookSuggestion',
         bookTitle: title.trim(),
         submittedAt: new Date().toISOString(),
         status: 'new',
       });
+      console.log('Book suggestion created:', result);
     } catch (error) {
       console.error('Error submitting book suggestion:', error);
+      throw error;
     }
   };
 
   return (
     <>
-      {/* Info Button - fixed top right */}
-      <InfoButton project={projectInfo} />
-
-      {/* Logo - outside animated container so it stays in place during transitions */}
-      <div className="absolute top-0 left-0 pt-8 px-8 md:px-16 z-10">
-        <button
-          ref={logoRef}
-          onClick={handleBackToHome}
-          className="cursor-pointer transition-opacity duration-200 hover:opacity-80"
-          aria-label="Go back to home"
-        >
-          <img
-            src={imgLogo}
-            alt="Michelle Liu Logo"
-            className="size-[44px] object-contain"
-          />
-        </button>
-      </div>
-
       <div 
+        ref={containerRef}
         className={`relative min-h-screen w-full bg-white transition-all ${
           isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
         }`} 
@@ -215,9 +257,27 @@ export default function LibraryPage() {
           transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out'
         }}
       >
+        {/* Info Button - scrolls with content */}
+        <InfoButton project={projectInfo} />
+
+        {/* Logo - scrolls with content */}
+        <div className="absolute top-0 left-0 pt-8 px-8 md:px-16 z-10">
+          <button
+            ref={logoRef}
+            onClick={handleBackToHome}
+            className="cursor-pointer transition-opacity duration-200 hover:opacity-80"
+            aria-label="Go back to home"
+          >
+            <img
+              src={imgLogo}
+              alt="Michelle Liu Logo"
+              className="size-[44px] object-contain"
+            />
+          </button>
+        </div>
+
         {/* Header */}
         <div className="pt-8 px-8 md:px-16">
-          {/* Spacer for logo height */}
           <div className="flex flex-col gap-10 md:gap-12 items-start pb-5 md:pb-6">
             {/* Logo spacer - matches the logo size */}
             <div className="size-[44px] shrink-0" />
@@ -313,12 +373,12 @@ export default function LibraryPage() {
               <AddBookModal onClose={() => setShowAddBookModal(false)} onAddBook={handleAddBook} />
             )}
           </div>
-          </div>
+        </div>
         </div>
       </div>
 
       {/* Bookshelf Grid */}
-      <div className="pt-6 md:pt-8 px-8 md:px-16 pb-[60px] md:pb-[100px]">
+      <div className={`px-8 md:px-16 pb-[60px] md:pb-[100px] ${isPopupMode ? 'pt-3 md:pt-4' : 'pt-6 md:pt-8'}`}>
         <div>
           {isLoading ? (
             <div className="flex items-center justify-center min-h-[300px]">
@@ -335,10 +395,20 @@ export default function LibraryPage() {
             </div>
           ) : (
             <div 
-              className="grid grid-cols-4 md:grid-cols-[repeat(6,auto)] gap-x-8 gap-y-2 md:gap-x-0 md:gap-y-8 md:justify-between"
+              className="library-book-grid grid grid-cols-4 md:grid-cols-[repeat(6,auto)] gap-x-8 gap-y-2 md:gap-x-0 md:gap-y-8 md:justify-between w-full"
             >
               {filteredBooks.map((book) => (
-                <BookCard key={book.id} book={book} onClick={() => setSelectedBook(book)} />
+                <BookCard key={book.id} book={book} onClick={() => {
+                  if (isPopupMode) {
+                    // Fade out before navigating to fullscreen mode
+                    setIsExiting(true);
+                    setTimeout(() => {
+                      navigate(`/project/library/full?book=${encodeURIComponent(book.id)}`);
+                    }, 280);
+                  } else {
+                    setSelectedBook(book);
+                  }
+                }} />
               ))}
             </div>
           )}
@@ -349,7 +419,7 @@ export default function LibraryPage() {
 
       {/* Book Detail Modal - outside transformed container for proper viewport centering */}
       {selectedBook && (
-        <BookDetailModal book={selectedBook} onClose={() => setSelectedBook(null)} />
+        <BookDetailModal book={selectedBook} onClose={() => setSelectedBook(null)} isPopupMode={isPopupMode} />
       )}
     </>
   );

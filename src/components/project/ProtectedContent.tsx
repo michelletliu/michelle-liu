@@ -47,7 +47,7 @@ type ProtectedContentProps = {
 export default function ProtectedContent({
   type = "Password",
   device = "Default",
-  email = "michelletheresaliu@gmail.com",
+  email = "studio@liumichelle.com",
   hasPassword = false,
   onPasswordSubmit,
   error = false,

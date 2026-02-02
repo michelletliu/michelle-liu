@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, useMotionValue, useTransform, animate, PanInfo, AnimatePresence, MotionValue } from 'framer-motion';
-import { createPortal } from 'react-dom';
 import clsx from 'clsx';
 import { useNavigate } from 'react-router-dom';
 import InfoButton from '../InfoButton';
 import imgLogo from '../../assets/logo.png';
 import { client, urlFor } from '../../sanity/client';
 import { FLATLAY_SKETCHBOOKS_QUERY } from '../../sanity/queries';
-import { useScrollLock } from '../../utils/useScrollLock';
+
 
 // Default project info for InfoButton
 const DEFAULT_SKETCHBOOK_PROJECT = {
@@ -18,6 +17,7 @@ const DEFAULT_SKETCHBOOK_PROJECT = {
   imageSrc: 'https://image.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg/thumbnail.png',
   videoSrc: 'https://stream.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg.m3u8',
   tryItOutHref: '/sketchbook',
+  backgroundColor: '#ffffff',
   toolCategories: [
     { label: 'Design', tools: ['Figma', 'Origami Studio'] },
     { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -85,7 +85,30 @@ function PlaceholderImage({ index }: { index: number }) {
   );
 }
 
-// Page indicator - vertical lines with bouncy animation
+// Proximity effect constants
+const PROXIMITY_DISTANCE_LIMIT = 3; // Number of bars affected by proximity
+
+// Lerp function for smooth interpolation
+function lerp(start: number, end: number, t: number) {
+  return start + (end - start) * t;
+}
+
+// Transform function for proximity effect
+function transformProximity(
+  distance: number,
+  baseValue: number,
+  maxValue: number,
+  intensity: number
+) {
+  if (Math.abs(distance) > PROXIMITY_DISTANCE_LIMIT) {
+    return baseValue;
+  }
+  const normalizedDistance = 1 - Math.abs(distance) / PROXIMITY_DISTANCE_LIMIT;
+  const scaleFactor = normalizedDistance * normalizedDistance;
+  return baseValue + intensity * scaleFactor;
+}
+
+// Page indicator - vertical lines with bouncy animation and proximity effect
 function PageIndicator({ 
   total, 
   current, 
@@ -99,6 +122,8 @@ function PageIndicator({
   dragX: MotionValue<number>;
   slideDistance: number;
 }) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  
   return (
     <div className="flex items-end justify-center gap-3 h-8">
       {Array.from({ length: total }).map((_, i) => (
@@ -110,13 +135,15 @@ function PageIndicator({
           onSelect={onSelect}
           dragX={dragX}
           slideDistance={slideDistance}
+          hoveredIndex={hoveredIndex}
+          setHoveredIndex={setHoveredIndex}
         />
       ))}
     </div>
   );
 }
 
-// Individual page indicator bar that responds to drag
+// Individual page indicator bar that responds to drag and proximity hover
 function PageIndicatorBar({
   index,
   current,
@@ -124,6 +151,8 @@ function PageIndicatorBar({
   onSelect,
   dragX,
   slideDistance,
+  hoveredIndex,
+  setHoveredIndex,
 }: {
   index: number;
   current: number;
@@ -131,39 +160,100 @@ function PageIndicatorBar({
   onSelect: (index: number) => void;
   dragX: MotionValue<number>;
   slideDistance: number;
+  hoveredIndex: number | null;
+  setHoveredIndex: (index: number | null) => void;
 }) {
+  // Animated values for smooth transitions
+  const animatedHeight = useMotionValue(24);
+  const animatedR = useMotionValue(209);
+  const animatedG = useMotionValue(213);
+  const animatedB = useMotionValue(219);
+  
   // Calculate progress: how much we're transitioning toward this index
-  // When dragging left (negative x), we're moving toward higher indices
-  // When dragging right (positive x), we're moving toward lower indices
   const progress = useTransform(dragX, (x) => {
-    const normalizedX = x / slideDistance; // -1 to 1 range
+    const normalizedX = x / slideDistance;
     
     if (index === current) {
-      // Current bar: shrink as we drag away
       return 1 - Math.min(Math.abs(normalizedX), 1);
     } else if (index === current + 1 && normalizedX < 0) {
-      // Next bar: grow as we drag left
       return Math.min(-normalizedX, 1);
     } else if (index === current - 1 && normalizedX > 0) {
-      // Previous bar: grow as we drag right
       return Math.min(normalizedX, 1);
     }
     return 0;
   });
   
-  const height = useTransform(progress, [0, 1], [24, 32]);
-  const backgroundColor = useTransform(progress, [0, 1], ['#d1d5db', '#1f2937']);
+  // Proximity hover effect
+  const isSelected = index === current;
+  const distanceFromHovered = hoveredIndex !== null ? index - hoveredIndex : null;
+  
+  // Calculate target values based on state
+  useEffect(() => {
+    let animationFrame: number;
+    const lerpFactor = 0.15; // Smoothing factor (0-1, lower = smoother)
+    
+    const animate = () => {
+      let targetHeight: number;
+      let targetR: number, targetG: number, targetB: number;
+      
+      const currentProgress = progress.get();
+      
+      if (currentProgress > 0) {
+        // Drag-based animation (selected or transitioning)
+        targetHeight = 24 + currentProgress * 8; // 24 to 32
+        const colorProgress = currentProgress;
+        targetR = 209 + (31 - 209) * colorProgress;
+        targetG = 213 + (41 - 213) * colorProgress;
+        targetB = 219 + (55 - 219) * colorProgress;
+      } else if (hoveredIndex !== null && !isSelected && distanceFromHovered !== null) {
+        // Proximity hover effect
+        targetHeight = transformProximity(distanceFromHovered, 24, 28, 4);
+        const colorIntensity = transformProximity(distanceFromHovered, 0, 1, 1);
+        targetR = 209 + (156 - 209) * colorIntensity;
+        targetG = 213 + (163 - 213) * colorIntensity;
+        targetB = 219 + (175 - 219) * colorIntensity;
+      } else {
+        // Default state
+        targetHeight = 24;
+        targetR = 209;
+        targetG = 213;
+        targetB = 219;
+      }
+      
+      // Lerp to target values
+      animatedHeight.set(lerp(animatedHeight.get(), targetHeight, lerpFactor));
+      animatedR.set(lerp(animatedR.get(), targetR, lerpFactor));
+      animatedG.set(lerp(animatedG.get(), targetG, lerpFactor));
+      animatedB.set(lerp(animatedB.get(), targetB, lerpFactor));
+      
+      animationFrame = requestAnimationFrame(animate);
+    };
+    
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [hoveredIndex, isSelected, distanceFromHovered, progress, animatedHeight, animatedR, animatedG, animatedB]);
+  
+  const backgroundColor = useTransform(
+    [animatedR, animatedG, animatedB],
+    ([r, g, b]) => `rgb(${Math.round(r as number)}, ${Math.round(g as number)}, ${Math.round(b as number)})`
+  );
   
   return (
-    <motion.button
+    <button
       onClick={() => onSelect(index)}
-      className="w-[2.5px] rounded-full"
-      style={{
-        height,
-        backgroundColor,
-      }}
+      className="flex items-end justify-center px-1.5 py-1 -mx-1.5 -my-1"
+      onMouseEnter={() => setHoveredIndex(index)}
+      onMouseLeave={() => setHoveredIndex(null)}
       aria-label={`Go to page ${index + 1}`}
-    />
+    >
+      <motion.div
+        className="w-[2.5px] rounded-full"
+        style={{
+          height: animatedHeight,
+          backgroundColor,
+        }}
+      />
+    </button>
   );
 }
 
@@ -173,21 +263,12 @@ export default function SketchbookPage() {
   const [entries, setEntries] = useState<FlatlaySketchbook[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  // Initialize isFullscreen based on URL path to avoid flash of wrong layout
+  const [isFullscreen, setIsFullscreen] = useState(() => {
+    return typeof window !== 'undefined' && window.location.pathname.includes('/full');
+  });
   const containerRef = useRef<HTMLDivElement>(null);
-  const [expandedImage, setExpandedImage] = useState<string | null>(null);
-  const [isClosing, setIsClosing] = useState(false);
-  
-  // Lock scroll when image is expanded
-  useScrollLock(!!expandedImage);
-  
-  // Handle closing the expanded image with animation
-  const closeExpandedImage = useCallback(() => {
-    setIsClosing(true);
-    setTimeout(() => {
-      setExpandedImage(null);
-      setIsClosing(false);
-    }, 200);
-  }, []);
+  const pageContainerRef = useRef<HTMLDivElement>(null);
   
   // Motion values for drag
   const x = useMotionValue(0);
@@ -198,8 +279,8 @@ export default function SketchbookPage() {
   
   // Transform positions based on drag - images travel full width
   const pageWidth = typeof window !== 'undefined' ? window.innerWidth : 400;
-  // On mobile, increase spacing so adjacent images are fully off-screen
-  const slideDistance = pageWidth < 640 ? pageWidth * 0.8 : pageWidth * 0.5;
+  // Spacing between images - smaller in fullscreen to keep adjacent visible, larger in popup
+  const slideDistance = pageWidth < 640 ? cardWidth * 1.7 : (isFullscreen ? cardWidth * 2.1 : cardWidth * 1.7);
   
   // Current image: starts at center (0), moves with drag
   // When x = -slideDistance, current should be at -slideDistance (off left)
@@ -212,14 +293,59 @@ export default function SketchbookPage() {
   // Previous image (left): starts at -slideDistance, ends at 0 when x = slideDistance
   const prevImageX = useTransform(x, (value) => -slideDistance + value);
   
+  // Far next image (2 positions right): starts at 2*slideDistance
+  const farNextImageX = useTransform(x, (value) => slideDistance * 2 + value);
+  
+  // Far previous image (2 positions left): starts at -2*slideDistance
+  const farPrevImageX = useTransform(x, (value) => -slideDistance * 2 + value);
+  
   // Date opacities - crossfade between current, next, and previous dates
   const currentDateOpacity = useTransform(x, [-slideDistance/2, 0, slideDistance/2], [0, 1, 0]);
   const nextDateOpacity = useTransform(x, [-slideDistance/2, 0], [1, 0]);
   const prevDateOpacity = useTransform(x, [0, slideDistance/2], [0, 1]);
   
+  // Image opacities - smooth transition between current and adjacent images
+  // Side images always visible at 0.5 opacity, fade to 1 when becoming center
+  const currentImageOpacity = useTransform(x, [-slideDistance, 0, slideDistance], [0.5, 1, 0.5]);
+  const nextImageOpacity = useTransform(x, [-slideDistance, 0, slideDistance], [1, 0.5, 0.5]);
+  const prevImageOpacity = useTransform(x, [-slideDistance, 0, slideDistance], [0.5, 0.5, 1]);
+  
+  // Image scales - smooth size transition (0.85 for side images, 1 for center)
+  const currentImageScale = useTransform(x, [-slideDistance, 0, slideDistance], [0.85, 1, 0.85]);
+  const nextImageScale = useTransform(x, [-slideDistance, 0, slideDistance], [1, 0.85, 0.85]);
+  const prevImageScale = useTransform(x, [-slideDistance, 0, slideDistance], [0.85, 0.85, 1]);
+  
   // "More sketches coming soon!" opacity - fades out when swiping in either direction
   const comingSoonOpacity = useTransform(x, [-slideDistance/3, 0, slideDistance/3], [0, 1, 0]);
   
+  // Detect fullscreen mode
+  useEffect(() => {
+    const checkFullscreen = () => {
+      if (pageContainerRef.current) {
+        const isInPopup = pageContainerRef.current.closest('.experiment-modal-embed:not(.fullscreen)') !== null;
+        setIsFullscreen(!isInPopup);
+      } else {
+        // If not in modal at all, treat as fullscreen
+        setIsFullscreen(true);
+      }
+    };
+    
+    checkFullscreen();
+    window.addEventListener('resize', checkFullscreen);
+    
+    const modalEmbed = pageContainerRef.current?.closest('.experiment-modal-embed');
+    let observer: MutationObserver | null = null;
+    if (modalEmbed) {
+      observer = new MutationObserver(checkFullscreen);
+      observer.observe(modalEmbed, { attributes: true, attributeFilter: ['class'] });
+    }
+    
+    return () => {
+      window.removeEventListener('resize', checkFullscreen);
+      observer?.disconnect();
+    };
+  }, []);
+
   // Fetch entries from Sanity
   useEffect(() => {
     async function fetchEntries() {
@@ -245,17 +371,27 @@ export default function SketchbookPage() {
   useEffect(() => {
     function updateCardWidth() {
       const vw = window.innerWidth;
-      // Single card centered - smaller on mobile to hide adjacent images
+      // Single card centered - smaller in popup, larger in fullscreen
+      // Check if we're in a modal (popup mode) by looking for the modal container
+      const container = containerRef.current?.closest('.experiment-modal-embed');
+      const isInModal = !!container;
+      
       if (vw < 640) {
-        setCardWidth(vw * 0.5); // Smaller on mobile
+        setCardWidth(vw * 0.4); // Mobile - smaller
+      } else if (isInModal) {
+        setCardWidth(Math.min(320, vw * 0.25)); // Popup mode - smaller (2/3 of fullscreen)
       } else {
-        setCardWidth(Math.min(320, vw * 0.25));
+        setCardWidth(Math.min(800, vw * 0.55)); // Fullscreen - full size
       }
     }
     
-    updateCardWidth();
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(updateCardWidth, 50);
     window.addEventListener('resize', updateCardWidth);
-    return () => window.removeEventListener('resize', updateCardWidth);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', updateCardWidth);
+    };
   }, []);
   
   // Animate to show transition then change index
@@ -305,15 +441,13 @@ export default function SketchbookPage() {
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && expandedImage) {
-        closeExpandedImage();
-      } else if (e.key === 'ArrowLeft' && !expandedImage) {
+      if (e.key === 'ArrowLeft') {
         // Navigate to previous page with animation
         if (currentIndex > 0) {
           setSwipeDirection('right');
           animateToPrevPage();
         }
-      } else if (e.key === 'ArrowRight' && !expandedImage) {
+      } else if (e.key === 'ArrowRight') {
         // Navigate to next page with animation
         if (currentIndex < entries.length - 1) {
           setSwipeDirection('left');
@@ -323,7 +457,7 @@ export default function SketchbookPage() {
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [expandedImage, currentIndex, entries.length, animateToNextPage, animateToPrevPage, closeExpandedImage]);
+  }, [currentIndex, entries.length, animateToNextPage, animateToPrevPage]);
   
   // Handle drag end - swipe to change page with animation
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -360,110 +494,107 @@ export default function SketchbookPage() {
   
   const currentEntry = entries[currentIndex];
   
+  // Preload adjacent images
+  const prevImageUrl = entries[currentIndex - 1] ? getImageUrl(entries[currentIndex - 1]) : null;
+  const nextImageUrl = entries[currentIndex + 1] ? getImageUrl(entries[currentIndex + 1]) : null;
+  
+  // Preload more images (2 ahead and 2 behind)
+  const imagesToPreload = [
+    entries[currentIndex - 2] ? getImageUrl(entries[currentIndex - 2]) : null,
+    prevImageUrl,
+    nextImageUrl,
+    entries[currentIndex + 2] ? getImageUrl(entries[currentIndex + 2]) : null,
+  ].filter(Boolean);
+  
   return (
-    <div className="min-h-screen bg-white flex flex-col max-sm:overflow-hidden max-sm:h-screen max-sm:fixed max-sm:inset-0 max-sm:overscroll-none max-sm:touch-none">
-      {/* Logo - fixed position matching /polaroid */}
-      <button
-        onClick={() => navigate('/')}
-        className="fixed top-8 left-8 md:left-16 z-40 cursor-pointer transition-opacity duration-200 hover:opacity-80"
+    <>
+      {/* Hidden preload images - actual img elements for reliable preloading */}
+      <div className="hidden">
+        {imagesToPreload.map((url, i) => (
+          <img key={i} src={url!} alt="" />
+        ))}
+      </div>
+    <div 
+      ref={pageContainerRef}
+      className={`sketchbook-page-container h-screen flex flex-col overflow-hidden relative ${isFullscreen ? 'pt-8 pb-8 justify-center' : 'pb-16 justify-center'}`}
+      style={{ backgroundColor: DEFAULT_SKETCHBOOK_PROJECT.backgroundColor || '#ffffff' }}
+    >
+      {/* Logo - fixed position matching /polaroid, animates in smoothly */}
+      <motion.button
+        onClick={() => {
+          const isFullscreen = window.location.pathname.includes('/full');
+          if (isFullscreen) {
+            navigate('/project/sketchbook');
+          } else {
+            navigate('/');
+          }
+        }}
+        className="fixed top-8 left-8 md:left-16 z-40 cursor-pointer hover:opacity-80"
         aria-label="Go back to home"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
       >
         <img 
           src={imgLogo} 
           alt="Michelle Liu Logo" 
           className="w-[44px] h-[44px] object-contain"
         />
-      </button>
+      </motion.button>
 
       {/* Info Button - fixed top right */}
       <InfoButton project={DEFAULT_SKETCHBOOK_PROJECT} />
       
-      {/* Title and date */}
-      <div className="text-center px-6 pt-16 pb-12 max-sm:pt-24 max-sm:pb-8 [@media(min-height:800px)]:pt-32 [@media(min-height:800px)]:pb-24 overflow-hidden relative">
-        {/* Location title - crossfades between entries */}
-        <div className="relative h-6">
-          {/* Previous location */}
-          {currentIndex > 0 && entries[currentIndex - 1] && (
-            <motion.h1
-              className="text-lg font-medium text-gray-900 absolute inset-x-0"
-              style={{ opacity: prevDateOpacity }}
-            >
-              {entries[currentIndex - 1].location || 'sketchbook'}
-            </motion.h1>
-          )}
-          {/* Current location */}
-          <motion.h1
-            className="text-lg font-medium text-gray-900 absolute inset-x-0"
-            style={{ opacity: currentDateOpacity }}
-          >
+      {/* Title and date - opacity responds to drag position */}
+      <div className={`text-center px-6 shrink-0 relative ${isFullscreen ? 'pb-16' : 'pb-8'}`}>
+        {/* Current entry text */}
+        <motion.div style={{ opacity: currentDateOpacity }}>
+          <h1 className="text-lg font-medium text-gray-900 h-7">
             {currentEntry?.location || 'sketchbook'}
-          </motion.h1>
-          {/* Next location */}
-          {currentIndex < entries.length - 1 && entries[currentIndex + 1] && (
-            <motion.h1
-              className="text-lg font-medium text-gray-900 absolute inset-x-0"
-              style={{ opacity: nextDateOpacity }}
-            >
-              {entries[currentIndex + 1].location || 'sketchbook'}
-            </motion.h1>
-          )}
-        </div>
-        <div className="relative h-6">
-          {/* Previous date - fades in when swiping right */}
-          {currentIndex > 0 && entries[currentIndex - 1] && (
-            <motion.p
-              className="text-gray-400 text-lg absolute inset-x-0"
-              style={{ opacity: prevDateOpacity }}
-            >
-              {formatDate(entries[currentIndex - 1].date)}
-            </motion.p>
-          )}
-          {/* Current date */}
-          <motion.p
-            className="text-gray-400 text-lg absolute inset-x-0"
-            style={{ opacity: currentDateOpacity }}
-          >
+          </h1>
+          <p className="text-gray-400 text-lg h-6">
             {currentEntry && formatDate(currentEntry.date)}
-          </motion.p>
-          {/* Next date - fades in when swiping left */}
-          {currentIndex < entries.length - 1 && entries[currentIndex + 1] && (
-            <motion.p
-              className="text-gray-400 text-lg absolute inset-x-0"
-              style={{ opacity: nextDateOpacity }}
-            >
-              {formatDate(entries[currentIndex + 1].date)}
-            </motion.p>
-          )}
-        </div>
-        {/* "More sketches coming soon!" on last sketch - positioned below date */}
-        <div className="h-6 mt-1">
-          {currentIndex === entries.length - 1 && entries.length > 0 && (
-            <motion.p 
-              className="text-gray-400 text-base pointer-events-none"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              style={{ opacity: comingSoonOpacity }}
-            >
-              more sketches coming soon! :)
-            </motion.p>
-          )}
-        </div>
+          </p>
+        </motion.div>
+        {/* Next entry text (shows when dragging left) */}
+        <motion.div 
+          className="absolute inset-0 flex flex-col items-center justify-start"
+          style={{ opacity: nextDateOpacity }}
+        >
+          <h1 className="text-lg font-medium text-gray-900 h-7">
+            {entries[currentIndex + 1]?.location || 'sketchbook'}
+          </h1>
+          <p className="text-gray-400 text-lg h-6">
+            {entries[currentIndex + 1] && formatDate(entries[currentIndex + 1].date)}
+          </p>
+        </motion.div>
+        {/* Previous entry text (shows when dragging right) */}
+        <motion.div 
+          className="absolute inset-0 flex flex-col items-center justify-start"
+          style={{ opacity: prevDateOpacity }}
+        >
+          <h1 className="text-lg font-medium text-gray-900 h-7">
+            {entries[currentIndex - 1]?.location || 'sketchbook'}
+          </h1>
+          <p className="text-gray-400 text-lg h-6">
+            {entries[currentIndex - 1] && formatDate(entries[currentIndex - 1].date)}
+          </p>
+        </motion.div>
       </div>
       
+      {/* Left gradient overlay - fixed to viewport edge */}
+      <div 
+        className="fixed left-0 top-0 bottom-0 w-[15vw] z-10 pointer-events-none"
+        style={{ background: `linear-gradient(to right, ${DEFAULT_SKETCHBOOK_PROJECT.backgroundColor || '#ffffff'} 0%, ${DEFAULT_SKETCHBOOK_PROJECT.backgroundColor || '#ffffff'} 10%, transparent 100%)` }}
+      />
+      {/* Right gradient overlay - fixed to viewport edge */}
+      <div 
+        className="fixed right-0 top-0 bottom-0 w-[15vw] z-10 pointer-events-none"
+        style={{ background: `linear-gradient(to left, ${DEFAULT_SKETCHBOOK_PROJECT.backgroundColor || '#ffffff'} 0%, ${DEFAULT_SKETCHBOOK_PROJECT.backgroundColor || '#ffffff'} 10%, transparent 100%)` }}
+      />
+      
       {/* Main carousel area - shows current, prev, and next images */}
-      <div className="flex-1 flex flex-col items-center justify-center overflow-hidden relative">
-        {/* Left gradient overlay - white fading to transparent */}
-        <div 
-          className="absolute left-0 top-0 bottom-0 w-[15%] sm:w-[25%] z-10 pointer-events-none"
-          style={{ background: 'linear-gradient(to right, white 0%, white 50%, transparent 100%)' }}
-        />
-        {/* Right gradient overlay - white fading to transparent */}
-        <div 
-          className="absolute right-0 top-0 bottom-0 w-[15%] sm:w-[25%] z-10 pointer-events-none"
-          style={{ background: 'linear-gradient(to left, white 0%, white 50%, transparent 100%)' }}
-        />
+      <div className="flex flex-col items-center justify-center overflow-visible relative h-[30vh] xl:h-[45vh]">
         
         {loading ? (
           <div className="flex items-center justify-center">
@@ -483,52 +614,70 @@ export default function SketchbookPage() {
               }}
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.8}
+              dragElastic={1}
               dragMomentum={true}
-              dragTransition={{ bounceStiffness: 300, bounceDamping: 20 }}
+              dragTransition={{ bounceStiffness: 200, bounceDamping: 15 }}
               onDragStart={() => {
                 dragStartedRef.current = true;
               }}
               onDragEnd={handleDragEnd}
             >
-              {/* Previous image (left) */}
-              {currentIndex > 0 && entries[currentIndex - 1] && (
-                <motion.div 
-                  className="absolute top-1/2 -translate-y-1/2 flex items-center justify-center"
-                  style={{ 
-                    width: cardWidth,
-                    x: prevImageX,
-                  }}
-                >
+              {/* Far previous image (2 left) - preloaded for smooth transitions */}
+              <motion.div 
+                className="absolute top-1/2 -translate-y-1/2 flex items-center justify-center"
+                style={{ 
+                  width: cardWidth,
+                  x: farPrevImageX,
+                  opacity: currentIndex > 1 ? 0.5 : 0,
+                  scale: 0.85,
+                }}
+              >
+                {entries[currentIndex - 2] && (
+                  <img 
+                    src={getImageUrl(entries[currentIndex - 2])} 
+                    alt={entries[currentIndex - 2].note || `Sketch`}
+                    className="w-full h-auto max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
+                    draggable={false}
+                    loading="eager"
+                  />
+                )}
+              </motion.div>
+              
+              {/* Previous image (left) - always rendered to prevent abrupt appearance */}
+              <motion.div 
+                className="absolute top-1/2 -translate-y-1/2 flex items-center justify-center"
+                style={{ 
+                  width: cardWidth,
+                  x: prevImageX,
+                  opacity: currentIndex > 0 ? prevImageOpacity : 0,
+                  scale: prevImageScale,
+                }}
+              >
+                {entries[currentIndex - 1] && (
                   <img 
                     src={getImageUrl(entries[currentIndex - 1])} 
                     alt={entries[currentIndex - 1].note || `Sketch`}
-                    className="w-full h-auto drop-shadow-sm"
+                    className="w-full h-auto max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
                     draggable={false}
+                    loading="eager"
                   />
-                </motion.div>
-              )}
+                )}
+              </motion.div>
               
               {/* Current image (center) */}
               <motion.div 
                 className="flex items-center justify-center"
                 style={{ 
                   x: currentImageX,
-                }}
-                onClick={() => {
-                  // Only open popup if drag gesture didn't start
-                  if (!dragStartedRef.current && currentEntry && getImageUrl(currentEntry)) {
-                    setExpandedImage(getImageUrl(currentEntry)!);
-                  }
-                  // Reset the ref after click is processed
-                  dragStartedRef.current = false;
+                  opacity: currentImageOpacity,
+                  scale: currentImageScale,
                 }}
               >
                 {currentEntry && getImageUrl(currentEntry) ? (
                   <img 
                     src={getImageUrl(currentEntry)} 
                     alt={currentEntry.note || `Sketch from ${formatDate(currentEntry.date)}`}
-                    className="w-full h-auto drop-shadow-sm"
+                    className="w-full h-auto max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
                     draggable={false}
                   />
                 ) : (
@@ -536,31 +685,55 @@ export default function SketchbookPage() {
                 )}
               </motion.div>
               
-              {/* Next image (right) */}
-              {currentIndex < entries.length - 1 && entries[currentIndex + 1] && (
-                <motion.div 
-                  className="absolute top-1/2 -translate-y-1/2 flex items-center justify-center"
-                  style={{ 
-                    width: cardWidth,
-                    x: nextImageX,
-                  }}
-                >
+              {/* Next image (right) - always rendered to prevent abrupt appearance */}
+              <motion.div 
+                className="absolute top-1/2 -translate-y-1/2 flex items-center justify-center"
+                style={{ 
+                  width: cardWidth,
+                  x: nextImageX,
+                  opacity: currentIndex < entries.length - 1 ? nextImageOpacity : 0,
+                  scale: nextImageScale,
+                }}
+              >
+                {entries[currentIndex + 1] && (
                   <img 
                     src={getImageUrl(entries[currentIndex + 1])} 
                     alt={entries[currentIndex + 1].note || `Sketch`}
-                    className="w-full h-auto drop-shadow-sm"
+                    className="w-full h-auto max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
                     draggable={false}
+                    loading="eager"
                   />
-                </motion.div>
-              )}
+                )}
+              </motion.div>
+              
+              {/* Far next image (2 right) - preloaded for smooth transitions */}
+              <motion.div 
+                className="absolute top-1/2 -translate-y-1/2 flex items-center justify-center"
+                style={{ 
+                  width: cardWidth,
+                  x: farNextImageX,
+                  opacity: currentIndex < entries.length - 2 ? 0.5 : 0,
+                  scale: 0.85,
+                }}
+              >
+                {entries[currentIndex + 2] && (
+                  <img 
+                    src={getImageUrl(entries[currentIndex + 2])} 
+                    alt={entries[currentIndex + 2].note || `Sketch`}
+                    className="w-full h-auto max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
+                    draggable={false}
+                    loading="eager"
+                  />
+                )}
+              </motion.div>
             </motion.div>
           </div>
         )}
       </div>
       
-      {/* Page indicator */}
-      {!loading && entries.length > 0 && (
-        <div className="py-12">
+      {/* Page indicator - always render container to prevent layout shift */}
+      <div className={`shrink-0 ${isFullscreen ? 'pt-24' : 'pt-12'}`}>
+        {!loading && entries.length > 0 && (
           <PageIndicator 
             total={entries.length} 
             current={currentIndex}
@@ -568,66 +741,9 @@ export default function SketchbookPage() {
             dragX={x}
             slideDistance={slideDistance}
           />
-        </div>
-      )}
-
-      {/* Expanded Image Modal */}
-      {expandedImage &&
-        createPortal(
-          <div
-            className={`fixed inset-0 z-[9999] flex items-center justify-center p-4 transition-opacity duration-200 ${isClosing ? 'opacity-0' : 'opacity-100 animate-[fadeIn_200ms_ease-out]'}`}
-            onClick={closeExpandedImage}
-          >
-            {/* Light grey translucent overlay */}
-            <div className="absolute inset-0 bg-gray-100/95" />
-
-            {/* Close button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                closeExpandedImage();
-              }}
-              className={`fixed right-4 top-4 z-[10000] flex h-10 w-10 items-center justify-center transition-all duration-200 hover:scale-110 ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
-              aria-label="Close expanded image"
-            >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 14 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M1 1L13 13M1 13L13 1"
-                  stroke="#9ca3af"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
-
-            {/* Expanded image with date and note */}
-            <div
-              className={`relative z-10 flex flex-col max-h-[85vh] max-w-[90vw] items-center transition-all duration-200 ${isClosing ? 'opacity-0 scale-95' : 'opacity-100 scale-100 animate-[scaleIn_300ms_ease-out]'}`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <img
-                src={expandedImage}
-                alt="Expanded sketch"
-                className="max-h-[75vh] max-w-[90vw] object-contain drop-shadow-lg"
-              />
-              {currentEntry && (
-                <div className="mt-4 text-center">
-                  <p className="text-base text-gray-500">{formatDate(currentEntry.date)}</p>
-                  {currentEntry.note && (
-                    <p className="text-base text-gray-400">{currentEntry.note}</p>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>,
-          document.body
         )}
+      </div>
     </div>
+    </>
   );
 }

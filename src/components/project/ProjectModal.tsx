@@ -906,6 +906,28 @@ export default function ProjectModal({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen]);
 
+  // Show scrollbar only when actively scrolling
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+    
+    let scrollTimeout: ReturnType<typeof setTimeout>;
+    
+    const handleScroll = () => {
+      scrollContainer.classList.add('is-scrolling');
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        scrollContainer.classList.remove('is-scrolling');
+      }, 1000);
+    };
+    
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, []);
+
   const handleClose = () => {
     setIsClosing(true);
     setIsVisible(false);
@@ -922,8 +944,12 @@ export default function ProjectModal({
 
   const handleBack = () => {
     if (isFullscreen) {
-      // In fullscreen mode, clicking logo should go to homepage top
-      if (onViewAllProjects) {
+      // In fullscreen mode on desktop, clicking logo should collapse back to modal view
+      const isDesktop = window.innerWidth >= 768;
+      if (isDesktop && onCollapseFromFullscreen) {
+        onCollapseFromFullscreen();
+      } else if (onViewAllProjects) {
+        // On mobile or if no collapse handler, go to homepage
         onViewAllProjects();
       }
     } else if (onBack) {
@@ -1068,8 +1094,9 @@ export default function ProjectModal({
 
           {/* Scrollable content */}
           <div ref={scrollContainerRef} className={clsx(
-            "overflow-y-auto overflow-x-hidden flex-1",
-            !isFullscreen && "rounded-t-[26px]"
+            "overflow-y-auto overflow-x-hidden flex-1 modal-scroll-container",
+            !isFullscreen && "rounded-t-[26px]",
+            isFullscreen && "fullscreen"
           )}>
           {/* Fullscreen header - INSIDE scroll container so sticky works and gradient fades content */}
           {isFullscreen && (

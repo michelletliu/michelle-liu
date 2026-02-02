@@ -10,9 +10,11 @@ export type ExperimentProjectData = {
   title: string;
   year: string;
   description: string;
+  muxPlaybackIdClip?: string;
   muxPlaybackId?: string;
   xLink?: string;
   tryItOutHref?: string;
+  backgroundColor?: string;
   toolCategories?: ToolCategory[];
 };
 
@@ -26,6 +28,7 @@ export type ProjectInfo = {
   videoSrc?: string;
   xLink?: string;
   tryItOutHref: string;
+  backgroundColor?: string;
   toolCategories?: ToolCategory[];
 };
 
@@ -69,6 +72,7 @@ export function useExperimentProject(
             videoSrc: muxUrls.videoSrc,
             xLink: data.xLink || defaultProject.xLink,
             tryItOutHref: data.tryItOutHref || defaultProject.tryItOutHref,
+            backgroundColor: data.backgroundColor || defaultProject.backgroundColor,
             toolCategories: data.toolCategories || defaultProject.toolCategories,
           });
         }

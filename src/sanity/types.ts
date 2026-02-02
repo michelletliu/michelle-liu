@@ -567,6 +567,14 @@ export interface AboutQuote {
   order?: number;
 }
 
+export interface Startup {
+  _id: string;
+  name: string;
+  logo?: SanityImage;
+  link?: string;
+  order?: number;
+}
+
 // ============================================
 // LIBRARY PAGE TYPES
 // ============================================
