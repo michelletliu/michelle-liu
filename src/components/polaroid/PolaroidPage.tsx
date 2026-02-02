@@ -794,7 +794,7 @@ export default function PolaroidPage() {
         </div>
 
         {/* Controls */}
-        <div className={`content-stretch flex flex-col items-center relative shrink-0 ${isPopupMode ? 'gap-[18px]' : 'gap-[36px]'}`}>
+        <div className={`content-stretch flex flex-col items-center relative shrink-0 ${isPopupMode ? 'gap-[20px] md:gap-[28px]' : 'gap-[36px]'}`}>
           {/* Toolbar */}
           <div className="content-stretch flex items-center px-[8px] py-0 relative rounded-[16px] shrink-0 w-full justify-center">
             <div className="content-stretch flex md:flex-row flex-col gap-[10px] items-center justify-center relative shrink-0">

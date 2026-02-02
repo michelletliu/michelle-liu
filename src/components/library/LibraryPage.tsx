@@ -253,7 +253,7 @@ export default function LibraryPage() {
         }`} 
         style={{ 
           backgroundImage: "linear-gradient(90deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.02) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)",
-          transitionDuration: isExiting ? '280ms' : '300ms',
+          transitionDuration: isExiting ? '100ms' : '300ms',
           transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out'
         }}
       >
@@ -400,11 +400,8 @@ export default function LibraryPage() {
               {filteredBooks.map((book) => (
                 <BookCard key={book.id} book={book} onClick={() => {
                   if (isPopupMode) {
-                    // Fade out before navigating to fullscreen mode
-                    setIsExiting(true);
-                    setTimeout(() => {
-                      navigate(`/project/library/full?book=${encodeURIComponent(book.id)}`);
-                    }, 280);
+                    // Navigate instantly to fullscreen mode
+                    navigate(`/project/library/full?book=${encodeURIComponent(book.id)}`);
                   } else {
                     setSelectedBook(book);
                   }
