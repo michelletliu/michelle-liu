@@ -25,6 +25,7 @@ import { initCursorCompatibility } from "./utils/cursorCompat";
 import ContactBadge from "./components/ContactBadge";
 import NavigationTabs from "./components/NavigationTabs";
 import NotFound from "./components/NotFound";
+import ExperimentModal from "./components/ExperimentModal";
 
 // CSS for fade up animation
 const fadeUpStyles = `
@@ -215,6 +216,7 @@ type Project = {
   imageSrc: string;
   videoSrc?: string; // Optional HLS video URL
   xLink?: string; // Optional X (Twitter) link
+  backgroundColor?: string; // Optional background color for experiment projects
   toolCategories?: ToolCategory[]; // Optional tools section
 };
 
@@ -268,6 +270,7 @@ const staticProjects: Project[] = [
     imageSrc: "https://image.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w/thumbnail.png",
     videoSrc: "https://stream.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w.m3u8",
     xLink: "https://x.com/michelletliu/status/1991201412072734777",
+    backgroundColor: "#f0f9ff",
     toolCategories: [
       { label: 'Design', tools: ['Figma'] },
       { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -283,6 +286,7 @@ const staticProjects: Project[] = [
     imageSrc: "https://image.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI/thumbnail.png",
     videoSrc: "https://stream.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI.m3u8",
     xLink: "https://x.com/michelletliu/status/2000987498550383032",
+    backgroundColor: "#f3f4f6",
     toolCategories: [
       { label: 'Design', tools: ['Figma'] },
       { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -297,6 +301,7 @@ const staticProjects: Project[] = [
     description: "A digital home for sketches and visual journaling.",
     imageSrc: "https://image.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg/thumbnail.png",
     videoSrc: "https://stream.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg.m3u8",
+    backgroundColor: "#ffffff",
     toolCategories: [
       { label: 'Design', tools: ['Figma'] },
       { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -312,6 +317,7 @@ const staticProjects: Project[] = [
     imageSrc: "https://image.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo/thumbnail.png",
     videoSrc: "https://stream.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo.m3u8",
     xLink: "https://x.com/michelletliu/status/1981030966044061894",
+    backgroundColor: "#ffffff",
     toolCategories: [
       { label: 'Design', tools: ['Figma'] },
       { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -449,11 +455,16 @@ type ProjectCardProps = {
 const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, featured = false }: ProjectCardProps) {
   const hasTryItOut = project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime' || project.id === 'sketchbook';
   
-  // Handle click - navigate directly for polaroid/library/sketchbook, otherwise open modal
+  // Handle click - on desktop, open modal for all projects; on mobile, navigate directly for experiments
   const handleClick = () => {
-    if (hasTryItOut) {
+    // Check if desktop (md breakpoint = 768px)
+    const isDesktop = window.innerWidth >= 768;
+    
+    if (hasTryItOut && !isDesktop) {
+      // Mobile: navigate directly to experiment pages
       window.location.href = project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library';
     } else {
+      // Desktop: open modal for all projects (including experiments)
       onProjectClick(project.id);
     }
   };
@@ -496,8 +507,8 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
           </div>
         </div>
         {/* Desktop: just description */}
-        <div className="hidden md:flex content-stretch items-start px-[13px] py-0 -mt-1 relative shrink-0 w-full">
-          <p className="font-['Figtree',sans-serif] font-normal leading-[1] text-[#9ca3af] text-base tracking-[0.005em] text-left project-hover-text">{project.description}</p>
+        <div className="hidden md:flex content-stretch items-start px-[13px] py-0 -mt-1.5 -mb-0.5 relative shrink-0 w-full">
+          <p className="font-['Figtree',sans-serif] font-normal leading-[1.4] text-[#9ca3af] text-base tracking-[0.005em] text-left project-hover-text">{project.description}</p>
         </div>
         {/* Mobile: title + description */}
         <div className="md:hidden content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.01em] gap-1">
@@ -819,9 +830,11 @@ type SanityExperimentProject = {
   title: string;
   year: string;
   description: string;
+  muxPlaybackIdClip?: string;
   muxPlaybackId?: string;
   xLink?: string;
   tryItOutHref?: string;
+  backgroundColor?: string;
   toolCategories?: ToolCategory[];
 };
 
@@ -883,8 +896,10 @@ function HomePage() {
           if (SIDE_PROJECT_IDS.includes(project.id)) {
             const experimentData = experimentMap[project.id];
             if (experimentData) {
-              const muxUrls = experimentData.muxPlaybackId 
-                ? getMuxUrls(experimentData.muxPlaybackId)
+              // Use clip version for homepage, fall back to full version, then static
+              const clipPlaybackId = experimentData.muxPlaybackIdClip || experimentData.muxPlaybackId;
+              const muxUrls = clipPlaybackId 
+                ? getMuxUrls(clipPlaybackId)
                 : { imageSrc: project.imageSrc, videoSrc: project.videoSrc };
               return {
                 ...project,
@@ -894,6 +909,7 @@ function HomePage() {
                 imageSrc: muxUrls.imageSrc,
                 videoSrc: muxUrls.videoSrc,
                 xLink: experimentData.xLink || project.xLink,
+                backgroundColor: experimentData.backgroundColor || project.backgroundColor,
                 toolCategories: experimentData.toolCategories || project.toolCategories,
               };
             }
@@ -1077,13 +1093,16 @@ function HomePage() {
       {/* Footer */}
       <Footer />
 
-      {/* Project Modal - Simple modal for side projects, Sanity modal for main work */}
+      {/* Project Modal - Experiment modal for side projects, Sanity modal for main work */}
       {selectedProject && (
-        // Side projects (polaroid, screentime, sketchbook, library) use simple modal
+        // Side projects (polaroid, screentime, sketchbook, library) use experiment modal with embedded app
         SIDE_PROJECT_IDS.includes(selectedProject.id) ? (
-          <ProjectModal 
+          <ExperimentModal 
+            key={selectedProject.id}
+            projectId={selectedProject.id as 'polaroid' | 'library' | 'screentime' | 'sketchbook'}
             project={selectedProject} 
-            onClose={handleModalClose} 
+            onClose={handleModalClose}
+            initialFullscreen={isFullscreenFromUrl}
           />
         ) : (
           // Main work projects (apple, roblox, adobe, nasa) use Sanity-powered modal

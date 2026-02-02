@@ -34,9 +34,15 @@ export const experimentProject = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'muxPlaybackIdClip',
+      title: 'Mux Playback ID (Homepage Clip)',
+      description: 'Short clipped version of the video for homepage display',
+      type: 'string',
+    }),
+    defineField({
       name: 'muxPlaybackId',
-      title: 'Mux Playback ID',
-      description: 'The Mux playback ID for the video preview',
+      title: 'Mux Playback ID (Full Version)',
+      description: 'Full video that plays when user clicks info button',
       type: 'string',
     }),
     defineField({
@@ -91,6 +97,17 @@ export const experimentProject = defineType({
           },
         }),
       ],
+    }),
+    defineField({
+      name: 'backgroundColor',
+      title: 'Background Color',
+      description: 'Hex color code for the experiment page background (e.g., #ffffff, #dbeafe)',
+      type: 'string',
+      initialValue: '#ffffff',
+      validation: (rule) => rule.regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, {
+        name: 'hex color',
+        invert: false,
+      }).warning('Should be a valid hex color (e.g., #ffffff)'),
     }),
     defineField({
       name: 'order',

@@ -6,7 +6,7 @@ import "./index.css";
 import "./styles/globals.css";
 
 // Console greeting for curious visitors
-console.log("✨ thanks for stopping by! say hi: michelletheresaliu@gmail.com");
+console.log("✨ thanks for stopping by! say hi: studio@liumichelle.com");
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>

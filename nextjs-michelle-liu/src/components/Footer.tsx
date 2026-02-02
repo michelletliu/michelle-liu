@@ -177,8 +177,8 @@ export default function Footer() {
                 <div className="flex flex-col font-['Figtree',sans-serif] font-normal items-start text-gray-400 w-full">
                   <p className="leading-6 min-w-full text-base">Let&apos;s work together!</p>
                   <p className="leading-6 text-base break-all">
-                    <a href="mailto:michelletheresaliu@gmail.com" className="hover:text-blue-500 text-gray-500 transition-colors duration-200">
-                      <span>michelletheresaliu@gmail.com </span>
+                    <a href="mailto:studio@liumichelle.com" className="hover:text-blue-500 text-gray-500 transition-colors duration-200">
+                      <span>studio@liumichelle.com </span>
                       <span className="font-['Figtree',sans-serif] font-bold">↗</span>
                     </a>
                   </p>
@@ -223,8 +223,8 @@ export default function Footer() {
                   <div className="flex flex-col font-['Figtree',sans-serif] font-normal items-start text-gray-400 w-[326px]">
                     <p className="leading-6 text-base w-full">Let&apos;s work together!</p>
                     <p className="leading-6 text-base w-full break-all">
-                      <a href="mailto:michelletheresaliu@gmail.com" className="hover:text-blue-500 text-gray-500 transition-colors duration-200">
-                        <span>michelletheresaliu@gmail.com </span>
+                      <a href="mailto:studio@liumichelle.com" className="hover:text-blue-500 text-gray-500 transition-colors duration-200">
+                        <span>studio@liumichelle.com </span>
                         <span className="font-['Figtree',sans-serif] font-bold">↗</span>
                       </a>
                     </p>

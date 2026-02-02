@@ -101,6 +101,12 @@ export const structure = (S: StructureBuilder) =>
         .schemaType('experience')
         .child(S.documentTypeList('experience').title('Experiences')),
 
+      // Startup
+      S.listItem()
+        .title('Startup')
+        .schemaType('startup')
+        .child(S.documentTypeList('startup').title('Startups')),
+
       // Community
       S.listItem()
         .title('Community')

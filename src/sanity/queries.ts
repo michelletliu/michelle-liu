@@ -289,6 +289,16 @@ export const LORE_ITEMS_QUERY = `
   }
 `;
 
+// Query for all startups
+export const STARTUPS_QUERY = `
+  *[_type == "startup" && isPublished == true] | order(order asc) {
+    _id,
+    name,
+    logo,
+    link
+  }
+`;
+
 // Query for all quotes
 export const QUOTES_QUERY = `
   *[_type == "aboutQuote" && isPublished == true] | order(order asc) {
@@ -335,9 +345,11 @@ export const EXPERIMENT_PROJECTS_QUERY = `
     title,
     year,
     description,
+    muxPlaybackIdClip,
     muxPlaybackId,
     xLink,
     tryItOutHref,
+    backgroundColor,
     toolCategories[] {
       label,
       tools
@@ -351,9 +363,11 @@ export const EXPERIMENT_PROJECT_BY_ID_QUERY = `
     title,
     year,
     description,
+    muxPlaybackIdClip,
     muxPlaybackId,
     xLink,
     tryItOutHref,
+    backgroundColor,
     toolCategories[] {
       label,
       tools

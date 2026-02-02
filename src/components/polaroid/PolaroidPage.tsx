@@ -12,6 +12,7 @@ import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
 
+
 // Default project info (fallback if Sanity fetch fails)
 const DEFAULT_POLAROID_PROJECT = {
   id: 'polaroid',
@@ -22,6 +23,7 @@ const DEFAULT_POLAROID_PROJECT = {
   videoSrc: 'https://stream.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w.m3u8',
   xLink: 'https://x.com/michelletliu/status/1991201412072734777',
   tryItOutHref: '/polaroid',
+  backgroundColor: '#f0f9ff',
   toolCategories: [
     { label: 'Design', tools: ['Figma'] },
     { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -241,8 +243,39 @@ export default function PolaroidPage() {
   const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [isEntering, setIsEntering] = useState(true);
+  const [isPopupMode, setIsPopupMode] = useState(false);
   const logoRef = useRef<HTMLButtonElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Detect if we're in popup mode (embedded in ExperimentModal)
+  useEffect(() => {
+    const checkPopupMode = () => {
+      if (containerRef.current) {
+        const isInModal = containerRef.current.closest('.experiment-modal-embed:not(.fullscreen)') !== null;
+        setIsPopupMode(isInModal);
+      }
+    };
+    checkPopupMode();
+    
+    // Re-check on resize in case modal state changes
+    window.addEventListener('resize', checkPopupMode);
+    
+    // Watch for class changes on the modal embed (for fullscreen transitions)
+    const modalEmbed = containerRef.current?.closest('.experiment-modal-embed');
+    let observer: MutationObserver | null = null;
+    if (modalEmbed) {
+      observer = new MutationObserver(() => {
+        checkPopupMode();
+      });
+      observer.observe(modalEmbed, { attributes: true, attributeFilter: ['class'] });
+    }
+    
+    return () => {
+      window.removeEventListener('resize', checkPopupMode);
+      observer?.disconnect();
+    };
+  }, []);
 
   // Handle entrance animation
   useEffect(() => {
@@ -253,11 +286,17 @@ export default function PolaroidPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle navigation back to home
+  // Handle navigation back to home (or to popup mode if in fullscreen)
   const handleBackToHome = () => {
-    setIsExiting(true);
+    // If we're in fullscreen mode, go to popup mode immediately (no exit animation)
+    const isFullscreen = window.location.pathname.includes('/full');
+    if (isFullscreen) {
+      navigate('/project/polaroid');
+      return;
+    }
     
-    // Navigate after the fade transition
+    // Otherwise animate exit then go to home
+    setIsExiting(true);
     setTimeout(() => {
       navigate('/');
     }, 280);
@@ -485,11 +524,13 @@ export default function PolaroidPage() {
 
   return (
     <>
-      {/* Logo - fixed outside transitioning container to stay constant */}
+      {/* Logo - fixed outside transitioning container, animates in smoothly */}
       <button
         ref={logoRef}
         onClick={handleBackToHome}
-        className="fixed top-8 left-8 md:left-16 z-40 cursor-pointer transition-opacity duration-200 hover:opacity-80"
+        className={`fixed top-8 left-8 md:left-16 z-40 cursor-pointer transition-all duration-300 ease-out hover:opacity-80 ${
+          isEntering ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+        }`}
         aria-label="Go back to home"
       >
         <img 
@@ -503,11 +544,14 @@ export default function PolaroidPage() {
       <InfoButton project={projectInfo} />
 
       <div 
-        className={`polaroid-page-container relative w-full min-h-screen min-h-[100dvh] px-4 flex flex-col items-center transition-all ${
+        ref={containerRef}
+        className={`polaroid-page-container relative w-full px-4 flex flex-col items-center transition-all ${
+          isPopupMode ? 'h-full justify-center' : 'min-h-screen min-h-[100dvh]'
+        } ${
           isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
         }`}
         style={{ 
-          backgroundImage: "linear-gradient(133.216deg, rgba(151, 191, 255, 0.2) 10.334%, rgba(151, 191, 255, 0) 94.005%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)",
+          backgroundColor: projectInfo.backgroundColor || '#f0f9ff',
           transitionDuration: isExiting ? '280ms' : '300ms',
           transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out'
         }}
@@ -517,7 +561,7 @@ export default function PolaroidPage() {
         }}
       >
 
-      <div className="flex flex-col gap-[32px] md:gap-[48px] items-center w-full max-w-[583px] my-auto py-[100px] md:py-[120px]">
+      <div className={`flex flex-col items-center w-full max-w-[583px] my-auto ${isPopupMode ? 'gap-[20px] md:gap-[28px] py-[50px] md:py-[60px]' : 'gap-[32px] md:gap-[48px] py-[100px] md:py-[120px]'}`}>
         {/* Title */}
         <div 
           className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-2xl md:text-3rxl text-black text-center text-nowrap" 
@@ -532,8 +576,16 @@ export default function PolaroidPage() {
         {/* Polaroid Frame */}
         <div 
           ref={polaroidRef}
-          className="content-stretch flex h-[320px] md:h-[393.22px] items-center justify-center relative rounded-[5.5px] md:rounded-[6.78px] shadow-[0px_2.5px_16px_0px_rgba(0,0,0,0.08)] md:shadow-[0px_3.39px_20.339px_0px_rgba(0,0,0,0.08)] shrink-0 w-[274px] md:w-[337.288px] transition-transform duration-300 ease-out hover:rotate-2">
-          <div className="h-[320px] md:h-[393.22px] relative rounded-[5.5px] md:rounded-[6.78px] shrink-0 w-[274px] md:w-[337.288px]">
+          className={`content-stretch flex items-center justify-center relative rounded-[4px] md:rounded-[5.5px] shadow-[0px_2px_12px_0px_rgba(0,0,0,0.08)] md:shadow-[0px_2.5px_16px_0px_rgba(0,0,0,0.08)] shrink-0 transition-transform duration-300 ease-out hover:rotate-2 ${
+            isPopupMode 
+              ? 'h-[224px] md:h-[275px] w-[192px] md:w-[236px]' 
+              : 'h-[320px] md:h-[393.22px] w-[274px] md:w-[337.288px]'
+          }`}>
+          <div className={`relative rounded-[4px] md:rounded-[5.5px] shrink-0 ${
+            isPopupMode 
+              ? 'h-[224px] md:h-[275px] w-[192px] md:w-[236px]' 
+              : 'h-[320px] md:h-[393.22px] w-[274px] md:w-[337.288px]'
+          }`}>
             <div className="absolute contents left-0 top-0">
               <div className="absolute contents left-0 top-0">
                 <div 
@@ -552,20 +604,28 @@ export default function PolaroidPage() {
                 </div>
               </div>
               <div 
-                className="absolute content-stretch flex items-center left-0 pb-[62px] md:pb-[76.271px] pt-[16.5px] md:pt-[20.339px] px-[16.5px] md:px-[20.339px] rounded-[5.5px] md:rounded-[6.78px] top-0"
+                className={`absolute content-stretch flex items-center left-0 rounded-[5.5px] md:rounded-[6.78px] top-0 ${
+                  isPopupMode 
+                    ? 'pb-[43px] md:pb-[53px] pt-[12px] md:pt-[14px] px-[12px] md:px-[14px]' 
+                    : 'pb-[62px] md:pb-[76.271px] pt-[16.5px] md:pt-[20.339px] px-[16.5px] md:px-[20.339px]'
+                }`}
                 style={{ 
                   backgroundColor: selectedColor ? selectedColor.tint : 'white',
                 }}
               >
                 <div 
-                  className="relative rounded-[2.75px] md:rounded-[3.39px] shrink-0 w-[241px] h-[241px] md:w-[296.61px] md:h-[296.61px]"
+                  className={`relative rounded-[2.75px] md:rounded-[3.39px] shrink-0 ${
+                    isPopupMode 
+                      ? 'w-[168px] h-[168px] md:w-[208px] md:h-[208px]' 
+                      : 'w-[241px] h-[241px] md:w-[296.61px] md:h-[296.61px]'
+                  }`}
                   onMouseEnter={handleImageHoverStart}
                   onMouseLeave={handleImageHoverEnd}
                 >
                   <div className="overflow-clip relative rounded-[inherit] size-full">
                     {uploadedImage ? (
                       /* Uploaded image - preserve aspect ratio and center */
-                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[4.7px] md:rounded-[5.773px] bg-[#f5f5f5]">
+                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[4.7px] md:rounded-[5.773px]">
                         <img 
                           alt="Polaroid photo" 
                           className="max-w-full max-h-full w-auto h-auto object-contain" 
@@ -585,19 +645,23 @@ export default function PolaroidPage() {
                         style={{ backgroundColor: isImageHovered ? '#e5e7eb' : '#f3f4f6' }}
                       >
                         <div 
-                          className="rounded-full w-[162px] h-[162px] md:w-[200px] md:h-[200px] flex items-center justify-center transition-colors duration-200"
+                          className={`rounded-full flex items-center justify-center transition-colors duration-200 ${
+                            isPopupMode 
+                              ? 'w-[110px] h-[110px] md:w-[145px] md:h-[145px]' 
+                              : 'w-[162px] h-[162px] md:w-[200px] md:h-[200px]'
+                          }`}
                           style={{ backgroundColor: isImageHovered ? '#d1d5db' : '#e5e7eb' }}
                         >
                           <svg 
-                            width="65" 
-                            height="65" 
+                            width={isPopupMode ? "40" : "65"}
+                            height={isPopupMode ? "40" : "65"}
                             viewBox="0 0 24 24" 
                             fill="none" 
                             stroke={isImageHovered ? '#6b7280' : '#9ca3af'} 
                             strokeWidth="1.5" 
                             strokeLinecap="round" 
                             strokeLinejoin="round" 
-                            className="md:w-[80px] md:h-[80px] transition-colors duration-200"
+                            className={`transition-colors duration-200 ${isPopupMode ? 'md:w-[52px] md:h-[52px]' : 'md:w-[80px] md:h-[80px]'}`}
                           >
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                             <polyline points="17 8 12 3 7 8" />
@@ -662,7 +726,11 @@ export default function PolaroidPage() {
           {/* Date Text */}
           {showDate && (
             <div 
-              className="absolute flex flex-col justify-center leading-[0] left-[229.7px] md:left-[282.7px] not-italic text-[13.8px] md:text-[16.949px] text-[rgba(0,0,0,0.4)] text-center text-nowrap top-[301.5px] md:top-[370.72px] tracking-[0.15em] -translate-x-1/2 -translate-y-1/2"
+              className={`absolute flex flex-col justify-center leading-[0] not-italic text-[rgba(0,0,0,0.4)] text-center text-nowrap tracking-[0.15em] -translate-x-1/2 -translate-y-1/2 ${
+                isPopupMode 
+                  ? 'text-[10px] md:text-[12px] left-[161px] md:left-[198px] top-[211px] md:top-[259px]' 
+                  : 'text-[13.8px] md:text-[16.949px] left-[229.7px] md:left-[282.7px] top-[301.5px] md:top-[370.72px]'
+              }`}
               style={{ fontFamily: "'Courier New', monospace" }}
             >
               <p className="leading-[23.4px] md:leading-[28.814px]">{currentDate}</p>
@@ -672,17 +740,25 @@ export default function PolaroidPage() {
           {/* Caption Text Box */}
           {showText && (
             <div 
-              className="absolute content-stretch flex items-center left-[10px] md:left-[12.3px] px-[6.5px] md:px-[8px] py-[3.25px] md:py-[4px] top-[260.2px] md:top-[320.29px]"
+              className={`absolute content-stretch flex items-center px-[6.5px] md:px-[8px] py-[3.25px] md:py-[4px] ${
+                isPopupMode 
+                  ? 'left-[7px] md:left-[9px] top-[182px] md:top-[224px]' 
+                  : 'left-[10px] md:left-[12.3px] top-[260.2px] md:top-[320.29px]'
+              }`}
             >
               <div className="content-stretch flex items-center relative shrink-0">
                 <div 
-                  className="flex flex-col justify-center leading-[0] not-italic relative shrink-0 text-[14.6px] md:text-[18px] text-black text-center text-nowrap tracking-[0.15em]"
+                  className={`flex flex-col justify-center leading-[0] not-italic relative shrink-0 text-black text-center text-nowrap tracking-[0.15em] ${
+                    isPopupMode ? 'text-[10px] md:text-[12px]' : 'text-[14.6px] md:text-[18px]'
+                  }`}
                   style={{ fontFamily: "'Courier New', monospace" }}
                 >
-                  <p className="leading-[24.4px] md:leading-[30px]">{caption}</p>
+                  <p className={isPopupMode ? 'leading-[16px] md:leading-[20px]' : 'leading-[24.4px] md:leading-[30px]'}>{caption}</p>
                 </div>
                 {isEditingCaption && (
-                  <div className="h-[24.4px] md:h-[30px] relative shrink-0 w-[1.6px] md:w-[2px] ml-[1.6px] md:ml-[2px] animate-blink">
+                  <div className={`relative shrink-0 animate-blink ${
+                    isPopupMode ? 'h-[16px] md:h-[20px] w-[1.2px] md:w-[1.5px] ml-[1.2px] md:ml-[1.5px]' : 'h-[24.4px] md:h-[30px] w-[1.6px] md:w-[2px] ml-[1.6px] md:ml-[2px]'
+                  }`}>
                     <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 2 30">
                       <path d="M1 2L1 28" stroke="#0088FF" strokeLinecap="round" strokeWidth="2" />
                     </svg>
@@ -718,7 +794,7 @@ export default function PolaroidPage() {
         </div>
 
         {/* Controls */}
-        <div className="content-stretch flex flex-col gap-[36px] items-center relative shrink-0">
+        <div className={`content-stretch flex flex-col items-center relative shrink-0 ${isPopupMode ? 'gap-[18px]' : 'gap-[36px]'}`}>
           {/* Toolbar */}
           <div className="content-stretch flex items-center px-[8px] py-0 relative rounded-[16px] shrink-0 w-full justify-center">
             <div className="content-stretch flex md:flex-row flex-col gap-[10px] items-center justify-center relative shrink-0">
@@ -845,17 +921,25 @@ export default function PolaroidPage() {
       {showShareModal && (
         <>
           <div 
-            className="fixed inset-0 transition-opacity cursor-pointer z-40" 
+            className={`transition-opacity cursor-pointer z-40 ${isPopupMode ? 'absolute inset-0 rounded-[26px]' : 'fixed inset-0'}`}
             style={{ 
               backgroundImage: "linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%), linear-gradient(90deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.25) 100%)",
               opacity: 0.4
             }}
             onClick={() => setShowShareModal(false)}
           />
-          <div className="fixed bg-white left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[26px] z-50 max-h-[calc(100vh-40px)] max-h-[calc(100dvh-40px)] overflow-y-auto w-[calc(100%-32px)] sm:w-auto sm:min-w-[400px] md:min-w-[530px]">
-            <div className="content-stretch flex flex-col gap-[24px] sm:gap-[32px] items-center overflow-clip px-[20px] sm:px-[28px] md:px-[36px] py-[24px] sm:py-[30px] pb-[32px] sm:pb-[40px] relative rounded-[inherit] w-full sm:min-w-[400px] md:min-w-[530px]">
+          <div className={`bg-white left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[26px] z-50 ${
+            isPopupMode 
+              ? 'absolute h-auto w-auto scale-[0.85] overflow-hidden' 
+              : 'fixed max-h-[calc(100vh-40px)] max-h-[calc(100dvh-40px)] w-[calc(100%-32px)] sm:w-auto sm:min-w-[400px] md:min-w-[530px] overflow-y-auto'
+          }`}>
+            <div className={`content-stretch flex flex-col items-center overflow-clip relative rounded-[inherit] w-full ${
+              isPopupMode 
+                ? 'gap-[16px] px-[32px] pt-[17px] pb-[48px]' 
+                : 'gap-[24px] sm:gap-[32px] px-[20px] sm:px-[28px] md:px-[36px] py-[24px] sm:py-[30px] pb-[32px] sm:pb-[40px] sm:min-w-[400px] md:min-w-[530px]'
+            }`}>
               <div className="content-stretch flex flex-col gap-[36px] items-center relative shrink-0 w-full">
-                <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] min-w-full relative shrink-0 text-[22px] text-black tracking-[-0.26px] w-[min-content]" style={{ fontVariationSettings: "'wdth' 100" }}>
+                <div className={`flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] min-w-full relative shrink-0 text-[22px] text-black tracking-[-0.26px] w-[min-content] ${isPopupMode ? 'self-start pl-0' : ''}`} style={{ fontVariationSettings: "'wdth' 100" }}>
                   <p className="leading-[28px]">Share Polaroid</p>
                 </div>
                 

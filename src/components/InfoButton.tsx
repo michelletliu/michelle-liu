@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import VideoPlayer from './VideoPlayer';
 import { ArrowUpRight } from './ArrowUpRight';
 import { useScrollLock } from '../utils/useScrollLock';
@@ -137,9 +138,9 @@ export default function InfoButton({ project }: InfoButtonProps) {
         <InfoIcon />
       </button>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-8">
+      {/* Modal - portal to escape transformed containers on /full pages */}
+      {showModal && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-8">
           {/* Overlay */}
           <div 
             className={`absolute inset-0 bg-black/20 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`} 
@@ -257,7 +258,8 @@ export default function InfoButton({ project }: InfoButtonProps) {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

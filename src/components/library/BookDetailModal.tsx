@@ -1,13 +1,86 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import type { Book } from "./types";
 import { useScrollLock } from "../../utils/useScrollLock";
 
 interface BookDetailModalProps {
   book: Book;
   onClose: () => void;
+  isPopupMode?: boolean;
 }
 
-// Parse text formatting: **bold**, *italic*, <b>bold</b>, <i>italic</i>, and --- horizontal lines
+// Parse inline text formatting: <i>italic</i> and <b>bold</b> for simple text fields like titles
+export function formatText(text: string): React.ReactNode[] {
+  const formatPattern = /(<b>[^<]+<\/b>|<i>[^<]+<\/i>)/g;
+  const parts = text.split(formatPattern);
+  
+  return parts.map((part, index) => {
+    if (!part) return null;
+    
+    if (part.startsWith('<b>') && part.endsWith('</b>')) {
+      return <strong key={index}>{part.slice(3, -4)}</strong>;
+    } else if (part.startsWith('<i>') && part.endsWith('</i>')) {
+      return <em key={index}>{part.slice(3, -4)}</em>;
+    }
+    return <span key={index}>{part}</span>;
+  }).filter(Boolean);
+}
+
+// Recursively parse inline formatting tags: <i>, <b>, <l> (supports nesting)
+function parseInlineFormatting(text: string, keyPrefix: string): React.ReactNode[] {
+  const result: React.ReactNode[] = [];
+  let remaining = text;
+  let partIndex = 0;
+  
+  while (remaining.length > 0) {
+    // Find the next opening tag anywhere in the string
+    const openTagMatch = remaining.match(/<(i|b|l)>/);
+    
+    if (!openTagMatch || openTagMatch.index === undefined) {
+      // No more tags, add remaining text
+      result.push(<span key={`${keyPrefix}-${partIndex++}`}>{remaining}</span>);
+      break;
+    }
+    
+    // Add text before the tag
+    if (openTagMatch.index > 0) {
+      result.push(<span key={`${keyPrefix}-${partIndex++}`}>{remaining.slice(0, openTagMatch.index)}</span>);
+    }
+    
+    const tag = openTagMatch[1];
+    const afterOpenTag = remaining.slice(openTagMatch.index + openTagMatch[0].length);
+    
+    // Find the matching closing tag
+    const closeTag = `</${tag}>`;
+    const closeIndex = afterOpenTag.indexOf(closeTag);
+    
+    if (closeIndex === -1) {
+      // No closing tag found, treat rest as plain text
+      result.push(<span key={`${keyPrefix}-${partIndex++}`}>{remaining}</span>);
+      break;
+    }
+    
+    const content = afterOpenTag.slice(0, closeIndex).replace(/^\s+/, '');
+    
+    // Recursively parse content inside the tag
+    const innerContent = parseInlineFormatting(content, `${keyPrefix}-${partIndex}`);
+    const key = `${keyPrefix}-${partIndex++}`;
+    
+    if (tag === 'i') {
+      result.push(<em key={key}>{innerContent}</em>);
+    } else if (tag === 'b') {
+      result.push(<span key={key} className="font-semibold">{innerContent}</span>);
+    } else if (tag === 'l') {
+      result.push(<span key={key} className="text-gray-400 text-sm not-italic uppercase">{innerContent}</span>);
+    }
+    
+    remaining = afterOpenTag.slice(closeIndex + closeTag.length);
+  }
+  
+  return result;
+}
+
+// Parse text formatting: **bold**, *italic*, <b>bold</b>, <i>italic</i>, <l>light</l>, and --- horizontal lines
 function formatReview(text: string): React.ReactNode[] {
   // First split by horizontal line patterns (3+ dashes on their own line)
   const sections = text.split(/\n*-{3,}\n*/g);
@@ -26,38 +99,15 @@ function formatReview(text: string): React.ReactNode[] {
       );
     }
     
-    // Parse formatting: **bold**, *italic*, <b>bold</b>, <i>italic</i>
-    // Order matters: check ** before * to avoid conflicts
-    const formatPattern = /(\*\*[^*]+\*\*|\*[^*]+\*|<b>[^<]+<\/b>|<i>[^<]+<\/i>)/g;
-    const parts = trimmedSection.split(formatPattern);
-    
-    parts.forEach((part, partIndex) => {
-      if (!part) return;
-      
-      const key = `${sectionIndex}-${partIndex}`;
-      
-      if (part.startsWith('**') && part.endsWith('**')) {
-        // **bold** markdown
-        result.push(<strong key={key}>{part.slice(2, -2)}</strong>);
-      } else if (part.startsWith('*') && part.endsWith('*') && !part.startsWith('**')) {
-        // *italic* markdown (single asterisks)
-        result.push(<em key={key}>{part.slice(1, -1)}</em>);
-      } else if (part.startsWith('<b>') && part.endsWith('</b>')) {
-        // <b>bold</b> HTML
-        result.push(<strong key={key}>{part.slice(3, -4)}</strong>);
-      } else if (part.startsWith('<i>') && part.endsWith('</i>')) {
-        // <i>italic</i> HTML
-        result.push(<em key={key}>{part.slice(3, -4)}</em>);
-      } else {
-        result.push(<span key={key}>{part}</span>);
-      }
-    });
+    // Parse inline formatting with nested tag support
+    const formatted = parseInlineFormatting(trimmedSection, `${sectionIndex}`);
+    result.push(...formatted);
     
     return result;
   });
 }
 
-export function BookDetailModal({ book, onClose }: BookDetailModalProps) {
+export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDetailModalProps) {
   const [isClosing, setIsClosing] = useState(false);
 
   // Lock body scroll when modal is open (flicker-free implementation)
@@ -70,18 +120,22 @@ export function BookDetailModal({ book, onClose }: BookDetailModalProps) {
     }, 200); // Match animation duration
   };
 
-  return (
+  return createPortal(
     <>
       {/* Overlay */}
       <div 
-        className={`fixed inset-0 z-40 ${isClosing ? 'animate-overlay-out' : 'animate-overlay-in'}`}
+        className={`fixed inset-0 z-[100] ${isClosing ? 'animate-overlay-out' : 'animate-overlay-in'}`}
         style={{ backgroundImage: "linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%), linear-gradient(90deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.25) 100%)" }}
         onClick={handleClose}
       />
       
       {/* Modal */}
       <div 
-        className={`fixed left-1/2 top-1/2 z-50 flex flex-col gap-6 sm:gap-8 md:gap-10 px-12 py-12 sm:p-10 md:p-16 lg:p-20 rounded-2xl w-[calc(100vw-32px)] sm:w-[calc(100vw-80px)] md:w-[min(1137px,90vw)] max-h-[80vh] sm:max-h-[90vh] overflow-y-auto bg-white border border-[rgba(0,0,0,0.1)] shadow-[0px_4px_36px_0px_rgba(0,0,0,0.15)] ${isClosing ? 'animate-modal-scale-out' : 'animate-modal-scale-in'}`}
+        className={`fixed left-1/2 top-1/2 z-[101] flex flex-col rounded-2xl overflow-y-auto bg-white border border-[rgba(0,0,0,0.1)] shadow-[0px_4px_36px_0px_rgba(0,0,0,0.15)] ${
+          isPopupMode 
+            ? 'gap-4 sm:gap-5 p-12 sm:p-16 w-[min(700px,85vw)] max-h-[70vh]' 
+            : 'gap-6 sm:gap-8 md:gap-10 px-12 py-12 sm:p-10 md:p-16 lg:p-20 w-[calc(100vw-32px)] sm:w-[calc(100vw-80px)] md:w-[min(1137px,90vw)] max-h-[80vh] sm:max-h-[90vh]'
+        } ${isClosing ? 'animate-modal-scale-out' : 'animate-modal-scale-in'}`}
       >
         {/* Mobile layout */}
         <div className="flex flex-col gap-12 sm:hidden w-full">
@@ -110,7 +164,7 @@ export function BookDetailModal({ book, onClose }: BookDetailModalProps) {
                 className="font-['SF_Pro:Regular',sans-serif] font-medium text-xl text-black"
                 style={{ fontVariationSettings: "'wdth' 100" }}
               >
-                {book.title}
+                {formatText(book.title)}
               </h2>
               <p 
                 className="font-['SF_Pro:Regular',sans-serif] text-lg text-gray-500"
@@ -218,7 +272,7 @@ export function BookDetailModal({ book, onClose }: BookDetailModalProps) {
                 className="font-['SF_Pro:Regular',sans-serif] font-medium text-xl text-black"
                 style={{ fontVariationSettings: "'wdth' 100" }}
               >
-                {book.title}
+                {formatText(book.title)}
               </h2>
               <p 
                 className="font-['SF_Pro:Regular',sans-serif] text-lg text-gray-500"
@@ -327,6 +381,7 @@ export function BookDetailModal({ book, onClose }: BookDetailModalProps) {
           </div>
         )}
       </div>
-    </>
+    </>,
+    document.body
   );
 }

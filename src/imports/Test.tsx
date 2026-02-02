@@ -258,7 +258,7 @@ export default function Test() {
                       <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start relative shrink-0 text-[#9ca3af] w-[326px]">
                         <p className="leading-[24px] relative shrink-0 text-[16px] w-full">Let’s work together!</p>
                         <p className="leading-[24px] relative shrink-0 text-[0px] text-[16px] w-full">
-                          <span>{`michelletheresaliu@gmail.com `}</span>
+                          <span>{`studio@liumichelle.com `}</span>
                           <span className="font-['Figtree',sans-serif] font-bold"><ArrowUpRight /></span>
                         </p>
                       </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import clsx from "clsx";
 import { client, urlFor } from "../../sanity/client";
 import { SHELF_BOOKS_QUERY, BOOK_YEARS_QUERY } from "../../sanity/queries";
@@ -9,6 +9,27 @@ import { AddBookModal } from "./AddBookModal";
 import { ChevronDownIcon, PlusIcon } from "./icons";
 import type { Book, ShelfBookData } from "./types";
 import imgLogo from '../../assets/logo.png';
+import InfoButton from '../InfoButton';
+import { useExperimentProject } from '../../hooks/useExperimentProject';
+
+// Default project info (fallback if Sanity fetch fails)
+const DEFAULT_LIBRARY_PROJECT = {
+  id: 'library',
+  title: 'Personal Library',
+  year: '2025',
+  description: 'My dream digital bookshelf',
+  imageSrc: 'https://image.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo/thumbnail.png',
+  videoSrc: 'https://stream.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo.m3u8',
+  xLink: 'https://x.com/michelletliu/status/1981030966044061894',
+  tryItOutHref: '/library',
+  backgroundColor: '#ffffff',
+  toolCategories: [
+    { label: 'Design', tools: ['Figma'] },
+    { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
+    { label: 'Styling', tools: ['Tailwind CSS'] },
+    { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+  ],
+};
 
 // Transform shelfItem book data to component format
 function transformShelfBook(item: ShelfBookData): Book {
@@ -29,6 +50,10 @@ function transformShelfBook(item: ShelfBookData): Book {
     year: item.year,
     isFavorite: item.isLibraryFavorite || false,
     goodreadsUrl: item.goodreadsUrl,
+    review: item.review,
+    dateRead: item.dateRead,
+    dateStarted: item.dateStarted,
+    dateFinished: item.dateFinished,
   };
 }
 
@@ -42,6 +67,10 @@ type FilterOption = {
 
 export default function LibraryPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Fetch project info from Sanity (with fallback to defaults)
+  const projectInfo = useExperimentProject('library', DEFAULT_LIBRARY_PROJECT);
   const [books, setBooks] = useState<Book[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>([{ value: 'favorites', label: 'favorites', isFavorites: true }]);
   const [activeFilter, setActiveFilter] = useState<string>("favorites");
@@ -52,8 +81,10 @@ export default function LibraryPage() {
   const [isExiting, setIsExiting] = useState(false);
   const [isEntering, setIsEntering] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPopupMode, setIsPopupMode] = useState(false);
   const logoRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Handle dropdown animation
   useEffect(() => {
@@ -67,6 +98,39 @@ export default function LibraryPage() {
       setIsDropdownVisible(false);
     }
   }, [showFilterDropdown]);
+
+  // Detect popup mode (inside experiment modal but not fullscreen)
+  useEffect(() => {
+    const checkPopupMode = () => {
+      if (containerRef.current) {
+        const isInModal = containerRef.current.closest('.experiment-modal-embed:not(.fullscreen)') !== null;
+        const wasPopupMode = isPopupMode;
+        setIsPopupMode(isInModal);
+        
+        // Reset exiting state when transitioning from popup to fullscreen
+        if (wasPopupMode && !isInModal) {
+          setIsExiting(false);
+          setIsEntering(false);
+        }
+      }
+    };
+    
+    checkPopupMode();
+    window.addEventListener('resize', checkPopupMode);
+    
+    // Watch for class changes on the modal embed (for fullscreen transitions)
+    const modalEmbed = containerRef.current?.closest('.experiment-modal-embed');
+    let observer: MutationObserver | null = null;
+    if (modalEmbed) {
+      observer = new MutationObserver(checkPopupMode);
+      observer.observe(modalEmbed, { attributes: true, attributeFilter: ['class'] });
+    }
+    
+    return () => {
+      window.removeEventListener('resize', checkPopupMode);
+      observer?.disconnect();
+    };
+  }, [isPopupMode]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -120,32 +184,70 @@ export default function LibraryPage() {
     ? books.filter(book => book.isFavorite)
     : books.filter(book => book.year === activeFilter);
 
-  // Handle entrance animation
+  // Handle book query param from URL (when navigating from popup to fullscreen)
   useEffect(() => {
+    const bookId = searchParams.get('book');
+    if (bookId && books.length > 0 && !selectedBook) {
+      const book = books.find(b => b.id === bookId);
+      if (book) {
+        setSelectedBook(book);
+        // Clear the query param after selecting the book
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [searchParams, books, selectedBook, setSearchParams]);
+
+  // Handle entrance animation and reset exit state when in fullscreen
+  useEffect(() => {
+    const isFullscreen = window.location.pathname.includes('/full');
+    // If we're in fullscreen mode, ensure we're not in exiting state
+    if (isFullscreen) {
+      setIsExiting(false);
+    }
+    
     const timer = setTimeout(() => {
       setIsEntering(false);
     }, 50);
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle navigation back to home
+  // Handle navigation back to home (or to popup mode if in fullscreen)
   const handleBackToHome = () => {
+    // If we're in fullscreen mode (/project/library/full), go to popup mode immediately (no exit animation)
+    const isFullscreen = window.location.pathname.includes('/full');
+    if (isFullscreen) {
+      navigate('/project/library');
+      return;
+    }
+    
+    // Otherwise animate exit then go to home
     setIsExiting(true);
-
     setTimeout(() => {
       navigate('/');
     }, 280);
   };
 
-  const handleAddBook = (title: string) => {
-    // Handle book suggestion submission
-    console.log("Book suggestion:", title);
-    // You could add this to a database or state here
+  const handleAddBook = async (title: string) => {
+    try {
+      const { writeClient } = await import('../../sanity/client');
+      console.log('Submitting book suggestion:', title.trim());
+      const result = await writeClient.create({
+        _type: 'bookSuggestion',
+        bookTitle: title.trim(),
+        submittedAt: new Date().toISOString(),
+        status: 'new',
+      });
+      console.log('Book suggestion created:', result);
+    } catch (error) {
+      console.error('Error submitting book suggestion:', error);
+      throw error;
+    }
   };
 
   return (
     <>
       <div 
+        ref={containerRef}
         className={`relative min-h-screen w-full bg-white transition-all ${
           isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
         }`} 
@@ -155,22 +257,30 @@ export default function LibraryPage() {
           transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out'
         }}
       >
+        {/* Info Button - scrolls with content */}
+        <InfoButton project={projectInfo} />
+
+        {/* Logo - scrolls with content */}
+        <div className="absolute top-0 left-0 pt-8 px-8 md:px-16 z-10">
+          <button
+            ref={logoRef}
+            onClick={handleBackToHome}
+            className="cursor-pointer transition-opacity duration-200 hover:opacity-80"
+            aria-label="Go back to home"
+          >
+            <img
+              src={imgLogo}
+              alt="Michelle Liu Logo"
+              className="size-[44px] object-contain"
+            />
+          </button>
+        </div>
+
         {/* Header */}
         <div className="pt-8 px-8 md:px-16">
           <div className="flex flex-col gap-10 md:gap-12 items-start pb-5 md:pb-6">
-            {/* Logo */}
-            <button
-              ref={logoRef}
-              onClick={handleBackToHome}
-              className="cursor-pointer transition-opacity duration-200 hover:opacity-80"
-              aria-label="Go back to home"
-            >
-              <img
-                src={imgLogo}
-                alt="Michelle Liu Logo"
-                className="size-[44px] object-cover"
-              />
-            </button>
+            {/* Logo spacer - matches the logo size */}
+            <div className="size-[44px] shrink-0" />
           
           <div className="flex items-start justify-between w-full">
           {/* Title and Filter */}
@@ -183,7 +293,7 @@ export default function LibraryPage() {
                   onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                   className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors cursor-pointer bg-gray-500/10"
                 >
-                  <span className="font-['Figtree',sans-serif] font-semibold text-base tracking-[0.01em] whitespace-nowrap text-gray-500">
+                  <span className="font-['Figtree',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap text-gray-500">
                     {activeFilter}
                     <span className="text-gray-400"> ({filteredBooks.length})</span>
                   </span>
@@ -195,7 +305,7 @@ export default function LibraryPage() {
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    strokeWidth={2}
+                    strokeWidth={3}
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
@@ -231,7 +341,7 @@ export default function LibraryPage() {
                             )}
                           >
                             <span className={clsx(
-                              "font-['Figtree',sans-serif] font-semibold text-base tracking-[0.01em]",
+                              "font-['Figtree',sans-serif] font-medium text-base tracking-[0.01em]",
                               isActive ? "text-gray-600" : "text-gray-400"
                             )}>
                               {option.label}
@@ -263,12 +373,12 @@ export default function LibraryPage() {
               <AddBookModal onClose={() => setShowAddBookModal(false)} onAddBook={handleAddBook} />
             )}
           </div>
-          </div>
+        </div>
         </div>
       </div>
 
       {/* Bookshelf Grid */}
-      <div className="pt-6 md:pt-8 px-8 md:px-16 pb-[60px] md:pb-[100px]">
+      <div className={`px-8 md:px-16 pb-[60px] md:pb-[100px] ${isPopupMode ? 'pt-3 md:pt-4' : 'pt-6 md:pt-8'}`}>
         <div>
           {isLoading ? (
             <div className="flex items-center justify-center min-h-[300px]">
@@ -285,10 +395,20 @@ export default function LibraryPage() {
             </div>
           ) : (
             <div 
-              className="grid grid-cols-[repeat(3,auto)] md:grid-cols-[repeat(6,auto)] gap-y-[60px] sm:gap-y-[80px] md:gap-y-[100px] justify-between"
+              className="library-book-grid grid grid-cols-4 md:grid-cols-[repeat(6,auto)] gap-x-8 gap-y-2 md:gap-x-0 md:gap-y-8 md:justify-between w-full"
             >
               {filteredBooks.map((book) => (
-                <BookCard key={book.id} book={book} onClick={() => setSelectedBook(book)} />
+                <BookCard key={book.id} book={book} onClick={() => {
+                  if (isPopupMode) {
+                    // Fade out before navigating to fullscreen mode
+                    setIsExiting(true);
+                    setTimeout(() => {
+                      navigate(`/project/library/full?book=${encodeURIComponent(book.id)}`);
+                    }, 280);
+                  } else {
+                    setSelectedBook(book);
+                  }
+                }} />
               ))}
             </div>
           )}
@@ -299,7 +419,7 @@ export default function LibraryPage() {
 
       {/* Book Detail Modal - outside transformed container for proper viewport centering */}
       {selectedBook && (
-        <BookDetailModal book={selectedBook} onClose={() => setSelectedBook(null)} />
+        <BookDetailModal book={selectedBook} onClose={() => setSelectedBook(null)} isPopupMode={isPopupMode} />
       )}
     </>
   );

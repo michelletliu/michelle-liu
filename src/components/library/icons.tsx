@@ -18,7 +18,7 @@ export function ChevronDownIcon({ className = "" }: IconProps) {
       <path 
         d="M1 1.5L6 6.5L11 1.5" 
         stroke="currentColor" 
-        strokeWidth="1.5" 
+        strokeWidth="3" 
         strokeLinecap="round" 
         strokeLinejoin="round"
       />

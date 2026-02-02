@@ -9,6 +9,7 @@ import ExperienceCard from "./ExperienceCard";
 import CommunityCard from "./CommunityCard";
 import ShelfSection from "./ShelfSection";
 import LoreCard from "./LoreCard";
+import StartupCard from "./StartupCard";
 import MediaCard from "./MediaCard";
 import AboutSidebar from "./AboutSidebar";
 import Footer from "../Footer";
@@ -32,6 +33,7 @@ import {
   SHELF_ITEMS_QUERY,
   LORE_ITEMS_QUERY,
   QUOTES_QUERY,
+  STARTUPS_QUERY,
 } from "../../sanity/queries";
 import { getCachedData } from "../../sanity/preload";
 import type {
@@ -40,12 +42,14 @@ import type {
   ShelfItem,
   LoreItem,
   AboutQuote,
+  Startup,
 } from "../../sanity/types";
 
 // Types for component data
 import type { ExperienceCardData } from "./ExperienceCard";
 import type { CommunityCardData, CommunityPhoto as CommunityPhotoType } from "./CommunityCard";
 import type { LoreCardData } from "./LoreCard";
+import type { StartupCardData } from "./StartupCard";
 import type { MediaCardData } from "./MediaCard";
 
 // CSS for animations
@@ -165,6 +169,15 @@ function transformQuotes(data: AboutQuote[]): MediaCardData[] {
   }));
 }
 
+function transformStartups(data: Startup[]): StartupCardData[] {
+  return data.map((startup) => ({
+    id: startup._id,
+    logoSrc: startup.logo ? urlFor(startup.logo).width(200).url() : undefined,
+    name: startup.name,
+    link: startup.link,
+  }));
+}
+
 export default function AboutPage() {
   const navigate = useNavigate();
 
@@ -214,6 +227,7 @@ export default function AboutPage() {
   const [shelfItems, setShelfItems] = useState<MediaCardData[]>([]);
   const [quotes, setQuotes] = useState<MediaCardData[]>([]);
   const [loreItems, setLoreItems] = useState<LoreCardData[]>([]);
+  const [startups, setStartups] = useState<StartupCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Shelf year filter state (for books, music, and movies)
@@ -233,6 +247,7 @@ export default function AboutPage() {
         const cachedShelfItems = getCachedData<ShelfItem[]>("about:shelfItems");
         const cachedQuotes = getCachedData<AboutQuote[]>("about:quotes");
         const cachedLoreItems = getCachedData<LoreItem[]>("about:loreItems");
+        const cachedStartups = getCachedData<Startup[]>("about:startups");
 
         // Fetch only what's not cached
         const [
@@ -241,12 +256,14 @@ export default function AboutPage() {
           shelfItemsData,
           quotesData,
           loreItemsData,
+          startupsData,
         ] = await Promise.all([
           cachedExperiences ?? client.fetch<Experience[]>(EXPERIENCES_QUERY),
           cachedCommunities ?? client.fetch<Community[]>(COMMUNITIES_QUERY),
           cachedShelfItems ?? client.fetch<ShelfItem[]>(SHELF_ITEMS_QUERY),
           cachedQuotes ?? client.fetch<AboutQuote[]>(QUOTES_QUERY),
           cachedLoreItems ?? client.fetch<LoreItem[]>(LORE_ITEMS_QUERY),
+          cachedStartups ?? client.fetch<Startup[]>(STARTUPS_QUERY),
         ]);
 
         setExperiences(transformExperiences(experiencesData || []));
@@ -254,6 +271,7 @@ export default function AboutPage() {
         setShelfItems(transformShelfItems(shelfItemsData || []));
         setQuotes(transformQuotes(quotesData || []));
         setLoreItems(transformLoreItems(loreItemsData || []));
+        setStartups(transformStartups(startupsData || []));
       } catch (err) {
         console.error("Error fetching about data:", err);
       } finally {
@@ -611,7 +629,7 @@ export default function AboutPage() {
                   Experience
                 </h2>
                 <a
-                  href="https://drive.google.com/file/d/1lGpnG1mLRHQrY_hueHbn_2gesbNrVkyc/view?usp=sharing"
+                  href="https://drive.google.com/file/d/1EOn3qpj3TbgLuPjai2FN7S8IhVvx5gfS/view?usp=sharing"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-['Figtree',sans-serif] tracking-wide font-normal text-gray-400 text-lg hover:text-blue-500 transition-colors"
@@ -632,6 +650,29 @@ export default function AboutPage() {
                     <ExperienceCard data={exp} />
                   </ScrollReveal>
                 ))}
+
+                {/* Startups Section */}
+                {startups.length > 0 && (
+                  <ScrollReveal delay={experiences.length * 80}>
+                    <div className="flex flex-col gap-6 pt-4">
+                      {/* Header */}
+                      <div className="flex flex-col">
+                        <p className="text-base md:text-lg font-medium text-gray-700 tracking-[0.005em]">
+                          Startup Contracts
+                        </p>
+                        <p className="text-base text-gray-400 tracking-[0.005em]">
+                          2023-Present
+                        </p>
+                      </div>
+                      {/* Startup logos row */}
+                      <div className="flex flex-wrap justify-between gap-y-6 pr-4">
+                        {startups.map((startup) => (
+                          <StartupCard key={startup.id} data={startup} />
+                        ))}
+                      </div>
+                    </div>
+                  </ScrollReveal>
+                )}
               </div>
             ) : (
               <p className="text-gray-400 text-sm py-4">Add experience items in Sanity Studio.</p>
@@ -805,7 +846,7 @@ export default function AboutPage() {
                 <span className="text-gray-400 text-sm">Loading...</span>
               </div>
             ) : loreItems.length > 0 ? (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 md:gap-y-4 md:gap-x-6">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 md:gap-y-5 md:gap-x-6">
                 {loreItems.map((lore, index) => (
                   <ScrollReveal key={lore.id} delay={index * 80}>
                     <LoreCard
