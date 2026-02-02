@@ -429,8 +429,8 @@ export default function SketchbookPage() {
     function updateCardWidth() {
       const vw = window.innerWidth;
       // Single card centered - smaller in popup, larger in fullscreen
-      // Check if we're in a modal (popup mode) by looking for the modal container
-      const container = containerRef.current?.closest('.experiment-modal-embed');
+      // Use pageContainerRef (always attached) instead of containerRef (only attached after loading)
+      const container = pageContainerRef.current?.closest('.experiment-modal-embed');
       const isInModal = !!container;
       
       if (vw < 640) {
@@ -442,14 +442,13 @@ export default function SketchbookPage() {
       }
     }
     
-    // Small delay to ensure DOM is ready
-    const timer = setTimeout(updateCardWidth, 50);
+    // Run immediately and on resize - pageContainerRef is always attached
+    updateCardWidth();
     window.addEventListener('resize', updateCardWidth);
     return () => {
-      clearTimeout(timer);
       window.removeEventListener('resize', updateCardWidth);
     };
-  }, []);
+  }, [loading]); // Re-run when loading changes to ensure correct sizing after data loads
   
   // Animate to show transition then change index
   const animateToNextPage = useCallback(() => {

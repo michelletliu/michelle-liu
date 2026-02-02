@@ -680,7 +680,7 @@ export default function AboutPage() {
           </section>
 
           {/* Community Section */}
-          <section ref={communityRef} className="flex flex-col gap-8 w-full scroll-mt-8">
+          <section ref={communityRef} className="flex flex-col gap-8 w-full scroll-mt-8 max-md:mt-8">
             <ScrollReveal variant="fade">
               <div className="flex flex-col">
                 <h2 className="font-['Figtree',sans-serif] font-medium text-gray-600 text-3xl leading-normal shrink-0">
