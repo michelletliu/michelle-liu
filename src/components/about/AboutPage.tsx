@@ -658,7 +658,7 @@ export default function AboutPage() {
                       {/* Header */}
                       <div className="flex flex-col">
                       <p className="text-base md:text-lg font-medium text-gray-700 tracking-[0.005em]">
-    Freelance Practice
+    Freelance
   </p>
                         <p className="text-base text-gray-500 tracking-[0.005em]">
                           Design Contracts<span className="text-gray-400 font-normal">, 2023 - Present</span>

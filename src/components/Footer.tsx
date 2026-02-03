@@ -344,7 +344,7 @@ export default function Footer() {
             </div>
           </ScrollReveal>
           <ScrollReveal variant="fade" delay={200} className="content-stretch flex flex-col gap-0.5 items-center relative shrink-0">
-            <p className="font-['Figtree',sans-serif] font-normal leading-7 relative shrink-0 text-gray-500 text-sm">
+            <p className="font-['Figtree',sans-serif] font-normal leading-7 relative shrink-0 text-gray-400 text-sm">
               <span>{`Built with Next.js & `}</span>
               <span className="group">
                 <a

@@ -1102,7 +1102,7 @@ export default function ProjectModal({
           {isFullscreen && (
             <div 
               className={clsx(
-                "content-stretch flex flex-col items-start px-16 max-md:px-8 relative shrink-0 w-full md:sticky md:top-0 z-10 transition-all duration-300 ease-out",
+                "content-stretch flex flex-col items-start px-16 max-md:px-6 relative shrink-0 w-full md:sticky md:top-0 z-10 transition-all duration-300 ease-out",
                 isScrolled ? "py-4" : "py-8"
               )}
               /*style={{ 
@@ -1768,7 +1768,7 @@ function ContentBlock({
       const hasPassword = !!(section.showPasswordProtection && section.password);
       return (
         <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
-          <div className="bg-gray-100 content-stretch flex flex-col items-center justify-center overflow-clip p-16 max-md:p-8 relative rounded-[26px] shrink-0 w-full">
+          <div className="bg-gray-100 content-stretch flex flex-col items-center justify-center overflow-clip p-16 max-md:px-8 max-md:py-16 relative rounded-[26px] shrink-0 w-full">
             <div className={clsx(
               "content-stretch flex flex-col items-start relative shrink-0 w-full",
               hasPassword && "gap-8"
