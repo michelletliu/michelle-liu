@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { domToPng } from 'modern-screenshot';
 
@@ -7,7 +8,7 @@ import imgInstagramIcon from '../../assets/polaroid/fcadb86f9e7ac3194098e501064e
 import imgMessagesIcon from '../../assets/polaroid/dd3b1a5ed7db644c197314328f647774bd86226e.png';
 import imgLinkedInIcon from '../../assets/polaroid/f81f194aee98efdd62a97e659006efa986492874.png';
 import imgMailIcon from '../../assets/polaroid/7d8c54338d14a1f9afdfff1bec90c42375e5050e.png';
-import imgXIcon from '../../assets/polaroid/a643fce02520f3d992e6b432fa72fab473a1ca7e.png';
+import imgXIcon from '../../assets/receipt/icons-optimized/IMG_6929.png';
 import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
@@ -232,6 +233,7 @@ export default function PolaroidPage() {
   const [caption, setCaption] = useState('');
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [isClosingShareModal, setIsClosingShareModal] = useState(false);
   const [copyLinkSuccess, setCopyLinkSuccess] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [isDateFocused, setIsDateFocused] = useState(false);
@@ -466,6 +468,14 @@ export default function PolaroidPage() {
         window.open(shareUrls[appName], '_blank');
       }
     }
+  };
+
+  const handleCloseShareModal = () => {
+    setIsClosingShareModal(true);
+    setTimeout(() => {
+      setShowShareModal(false);
+      setIsClosingShareModal(false);
+    }, 200);
   };
 
   const handleImageHoverStart = () => {
@@ -919,24 +929,24 @@ export default function PolaroidPage() {
 
       {/* Share Modal Overlay */}
       {showShareModal && (
+        isPopupMode ? (
         <>
           <div 
-            className={`transition-opacity cursor-pointer z-40 ${isPopupMode ? 'absolute inset-0 rounded-[26px]' : 'fixed inset-0'}`}
+            className={`cursor-pointer z-40 absolute inset-0 rounded-[26px] ${isClosingShareModal ? 'animate-overlay-out' : 'animate-overlay-in'}`}
             style={{ 
-              backgroundImage: "linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%), linear-gradient(90deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.25) 100%)",
-              opacity: 0.4
+              backgroundImage: "linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%), linear-gradient(90deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.25) 100%)"
             }}
-            onClick={() => setShowShareModal(false)}
+            onClick={handleCloseShareModal}
           />
           <div className={`bg-white left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[26px] z-50 ${
             isPopupMode 
-              ? 'absolute h-auto w-auto scale-[0.85] overflow-hidden' 
-              : 'fixed max-h-[calc(100vh-40px)] max-h-[calc(100dvh-40px)] w-[calc(100%-32px)] sm:w-auto sm:min-w-[400px] md:min-w-[530px] overflow-y-auto'
-          }`}>
+              ? 'absolute h-auto w-[85%] max-w-[320px] scale-[0.85] overflow-hidden' 
+              : 'fixed max-h-[calc(100vh-40px)] max-h-[calc(100dvh-40px)] sm:max-h-none w-[calc(100%-32px)] sm:w-auto sm:min-w-[400px] md:min-w-[530px] overflow-y-auto sm:overflow-visible'
+          } ${isClosingShareModal ? 'animate-modal-scale-out' : 'animate-modal-scale-in'}`}>
             <div className={`content-stretch flex flex-col items-center overflow-clip relative rounded-[inherit] w-full ${
               isPopupMode 
-                ? 'gap-[16px] px-[32px] pt-[17px] pb-[48px]' 
-                : 'gap-[24px] sm:gap-[32px] px-[20px] sm:px-[28px] md:px-[36px] py-[24px] sm:py-[30px] pb-[32px] sm:pb-[40px] sm:min-w-[400px] md:min-w-[530px]'
+                ? 'gap-[16px] px-[24px] pt-[17px] pb-[32px]' 
+                : 'gap-[24px] sm:gap-[32px] px-[20px] sm:px-[28px] md:px-[36px] py-[24px] sm:py-[30px] pb-[48px] sm:pb-[40px] sm:min-w-[400px] md:min-w-[530px]'
             }`}>
               <div className="content-stretch flex flex-col gap-[36px] items-center relative shrink-0 w-full">
                 <div className={`flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] min-w-full relative shrink-0 text-[22px] text-black tracking-[-0.26px] w-[min-content] ${isPopupMode ? 'self-start pl-0' : ''}`} style={{ fontVariationSettings: "'wdth' 100" }}>
@@ -1026,12 +1036,12 @@ export default function PolaroidPage() {
                 <div className="content-stretch flex gap-[16px] sm:gap-[24px] items-center relative shrink-0 w-full">
                   <button 
                     onClick={handleCopyLink}
-                    className="group basis-0 bg-white grow h-[120px] sm:h-[140px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
+                    className="group basis-0 bg-white grow py-[10px] sm:py-[12px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
                     style={{ backgroundImage: copyLinkSuccess ? "linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" : undefined }}
                   >
                     <div aria-hidden="true" className="absolute border border-gray-200/50 border-solid inset-0 pointer-events-none rounded-[16px]" />
                     <div className="flex flex-col items-center size-full">
-                      <div className="content-stretch flex flex-col gap-[7px] items-center p-[24px] relative size-full">
+                      <div className="content-stretch flex flex-col gap-[7px] items-center p-[12px] relative size-full">
                         <div className="relative shrink-0 size-[70px]">
                           <div 
                             className={`absolute bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center rounded-full size-[70px] transition-all duration-300 ease-in-out ${
@@ -1077,12 +1087,12 @@ export default function PolaroidPage() {
 
                   <button 
                     onClick={handleDownload}
-                    className="group basis-0 bg-white grow h-[120px] sm:h-[140px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
+                    className="group basis-0 bg-white grow py-[10px] sm:py-[12px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
                     style={{ backgroundImage: downloadSuccess ? "linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" : undefined }}
                   >
                     <div aria-hidden="true" className="absolute border border-gray-200/50 border-solid inset-0 pointer-events-none rounded-[16px]" />
                     <div className="flex flex-col items-center size-full">
-                      <div className="content-stretch flex flex-col gap-[7px] items-center p-[24px] relative size-full">
+                      <div className="content-stretch flex flex-col gap-[7px] items-center p-[12px] relative size-full">
                         <div className="relative shrink-0 size-[70px]">
                           <div 
                             className={`absolute bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center rounded-full size-[70px] transition-all duration-300 ease-in-out ${
@@ -1131,7 +1141,7 @@ export default function PolaroidPage() {
 
               {/* Close Button */}
               <button
-                onClick={() => setShowShareModal(false)}
+                onClick={handleCloseShareModal}
                 className="absolute bg-white right-[17px] rounded-full size-[32px] top-[17px] cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-center"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(20,20,20,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1141,14 +1151,14 @@ export default function PolaroidPage() {
               </button>
 
               {/* App Icon Row */}
-              <div className="overflow-x-auto overflow-y-hidden w-[calc(100%+40px)] sm:w-auto md:w-[530px] mx-[-20px] sm:mx-0 scrollbar-hide">
-                <div className="content-stretch flex gap-[20px] sm:gap-[28px] items-start justify-start sm:justify-center pb-0 pt-0 px-[20px] sm:px-[4px] relative shrink-0 w-max sm:w-full">
+              <div className="w-full sm:w-auto md:w-[530px] sm:mt-0">
+                <div className="content-stretch flex gap-0 sm:gap-[28px] items-start justify-between sm:justify-center pb-0 pt-0 px-0 sm:px-[4px] relative shrink-0 w-full">
                   <button 
                     onClick={() => handleShareToApp('Instagram')}
-                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative shrink-0 w-[78px] cursor-pointer hover:brightness-90 transition-all"
+                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="relative rounded-[18.928px] shrink-0 size-[69.402px]">
-                      <img alt="Instagram" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[18.928px] size-full" src={imgInstagramIcon} />
+                    <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
+                      <img alt="Instagram" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgInstagramIcon} />
                     </div>
                     <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Instagram
@@ -1157,10 +1167,10 @@ export default function PolaroidPage() {
 
                   <button 
                     onClick={() => handleShareToApp('LinkedIn')}
-                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative shrink-0 w-[78px] cursor-pointer hover:brightness-90 transition-all"
+                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="relative rounded-[17.35px] shrink-0 size-[69.402px]">
-                      <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[17.35px]">
+                    <div className="relative rounded-[14px] sm:rounded-[17.35px] shrink-0 size-[54px] sm:size-[69.402px]">
+                      <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[14px] sm:rounded-[17.35px]">
                         <img alt="LinkedIn" className="absolute h-[1236.21%] left-[-168.97%] max-w-none top-[-256.03%] w-[568.97%]" src={imgLinkedInIcon} />
                       </div>
                     </div>
@@ -1171,10 +1181,10 @@ export default function PolaroidPage() {
 
                   <button 
                     onClick={() => handleShareToApp('Mail')}
-                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative shrink-0 cursor-pointer hover:brightness-90 transition-all"
+                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="relative rounded-[15px] shrink-0 size-[70px]">
-                      <img alt="Mail" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] size-full" src={imgMailIcon} />
+                    <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
+                      <img alt="Mail" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgMailIcon} />
                     </div>
                     <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px]" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Mail
@@ -1183,12 +1193,10 @@ export default function PolaroidPage() {
 
                   <button 
                     onClick={() => handleShareToApp('X')}
-                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative shrink-0 w-[78px] cursor-pointer hover:brightness-90 transition-all"
+                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="h-[70px] relative rounded-[17.949px] shrink-0 w-[69.402px]">
-                      <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[17.949px]">
-                        <img alt="X" className="absolute h-[1225.64%] left-[-39.66%] max-w-none top-[-671.79%] w-[568.97%]" src={imgXIcon} />
-                      </div>
+                    <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
+                      <img alt="X" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgXIcon} />
                     </div>
                     <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       X
@@ -1197,10 +1205,10 @@ export default function PolaroidPage() {
 
                   <button 
                     onClick={() => handleShareToApp('Messages')}
-                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative shrink-0 w-[78px] cursor-pointer hover:brightness-90 transition-all"
+                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="relative rounded-[18.928px] shrink-0 size-[69.402px]">
-                      <img alt="Messages" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[18.928px] size-full" src={imgMessagesIcon} />
+                    <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
+                      <img alt="Messages" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgMessagesIcon} />
                     </div>
                     <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Messages
@@ -1212,6 +1220,284 @@ export default function PolaroidPage() {
             <div aria-hidden="true" className="absolute border border-gray-200/50 border-solid inset-0 pointer-events-none rounded-[26px]" />
           </div>
         </>
+        ) : createPortal(
+          <>
+            <div 
+              className={`cursor-pointer z-[100] fixed inset-0 ${isClosingShareModal ? 'animate-overlay-out' : 'animate-overlay-in'}`}
+              style={{ 
+                backgroundImage: "linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%), linear-gradient(90deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.25) 100%)"
+              }}
+              onClick={handleCloseShareModal}
+            />
+            <div className={`bg-white fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[26px] z-[101] max-h-[calc(100vh-40px)] max-h-[calc(100dvh-40px)] sm:max-h-none w-[calc(100%-64px)] max-w-[400px] sm:max-w-none sm:w-auto sm:min-w-[400px] md:min-w-[530px] overflow-y-auto sm:overflow-visible ${isClosingShareModal ? 'animate-modal-scale-out' : 'animate-modal-scale-in'}`}>
+              <div className="content-stretch flex flex-col items-center overflow-clip relative rounded-[inherit] w-full gap-[24px] sm:gap-[32px] px-[20px] sm:px-[28px] md:px-[36px] py-[24px] sm:py-[30px] pb-[24px] sm:pb-[40px] sm:min-w-[400px] md:min-w-[530px]">
+                <div className="content-stretch flex flex-col gap-[36px] items-center relative shrink-0 w-full">
+                  <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] min-w-full relative shrink-0 text-[22px] text-black tracking-[-0.26px] w-[min-content]" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <p className="leading-[28px]">Share Polaroid</p>
+                  </div>
+                  
+                  {/* Mini Polaroid Preview */}
+                  <div className="relative shrink-0 h-[198px] sm:h-[254.237px] w-[170px] sm:w-[218.074px]" style={{ perspective: '800px' }}>
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 transition-transform duration-300 ease-out scale-[0.78] sm:scale-100 origin-top hover:[transform:rotateY(-8deg)_rotateX(2deg)]" style={{ width: '218.074px', height: '254.237px' }}>
+                    <div className="absolute content-stretch flex items-center justify-center left-0 rounded-[4.383px] shadow-[0px_2.192px_13.15px_0px_rgba(0,0,0,0.15)] top-0 w-[218.074px]">
+                      <div className="h-[254.237px] relative rounded-[4.383px] shrink-0 w-[218.074px]">
+                        <div className="absolute contents left-0 top-0">
+                          <div className="absolute contents left-0 top-0">
+                            <div 
+                              className="absolute blur-[0.162px] filter h-[254.237px] left-0 rounded-[4.383px] top-0 w-[218.074px]"
+                              style={{ backgroundColor: selectedColor ? selectedColor.tint : 'white' }}
+                            >
+                              <div 
+                                aria-hidden="true" 
+                                className="absolute border-[1.096px] border-solid border-gray-200/50 inset-[-1.096px] pointer-events-none rounded-[5.479px]"
+                                style={{ borderColor: selectedColor ? selectedColor.border : undefined }}
+                              />
+                            </div>
+                          </div>
+                          <div 
+                            className="absolute content-stretch flex items-center left-0 pb-[49.313px] pt-[13.15px] px-[13.15px] rounded-[4.383px] top-0"
+                            style={{ backgroundColor: selectedColor ? selectedColor.tint : 'white' }}
+                          >
+                            <div className="relative rounded-[2.192px] shrink-0 size-[191.774px]">
+                              <div className="overflow-clip relative rounded-[inherit] size-full">
+                                {uploadedImage ? (
+                                  <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[3.733px] bg-[#f5f5f5]">
+                                    <img 
+                                      alt="Polaroid photo" 
+                                      className="max-w-full max-h-full w-auto h-auto object-contain" 
+                                      src={uploadedImage} 
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="absolute inset-0 bg-[#f3f4f6] rounded-[3.733px] flex items-center justify-center">
+                                    <div className="bg-[#e5e7eb] rounded-full w-[130px] h-[130px] flex items-center justify-center">
+                                      <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                        <polyline points="17 8 12 3 7 8" />
+                                        <line x1="12" y1="3" x2="12" y2="15" />
+                                      </svg>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        {showDate && (
+                          <div 
+                            className="absolute flex flex-col justify-center leading-[0] left-[182.78px] not-italic text-[10.959px] text-[rgba(0,0,0,0.4)] text-center text-nowrap top-[239.88px] tracking-[0.15em] -translate-x-1/2 -translate-y-1/2"
+                            style={{ fontFamily: "'Courier New', monospace" }}
+                          >
+                            <p className="leading-[18.629px]">{currentDate}</p>
+                          </div>
+                        )}
+                        {caption && (
+                          <div className="absolute content-stretch flex items-center left-[8.07px] px-[5.172px] py-[2.586px] top-[207.15px] w-[104.741px]">
+                            <div className="content-stretch flex items-center relative shrink-0">
+                              <div 
+                                className="flex flex-col justify-center leading-[0] not-italic relative shrink-0 text-[12.931px] text-black text-center text-nowrap tracking-[0.15em]"
+                                style={{ fontFamily: "'Courier New', monospace" }}
+                              >
+                                <p className="leading-[21.983px]">{caption}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="content-stretch flex gap-[16px] sm:gap-[24px] items-center relative shrink-0 w-full">
+                    <button 
+                      onClick={handleCopyLink}
+                      className="group basis-0 bg-white grow py-[10px] sm:py-[12px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
+                      style={{ backgroundImage: copyLinkSuccess ? "linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" : undefined }}
+                    >
+                      <div aria-hidden="true" className="absolute border border-gray-200/50 border-solid inset-0 pointer-events-none rounded-[16px]" />
+                      <div className="flex flex-col items-center size-full">
+                        <div className="content-stretch flex flex-col gap-[7px] items-center p-[12px] relative size-full">
+                          <div className="relative shrink-0 size-[70px]">
+                            <div 
+                              className={`absolute bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center rounded-full size-[70px] transition-all duration-300 ease-in-out ${
+                                copyLinkSuccess ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
+                              }`}
+                            >
+                              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                              </svg>
+                            </div>
+                            <div 
+                              className={`absolute bg-[#08f] flex items-center justify-center left-[-2px] rounded-full size-[74px] top-[-2px] transition-all duration-300 ease-in-out ${
+                                copyLinkSuccess ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                              }`}
+                            >
+                              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            </div>
+                          </div>
+                          <div className="relative h-[20px] overflow-visible">
+                            <p 
+                              className={`font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-gray-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                                copyLinkSuccess ? 'opacity-0 translate-y-[-5px]' : 'opacity-100 translate-y-0'
+                              }`} 
+                              style={{ fontVariationSettings: "'wdth' 100" }}
+                            >
+                              Copy Link
+                            </p>
+                            <p 
+                              className={`absolute left-0 right-0 top-0 font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-gray-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                                copyLinkSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[5px]'
+                              }`} 
+                              style={{ fontVariationSettings: "'wdth' 100" }}
+                            >
+                              Saved!
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button 
+                      onClick={handleDownload}
+                      className="group basis-0 bg-white grow py-[10px] sm:py-[12px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
+                      style={{ backgroundImage: downloadSuccess ? "linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" : undefined }}
+                    >
+                      <div aria-hidden="true" className="absolute border border-gray-200/50 border-solid inset-0 pointer-events-none rounded-[16px]" />
+                      <div className="flex flex-col items-center size-full">
+                        <div className="content-stretch flex flex-col gap-[7px] items-center p-[12px] relative size-full">
+                          <div className="relative shrink-0 size-[70px]">
+                            <div 
+                              className={`absolute bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center rounded-full size-[70px] transition-all duration-300 ease-in-out ${
+                                downloadSuccess ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
+                              }`}
+                            >
+                              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                              </svg>
+                            </div>
+                            <div 
+                              className={`absolute bg-[#08f] flex items-center justify-center rounded-full size-[70px] transition-all duration-300 ease-in-out ${
+                                downloadSuccess ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                              }`}
+                            >
+                              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            </div>
+                          </div>
+                          <div className="relative h-[15px]">
+                            <p 
+                              className={`font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-gray-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                                downloadSuccess ? 'opacity-0 translate-y-[-5px]' : 'opacity-100 translate-y-0'
+                              }`} 
+                              style={{ fontVariationSettings: "'wdth' 100" }}
+                            >
+                              Download
+                            </p>
+                            <p 
+                              className={`absolute left-0 right-0 top-0 font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-gray-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                                downloadSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[5px]'
+                              }`} 
+                              style={{ fontVariationSettings: "'wdth' 100" }}
+                            >
+                              Saved!
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Close Button */}
+                <button
+                  onClick={handleCloseShareModal}
+                  className="absolute bg-white right-[17px] rounded-full size-[32px] top-[17px] cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-center"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(20,20,20,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+
+                {/* App Icon Row */}
+                <div className="w-full sm:w-auto md:w-[530px] sm:mt-0">
+                  <div className="content-stretch flex gap-0 sm:gap-[28px] items-start justify-between sm:justify-center pb-0 pt-0 px-0 sm:px-[4px] relative shrink-0 w-full">
+                    <button 
+                      onClick={() => handleShareToApp('Instagram')}
+                      className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
+                    >
+                      <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
+                        <img alt="Instagram" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgInstagramIcon} />
+                      </div>
+                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                        Instagram
+                      </p>
+                    </button>
+
+                    <button 
+                      onClick={() => handleShareToApp('LinkedIn')}
+                      className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
+                    >
+                      <div className="relative rounded-[14px] sm:rounded-[17.35px] shrink-0 size-[54px] sm:size-[69.402px]">
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[14px] sm:rounded-[17.35px]">
+                          <img alt="LinkedIn" className="absolute h-[1236.21%] left-[-168.97%] max-w-none top-[-256.03%] w-[568.97%]" src={imgLinkedInIcon} />
+                        </div>
+                      </div>
+                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                        LinkedIn
+                      </p>
+                    </button>
+
+                    <button 
+                      onClick={() => handleShareToApp('Mail')}
+                      className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
+                    >
+                      <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
+                        <img alt="Mail" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgMailIcon} />
+                      </div>
+                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                        Mail
+                      </p>
+                    </button>
+
+                    <button 
+                      onClick={() => handleShareToApp('X')}
+                      className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
+                    >
+                      <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
+                        <img alt="X" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgXIcon} />
+                      </div>
+                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                        X
+                      </p>
+                    </button>
+
+                    <button 
+                      onClick={() => handleShareToApp('Messages')}
+                      className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
+                    >
+                      <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
+                        <img alt="Messages" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgMessagesIcon} />
+                      </div>
+                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                        Messages
+                      </p>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div aria-hidden="true" className="absolute border border-gray-200/50 border-solid inset-0 pointer-events-none rounded-[26px]" />
+            </div>
+          </>,
+          document.body
+        )
       )}
 
       {/* Styles for animations */}
