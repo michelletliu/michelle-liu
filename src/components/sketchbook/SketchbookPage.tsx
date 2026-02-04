@@ -277,18 +277,26 @@ export default function SketchbookPage() {
   // Motion values for drag
   const x = useMotionValue(0);
   const [cardWidth, setCardWidth] = useState(320);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false); // Hide side images during mode transition
   const dragStartedRef = useRef(false); // Track if drag gesture started (to prevent click)
   const isAnimatingRef = useRef(false); // Prevent multiple rapid navigations
+  const prevIsFullscreenRef = useRef(isFullscreen);
   
   // Transform positions based on drag - images travel full width
   const pageWidth = typeof window !== 'undefined' ? window.innerWidth : 400;
   // Spacing between images - smaller in fullscreen to keep adjacent visible, larger in popup
-  const slideDistance = pageWidth < 640 ? cardWidth * 1.7 : (isFullscreen ? cardWidth * 0.6 : cardWidth * 1.7);
+  const slideDistance = pageWidth < 640 ? cardWidth * 1.7 : (isFullscreen ? cardWidth * 0.6 : cardWidth * 1.4);
   
   // Use a ref so transform closures always get the latest slideDistance
+  // Only update when NOT transitioning to prevent side images from moving during mode change
+  // Also check for popup→fullscreen expansion synchronously (before effect sets isTransitioning)
+  const isExpandingToFullscreen = !prevIsFullscreenRef.current && isFullscreen;
   const slideDistanceRef = useRef(slideDistance);
-  slideDistanceRef.current = slideDistance;
+  if (!isTransitioning && !isExpandingToFullscreen) {
+    slideDistanceRef.current = slideDistance;
+  }
   
   // Current image: starts at center (0), moves with drag
   const currentImageX = useTransform(x, (value) => value);
@@ -371,13 +379,26 @@ export default function SketchbookPage() {
     return 1 - Math.abs(xVal) / third;
   });
   
-  // Force transforms to re-evaluate when slideDistance changes
+  // Force transforms to re-evaluate when slideDistance changes (but not during transition)
   useEffect(() => {
+    if (isTransitioning) return;
     // Trigger a tiny x change to force transforms to re-evaluate with new slideDistance
     const currentX = x.get();
     x.set(currentX + 0.001);
     requestAnimationFrame(() => x.set(currentX));
-  }, [slideDistance, x]);
+  }, [slideDistance, x, isTransitioning]);
+  
+  // Hide side images during mode transition to avoid weird movement
+  useEffect(() => {
+    if (prevIsFullscreenRef.current !== isFullscreen) {
+      setIsTransitioning(true);
+      const timer = setTimeout(() => {
+        setIsTransitioning(false);
+      }, 350); // Slightly longer than the 300ms transition
+      prevIsFullscreenRef.current = isFullscreen;
+      return () => clearTimeout(timer);
+    }
+  }, [isFullscreen]);
   
   // Detect fullscreen mode
   useEffect(() => {
@@ -432,14 +453,16 @@ export default function SketchbookPage() {
   useEffect(() => {
     function updateCardWidth() {
       const vw = window.innerWidth;
+      const mobile = vw < 640;
+      setIsMobile(mobile);
       // Single card centered - smaller in popup, larger in fullscreen
       
-      if (vw < 640) {
+      if (mobile) {
         setCardWidth(vw * 0.8); // Mobile
       } else if (isFullscreen) {
         setCardWidth(Math.min(1200, vw * 0.825)); // Fullscreen - 1.5x larger
       } else {
-        setCardWidth(Math.min(320, vw * 0.25)); // Popup mode
+        setCardWidth(Math.min(400, vw * 0.3125)); // Popup mode - 1.25x larger
       }
     }
     
@@ -611,7 +634,7 @@ export default function SketchbookPage() {
       <InfoButton project={projectInfo} />
       
       {/* Title and date - opacity responds to drag position */}
-      <div className={`text-center px-6 shrink-0 relative ${isFullscreen ? 'pb-16' : 'pb-8 max-[650px]:pb-16'}`}>
+      <div className={`text-center px-6 shrink-0 relative transition-[padding] duration-300 ease-out ${isFullscreen ? 'pb-16' : 'pb-4 max-[650px]:pb-16'}`}>
         {/* Current entry text */}
         <motion.div style={{ opacity: currentDateOpacity }}>
           <h1 className="text-lg font-medium text-gray-900 h-7">
@@ -659,7 +682,7 @@ export default function SketchbookPage() {
       />
       
       {/* Main carousel area - shows current, prev, and next images */}
-      <div className={`flex flex-col items-center justify-center overflow-visible relative ${isFullscreen ? 'h-[55vh]' : 'h-[30vh] xl:h-[45vh]'}`}>
+      <div className={`flex flex-col items-center justify-center overflow-visible relative transition-[height] duration-300 ease-out ${isMobile ? 'h-[35vh]' : isFullscreen ? 'h-[55vh]' : 'h-[37.5vh] xl:h-[45vh]'}`}>
         
         {loading ? (
           <div className="flex items-center justify-center">
@@ -676,6 +699,7 @@ export default function SketchbookPage() {
               style={{ 
                 width: cardWidth,
                 touchAction: 'pan-y',
+                transition: 'width 0.3s ease-out',
               }}
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
@@ -692,8 +716,9 @@ export default function SketchbookPage() {
                 style={{ 
                   width: cardWidth,
                   x: farPrevImageX,
-                  opacity: currentIndex > 1 ? 0.5 : 0,
+                  opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex > 1 ? 0.5 : 0),
                   scale: 0.85,
+                  transition: 'opacity 0.15s ease-out',
                 }}
               >
                 {entries[currentIndex - 2] && (
@@ -701,7 +726,7 @@ export default function SketchbookPage() {
                     src={getImageUrl(entries[currentIndex - 2])} 
                     alt={entries[currentIndex - 2].note || `Sketch`}
                     className="w-full h-auto object-contain drop-shadow-sm"
-                    style={{ maxHeight: isFullscreen ? '55vh' : '30vh' }}
+                    style={{ maxHeight: isMobile ? '35vh' : isFullscreen ? '55vh' : '37.5vh', transition: 'max-height 0.3s ease-out' }}
                     draggable={false}
                     loading="eager"
                   />
@@ -714,8 +739,9 @@ export default function SketchbookPage() {
                 style={{ 
                   width: cardWidth,
                   x: prevImageX,
-                  opacity: currentIndex > 0 ? prevImageOpacity : 0,
+                  opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex > 0 ? prevImageOpacity : 0),
                   scale: prevImageScale,
+                  transition: 'opacity 0.15s ease-out',
                 }}
               >
                 {entries[currentIndex - 1] && (
@@ -723,7 +749,7 @@ export default function SketchbookPage() {
                     src={getImageUrl(entries[currentIndex - 1])} 
                     alt={entries[currentIndex - 1].note || `Sketch`}
                     className="w-full h-auto object-contain drop-shadow-sm"
-                    style={{ maxHeight: isFullscreen ? '55vh' : '30vh' }}
+                    style={{ maxHeight: isMobile ? '35vh' : isFullscreen ? '55vh' : '37.5vh', transition: 'max-height 0.3s ease-out' }}
                     draggable={false}
                     loading="eager"
                   />
@@ -744,7 +770,7 @@ export default function SketchbookPage() {
                     src={getImageUrl(currentEntry)} 
                     alt={currentEntry.note || `Sketch from ${formatDate(currentEntry.date)}`}
                     className="w-full h-auto object-contain drop-shadow-sm"
-                    style={{ maxHeight: isFullscreen ? '55vh' : '30vh' }}
+                    style={{ maxHeight: isMobile ? '35vh' : isFullscreen ? '55vh' : '37.5vh', transition: 'max-height 0.3s ease-out' }}
                     draggable={false}
                   />
                 ) : (
@@ -758,8 +784,9 @@ export default function SketchbookPage() {
                 style={{ 
                   width: cardWidth,
                   x: nextImageX,
-                  opacity: currentIndex < entries.length - 1 ? nextImageOpacity : 0,
+                  opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex < entries.length - 1 ? nextImageOpacity : 0),
                   scale: nextImageScale,
+                  transition: 'opacity 0.15s ease-out',
                 }}
               >
                 {entries[currentIndex + 1] && (
@@ -767,7 +794,7 @@ export default function SketchbookPage() {
                     src={getImageUrl(entries[currentIndex + 1])} 
                     alt={entries[currentIndex + 1].note || `Sketch`}
                     className="w-full h-auto object-contain drop-shadow-sm"
-                    style={{ maxHeight: isFullscreen ? '55vh' : '30vh' }}
+                    style={{ maxHeight: isMobile ? '35vh' : isFullscreen ? '55vh' : '37.5vh', transition: 'max-height 0.3s ease-out' }}
                     draggable={false}
                     loading="eager"
                   />
@@ -780,8 +807,9 @@ export default function SketchbookPage() {
                 style={{ 
                   width: cardWidth,
                   x: farNextImageX,
-                  opacity: currentIndex < entries.length - 2 ? 0.5 : 0,
+                  opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex < entries.length - 2 ? 0.5 : 0),
                   scale: 0.85,
+                  transition: 'opacity 0.15s ease-out',
                 }}
               >
                 {entries[currentIndex + 2] && (
@@ -789,7 +817,7 @@ export default function SketchbookPage() {
                     src={getImageUrl(entries[currentIndex + 2])} 
                     alt={entries[currentIndex + 2].note || `Sketch`}
                     className="w-full h-auto object-contain drop-shadow-sm"
-                    style={{ maxHeight: isFullscreen ? '55vh' : '30vh' }}
+                    style={{ maxHeight: isMobile ? '35vh' : isFullscreen ? '55vh' : '37.5vh', transition: 'max-height 0.3s ease-out' }}
                     draggable={false}
                     loading="eager"
                   />
@@ -801,7 +829,7 @@ export default function SketchbookPage() {
       </div>
       
       {/* Page indicator - always render container to prevent layout shift */}
-      <div className={`shrink-0 ${isFullscreen ? 'pt-24' : 'pt-12 max-[650px]:pt-24'}`}>
+      <div className={`shrink-0 transition-[padding] duration-300 ease-out ${isFullscreen ? 'pt-24' : 'pt-6 max-[650px]:pt-24'}`}>
         {!loading && entries.length > 0 && (
           <PageIndicator 
             total={entries.length} 
