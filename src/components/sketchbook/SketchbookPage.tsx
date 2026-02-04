@@ -284,7 +284,7 @@ export default function SketchbookPage() {
   // Transform positions based on drag - images travel full width
   const pageWidth = typeof window !== 'undefined' ? window.innerWidth : 400;
   // Spacing between images - smaller in fullscreen to keep adjacent visible, larger in popup
-  const slideDistance = pageWidth < 640 ? cardWidth * 1.7 : (isFullscreen ? cardWidth * 2.1 : cardWidth * 1.7);
+  const slideDistance = pageWidth < 640 ? cardWidth * 1.7 : (isFullscreen ? cardWidth * 0.6 : cardWidth * 1.7);
   
   // Use a ref so transform closures always get the latest slideDistance
   const slideDistanceRef = useRef(slideDistance);
@@ -433,26 +433,23 @@ export default function SketchbookPage() {
     function updateCardWidth() {
       const vw = window.innerWidth;
       // Single card centered - smaller in popup, larger in fullscreen
-      // Use pageContainerRef (always attached) instead of containerRef (only attached after loading)
-      const container = pageContainerRef.current?.closest('.experiment-modal-embed');
-      const isInModal = !!container;
       
       if (vw < 640) {
-        setCardWidth(vw * 0.8); // Mobile - 2x larger (was 0.4)
-      } else if (isInModal) {
-        setCardWidth(Math.min(320, vw * 0.25)); // Popup mode
+        setCardWidth(vw * 0.8); // Mobile
+      } else if (isFullscreen) {
+        setCardWidth(Math.min(1200, vw * 0.825)); // Fullscreen - 1.5x larger
       } else {
-        setCardWidth(Math.min(800, vw * 0.55)); // Fullscreen - full size
+        setCardWidth(Math.min(320, vw * 0.25)); // Popup mode
       }
     }
     
-    // Run immediately and on resize - pageContainerRef is always attached
+    // Run immediately and on resize
     updateCardWidth();
     window.addEventListener('resize', updateCardWidth);
     return () => {
       window.removeEventListener('resize', updateCardWidth);
     };
-  }, [loading]); // Re-run when loading changes to ensure correct sizing after data loads
+  }, [loading, isFullscreen]); // Re-run when loading or isFullscreen changes
   
   // Animate to show transition then change index
   const animateToNextPage = useCallback(() => {
@@ -460,9 +457,9 @@ export default function SketchbookPage() {
     isAnimatingRef.current = true;
     const targetX = -slideDistance;
     animate(x, targetX, {
-      type: 'spring',
-      stiffness: 200,
-      damping: 25,
+      type: 'tween',
+      duration: 0.25,
+      ease: [0.25, 0.1, 0.25, 1],
       onComplete: () => {
         // Instantly reset position and change index together
         x.jump(0);
@@ -470,6 +467,10 @@ export default function SketchbookPage() {
         isAnimatingRef.current = false;
       }
     });
+    // Allow next scroll input sooner
+    setTimeout(() => {
+      isAnimatingRef.current = false;
+    }, 150);
   }, [x, slideDistance]);
   
   const animateToPrevPage = useCallback(() => {
@@ -477,9 +478,9 @@ export default function SketchbookPage() {
     isAnimatingRef.current = true;
     const targetX = slideDistance;
     animate(x, targetX, {
-      type: 'spring',
-      stiffness: 200,
-      damping: 25,
+      type: 'tween',
+      duration: 0.25,
+      ease: [0.25, 0.1, 0.25, 1],
       onComplete: () => {
         // Instantly reset position and change index together
         x.jump(0);
@@ -487,14 +488,18 @@ export default function SketchbookPage() {
         isAnimatingRef.current = false;
       }
     });
+    // Allow next scroll input sooner
+    setTimeout(() => {
+      isAnimatingRef.current = false;
+    }, 150);
   }, [x, slideDistance]);
   
   // Reset x position (snap back)
   const resetPosition = useCallback(() => {
     animate(x, 0, {
-      type: 'spring',
-      stiffness: 300,
-      damping: 30,
+      type: 'tween',
+      duration: 0.2,
+      ease: [0.25, 0.1, 0.25, 1],
     });
   }, [x]);
   
@@ -654,7 +659,7 @@ export default function SketchbookPage() {
       />
       
       {/* Main carousel area - shows current, prev, and next images */}
-      <div className="flex flex-col items-center justify-center overflow-visible relative h-[30vh] xl:h-[45vh]">
+      <div className={`flex flex-col items-center justify-center overflow-visible relative ${isFullscreen ? 'h-[55vh]' : 'h-[30vh] xl:h-[45vh]'}`}>
         
         {loading ? (
           <div className="flex items-center justify-center">
@@ -674,9 +679,8 @@ export default function SketchbookPage() {
               }}
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={1}
-              dragMomentum={true}
-              dragTransition={{ bounceStiffness: 200, bounceDamping: 15 }}
+              dragElastic={0.2}
+              dragMomentum={false}
               onDragStart={() => {
                 dragStartedRef.current = true;
               }}
@@ -696,7 +700,8 @@ export default function SketchbookPage() {
                   <img 
                     src={getImageUrl(entries[currentIndex - 2])} 
                     alt={entries[currentIndex - 2].note || `Sketch`}
-                    className="w-full h-auto max-h-[45vh] sm:max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
+                    className="w-full h-auto object-contain drop-shadow-sm"
+                    style={{ maxHeight: isFullscreen ? '55vh' : '30vh' }}
                     draggable={false}
                     loading="eager"
                   />
@@ -717,7 +722,8 @@ export default function SketchbookPage() {
                   <img 
                     src={getImageUrl(entries[currentIndex - 1])} 
                     alt={entries[currentIndex - 1].note || `Sketch`}
-                    className="w-full h-auto max-h-[45vh] sm:max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
+                    className="w-full h-auto object-contain drop-shadow-sm"
+                    style={{ maxHeight: isFullscreen ? '55vh' : '30vh' }}
                     draggable={false}
                     loading="eager"
                   />
@@ -737,7 +743,8 @@ export default function SketchbookPage() {
                   <img 
                     src={getImageUrl(currentEntry)} 
                     alt={currentEntry.note || `Sketch from ${formatDate(currentEntry.date)}`}
-                    className="w-full h-auto max-h-[45vh] sm:max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
+                    className="w-full h-auto object-contain drop-shadow-sm"
+                    style={{ maxHeight: isFullscreen ? '55vh' : '30vh' }}
                     draggable={false}
                   />
                 ) : (
@@ -759,7 +766,8 @@ export default function SketchbookPage() {
                   <img 
                     src={getImageUrl(entries[currentIndex + 1])} 
                     alt={entries[currentIndex + 1].note || `Sketch`}
-                    className="w-full h-auto max-h-[45vh] sm:max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
+                    className="w-full h-auto object-contain drop-shadow-sm"
+                    style={{ maxHeight: isFullscreen ? '55vh' : '30vh' }}
                     draggable={false}
                     loading="eager"
                   />
@@ -780,7 +788,8 @@ export default function SketchbookPage() {
                   <img 
                     src={getImageUrl(entries[currentIndex + 2])} 
                     alt={entries[currentIndex + 2].note || `Sketch`}
-                    className="w-full h-auto max-h-[45vh] sm:max-h-[30vh] xl:max-h-[45vh] object-contain drop-shadow-sm"
+                    className="w-full h-auto object-contain drop-shadow-sm"
+                    style={{ maxHeight: isFullscreen ? '55vh' : '30vh' }}
                     draggable={false}
                     loading="eager"
                   />
