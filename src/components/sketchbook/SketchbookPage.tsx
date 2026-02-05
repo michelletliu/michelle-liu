@@ -289,11 +289,14 @@ export default function SketchbookPage() {
   // Spacing between images - smaller in fullscreen to keep adjacent visible, larger in popup
   const slideDistance = pageWidth < 640 ? cardWidth * 1.7 : (isFullscreen ? cardWidth * 0.6 : cardWidth * 1.4);
   
-  // Use a ref so transform closures always get the latest slideDistance
-  // Only update when NOT transitioning to prevent side images from moving during mode change
-  // Also check for popup→fullscreen expansion synchronously (before effect sets isTransitioning)
+  // Detect popup→fullscreen expansion ONLY (this direction needs instant hide)
   const isExpandingToFullscreen = !prevIsFullscreenRef.current && isFullscreen;
+  
+  // Use a ref so transform closures always get the latest slideDistance
   const slideDistanceRef = useRef(slideDistance);
+  
+  // Only freeze positions during expansion (popup→fullscreen)
+  // Fullscreen→popup can update positions normally (CSS fade looks fine for that direction)
   if (!isTransitioning && !isExpandingToFullscreen) {
     slideDistanceRef.current = slideDistance;
   }
@@ -686,7 +689,7 @@ export default function SketchbookPage() {
         
         {loading ? (
           <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-300" />
           </div>
         ) : (
           <div 
@@ -718,7 +721,7 @@ export default function SketchbookPage() {
                   x: farPrevImageX,
                   opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex > 1 ? 0.5 : 0),
                   scale: 0.85,
-                  transition: 'opacity 0.15s ease-out',
+                  transition: isExpandingToFullscreen ? 'none' : 'opacity 0.15s ease-out',
                 }}
               >
                 {entries[currentIndex - 2] && (
@@ -741,7 +744,7 @@ export default function SketchbookPage() {
                   x: prevImageX,
                   opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex > 0 ? prevImageOpacity : 0),
                   scale: prevImageScale,
-                  transition: 'opacity 0.15s ease-out',
+                  transition: isExpandingToFullscreen ? 'none' : 'opacity 0.15s ease-out',
                 }}
               >
                 {entries[currentIndex - 1] && (
@@ -786,7 +789,7 @@ export default function SketchbookPage() {
                   x: nextImageX,
                   opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex < entries.length - 1 ? nextImageOpacity : 0),
                   scale: nextImageScale,
-                  transition: 'opacity 0.15s ease-out',
+                  transition: isExpandingToFullscreen ? 'none' : 'opacity 0.15s ease-out',
                 }}
               >
                 {entries[currentIndex + 1] && (
@@ -809,7 +812,7 @@ export default function SketchbookPage() {
                   x: farNextImageX,
                   opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex < entries.length - 2 ? 0.5 : 0),
                   scale: 0.85,
-                  transition: 'opacity 0.15s ease-out',
+                  transition: isExpandingToFullscreen ? 'none' : 'opacity 0.15s ease-out',
                 }}
               >
                 {entries[currentIndex + 2] && (
