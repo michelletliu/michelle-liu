@@ -54,7 +54,13 @@ function createPortableTextComponents(highlightedText?: string, highlightColor?:
   // Helper to extract text content from React nodes
   const getTextContent = (node: React.ReactNode): string => {
     if (typeof node === 'string') return node;
+    if (typeof node === 'number') return String(node);
     if (Array.isArray(node)) return node.map(getTextContent).join('');
+    // Handle React elements (like <em>, <strong>, etc.)
+    if (node && typeof node === 'object' && 'props' in node) {
+      const element = node as React.ReactElement<{ children?: React.ReactNode }>;
+      return getTextContent(element.props.children);
+    }
     return '';
   };
 
@@ -2131,6 +2137,7 @@ function ContentBlock({
         );
       }
       if (section.layout === "centered") {
+        const hasCenteredBody = section.body && section.body.length > 0;
         return (
           <div className={clsx(
             "content-stretch flex flex-col gap-4 items-center px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full",
@@ -2146,7 +2153,7 @@ function ContentBlock({
                 {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
               </p>
             )}
-            {section.body && (
+            {hasCenteredBody && (
               <div className="leading-normal relative text-[#4b5563] text-base text-center prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 max-w-[600px] [&>p]:whitespace-pre-wrap">
                 <PortableText value={section.body} components={portableTextComponents} />
               </div>

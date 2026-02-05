@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import svgPaths from "../imports/svg-2tsxp86msm";
 import imgFinalSealLogo1 from "../assets/logo.png";
+import LumaLogo from "../assets/LumaLogo.svg";
 import { imgGroup } from "../imports/svg-poktt";
 import { ScrollReveal } from "./ScrollReveal";
 import { ArrowUpRight } from "./ArrowUpRight";
@@ -267,6 +268,16 @@ export default function Footer() {
                         </SocialLinksBackgroundImage>
                       </div>
                     </a>
+                    <a href="https://lu.ma/user/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link">
+                      <div className="content-stretch flex items-center justify-center relative shrink-0 size-6">
+                        <img 
+                          src={LumaLogo} 
+                          alt="Luma" 
+                          className="size-6 transition-opacity"
+                          style={{ filter: 'brightness(0) saturate(100%) invert(85%) sepia(5%) saturate(300%) hue-rotate(180deg) brightness(95%)' }}
+                        />
+                      </div>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -332,6 +343,14 @@ export default function Footer() {
                           </SocialLinksBackgroundImage>
                         </div>
                       </a>
+                      <a href="https://lu.ma/user/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link">
+                        <img 
+                          src={LumaLogo} 
+                          alt="Luma" 
+                          className="size-6 transition-opacity"
+                          style={{ filter: 'brightness(0) saturate(100%) invert(85%) sepia(5%) saturate(300%) hue-rotate(180deg) brightness(95%)' }}
+                        />
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -359,10 +378,17 @@ export default function Footer() {
                 <span className="text-gray-400">{` ☕︎`}</span>
               </span>
             </p>
-            <TextScramble 
-              text={changelogText}
-              className="font-['Figtree',sans-serif] font-normal leading-5 tracking-wider relative shrink-0 text-[#9ca3af] text-xs text-nowrap"
-            />
+            <a 
+              href="https://github.com/michelletliu/michelle-liu"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-gray-600 transition-colors"
+            >
+              <TextScramble 
+                text={changelogText}
+                className="font-['Figtree',sans-serif] font-normal leading-5 tracking-wider relative shrink-0 text-[#9ca3af] text-xs text-nowrap"
+              />
+            </a>
           </ScrollReveal>
         </div>
       </div>
