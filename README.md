@@ -1,5 +1,6 @@
   # **michelle liu**
 
+  Welcome!
   Personal portfolio website. Designed in Figma, built with Next.js.
 
   ### Running the code
