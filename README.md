@@ -1,7 +1,6 @@
   # **michelle liu**
 
-  Welcome!
-  Personal portfolio website. Designed in Figma, built with Next.js.
+  Welcome to my personal portfolio website! Designed in Figma, built with Next.js and Claude Opus 4.5.
 
   ### Running the code
 
