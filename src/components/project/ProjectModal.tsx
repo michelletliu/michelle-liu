@@ -1798,7 +1798,7 @@ function ContentBlock({
                       <>
                         <a
                           href={`mailto:${section.contactEmail}`}
-                          className="underline decoration-solid hover:text-blue-500 transition-colors"
+                          className="font-medium text-gray-500 hover:text-blue-500 transition-colors"
                         >
                           email me
                         </a>
