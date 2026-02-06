@@ -616,7 +616,7 @@ export default function PolaroidPage() {
               <div 
                 className={`absolute content-stretch flex items-center left-0 rounded-[5.5px] md:rounded-[6.78px] top-0 ${
                   isPopupMode 
-                    ? 'pb-[43px] md:pb-[53px] pt-[12px] md:pt-[14px] px-[12px] md:px-[14px]' 
+                    ? 'pb-[40px] md:pb-[50px] pt-[14px] md:pt-[16px] px-[12px] md:px-[14px]' 
                     : 'pb-[62px] md:pb-[76.271px] pt-[16.5px] md:pt-[20.339px] px-[16.5px] md:px-[20.339px]'
                 }`}
                 style={{ 
