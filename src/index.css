@@ -44,24 +44,88 @@ textarea:focus-visible {
   outline: none;
 }
 
-/* Hide native video controls and play button on iOS/Safari */
+/* Hide ALL native video controls and play buttons across all browsers/WebViews */
+/* WebKit (Safari, iOS, Instagram/Facebook in-app browsers) */
 video::-webkit-media-controls {
   display: none !important;
+  -webkit-appearance: none;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 video::-webkit-media-controls-panel {
   display: none !important;
+  -webkit-appearance: none;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 video::-webkit-media-controls-play-button {
   display: none !important;
+  -webkit-appearance: none;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 video::-webkit-media-controls-start-playback-button {
   display: none !important;
+  -webkit-appearance: none;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
-video::--webkit-media-controls-enclosure {
+video::-webkit-media-controls-enclosure {
+  display: none !important;
+  -webkit-appearance: none;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+  -webkit-appearance: none;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+video::-webkit-media-controls-current-time-display,
+video::-webkit-media-controls-time-remaining-display,
+video::-webkit-media-controls-timeline,
+video::-webkit-media-controls-volume-slider,
+video::-webkit-media-controls-mute-button,
+video::-webkit-media-controls-fullscreen-button {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* Mozilla Firefox */
+video::-moz-media-controls {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* Microsoft Edge / IE */
+video::-ms-media-controls {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* General video element - prevent any default UI */
+video {
+  -webkit-media-controls-panel: none;
+  -webkit-media-controls-play-button: none;
+  -webkit-media-controls-start-playback-button: none;
+}
+
+/* Wrapper class for extra protection - use on video containers */
+.video-no-controls video,
+.video-no-controls {
+  pointer-events: none;
+}
+
+.video-no-controls video::before,
+.video-no-controls video::after {
   display: none !important;
 }
 

@@ -72,9 +72,21 @@ export default function VideoPlayer({
     if (!video) return;
 
     // IMPORTANT: Set muted state immediately and programmatically for autoplay to work
+    // Set it both as property and attribute for maximum compatibility
     if (mutedRef.current) {
       video.muted = true;
+      video.setAttribute('muted', '');
+      video.defaultMuted = true;
     }
+
+    // Function to attempt playing the video
+    const attemptPlay = () => {
+      if (!video.paused) return; // Already playing
+      video.muted = true; // Ensure muted before every play attempt
+      video.play().catch(() => {
+        // Silently fail - will retry on user interaction
+      });
+    };
 
     // Handler for when video has enough data to play
     const handleCanPlay = () => {
@@ -82,10 +94,34 @@ export default function VideoPlayer({
         hasCalledOnLoaded.current = true;
         onLoadedRef.current();
       }
+      // Try to play when video is ready
+      if (autoPlayRef.current) {
+        attemptPlay();
+      }
+    };
+
+    // Retry playing on visibility change (when user returns to tab)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && autoPlayRef.current) {
+        attemptPlay();
+      }
+    };
+
+    // Retry playing on first user interaction (touch/click anywhere)
+    const handleUserInteraction = () => {
+      if (autoPlayRef.current) {
+        attemptPlay();
+      }
+      // Remove listeners after first interaction
+      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('click', handleUserInteraction);
     };
 
     // Listen for canplaythrough event (video is ready to play through without buffering)
     video.addEventListener('canplaythrough', handleCanPlay);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('touchstart', handleUserInteraction, { passive: true });
+    document.addEventListener('click', handleUserInteraction, { passive: true });
 
     const isHlsSource = src.includes(".m3u8");
 
@@ -196,6 +232,9 @@ export default function VideoPlayer({
     // Cleanup
     return () => {
       video.removeEventListener('canplaythrough', handleCanPlay);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('click', handleUserInteraction);
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
@@ -218,6 +257,12 @@ export default function VideoPlayer({
       x-webkit-airplay="deny"
       disablePictureInPicture
       disableRemotePlayback
+      preload="auto"
+      controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
+      style={{ 
+        WebkitAppearance: 'none',
+        pointerEvents: 'none'
+      }}
     />
   );
 }
