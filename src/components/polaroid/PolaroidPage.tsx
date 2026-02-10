@@ -571,7 +571,7 @@ export default function PolaroidPage() {
         }}
       >
 
-      <div className={`flex flex-col items-center w-full max-w-[583px] my-auto ${isPopupMode ? 'gap-[20px] md:gap-[28px] py-[50px] md:py-[60px]' : 'gap-[32px] md:gap-[48px] py-[100px] md:py-[120px]'}`}>
+      <div className={`flex flex-col items-center w-full max-w-[583px] my-auto ${isPopupMode ? 'gap-[20px] md:gap-[28px] pt-[60px] pb-[40px] md:pt-[70px] md:pb-[50px]' : 'gap-[32px] md:gap-[48px] py-[100px] md:py-[120px]'}`}>
         {/* Title */}
         <div 
           className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-2xl md:text-3rxl text-black text-center text-nowrap" 
