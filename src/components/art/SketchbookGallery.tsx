@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { ChevronLeftIcon, ChevronRightIcon } from "./ChevronIcons";
+import EdgeGradients from "./EdgeGradients";
 
 export type SketchbookItem = {
   id: string;
@@ -178,6 +179,8 @@ export default function SketchbookGallery({
             />
           ))}
         </div>
+
+        <EdgeGradients />
 
         {/* Left navigation button - centered on left edge of first image */}
         <button

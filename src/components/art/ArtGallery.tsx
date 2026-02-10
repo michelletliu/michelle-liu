@@ -27,15 +27,14 @@ export default function ArtGallery({
     <div 
       className={clsx(
         "w-full max-w-full",
-        // Use CSS columns for masonry effect on all screen sizes
-        "columns-2 gap-4 lg:columns-3",
-        // Reverse column fill on mobile so first column is longer
-        reverseColumnsMobile && "max-lg:direction-rtl",
+        // Mobile: CSS grid with 2 columns (tops aligned in rows)
+        // Desktop: CSS columns for masonry effect
+        "grid grid-cols-2 gap-4 items-start lg:block lg:columns-3",
         className
       )}
     >
       {items.map((item) => (
-        <ScrollReveal key={item.id} className={clsx("break-inside-avoid mb-4", reverseColumnsMobile && "max-lg:direction-ltr")}>
+        <ScrollReveal key={item.id} className="break-inside-avoid lg:mb-4">
           <ArtCard
             data={item}
             onClick={() => onItemClick?.(item)}
