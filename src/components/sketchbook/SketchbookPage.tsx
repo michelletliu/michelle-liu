@@ -721,7 +721,6 @@ export default function SketchbookPage() {
                   x: farPrevImageX,
                   opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex > 1 ? 0.5 : 0),
                   scale: 0.85,
-                  transition: isExpandingToFullscreen ? 'none' : 'opacity 0.15s ease-out',
                 }}
               >
                 {entries[currentIndex - 2] && (
@@ -744,7 +743,6 @@ export default function SketchbookPage() {
                   x: prevImageX,
                   opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex > 0 ? prevImageOpacity : 0),
                   scale: prevImageScale,
-                  transition: isExpandingToFullscreen ? 'none' : 'opacity 0.15s ease-out',
                 }}
               >
                 {entries[currentIndex - 1] && (
@@ -789,7 +787,6 @@ export default function SketchbookPage() {
                   x: nextImageX,
                   opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex < entries.length - 1 ? nextImageOpacity : 0),
                   scale: nextImageScale,
-                  transition: isExpandingToFullscreen ? 'none' : 'opacity 0.15s ease-out',
                 }}
               >
                 {entries[currentIndex + 1] && (
@@ -812,7 +809,6 @@ export default function SketchbookPage() {
                   x: farNextImageX,
                   opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex < entries.length - 2 ? 0.5 : 0),
                   scale: 0.85,
-                  transition: isExpandingToFullscreen ? 'none' : 'opacity 0.15s ease-out',
                 }}
               >
                 {entries[currentIndex + 2] && (
