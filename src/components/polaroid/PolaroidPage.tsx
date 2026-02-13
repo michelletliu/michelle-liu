@@ -606,7 +606,7 @@ export default function PolaroidPage() {
                 >
                   <div 
                     aria-hidden="true" 
-                    className="absolute border border-gray-200/50 border-solid inset-[-1px] pointer-events-none rounded-[6.88px] md:rounded-[8.475px]"
+                    className="absolute border border-gray-300/80 border-solid inset-[-1px] pointer-events-none rounded-[6.88px] md:rounded-[8.475px]"
                     style={{
                       borderColor: selectedColor ? selectedColor.border : undefined
                     }}
