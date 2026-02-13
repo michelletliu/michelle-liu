@@ -456,6 +456,7 @@ export default function ArtPage() {
                     <ArtGallery 
                       items={artPiecesByType.conceptual} 
                       onItemClick={handleArtItemClick}
+                      masonryMobile
                     />
                   </ScrollReveal>
                 ) : (
