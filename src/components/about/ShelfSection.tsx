@@ -390,7 +390,7 @@ export default function ShelfSection({
         </div>
 
         {/* Divider */}
-        <div className="h-px w-full bg-gray-200" />
+        <div className="h-px w-full bg-zinc-100" />
       </div>
 
       {/* Media Grid */}

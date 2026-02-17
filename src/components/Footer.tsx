@@ -200,7 +200,7 @@ export default function Footer() {
       <div className="flex flex-col items-center size-full">
         <div className="content-stretch flex flex-col gap-16 items-center px-16 max-md:px-6 pt-8 pb-8 max-md:pb-16 max-md:pt-4 relative w-full">
           <ScrollReveal className="content-stretch flex flex-col gap-5 items-start relative shrink-0 w-full">
-            <div className="bg-gray-200 h-px shrink-0 w-full" />
+            <div className="bg-zinc-100 h-px shrink-0 w-full" />
             
             {/* Desktop Grid (4 columns) */}
             <div className="hidden md:grid gap-5 grid-cols-[repeat(4,_minmax(0px,_1fr))] grid-rows-[repeat(1,_fit-content(100%))] relative shrink-0 w-full">
