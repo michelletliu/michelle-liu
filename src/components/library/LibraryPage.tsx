@@ -101,17 +101,20 @@ export default function LibraryPage() {
 
   // Detect popup mode (inside experiment modal but not fullscreen)
   useEffect(() => {
+    let wasPopupMode = false;
+    
     const checkPopupMode = () => {
       if (containerRef.current) {
         const isInModal = containerRef.current.closest('.experiment-modal-embed:not(.fullscreen)') !== null;
-        const wasPopupMode = isPopupMode;
-        setIsPopupMode(isInModal);
         
         // Reset exiting state when transitioning from popup to fullscreen
         if (wasPopupMode && !isInModal) {
           setIsExiting(false);
           setIsEntering(false);
         }
+        
+        wasPopupMode = isInModal;
+        setIsPopupMode(isInModal);
       }
     };
     
@@ -130,7 +133,7 @@ export default function LibraryPage() {
       window.removeEventListener('resize', checkPopupMode);
       observer?.disconnect();
     };
-  }, [isPopupMode]);
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -255,7 +258,7 @@ export default function LibraryPage() {
     <>
       <div 
         ref={containerRef}
-        className={`relative min-h-screen w-full bg-white transition-all ${
+        className={`relative min-h-screen w-full bg-white transition-[opacity,transform] ${
           isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
         }`} 
         style={{ 
@@ -320,14 +323,14 @@ export default function LibraryPage() {
                 
                 <div 
                   className={clsx(
-                    "absolute left-0 top-[calc(100%+4px)] bg-white rounded-lg shadow-lg border border-gray-100 z-50 w-36 transition-all duration-200 ease-out max-h-[300px] overflow-y-auto",
+                    "absolute left-0 top-[calc(100%+4px)] bg-white rounded-lg shadow-lg border border-gray-100 z-50 w-36 transition-all duration-200 ease-out",
                     showFilterDropdown ? "pointer-events-auto" : "pointer-events-none",
                     isDropdownVisible 
                       ? "opacity-100 translate-y-0" 
                       : "opacity-0 -translate-y-1"
                   )}
                 >
-                    <div className="flex flex-col py-1.5 px-1.5">
+                    <div className="flex flex-col gap-1 py-1.5 px-1.5">
                       {filterOptions.map((option) => {
                         const isActive = activeFilter === option.value;
                         const count = option.isFavorites 
@@ -343,7 +346,7 @@ export default function LibraryPage() {
                               setShowFilterDropdown(false);
                             }}
                             className={clsx(
-                              "flex items-center px-3 py-1.5 rounded-md transition-colors text-left",
+                              "flex items-center px-3 py-1 rounded-md transition-colors text-left",
                               isActive ? "bg-gray-100" : "hover:bg-gray-50"
                             )}
                           >

@@ -2075,24 +2075,35 @@ function ContentBlock({
       }
 
       // Default grid layouts
+      const imageCount = section.images?.length || 0;
+      const isOddCount = imageCount % 2 === 1;
+      
       return (
         <div className="content-stretch flex flex-col gap-4 px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
           {/* Image Grid */}
           <div
             className={`content-stretch grid gap-4 items-center relative w-full max-md:grid-cols-2 ${colsClass}`}
           >
-            {section.images?.map((image) => (
-              <div
-                key={image._key}
-                className="content-stretch flex flex-col items-start min-h-px min-w-px overflow-hidden relative rounded-[26px] shadow-[0px_2px_8px_0px_#eaeaea] shrink-0"
-              >
-                <img
-                  className="w-full h-auto object-contain"
-                  alt={image.alt || ""}
-                  src={urlFor(image).width(1600).quality(90).url()}
-                />
-              </div>
-            ))}
+            {section.images?.map((image, index) => {
+              const isLastItem = index === imageCount - 1;
+              const shouldCenterOnMobile = isLastItem && isOddCount;
+              
+              return (
+                <div
+                  key={image._key}
+                  className={clsx(
+                    "content-stretch flex flex-col items-start min-h-px min-w-px overflow-hidden relative rounded-[26px] shadow-[0px_2px_8px_0px_#eaeaea] shrink-0",
+                    shouldCenterOnMobile && "max-md:col-span-2 max-md:justify-self-center max-md:w-1/2"
+                  )}
+                >
+                  <img
+                    className="w-full h-auto object-contain"
+                    alt={image.alt || ""}
+                    src={urlFor(image).width(1600).quality(90).url()}
+                  />
+                </div>
+              );
+            })}
           </div>
           
           {/* Caption/Title below gallery */}
