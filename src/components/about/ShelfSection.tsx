@@ -68,7 +68,7 @@ export default function ShelfSection({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number | null>(null);
   
   // Function to calculate dropdown position - optimized with RAF
   const updateDropdownPosition = () => {
@@ -390,7 +390,7 @@ export default function ShelfSection({
         </div>
 
         {/* Divider */}
-        <div className="h-px w-full bg-gray-200" />
+        <div className="h-px w-full bg-zinc-100" />
       </div>
 
       {/* Media Grid */}

@@ -85,6 +85,7 @@ export default function LibraryPage() {
   const logoRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const previousPopupModeRef = useRef(false);
 
   // Handle dropdown animation
   useEffect(() => {
@@ -101,19 +102,17 @@ export default function LibraryPage() {
 
   // Detect popup mode (inside experiment modal but not fullscreen)
   useEffect(() => {
-    let wasPopupMode = false;
-    
     const checkPopupMode = () => {
       if (containerRef.current) {
         const isInModal = containerRef.current.closest('.experiment-modal-embed:not(.fullscreen)') !== null;
         
         // Reset exiting state when transitioning from popup to fullscreen
-        if (wasPopupMode && !isInModal) {
+        if (previousPopupModeRef.current && !isInModal) {
           setIsExiting(false);
           setIsEntering(false);
         }
         
-        wasPopupMode = isInModal;
+        previousPopupModeRef.current = isInModal;
         setIsPopupMode(isInModal);
       }
     };
@@ -238,19 +237,15 @@ export default function LibraryPage() {
   };
 
   const handleAddBook = async (title: string) => {
-    try {
-      const { writeClient } = await import('../../sanity/client');
-      console.log('Submitting book suggestion:', title.trim());
-      const result = await writeClient.create({
-        _type: 'bookSuggestion',
-        bookTitle: title.trim(),
-        submittedAt: new Date().toISOString(),
-        status: 'new',
-      });
-      console.log('Book suggestion created:', result);
-    } catch (error) {
-      console.error('Error submitting book suggestion:', error);
-      throw error;
+    const response = await fetch('/api/submit-book-suggestion', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookTitle: title.trim() }),
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Failed to submit book suggestion');
     }
   };
 

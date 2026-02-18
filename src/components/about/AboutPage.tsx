@@ -711,7 +711,7 @@ export default function AboutPage() {
                       <CommunityCard data={community} />
                       {/* Horizontal divider between communities */}
                       {index < communities.length - 1 && (
-                        <div className="mt-12 h-px w-full bg-gray-200" />
+                        <div className="mt-12 h-px w-full bg-zinc-100" />
                       )}
                     </ScrollReveal>
                   </div>

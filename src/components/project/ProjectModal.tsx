@@ -579,41 +579,56 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
   );
 }
 
-// Password input component with local state
-function PasswordInput({ expectedPassword, onUnlock }: { expectedPassword: string; onUnlock?: () => void }) {
+// Password input component - verifies password server-side for security
+function PasswordInput({ 
+  projectId, 
+  sectionKey, 
+  onUnlock 
+}: { 
+  projectId: string; 
+  sectionKey: string; 
+  onUnlock?: () => void;
+}) {
   const [passwordValue, setPasswordValue] = useState("");
   const [error, setError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
-  // Detect mobile device
-  useEffect(() => {
-    const checkMobile = () => {
-      // Check for mobile breakpoint (768px is Tailwind's md breakpoint)
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordValue === expectedPassword) {
-      // Password correct - unlock the content
-      setError(false);
-      setPasswordValue("");
-      onUnlock?.();
-    } else {
+    if (isLoading || !passwordValue.trim()) return;
+
+    setIsLoading(true);
+    setError(false);
+
+    try {
+      const response = await fetch('/api/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId,
+          sectionKey,
+          password: passwordValue,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setPasswordValue("");
+        onUnlock?.();
+        return;
+      } else {
+        setError(true);
+      }
+    } catch {
       setError(true);
-      // Error stays until user types again
     }
+    setIsLoading(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswordValue(e.target.value);
-    // Clear error when user starts typing
     if (error) {
       setError(false);
     }
@@ -624,47 +639,73 @@ function PasswordInput({ expectedPassword, onUnlock }: { expectedPassword: strin
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-full max-w-[313px]">
+    <form onSubmit={handleSubmit} className="relative w-full max-w-[313px]">
       <div className={clsx(
         "bg-white border border-solid content-stretch flex items-center justify-between pl-4 pr-3 py-2 relative rounded-full shrink-0 w-full transition-colors duration-200",
-        error ? "border-[#f87171]" : "border-[#e5e7eb]"
+        error
+          ? "border-[#f87171] focus-within:border-[#f87171]"
+          : "border-[#e5e7eb] focus-within:border-[#d1d5db]"
       )}>
         <input
           type={showPassword ? "text" : "password"}
           placeholder="Enter"
           value={passwordValue}
           onChange={handleInputChange}
-          className="leading-5 relative shrink-0 text-black text-base bg-transparent border-none outline-none flex-1 placeholder:text-[#9ca3af]"
+          disabled={isLoading}
+          className="leading-5 relative shrink-0 text-black text-base bg-transparent border-none outline-none flex-1 placeholder:text-[#9ca3af] disabled:opacity-50"
         />
         <div className="flex items-center gap-2.5">
           {/* Show/Hide password toggle - only visible when there's input */}
           <button
             type="button"
             onClick={toggleShowPassword}
+            disabled={isLoading}
             className={clsx(
               "relative shrink-0 size-[18px] hover:opacity-70 transition-all duration-200",
               passwordValue.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"
             )}
           >
-            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+            <span className="relative block size-[18px]">
+              <span
+                className={clsx(
+                  "absolute inset-0 transition-all duration-200 ease-out",
+                  showPassword ? "opacity-0 scale-90" : "opacity-100 scale-100"
+                )}
+              >
+                <EyeIcon />
+              </span>
+              <span
+                className={clsx(
+                  "absolute inset-0 transition-all duration-200 ease-out",
+                  showPassword ? "opacity-100 scale-100" : "opacity-0 scale-90"
+                )}
+              >
+                <EyeOffIcon />
+              </span>
+            </span>
           </button>
-          {/* Submit arrow */}
+          {/* Submit arrow or loading spinner */}
           <button
             type="submit"
-            className="relative shrink-0 size-[14px] rotate-[-90deg] hover:opacity-70 transition-opacity"
+            disabled={isLoading}
+            className="relative shrink-0 size-[14px] rotate-[-90deg] hover:opacity-70 transition-opacity disabled:opacity-50"
           >
-            <ArrowRightIcon />
+            {isLoading ? (
+              <div className="w-3.5 h-3.5 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
+            ) : (
+              <ArrowRightIcon />
+            )}
           </button>
         </div>
       </div>
-      {/* Error Message with smooth animation */}
-      <div 
+      {/* Error message overlays without affecting layout size */}
+      <div
         className={clsx(
-          "overflow-hidden transition-all duration-300 ease-out",
-          error ? "max-h-6 opacity-100" : "max-h-0 opacity-0"
+          "absolute left-0 top-full mt-1 w-full pointer-events-none transition-all duration-300 ease-out z-10",
+          error ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
         )}
       >
-        <p className="text-[#f87171] text-sm leading-5 px-2">
+        <p className="text-[#f87171] text-sm leading-5 px-2 bg-transparent">
           Please try again!
         </p>
       </div>
@@ -969,38 +1010,11 @@ export default function ProjectModal({
 
   // Handle unlocking a password-protected project
   const handleUnlock = () => {
-    // Mark project as unlocked in session storage
     markProjectUnlocked(projectId);
     setIsUnlocked(true);
     
-    // Scroll to top helper - aggressive scrolling for all scrollable elements
-    const scrollToTop = () => {
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop = 0;
-        scrollContainerRef.current.scrollTo({ top: 0, behavior: 'instant' });
-      }
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    };
-    
-    // If in modal mode, expand to fullscreen
-    // The fullscreen page will naturally start from the top
     if (!isFullscreen && onExpandToFullscreen) {
       onExpandToFullscreen();
-      // Scroll after fullscreen mode has rendered
-      setTimeout(scrollToTop, 50);
-      setTimeout(scrollToTop, 100);
-      setTimeout(scrollToTop, 200);
-    } else {
-      // Already in fullscreen - scroll to top after content re-renders
-      // Use multiple attempts with increasing delays to ensure scroll happens after React re-renders
-      scrollToTop();
-      setTimeout(scrollToTop, 50);
-      setTimeout(scrollToTop, 100);
-      setTimeout(scrollToTop, 200);
-      setTimeout(scrollToTop, 300);
-      setTimeout(scrollToTop, 500);
     }
   };
 
@@ -1375,7 +1389,7 @@ export default function ProjectModal({
                     projects={project.relatedProjects.map((related) => ({
                       id: related._id,
                       title: related.title,
-                      year: related.year,
+                      year: related.year || "",
                       description: related.shortDescription || "",
                       imageSrc: related.heroImage ? urlFor(related.heroImage).width(800).height(434).url() : "",
                     }))}
@@ -1771,7 +1785,7 @@ function ContentBlock({
       
       if (!shouldShowProtected) return null;
       
-      const hasPassword = !!(section.showPasswordProtection && section.password);
+      const hasPassword = !!section.showPasswordProtection;
       return (
         <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
           <div className="bg-gray-100 content-stretch flex flex-col items-center justify-center overflow-clip p-16 max-md:px-8 max-md:py-16 relative rounded-[26px] shrink-0 w-full">
@@ -1811,9 +1825,13 @@ function ContentBlock({
                 </div>
               </div>
 
-              {/* Password Input - shown when password is set in Sanity */}
-              {hasPassword && !isUnlocked && (
-                <PasswordInput expectedPassword={section.password || ''} onUnlock={onUnlock} />
+              {/* Password Input - verifies server-side, password never sent to client */}
+              {hasPassword && !isUnlocked && projectId && (
+                <PasswordInput 
+                  projectId={projectId} 
+                  sectionKey={section._key} 
+                  onUnlock={onUnlock} 
+                />
               )}
             </div>
           </div>

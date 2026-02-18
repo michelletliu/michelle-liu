@@ -1,11 +1,186 @@
 
-  import { defineConfig } from 'vite';
+  import { defineConfig, loadEnv, type Plugin } from 'vite';
   import react from '@vitejs/plugin-react-swc';
   import tailwindcss from '@tailwindcss/vite';
   import path from 'path';
+  import { timingSafeEqual } from 'node:crypto';
+  import { createClient } from '@sanity/client';
 
-  export default defineConfig({
-    plugins: [react(), tailwindcss()],
+  function safePasswordCompare(expected: string, provided: string): boolean {
+    const expectedBuffer = Buffer.from(expected);
+    const providedBuffer = Buffer.from(provided);
+
+    if (expectedBuffer.length !== providedBuffer.length) {
+      return false;
+    }
+
+    return timingSafeEqual(expectedBuffer, providedBuffer);
+  }
+
+  function getExpectedPassword(
+    passwordMap: Record<string, string>,
+    projectId: string,
+    sectionKey: string
+  ): string | null {
+    const direct = passwordMap[`${projectId}:${sectionKey}`];
+    if (direct) return direct;
+
+    const lowerCaseMatch = passwordMap[`${projectId.toLowerCase()}:${sectionKey}`];
+    if (lowerCaseMatch) return lowerCaseMatch;
+
+    const matchingKeys = Object.keys(passwordMap).filter((key) => key.endsWith(`:${sectionKey}`));
+    if (matchingKeys.length === 1) {
+      return passwordMap[matchingKeys[0]];
+    }
+
+    return null;
+  }
+
+  function devVerifyPasswordApiPlugin(mode: string): Plugin {
+    const env = loadEnv(mode, process.cwd(), '');
+    const rawMap = env.PROTECTED_SECTION_PASSWORDS_JSON;
+
+    return {
+      name: 'dev-verify-password-api',
+      configureServer(server) {
+        server.middlewares.use('/api/verify-password', (req, res) => {
+          if (req.method !== 'POST') {
+            res.statusCode = 405;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: 'Method not allowed' }));
+            return;
+          }
+
+          if (!rawMap) {
+            res.statusCode = 503;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: 'Password verification is not configured' }));
+            return;
+          }
+
+          let passwordMap: Record<string, string>;
+          try {
+            const parsed = JSON.parse(rawMap);
+            if (!parsed || typeof parsed !== 'object') {
+              throw new Error('Invalid password map');
+            }
+            passwordMap = parsed;
+          } catch {
+            res.statusCode = 503;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: 'Password verification is not configured' }));
+            return;
+          }
+
+          let body = '';
+          req.on('data', (chunk) => {
+            body += chunk;
+          });
+
+          req.on('end', () => {
+            try {
+              const payload = JSON.parse(body || '{}') as {
+                projectId?: string;
+                sectionKey?: string;
+                password?: string;
+              };
+
+              const { projectId, sectionKey, password } = payload;
+              if (!projectId || !sectionKey || !password) {
+                res.statusCode = 400;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ error: 'Missing required fields' }));
+                return;
+              }
+
+              const expectedPassword = getExpectedPassword(passwordMap, projectId, sectionKey);
+              if (!expectedPassword) {
+                res.statusCode = 404;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ error: 'Protected section not found' }));
+                return;
+              }
+
+              const success = safePasswordCompare(expectedPassword, password);
+              res.statusCode = 200;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ success }));
+            } catch {
+              res.statusCode = 400;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: 'Invalid request body' }));
+            }
+          });
+        });
+      },
+    };
+  }
+
+  function devSubmitBookSuggestionPlugin(mode: string): Plugin {
+    const env = loadEnv(mode, process.cwd(), '');
+    const token = env.SANITY_WRITE_TOKEN || env.VITE_SANITY_WRITE_TOKEN;
+
+    return {
+      name: 'dev-submit-book-suggestion-api',
+      configureServer(server) {
+        server.middlewares.use('/api/submit-book-suggestion', (req, res) => {
+          if (req.method !== 'POST') {
+            res.statusCode = 405;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: 'Method not allowed' }));
+            return;
+          }
+
+          if (!token) {
+            res.statusCode = 503;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: 'Book suggestions are not configured' }));
+            return;
+          }
+
+          let body = '';
+          req.on('data', (chunk) => { body += chunk; });
+          req.on('end', async () => {
+            try {
+              const { bookTitle } = JSON.parse(body || '{}') as { bookTitle?: string };
+              if (!bookTitle || typeof bookTitle !== 'string' || !bookTitle.trim()) {
+                res.statusCode = 400;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ error: 'Missing book title' }));
+                return;
+              }
+
+              const sanityClient = createClient({
+                projectId: 'am3v0x1c',
+                dataset: 'production',
+                apiVersion: '2026-01-06',
+                useCdn: false,
+                token,
+              });
+
+              await sanityClient.create({
+                _type: 'bookSuggestion',
+                bookTitle: bookTitle.trim(),
+                submittedAt: new Date().toISOString(),
+                status: 'new',
+              });
+
+              res.statusCode = 200;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ success: true }));
+            } catch {
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: 'Failed to submit book suggestion' }));
+            }
+          });
+        });
+      },
+    };
+  }
+
+  export default defineConfig(({ mode }) => ({
+    plugins: [react(), tailwindcss(), devVerifyPasswordApiPlugin(mode), devSubmitBookSuggestionPlugin(mode)],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
@@ -59,4 +234,4 @@
       port: 3000,
       open: true,
     },
-  });
+  }));

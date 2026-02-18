@@ -93,6 +93,7 @@ export const MURALS_QUERY = `
 `;
 
 // Query for a single project by slug (with all content)
+// Note: password field is explicitly excluded for security - verification happens server-side
 export const PROJECT_BY_SLUG_QUERY = `
   *[_type == "project" && slug.current == $slug][0] {
     _id,
@@ -113,7 +114,18 @@ export const PROJECT_BY_SLUG_QUERY = `
     content[] {
       _key,
       _type,
-      ...
+      // Exclude password from protectedSection - verified server-side via API
+      _type == "protectedSection" => {
+        _key,
+        _type,
+        title,
+        message,
+        contactEmail,
+        showPasswordProtection,
+        "hasPassword": defined(password) && password != "",
+        visibility
+      },
+      _type != "protectedSection" => @
     },
     relatedProjects[]-> {
       _id,
@@ -128,6 +140,7 @@ export const PROJECT_BY_SLUG_QUERY = `
 `;
 
 // Query for a single project by company (e.g., "apple", "roblox")
+// Note: password field is explicitly excluded for security - verification happens server-side
 export const PROJECT_BY_COMPANY_QUERY = `
   *[_type == "project" && company == $company][0] {
     _id,
@@ -148,7 +161,18 @@ export const PROJECT_BY_COMPANY_QUERY = `
     content[] {
       _key,
       _type,
-      ...
+      // Exclude password from protectedSection - verified server-side via API
+      _type == "protectedSection" => {
+        _key,
+        _type,
+        title,
+        message,
+        contactEmail,
+        showPasswordProtection,
+        "hasPassword": defined(password) && password != "",
+        visibility
+      },
+      _type != "protectedSection" => @
     },
     relatedProjects[]-> {
       _id,

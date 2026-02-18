@@ -86,7 +86,8 @@ export interface ProtectedSection {
   message?: string;
   contactEmail?: string;
   showPasswordProtection?: boolean;
-  password?: string;
+  // Password is verified server-side only - client receives hasPassword boolean
+  hasPassword?: boolean;
 }
 
 export interface FeatureSection {

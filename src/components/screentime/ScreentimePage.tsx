@@ -1102,7 +1102,13 @@ function ShareSheet({ onClose }: { onClose: () => void }) {
 }
 
 // Upload Instructions Component
-function UploadInstructions({ onClose, onUploadSuccess }: { onClose: () => void; onUploadSuccess: () => void }) {
+function UploadInstructions({
+  onClose,
+  onUploadSuccess,
+}: {
+  onClose: () => void;
+  onUploadSuccess: (parsedData?: Partial<ReceiptData> | null) => void;
+}) {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -1226,19 +1232,23 @@ function UploadInstructions({ onClose, onUploadSuccess }: { onClose: () => void;
         
         // Run OCR to check if it's a Screen Time screenshot and extract data
         try {
-          const { data: { text } } = await Tesseract.recognize(
-            enhancedImageSrc,
-            'eng',
-            {
-              logger: (m) => {
-                if (m.status === 'recognizing text') {
-                  console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
-                }
-              },
-              // Tesseract config to better recognize numbers and times
-              tessedit_char_whitelist: '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ :hmr'
-            }
-          );
+          const worker = await Tesseract.createWorker('eng', 1, {
+            logger: (m) => {
+              if (m.status === 'recognizing text') {
+                console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+              }
+            },
+          });
+          let text = '';
+          try {
+            await worker.setParameters({
+              tessedit_char_whitelist: '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ :hmr',
+            });
+            const result = await worker.recognize(enhancedImageSrc);
+            text = result.data.text;
+          } finally {
+            await worker.terminate();
+          }
           
           console.log('OCR completed successfully');
           
