@@ -11,25 +11,22 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (bookTitle.trim() && !isSubmitting) {
       setIsSubmitting(true);
-      try {
-        await onAddBook(bookTitle);
-        setIsSubmitted(true);
-        
-        // Auto-close after showing thank you message
-        setTimeout(() => {
-          setBookTitle("");
-          setIsSubmitted(false);
-          onClose();
-        }, 2000);
-      } catch (error) {
+      setIsSubmitted(true);
+
+      // Fire-and-forget: the "Thank you!" state shows immediately
+      onAddBook(bookTitle).catch((error) => {
         console.error('Failed to submit book suggestion:', error);
-        // Keep modal open on error so user can retry
-      } finally {
+      });
+
+      setTimeout(() => {
+        setBookTitle("");
+        setIsSubmitted(false);
         setIsSubmitting(false);
-      }
+        onClose();
+      }, 2000);
     }
   };
 
