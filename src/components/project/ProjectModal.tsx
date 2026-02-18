@@ -579,41 +579,56 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
   );
 }
 
-// Password input component with local state
-function PasswordInput({ expectedPassword, onUnlock }: { expectedPassword: string; onUnlock?: () => void }) {
+// Password input component - verifies password server-side for security
+function PasswordInput({ 
+  projectId, 
+  sectionKey, 
+  onUnlock 
+}: { 
+  projectId: string; 
+  sectionKey: string; 
+  onUnlock?: () => void;
+}) {
   const [passwordValue, setPasswordValue] = useState("");
   const [error, setError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
-  // Detect mobile device
-  useEffect(() => {
-    const checkMobile = () => {
-      // Check for mobile breakpoint (768px is Tailwind's md breakpoint)
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordValue === expectedPassword) {
-      // Password correct - unlock the content
-      setError(false);
-      setPasswordValue("");
-      onUnlock?.();
-    } else {
+    if (isLoading || !passwordValue.trim()) return;
+
+    setIsLoading(true);
+    setError(false);
+
+    try {
+      const response = await fetch('/api/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId,
+          sectionKey,
+          password: passwordValue,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setPasswordValue("");
+        onUnlock?.();
+      } else {
+        setError(true);
+      }
+    } catch {
       setError(true);
-      // Error stays until user types again
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswordValue(e.target.value);
-    // Clear error when user starts typing
     if (error) {
       setError(false);
     }
@@ -634,13 +649,15 @@ function PasswordInput({ expectedPassword, onUnlock }: { expectedPassword: strin
           placeholder="Enter"
           value={passwordValue}
           onChange={handleInputChange}
-          className="leading-5 relative shrink-0 text-black text-base bg-transparent border-none outline-none flex-1 placeholder:text-[#9ca3af]"
+          disabled={isLoading}
+          className="leading-5 relative shrink-0 text-black text-base bg-transparent border-none outline-none flex-1 placeholder:text-[#9ca3af] disabled:opacity-50"
         />
         <div className="flex items-center gap-2.5">
           {/* Show/Hide password toggle - only visible when there's input */}
           <button
             type="button"
             onClick={toggleShowPassword}
+            disabled={isLoading}
             className={clsx(
               "relative shrink-0 size-[18px] hover:opacity-70 transition-all duration-200",
               passwordValue.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -648,12 +665,17 @@ function PasswordInput({ expectedPassword, onUnlock }: { expectedPassword: strin
           >
             {showPassword ? <EyeOffIcon /> : <EyeIcon />}
           </button>
-          {/* Submit arrow */}
+          {/* Submit arrow or loading spinner */}
           <button
             type="submit"
-            className="relative shrink-0 size-[14px] rotate-[-90deg] hover:opacity-70 transition-opacity"
+            disabled={isLoading}
+            className="relative shrink-0 size-[14px] rotate-[-90deg] hover:opacity-70 transition-opacity disabled:opacity-50"
           >
-            <ArrowRightIcon />
+            {isLoading ? (
+              <div className="w-3.5 h-3.5 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
+            ) : (
+              <ArrowRightIcon />
+            )}
           </button>
         </div>
       </div>
@@ -1771,7 +1793,8 @@ function ContentBlock({
       
       if (!shouldShowProtected) return null;
       
-      const hasPassword = !!(section.showPasswordProtection && section.password);
+      // hasPassword comes from GROQ query (server never sends actual password to client)
+      const hasPassword = !!(section.showPasswordProtection && section.hasPassword);
       return (
         <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
           <div className="bg-gray-100 content-stretch flex flex-col items-center justify-center overflow-clip p-16 max-md:px-8 max-md:py-16 relative rounded-[26px] shrink-0 w-full">
@@ -1811,9 +1834,13 @@ function ContentBlock({
                 </div>
               </div>
 
-              {/* Password Input - shown when password is set in Sanity */}
-              {hasPassword && !isUnlocked && (
-                <PasswordInput expectedPassword={section.password || ''} onUnlock={onUnlock} />
+              {/* Password Input - verifies server-side, password never sent to client */}
+              {hasPassword && !isUnlocked && projectId && (
+                <PasswordInput 
+                  projectId={projectId} 
+                  sectionKey={section._key} 
+                  onUnlock={onUnlock} 
+                />
               )}
             </div>
           </div>
