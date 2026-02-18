@@ -1,17 +1,64 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@sanity/client';
+import { timingSafeEqual } from 'node:crypto';
 
-const client = createClient({
-  projectId: 'am3v0x1c',
-  dataset: 'production',
-  apiVersion: '2024-01-01',
-  useCdn: false, // We need fresh data for password checks
-});
+type PasswordMap = Record<string, string>;
+
+const PROTECTED_SECTION_PASSWORDS_JSON = process.env.PROTECTED_SECTION_PASSWORDS_JSON;
+
+function loadPasswordMap(): PasswordMap | null {
+  if (!PROTECTED_SECTION_PASSWORDS_JSON) return null;
+
+  try {
+    const parsed = JSON.parse(PROTECTED_SECTION_PASSWORDS_JSON);
+    if (!parsed || typeof parsed !== 'object') return null;
+    return parsed as PasswordMap;
+  } catch {
+    return null;
+  }
+}
+
+function safePasswordCompare(expected: string, provided: string): boolean {
+  const expectedBuffer = Buffer.from(expected);
+  const providedBuffer = Buffer.from(provided);
+
+  if (expectedBuffer.length !== providedBuffer.length) {
+    return false;
+  }
+
+  return timingSafeEqual(expectedBuffer, providedBuffer);
+}
+
+function getExpectedPassword(
+  passwordMap: PasswordMap,
+  projectId: string,
+  sectionKey: string
+): string | null {
+  const direct = passwordMap[`${projectId}:${sectionKey}`];
+  if (direct) return direct;
+
+  const lowerCaseMatch = passwordMap[`${projectId.toLowerCase()}:${sectionKey}`];
+  if (lowerCaseMatch) return lowerCaseMatch;
+
+  const matchingKeys = Object.keys(passwordMap).filter((key) => key.endsWith(`:${sectionKey}`));
+  if (matchingKeys.length === 1) {
+    return passwordMap[matchingKeys[0]];
+  }
+
+  return null;
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const passwordMap = loadPasswordMap();
+  if (!passwordMap) {
+    console.error(
+      '[verify-password] Missing/invalid PROTECTED_SECTION_PASSWORDS_JSON. Passwords must be stored outside Sanity.'
+    );
+    return res.status(503).json({ error: 'Password verification is not configured' });
   }
 
   try {
@@ -21,21 +68,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Fetch only the specific password from Sanity (never sent to client)
-    const query = `
-      *[_type == "project" && (slug.current == $projectId || company == $projectId)][0] {
-        "sectionPassword": content[_key == $sectionKey][0].password
-      }
-    `;
-
-    const result = await client.fetch(query, { projectId, sectionKey });
-
-    if (!result || !result.sectionPassword) {
+    // Passwords are intentionally stored outside Sanity to avoid public-dataset exposure.
+    const expectedPassword = getExpectedPassword(passwordMap, projectId, sectionKey);
+    if (!expectedPassword) {
       return res.status(404).json({ error: 'Protected section not found' });
     }
 
     // Compare passwords server-side
-    const isCorrect = result.sectionPassword === password;
+    const isCorrect = safePasswordCompare(expectedPassword, password);
 
     return res.status(200).json({ success: isCorrect });
   } catch (error) {

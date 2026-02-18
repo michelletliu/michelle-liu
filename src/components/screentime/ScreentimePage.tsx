@@ -1102,7 +1102,13 @@ function ShareSheet({ onClose }: { onClose: () => void }) {
 }
 
 // Upload Instructions Component
-function UploadInstructions({ onClose, onUploadSuccess }: { onClose: () => void; onUploadSuccess: () => void }) {
+function UploadInstructions({
+  onClose,
+  onUploadSuccess,
+}: {
+  onClose: () => void;
+  onUploadSuccess: (parsedData?: Partial<ReceiptData> | null) => void;
+}) {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -1235,8 +1241,6 @@ function UploadInstructions({ onClose, onUploadSuccess }: { onClose: () => void;
                   console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
                 }
               },
-              // Tesseract config to better recognize numbers and times
-              tessedit_char_whitelist: '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ :hmr'
             }
           );
           

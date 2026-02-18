@@ -68,7 +68,7 @@ export default function ShelfSection({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number | null>(null);
   
   // Function to calculate dropdown position - optimized with RAF
   const updateDropdownPosition = () => {

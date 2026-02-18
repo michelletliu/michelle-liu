@@ -639,10 +639,12 @@ function PasswordInput({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-full max-w-[313px]">
+    <form onSubmit={handleSubmit} className="relative w-full max-w-[313px]">
       <div className={clsx(
         "bg-white border border-solid content-stretch flex items-center justify-between pl-4 pr-3 py-2 relative rounded-full shrink-0 w-full transition-colors duration-200",
-        error ? "border-[#f87171]" : "border-[#e5e7eb]"
+        error
+          ? "border-[#f87171] focus-within:border-[#f87171]"
+          : "border-[#e5e7eb] focus-within:border-[#d1d5db]"
       )}>
         <input
           type={showPassword ? "text" : "password"}
@@ -663,7 +665,24 @@ function PasswordInput({
               passwordValue.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"
             )}
           >
-            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+            <span className="relative block size-[18px]">
+              <span
+                className={clsx(
+                  "absolute inset-0 transition-all duration-200 ease-out",
+                  showPassword ? "opacity-0 scale-90" : "opacity-100 scale-100"
+                )}
+              >
+                <EyeIcon />
+              </span>
+              <span
+                className={clsx(
+                  "absolute inset-0 transition-all duration-200 ease-out",
+                  showPassword ? "opacity-100 scale-100" : "opacity-0 scale-90"
+                )}
+              >
+                <EyeOffIcon />
+              </span>
+            </span>
           </button>
           {/* Submit arrow or loading spinner */}
           <button
@@ -679,14 +698,14 @@ function PasswordInput({
           </button>
         </div>
       </div>
-      {/* Error Message with smooth animation */}
-      <div 
+      {/* Error message overlays without affecting layout size */}
+      <div
         className={clsx(
-          "overflow-hidden transition-all duration-300 ease-out",
-          error ? "max-h-6 opacity-100" : "max-h-0 opacity-0"
+          "absolute left-0 top-full mt-1 w-full pointer-events-none transition-all duration-300 ease-out z-10",
+          error ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
         )}
       >
-        <p className="text-[#f87171] text-sm leading-5 px-2">
+        <p className="text-[#f87171] text-sm leading-5 px-2 bg-transparent">
           Please try again!
         </p>
       </div>
@@ -1397,7 +1416,7 @@ export default function ProjectModal({
                     projects={project.relatedProjects.map((related) => ({
                       id: related._id,
                       title: related.title,
-                      year: related.year,
+                      year: related.year || "",
                       description: related.shortDescription || "",
                       imageSrc: related.heroImage ? urlFor(related.heroImage).width(800).height(434).url() : "",
                     }))}
@@ -1793,8 +1812,8 @@ function ContentBlock({
       
       if (!shouldShowProtected) return null;
       
-      // hasPassword comes from GROQ query (server never sends actual password to client)
-      const hasPassword = !!(section.showPasswordProtection && section.hasPassword);
+      // Passwords are stored server-side (env), not in Sanity.
+      const hasPassword = !!section.showPasswordProtection;
       return (
         <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
           <div className="bg-gray-100 content-stretch flex flex-col items-center justify-center overflow-clip p-16 max-md:px-8 max-md:py-16 relative rounded-[26px] shrink-0 w-full">

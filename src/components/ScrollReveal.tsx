@@ -17,7 +17,7 @@ type ScrollRevealProps = {
   /** Root margin for earlier/later trigger */
   rootMargin?: string;
   /** HTML element to render as */
-  as?: keyof JSX.IntrinsicElements;
+  as?: keyof React.JSX.IntrinsicElements & string;
   /** Disable animation (element renders normally) */
   disabled?: boolean;
 };
