@@ -10,9 +10,9 @@
 
 ### Protected sections security
 
-Protected project-section passwords are verified server-side by `api/verify-password.ts`.
+Protected project-section passwords are verified server-side by `api/password.ts`.
 
-- Passwords are intentionally stored outside Sanity in `PROTECTED_SECTION_PASSWORDS_JSON`.
-- Format: `{"<projectId-or-company>:<sectionKey>":"<password>"}`.
-- Public Sanity datasets expose readable fields through the query API, so do not store plaintext passwords in Sanity.
-  
+- Passwords are stored as individual environment variables: `PASSWORD_NASA`, `PASSWORD_ADOBE`, `PASSWORD_ROBLOX`.
+- The client sends the password in an `x-password` header and the company name in the request body.
+- Public Sanity datasets expose readable fields through the query API, so passwords are never stored in Sanity.
+

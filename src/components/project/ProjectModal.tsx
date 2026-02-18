@@ -579,14 +579,12 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
   );
 }
 
-// Password input component - verifies password server-side for security
+// Password input component - verifies password server-side via /api/password
 function PasswordInput({ 
   projectId, 
-  sectionKey, 
   onUnlock 
 }: { 
   projectId: string; 
-  sectionKey: string; 
   onUnlock?: () => void;
 }) {
   const [passwordValue, setPasswordValue] = useState("");
@@ -602,14 +600,13 @@ function PasswordInput({
     setError(false);
 
     try {
-      const response = await fetch('/api/verify-password', {
+      const response = await fetch('/api/password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          projectId,
-          sectionKey,
-          password: passwordValue,
-        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-password': passwordValue,
+        },
+        body: JSON.stringify({ project: projectId }),
       });
 
       const data = await response.json();
@@ -1825,12 +1822,11 @@ function ContentBlock({
                 </div>
               </div>
 
-              {/* Password Input - verifies server-side, password never sent to client */}
+              {/* Password Input - verifies server-side via /api/password */}
               {hasPassword && !isUnlocked && projectId && (
                 <PasswordInput 
                   projectId={projectId} 
-                  sectionKey={section._key} 
-                  onUnlock={onUnlock} 
+                  onUnlock={onUnlock}
                 />
               )}
             </div>
