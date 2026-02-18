@@ -187,12 +187,12 @@ export default function SketchbookGallery({
           onClick={() => scroll("left")}
           disabled={!canScrollLeft}
           className={clsx(
-            "absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 z-10 size-9 flex items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm transition-colors",
-            canScrollLeft ? "text-gray-600 hover:text-gray-800" : "text-gray-300 cursor-default"
+            "absolute top-1/2 -left-1 md:left-0 -translate-y-1/2 md:-translate-x-1/2 z-10 size-9 flex items-center justify-center rounded-full border border-zinc-100 bg-white shadow-sm transition-colors",
+            canScrollLeft ? "text-gray-400 hover:text-gray-600" : "text-gray-300 cursor-default"
           )}
           aria-label="Scroll left"
         >
-          <ChevronLeftIcon className="size-5" />
+          <ChevronLeftIcon className="size-5 -translate-x-px" />
         </button>
 
         {/* Right navigation button - centered on right edge of last visible image */}
@@ -200,12 +200,12 @@ export default function SketchbookGallery({
           onClick={() => scroll("right")}
           disabled={!canScrollRight}
           className={clsx(
-            "absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 z-10 size-9 flex items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm transition-colors",
-            canScrollRight ? "text-gray-600 hover:text-gray-800" : "text-gray-300 cursor-default"
+            "absolute top-1/2 -right-1 md:right-0 -translate-y-1/2 md:translate-x-1/2 z-10 size-9 flex items-center justify-center rounded-full border border-zinc-100 bg-white shadow-sm transition-colors",
+            canScrollRight ? "text-gray-400 hover:text-gray-600" : "text-gray-300 cursor-default"
           )}
           aria-label="Scroll right"
         >
-          <ChevronRightIcon className="size-5" />
+          <ChevronRightIcon className="size-5 translate-x-px" />
         </button>
       </div>
     </div>
