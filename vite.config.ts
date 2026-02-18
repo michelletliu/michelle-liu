@@ -4,6 +4,7 @@
   import tailwindcss from '@tailwindcss/vite';
   import path from 'path';
   import { timingSafeEqual } from 'node:crypto';
+  import { createClient } from '@sanity/client';
 
   function safePasswordCompare(expected: string, provided: string): boolean {
     const expectedBuffer = Buffer.from(expected);
@@ -115,8 +116,71 @@
     };
   }
 
+  function devSubmitBookSuggestionPlugin(mode: string): Plugin {
+    const env = loadEnv(mode, process.cwd(), '');
+    const token = env.SANITY_WRITE_TOKEN || env.VITE_SANITY_WRITE_TOKEN;
+
+    return {
+      name: 'dev-submit-book-suggestion-api',
+      configureServer(server) {
+        server.middlewares.use('/api/submit-book-suggestion', (req, res) => {
+          if (req.method !== 'POST') {
+            res.statusCode = 405;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: 'Method not allowed' }));
+            return;
+          }
+
+          if (!token) {
+            res.statusCode = 503;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: 'Book suggestions are not configured' }));
+            return;
+          }
+
+          let body = '';
+          req.on('data', (chunk) => { body += chunk; });
+          req.on('end', async () => {
+            try {
+              const { bookTitle } = JSON.parse(body || '{}') as { bookTitle?: string };
+              if (!bookTitle || typeof bookTitle !== 'string' || !bookTitle.trim()) {
+                res.statusCode = 400;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ error: 'Missing book title' }));
+                return;
+              }
+
+              const sanityClient = createClient({
+                projectId: 'am3v0x1c',
+                dataset: 'production',
+                apiVersion: '2026-01-06',
+                useCdn: false,
+                token,
+              });
+
+              await sanityClient.create({
+                _type: 'bookSuggestion',
+                bookTitle: bookTitle.trim(),
+                submittedAt: new Date().toISOString(),
+                status: 'new',
+              });
+
+              res.statusCode = 200;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ success: true }));
+            } catch {
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: 'Failed to submit book suggestion' }));
+            }
+          });
+        });
+      },
+    };
+  }
+
   export default defineConfig(({ mode }) => ({
-    plugins: [react(), tailwindcss(), devVerifyPasswordApiPlugin(mode)],
+    plugins: [react(), tailwindcss(), devVerifyPasswordApiPlugin(mode), devSubmitBookSuggestionPlugin(mode)],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {

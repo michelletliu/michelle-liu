@@ -617,14 +617,14 @@ function PasswordInput({
       if (data.success) {
         setPasswordValue("");
         onUnlock?.();
+        return;
       } else {
         setError(true);
       }
     } catch {
       setError(true);
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1010,38 +1010,11 @@ export default function ProjectModal({
 
   // Handle unlocking a password-protected project
   const handleUnlock = () => {
-    // Mark project as unlocked in session storage
     markProjectUnlocked(projectId);
     setIsUnlocked(true);
     
-    // Scroll to top helper - aggressive scrolling for all scrollable elements
-    const scrollToTop = () => {
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop = 0;
-        scrollContainerRef.current.scrollTo({ top: 0, behavior: 'instant' });
-      }
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    };
-    
-    // If in modal mode, expand to fullscreen
-    // The fullscreen page will naturally start from the top
     if (!isFullscreen && onExpandToFullscreen) {
       onExpandToFullscreen();
-      // Scroll after fullscreen mode has rendered
-      setTimeout(scrollToTop, 50);
-      setTimeout(scrollToTop, 100);
-      setTimeout(scrollToTop, 200);
-    } else {
-      // Already in fullscreen - scroll to top after content re-renders
-      // Use multiple attempts with increasing delays to ensure scroll happens after React re-renders
-      scrollToTop();
-      setTimeout(scrollToTop, 50);
-      setTimeout(scrollToTop, 100);
-      setTimeout(scrollToTop, 200);
-      setTimeout(scrollToTop, 300);
-      setTimeout(scrollToTop, 500);
     }
   };
 
@@ -1812,7 +1785,6 @@ function ContentBlock({
       
       if (!shouldShowProtected) return null;
       
-      // Passwords are stored server-side (env), not in Sanity.
       const hasPassword = !!section.showPasswordProtection;
       return (
         <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
