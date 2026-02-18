@@ -3,112 +3,46 @@
   import react from '@vitejs/plugin-react-swc';
   import tailwindcss from '@tailwindcss/vite';
   import path from 'path';
-  import { timingSafeEqual } from 'node:crypto';
   import { createClient } from '@sanity/client';
 
-  function safePasswordCompare(expected: string, provided: string): boolean {
-    const expectedBuffer = Buffer.from(expected);
-    const providedBuffer = Buffer.from(provided);
-
-    if (expectedBuffer.length !== providedBuffer.length) {
-      return false;
-    }
-
-    return timingSafeEqual(expectedBuffer, providedBuffer);
-  }
-
-  function getExpectedPassword(
-    passwordMap: Record<string, string>,
-    projectId: string,
-    sectionKey: string
-  ): string | null {
-    const direct = passwordMap[`${projectId}:${sectionKey}`];
-    if (direct) return direct;
-
-    const lowerCaseMatch = passwordMap[`${projectId.toLowerCase()}:${sectionKey}`];
-    if (lowerCaseMatch) return lowerCaseMatch;
-
-    const matchingKeys = Object.keys(passwordMap).filter((key) => key.endsWith(`:${sectionKey}`));
-    if (matchingKeys.length === 1) {
-      return passwordMap[matchingKeys[0]];
-    }
-
-    return null;
-  }
-
-  function devVerifyPasswordApiPlugin(mode: string): Plugin {
+  function devPasswordApiPlugin(mode: string): Plugin {
     const env = loadEnv(mode, process.cwd(), '');
-    const rawMap = env.PROTECTED_SECTION_PASSWORDS_JSON;
 
     return {
-      name: 'dev-verify-password-api',
+      name: 'dev-password-api',
       configureServer(server) {
-        server.middlewares.use('/api/verify-password', (req, res) => {
+        server.middlewares.use('/api/password', (req, res) => {
           if (req.method !== 'POST') {
             res.statusCode = 405;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Method not allowed' }));
+            res.end(JSON.stringify({ success: false }));
             return;
           }
 
-          if (!rawMap) {
-            res.statusCode = 503;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Password verification is not configured' }));
-            return;
-          }
-
-          let passwordMap: Record<string, string>;
-          try {
-            const parsed = JSON.parse(rawMap);
-            if (!parsed || typeof parsed !== 'object') {
-              throw new Error('Invalid password map');
-            }
-            passwordMap = parsed;
-          } catch {
-            res.statusCode = 503;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Password verification is not configured' }));
-            return;
-          }
+          const password = req.headers['x-password'] as string | undefined;
 
           let body = '';
-          req.on('data', (chunk) => {
-            body += chunk;
-          });
-
+          req.on('data', (chunk) => { body += chunk; });
           req.on('end', () => {
             try {
-              const payload = JSON.parse(body || '{}') as {
-                projectId?: string;
-                sectionKey?: string;
-                password?: string;
-              };
-
-              const { projectId, sectionKey, password } = payload;
-              if (!projectId || !sectionKey || !password) {
+              const { project } = JSON.parse(body || '{}') as { project?: string };
+              if (!password || !project) {
                 res.statusCode = 400;
                 res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({ error: 'Missing required fields' }));
+                res.end(JSON.stringify({ success: false }));
                 return;
               }
 
-              const expectedPassword = getExpectedPassword(passwordMap, projectId, sectionKey);
-              if (!expectedPassword) {
-                res.statusCode = 404;
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({ error: 'Protected section not found' }));
-                return;
-              }
+              const envKey = `PASSWORD_${project.toUpperCase()}`;
+              const expected = env[envKey];
 
-              const success = safePasswordCompare(expectedPassword, password);
               res.statusCode = 200;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ success }));
+              res.end(JSON.stringify({ success: !!expected && password === expected }));
             } catch {
               res.statusCode = 400;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Invalid request body' }));
+              res.end(JSON.stringify({ success: false }));
             }
           });
         });
@@ -180,7 +114,7 @@
   }
 
   export default defineConfig(({ mode }) => ({
-    plugins: [react(), tailwindcss(), devVerifyPasswordApiPlugin(mode), devSubmitBookSuggestionPlugin(mode)],
+    plugins: [react(), tailwindcss(), devPasswordApiPlugin(mode), devSubmitBookSuggestionPlugin(mode)],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
