@@ -14,7 +14,7 @@ export default function EdgeGradients({ className }: EdgeGradientsProps) {
       {/* Left edge gradient fade */}
       <div 
         className={clsx(
-          "absolute left-0 top-0 bottom-1 w-16 md:w-24 pointer-events-none z-[5]",
+          "absolute left-0 top-0 bottom-1 w-20 md:w-24 pointer-events-none z-[5]",
           className
         )}
         style={{ 
@@ -25,7 +25,7 @@ export default function EdgeGradients({ className }: EdgeGradientsProps) {
       {/* Right edge gradient fade */}
       <div 
         className={clsx(
-          "absolute right-0 top-0 bottom-1 w-16 md:w-24 pointer-events-none z-[5]",
+          "absolute right-0 top-0 bottom-1 w-20 md:w-24 pointer-events-none z-[5]",
           className
         )}
         style={{ 
