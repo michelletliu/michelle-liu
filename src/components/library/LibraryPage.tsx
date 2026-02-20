@@ -298,7 +298,7 @@ export default function LibraryPage() {
                   onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                   className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors cursor-pointer bg-gray-500/10"
                 >
-                  <span className="font-['Figtree',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap text-gray-500">
+                  <span className="font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap text-gray-500">
                     {activeFilter}
                     <span className="text-gray-400"> ({filteredBooks.length})</span>
                   </span>
@@ -346,7 +346,7 @@ export default function LibraryPage() {
                             )}
                           >
                             <span className={clsx(
-                              "font-['Figtree',sans-serif] font-medium text-base tracking-[0.01em]",
+                              "font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em]",
                               isActive ? "text-gray-600" : "text-gray-400"
                             )}>
                               {option.label}

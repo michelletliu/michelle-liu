@@ -91,20 +91,20 @@ export default function PageHeader({
               <ScrollReveal variant="fade" rootMargin="0px" disabled={heroAnimationPlayed}>
                 {nameAddon ? (
                   <div className="flex gap-3 items-baseline w-full">
-                    <p className="font-['Figtree',sans-serif] tracking-[0.0125em] font-medium leading-normal text-[#374151] text-4xl max-md:text-4xl">
+                    <p className="font-['Michelle',sans-serif] tracking-[0.0125em] font-medium leading-normal text-[#374151] text-4xl max-md:text-4xl">
                       michelle liu
                     </p>
                     {nameAddon}
                   </div>
                 ) : (
-                  <p className="font-['Figtree',sans-serif] tracking-[0.0125em] font-medium leading-normal relative shrink-0 text-[#374151] text-4xl w-full max-md:text-4xl">
+                  <p className="font-['Michelle',sans-serif] tracking-[0.0125em] font-medium leading-normal relative shrink-0 text-[#374151] text-4xl w-full max-md:text-4xl">
                     michelle liu
                   </p>
                 )}
               </ScrollReveal>
               {children && (
                 <motion.div
-                  className="font-['Figtree',sans-serif] font-normal tracking-wide leading-6 max-md:leading-5.5 text-[#9ca3af] text-lg max-md:text-base w-full max-md:max-w-86 whitespace-pre-wrap mt-1 max-md:mt-1"
+                  className="font-['Michelle',sans-serif] font-normal tracking-wide leading-6 max-md:leading-5.5 text-[#9ca3af] text-lg max-md:text-base w-full max-md:max-w-86 whitespace-pre-wrap mt-1 max-md:mt-1"
                   initial={{ opacity: 0, y: 4, filter: "blur(0px)" }}
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   transition={{ duration: 0.15, delay: 0, ease: [0.25, 0.46, 0.45, 0.94] }}

@@ -158,14 +158,14 @@ export default function MediaCard({
         )}>
           {/* Emoji */}
           {data?.emoji && (
-            <p className="font-['Figtree'] text-4xl">
+            <p className="font-['Michelle'] text-4xl">
               {data.emoji}
             </p>
           )}
 
           {/* Quote Title */}
           {data?.quoteTitle && (
-            <p className="whitespace-pre-wrap font-['Figtree'] -mb-1 text-2xl tracking-[0.01em] font-medium text-gray-700">
+            <p className="whitespace-pre-wrap font-['Michelle'] -mb-1 text-2xl tracking-[0.01em] font-medium text-gray-700">
               {data.quoteTitle}
             </p>
           )}
@@ -173,7 +173,7 @@ export default function MediaCard({
           {/* Quote Text & Author */}
           <div className="flex flex-col items-start text-base tracking-[0.005em] md:text-base">
             {data?.quoteText && (
-              <p className="font-['Figtree'] font-normal text-gray-500 mb-0.5">
+              <p className="font-['Michelle'] font-normal text-gray-500 mb-0.5">
                 <QuoteTextWithUnderline
                   text={data.quoteText}
                   underlinedText={data.quoteUnderlinedText}
@@ -182,7 +182,7 @@ export default function MediaCard({
               </p>
             )}
             {data?.quoteAuthor && (
-              <p className="font-['Figtree'] font-normal text-gray-400">
+              <p className="font-['Michelle'] font-normal text-gray-400">
                 {data.quoteAuthor}
               </p>
             )}

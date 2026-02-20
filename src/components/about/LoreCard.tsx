@@ -59,7 +59,7 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
       </div>
 
       {/* Caption */}
-      <div className="flex w-full flex-col px-1 font-['Figtree',sans-serif] pt-2 max-md:pb-4 text-base tracking-[0.005em] leading-tight">
+      <div className="flex w-full flex-col px-1 font-['Michelle',sans-serif] pt-2 max-md:pb-4 text-base tracking-[0.005em] leading-tight">
         {/* Headline row with arrow */}
         <div className="flex w-full items-start justify-between">
           <div className="flex flex-col gap-0 max-md:gap-1">
