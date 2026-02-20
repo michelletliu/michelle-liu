@@ -60,7 +60,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   return (
     <>
       <PopupLine />
-      <div className="font-['Figtree',sans-serif] font-normal gap-3 grid grid-cols-4 max-md:grid-cols-2 max-md:gap-y-6 relative shrink-0 text-[15px] w-full mt-2">
+      <div className="font-['Michelle',sans-serif] font-normal gap-3 grid grid-cols-4 max-md:grid-cols-2 max-md:gap-y-6 relative shrink-0 text-[15px] w-full mt-2">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
             <p className="leading-5 text-sm relative shrink-0 text-[#9ca3af]">
@@ -443,13 +443,13 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
           <div className="flex items-center justify-between w-full">
             {/* Title */}
             <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
-              <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-lg text-black">
+              <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-lg text-black">
                 {project.title}
               </p>
-              <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
+              <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
                 •
               </p>
-              <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-lg">
+              <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-lg">
                 {project.year}
               </p>
             </div>
@@ -481,7 +481,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
           {/* Description - hidden in popup mode, shown in fullscreen */}
           {isFullscreen && (
             <div className="content-stretch flex gap-2 items-start relative w-full">
-              <p className="font-['Figtree',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base">
+              <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base">
                 {project.description}
               </p>
             </div>
@@ -529,7 +529,7 @@ function ToolsSectionCompact({ categories, isFullscreen = false }: { categories:
     <>
       <PopupLine />
       <div className={clsx(
-        "font-['Figtree',sans-serif] font-normal grid grid-cols-4 relative shrink-0 w-full",
+        "font-['Michelle',sans-serif] font-normal grid grid-cols-4 relative shrink-0 w-full",
         isFullscreen ? "gap-3 text-[15px] mt-2" : "gap-2 text-sm mt-1"
       )}>
         {categories.map((category, idx) => (

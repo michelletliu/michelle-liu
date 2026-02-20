@@ -230,7 +230,7 @@ export default function SideQuestSection({
               {/* Caption - only shown in popup mode */}
               {imageCaption && (
                 <p
-                  className="mt-6 max-w-[600px] text-center font-['Figtree'] text-base font-normal leading-relaxed text-gray-600 animate-[fadeSlideUp_300ms_ease-out_100ms_both]"
+                  className="mt-6 max-w-[600px] text-center font-['Michelle'] text-base font-normal leading-relaxed text-gray-600 animate-[fadeSlideUp_300ms_ease-out_100ms_both]"
                   style={{ fontVariationSettings: "'opsz' 9" }}
                 >
                   {imageCaption}

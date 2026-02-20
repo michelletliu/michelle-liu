@@ -200,7 +200,7 @@ function Breadcrumb({ projectName, onWorkClick, isScrolled = false, isPastHero =
           isScrolled ? "opacity-0 pointer-events-none w-0 px-0 overflow-hidden" : "opacity-100 px-1.5 ml-2"
         )}
       >
-        <span className="font-['Figtree:Medium',sans-serif] font-medium text-sm leading-normal text-[#4b5563] whitespace-nowrap">
+        <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#4b5563] whitespace-nowrap">
           Work
         </span>
       </button>
@@ -212,7 +212,7 @@ function Breadcrumb({ projectName, onWorkClick, isScrolled = false, isPastHero =
 
       {/* Project name - not clickable */}
       <div className="flex items-center justify-center px-1 py-0.5">
-        <span className="font-['Figtree:Medium',sans-serif] font-medium text-sm leading-normal text-[#1f2937]">
+        <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#1f2937]">
           {projectName}
         </span>
       </div>

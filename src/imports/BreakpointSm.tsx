@@ -20,7 +20,7 @@ type Frame1086331LinksBackgroundImageAndTextProps = {
 function Frame1086331LinksBackgroundImageAndText({ text }: Frame1086331LinksBackgroundImageAndTextProps) {
   return (
     <button className="content-stretch flex items-center justify-center px-[2px] py-0 relative rounded-[999px] shrink-0">
-      <p className="font-['Figtree',sans-serif] font-semibold leading-[20px] relative shrink-0 text-[#9ca3af] text-[16px] text-left text-nowrap tracking-[0.16px]">{text}</p>
+      <p className="font-['Michelle',sans-serif] font-semibold leading-[20px] relative shrink-0 text-[#9ca3af] text-[16px] text-left text-nowrap tracking-[0.16px]">{text}</p>
     </button>
   );
 }
@@ -31,7 +31,7 @@ type Frame1086307TagBackgroundImageAndTextProps = {
 function Frame1086307TagBackgroundImageAndText({ text }: Frame1086307TagBackgroundImageAndTextProps) {
   return (
     <button className="content-stretch cursor-pointer flex items-center justify-center px-[12px] py-[4px] relative rounded-[999px] shrink-0">
-      <p className="font-['Figtree',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#9ca3af] text-[16px] text-left text-nowrap tracking-[0.16px]">{text}</p>
+      <p className="font-['Michelle',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#9ca3af] text-[16px] text-left text-nowrap tracking-[0.16px]">{text}</p>
     </button>
   );
 }
@@ -67,22 +67,22 @@ export default function BreakpointSm() {
             <div className="size-full">
               <div className="content-stretch flex flex-col gap-[36px] items-start pb-[16px] pt-[44px] px-[32px] relative w-full">
                 <div className="content-stretch flex flex-col gap-[20px] items-start relative shrink-0 w-full">
-                  <p className="font-['Figtree',sans-serif] font-medium leading-[normal] relative shrink-0 text-[#374151] text-[64px] w-full">michelle liu</p>
-                  <p className="font-['Figtree',sans-serif] font-normal leading-[28px] not-italic relative shrink-0 text-[#6b7280] text-[0px] text-[20px] w-full">
-                    <span className="font-['Figtree',sans-serif] text-[#9ca3af]">{`Designing useful products to spark moments of delight & `}</span>
-                    <span className="font-['Figtree',sans-serif] text-[#9ca3af]">human connection.</span>
-                    <span className="font-['Figtree',sans-serif] text-[#9ca3af]">
+                  <p className="font-['Michelle',sans-serif] font-medium leading-[normal] relative shrink-0 text-[#374151] text-[64px] w-full">michelle liu</p>
+                  <p className="font-['Michelle',sans-serif] font-normal leading-[28px] not-italic relative shrink-0 text-[#6b7280] text-[0px] text-[20px] w-full">
+                    <span className="font-['Michelle',sans-serif] text-[#9ca3af]">{`Designing useful products to spark moments of delight & `}</span>
+                    <span className="font-['Michelle',sans-serif] text-[#9ca3af]">human connection.</span>
+                    <span className="font-['Michelle',sans-serif] text-[#9ca3af]">
                       <br aria-hidden="true" />
                       {`Previously at `}
                     </span>
-                    <span className="font-['Figtree',sans-serif] text-[#374151]" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <span className="font-['Michelle',sans-serif] text-[#374151]" style={{ fontVariationSettings: "'wdth' 100" }}>
                       
                     </span>
-                    <span className="font-['Figtree',sans-serif] text-[#9ca3af]">{`, `}</span>
-                    <span className="font-['Figtree',sans-serif] text-[#374151]">Roblox</span>
-                    <span className="font-['Figtree',sans-serif] text-[#9ca3af]">{`, & `}</span>
-                    <span className="font-['Figtree',sans-serif] text-[#374151]">NASA</span>
-                    <span className="font-['Figtree',sans-serif] text-[#9ca3af]">.</span>
+                    <span className="font-['Michelle',sans-serif] text-[#9ca3af]">{`, `}</span>
+                    <span className="font-['Michelle',sans-serif] text-[#374151]">Roblox</span>
+                    <span className="font-['Michelle',sans-serif] text-[#9ca3af]">{`, & `}</span>
+                    <span className="font-['Michelle',sans-serif] text-[#374151]">NASA</span>
+                    <span className="font-['Michelle',sans-serif] text-[#9ca3af]">.</span>
                   </p>
                 </div>
               </div>
@@ -94,7 +94,7 @@ export default function BreakpointSm() {
             <div className="content-stretch flex flex-col gap-[12px] items-start pb-0 pt-[16px] px-[32px] relative size-full">
               <div className="content-stretch flex gap-[12px] items-start relative shrink-0">
                 <div className="bg-[rgba(107,114,128,0.1)] content-stretch flex items-center justify-center px-[12px] py-[4px] relative rounded-[999px] shrink-0" data-name="Tag">
-                  <p className="font-['Figtree',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#4b5563] text-[16px] text-nowrap tracking-[0.16px]">WORK</p>
+                  <p className="font-['Michelle',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#4b5563] text-[16px] text-nowrap tracking-[0.16px]">WORK</p>
                 </div>
                 <Frame1086307TagBackgroundImageAndText text="ART" />
                 <Frame1086307TagBackgroundImageAndText text="ABOUT" />
@@ -109,7 +109,7 @@ export default function BreakpointSm() {
                 <source src="/_videos/v1/178dbff1fec6d1345d7a772692731154947b7aef" />
               </AppleCoverBackgroundImage>
             </div>
-            <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
+            <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
               <p className="relative shrink-0 text-[#111827] w-full">
                 <span>{`Apple `}</span>
                 <span className="text-[#9ca3af]">• 2025</span>
@@ -123,7 +123,7 @@ export default function BreakpointSm() {
                 <source src="/_videos/v1/ec4f5676616e35a7cfffe3caab293e4284f6b764" />
               </AppleCoverBackgroundImage>
             </div>
-            <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
+            <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
               <p className="relative shrink-0 text-[#111827] w-full">
                 <span>{`Roblox `}</span>
                 <span className="text-[#9ca3af]">• 2024</span>
@@ -137,7 +137,7 @@ export default function BreakpointSm() {
                 <source src="/_videos/v1/7ff3f920282132ea0b7ed8c097d7da8b417608f9" />
               </AppleCoverBackgroundImage>
             </div>
-            <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
+            <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
               <p className="relative shrink-0 text-[#111827] w-full">
                 <span>{`Adobe `}</span>
                 <span className="text-[#9ca3af]">• 2023</span>
@@ -151,7 +151,7 @@ export default function BreakpointSm() {
                 <source src="/_videos/v1/bd0c1e028203c96d4237a50961da25ddc671fc3f" />
               </AppleCoverBackgroundImage>
             </div>
-            <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
+            <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
               <p className="relative shrink-0 text-[#111827] w-full">
                 <span>{`NASA JPL `}</span>
                 <span className="text-[#9ca3af]">• 2023-24</span>
@@ -165,7 +165,7 @@ export default function BreakpointSm() {
                 <source src="/_videos/v1/e1a08fc1de0f94dc450713914a82ab3fefd8c902" />
               </AppleCoverBackgroundImage>
             </div>
-            <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
+            <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
               <p className="relative shrink-0 text-[#111827] w-full">
                 <span>{`Polaroid Studio `}</span>
                 <span className="text-[#9ca3af]">• 2025</span>
@@ -179,7 +179,7 @@ export default function BreakpointSm() {
                 <source src="/_videos/v1/c9388f3c9f7f89cdcd536abfedfaf06c9f677b0b" />
               </AppleCoverBackgroundImage>
             </div>
-            <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
+            <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
               <p className="relative shrink-0 text-[#111827] w-full">
                 <span>{`Screentime Receipt `}</span>
                 <span className="text-[#9ca3af]">• 2025</span>
@@ -193,7 +193,7 @@ export default function BreakpointSm() {
                 <source src="/_videos/v1/a7d89d5e0ec7653d5a65dc73a8c637d966cb3295" />
               </AppleCoverBackgroundImage>
             </div>
-            <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
+            <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
               <p className="relative shrink-0 text-[#111827] w-full">
                 <span>{`Digital Sketchbook `}</span>
                 <span className="text-[#9ca3af]">• 2024</span>
@@ -207,7 +207,7 @@ export default function BreakpointSm() {
                 <source src="/_videos/v1/2f11cff5870795617ad1ebfe3cbd1f3281c493fd" />
               </AppleCoverBackgroundImage>
             </div>
-            <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
+            <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
               <p className="relative shrink-0 text-[#111827] w-full">
                 <span>{`Personal Library `}</span>
                 <span className="text-[#9ca3af]">• 2025</span>
@@ -227,9 +227,9 @@ export default function BreakpointSm() {
                       <div className="overflow-clip relative shrink-0 size-[28px]" data-name="Logo">
                         <FinalSealLogoBackgroundImage additionalClassNames="h-[41.289px] top-[-6.64px] w-[28.84px]" />
                       </div>
-                      <p className="font-['Figtree',sans-serif] font-medium leading-[normal] relative shrink-0 text-[#374151] text-[32px] w-[212px]">michelle liu</p>
+                      <p className="font-['Michelle',sans-serif] font-medium leading-[normal] relative shrink-0 text-[#374151] text-[32px] w-[212px]">michelle liu</p>
                     </div>
-                    <p className="font-['Figtree',sans-serif] font-normal leading-[28px] relative shrink-0 text-[#9ca3af] text-[16px] text-nowrap">
+                    <p className="font-['Michelle',sans-serif] font-normal leading-[28px] relative shrink-0 text-[#9ca3af] text-[16px] text-nowrap">
                       <span>{`Built with Next.js & `}</span>
                       <a className="[text-underline-position:from-font] cursor-pointer decoration-solid underline" href="https://www.rockysmatcha.com/">
                         <span className="[text-underline-position:from-font] decoration-solid leading-[28px]" href="https://www.rockysmatcha.com/">
@@ -241,11 +241,11 @@ export default function BreakpointSm() {
                   </div>
                   <div className="content-stretch flex flex-col gap-[40px] items-start relative shrink-0">
                     <div className="content-stretch flex flex-col gap-[44px] items-start relative shrink-0">
-                      <div className="content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start relative shrink-0 text-[#9ca3af] w-[326px]">
+                      <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start relative shrink-0 text-[#9ca3af] w-[326px]">
                         <p className="leading-[24px] relative shrink-0 text-[16px] w-full">Let’s work together!</p>
                         <p className="leading-[24px] relative shrink-0 text-[0px] text-[16px] w-full">
                           <span>{`studio@liumichelle.com `}</span>
-                          <span className="font-['Figtree',sans-serif] font-bold"><ArrowUpRight /></span>
+                          <span className="font-['Michelle',sans-serif] font-bold"><ArrowUpRight /></span>
                         </p>
                       </div>
                       <div className="content-stretch flex flex-col gap-[20px] items-start relative shrink-0 w-[326px]">
@@ -290,7 +290,7 @@ export default function BreakpointSm() {
                   </div>
                 </div>
               </div>
-              <p className="font-['Figtree',sans-serif] font-normal leading-[20px] relative shrink-0 text-[#9ca3af] text-[14px] text-nowrap">CHANGELOG: 12-16-25</p>
+              <p className="font-['Michelle',sans-serif] font-normal leading-[20px] relative shrink-0 text-[#9ca3af] text-[14px] text-nowrap">CHANGELOG: 12-16-25</p>
             </div>
           </div>
         </div>

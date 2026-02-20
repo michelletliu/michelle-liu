@@ -99,7 +99,7 @@ export default function ContactBadge({
         </svg>
       </span>
       <span className={clsx(
-        "font-['Figtree:Medium',sans-serif] font-normal text-emerald-500 tracking-[0.005em] text-nowrap overflow-hidden transition-all ease-out",
+        "font-['Michelle:Medium',sans-serif] font-normal text-emerald-500 tracking-[0.005em] text-nowrap overflow-hidden transition-all ease-out",
         hoverMode && "text-[0.85em] duration-300",
         scrollExpandMode && "text-base duration-[800ms]",
         isExpanded ? "max-w-[500px] opacity-100" : "max-w-0 opacity-0"

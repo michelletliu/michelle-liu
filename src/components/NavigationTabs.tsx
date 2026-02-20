@@ -27,7 +27,7 @@ function TagBackgroundImageAndText({ text, active = false, onClick }: TagBackgro
     >
       <p
         className={clsx(
-          "font-['Figtree',sans-serif] font-medium leading-normal tracking-[0.005em] relative shrink-0 text-[1.07em] text-nowrap",
+          "font-['Michelle',sans-serif] font-medium leading-normal tracking-[0.005em] relative shrink-0 text-[1.07em] text-nowrap",
           active ? "text-[#4b5563]" : "text-[#9ca3af]"
         )}
       >

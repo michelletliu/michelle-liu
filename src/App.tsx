@@ -438,7 +438,7 @@ type LinksBackgroundImageAndTextProps = {
 function LinksBackgroundImageAndText({ text }: LinksBackgroundImageAndTextProps) {
   return (
     <div className="content-stretch flex items-center justify-center px-0.5 py-0 relative rounded-full shrink-0">
-      <p className="font-['Figtree',sans-serif] leading-5 relative shrink-0 text-[#9ca3af] text-base text-nowrap tracking-[0.16px]">
+      <p className="font-['Michelle',sans-serif] leading-5 relative shrink-0 text-[#9ca3af] text-base text-nowrap tracking-[0.16px]">
         {text}
       </p>
     </div>
@@ -483,7 +483,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
           {/* Floating title pill inside the card - desktop only */}
           <div className="absolute bottom-0 left-0 p-3 hidden md:block">
             <div className="bg-white border border-[#f3f4f6] border-solid flex items-center justify-center px-3 pt-[5px] pb-[4.8px] rounded-full">
-              <p className="font-['Figtree',sans-serif] font-medium tracking-[0.005em] leading-[1.4] text-[#111827] text-base">
+              <p className="font-['Michelle',sans-serif] font-medium tracking-[0.005em] leading-[1.4] text-[#111827] text-base">
                 <span>{project.title}</span>
                 {/* Show year only for non-Try It Out projects */}
                 {!hasTryItOut && (
@@ -508,10 +508,10 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
         </div>
         {/* Desktop: just description */}
         <div className="hidden md:flex content-stretch items-start px-[13px] py-0 -mt-1.5 -mb-0.5 relative shrink-0 w-full">
-          <p className="font-['Figtree',sans-serif] font-normal leading-[1.4] text-[#9ca3af] text-base tracking-[0.005em] text-left project-hover-text">{project.description}</p>
+          <p className="font-['Michelle',sans-serif] font-normal leading-[1.4] text-[#9ca3af] text-base tracking-[0.005em] text-left project-hover-text">{project.description}</p>
         </div>
         {/* Mobile: title + description */}
-        <div className="md:hidden content-stretch flex flex-col font-['Figtree',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.01em] gap-1">
+        <div className="md:hidden content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.01em] gap-1">
           <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
             <span>{project.title}</span>
             {/* Show year only for non-Try It Out projects */}
@@ -549,7 +549,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
       >
         <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
       </div>
-      <div className="content-stretch flex font-['Figtree',sans-serif] -mt-1 font-normal items-baseline leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.005em] w-full">
+      <div className="content-stretch flex font-['Michelle',sans-serif] -mt-1 font-normal items-baseline leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.005em] w-full">
         <p className="relative text-[#111827] text-left project-hover-text">
           <span>{project.title}</span>
           {!hasTryItOut && (
@@ -604,7 +604,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   return (
     <>
       <PopupLine />
-      <div className="font-['Figtree',sans-serif] font-normal gap-4 grid grid-cols-4 max-md:grid-cols-2 max-md:gap-y-4 relative shrink-0 text-[15px] w-full mt-2">
+      <div className="font-['Michelle',sans-serif] font-normal gap-4 grid grid-cols-4 max-md:grid-cols-2 max-md:gap-y-4 relative shrink-0 text-[15px] w-full mt-2">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
             <p className="leading-5 relative shrink-0 text-[#9ca3af]">
@@ -701,13 +701,13 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               {/* Title row: Project Title • Year */}
               <div className="content-stretch flex items-start relative shrink-0 w-full">
                 <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
-                  <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
+                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
                     {project.title}
                   </p>
-                  <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base tracking-[0.005em]">
+                  <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base tracking-[0.005em]">
                     •
                   </p>
-                  <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-xl">
+                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-xl">
                     {project.year}
                   </p>
                 </div>
@@ -715,7 +715,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               
               {/* Description */}
               <div className="content-stretch flex gap-2 items-start relative w-full">
-                <p className="font-['Figtree',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base tracking-[0.005em]">
+                <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base tracking-[0.005em]">
                   {project.description}
                 </p>
               </div>
@@ -734,13 +734,13 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               {/* Title row: Project Title • Year */}
               <div className="content-stretch flex items-start relative shrink-0 w-full">
                 <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
-                  <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
+                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
                     {project.title}
                   </p>
-                  <p className="font-['Figtree',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base tracking-[0.005em]">
+                  <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base tracking-[0.005em]">
                     •
                   </p>
-                  <p className="font-['Figtree',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-xl">
+                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-xl">
                     {project.year}
                   </p>
                 </div>
@@ -748,7 +748,7 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               
               {/* Description */}
               <div className="content-stretch flex gap-2 items-start relative w-full">
-                <p className="font-['Figtree',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base tracking-[0.005em]">
+                <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base tracking-[0.005em]">
                   {project.description}
                 </p>
               </div>

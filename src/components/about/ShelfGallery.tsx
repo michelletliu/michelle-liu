@@ -90,7 +90,7 @@ export default function ShelfGallery({
                   >
                     <span
                       className={clsx(
-                        "font-['Figtree',sans-serif] text-base font-semibold tracking-wide",
+                        "font-['Michelle',sans-serif] text-base font-semibold tracking-wide",
                         isActive ? "text-gray-500" : "text-gray-400"
                       )}
                     >
@@ -117,7 +117,7 @@ export default function ShelfGallery({
                 >
                   <span
                     className={clsx(
-                      "font-['Figtree',sans-serif] text-base font-semibold tracking-wide",
+                      "font-['Michelle',sans-serif] text-base font-semibold tracking-wide",
                       isActive ? "text-gray-500" : "text-gray-400"
                     )}
                   >

@@ -19,12 +19,12 @@ export default function NotFound() {
           404
         </p>
         <div className="flex flex-col gap-2">
-          <p className="font-['Figtree',sans-serif] text-lg text-gray-800">
+          <p className="font-['Michelle',sans-serif] text-lg text-gray-800">
             Oh no! There seems to be nothing here.
           </p>
           <Link
             to="/"
-            className="font-['Figtree',sans-serif] text-base text-blue-500 hover:text-blue-400 transition-colors duration-200"
+            className="font-['Michelle',sans-serif] text-base text-blue-500 hover:text-blue-400 transition-colors duration-200"
           >
             Return Home
           </Link>
