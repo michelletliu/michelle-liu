@@ -95,7 +95,7 @@ function formatReview(text: string): React.ReactNode[] {
     // Add horizontal divider between sections (not before first)
     if (sectionIndex > 0) {
       result.push(
-        <div key={`hr-${sectionIndex}`} className="w-full h-px bg-black/10 my-10" />
+        <div key={`hr-${sectionIndex}`} className="w-full h-px bg-zinc-100 my-10" />
       );
     }
     
@@ -384,7 +384,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
         
         {/* Divider above Review */}
         {book.review && (
-          <div className="w-full bg-gray-200" style={{ height: '1px', flexShrink: 0 }} />
+          <div className="w-full bg-zinc-100" style={{ height: '1px', flexShrink: 0 }} />
         )}
         
         {/* Review */}

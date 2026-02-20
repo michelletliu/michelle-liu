@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import clsx from "clsx";
 import { ChevronLeftIcon, ChevronRightIcon } from "./ChevronIcons";
 import EdgeGradients from "./EdgeGradients";
+import LiquidGlassButton from "./LiquidGlassButton";
 
 export type SketchbookItem = {
   id: string;
@@ -182,31 +183,35 @@ export default function SketchbookGallery({
 
         <EdgeGradients />
 
-        {/* Left navigation button - centered on left edge of first image */}
-        <button
-          onClick={() => scroll("left")}
-          disabled={!canScrollLeft}
-          className={clsx(
-            "absolute top-1/2 -left-1 md:left-0 -translate-y-1/2 md:-translate-x-1/2 z-10 size-9 flex items-center justify-center rounded-full border border-zinc-100 bg-white shadow-sm transition-colors",
-            canScrollLeft ? "text-gray-400 hover:text-gray-600" : "text-gray-300 cursor-default"
-          )}
-          aria-label="Scroll left"
-        >
-          <ChevronLeftIcon className="size-5 -translate-x-px" />
-        </button>
+        {/* Left navigation button */}
+        <div className="absolute top-1/2 -left-1 md:left-0 -translate-y-1/2 md:-translate-x-1/2 z-10">
+          <LiquidGlassButton
+            onClick={() => scroll("left")}
+            disabled={!canScrollLeft}
+            className={clsx(
+              "transition-colors",
+              canScrollLeft ? "text-gray-500 hover:text-gray-700" : "text-gray-300/60 cursor-default"
+            )}
+            aria-label="Scroll left"
+          >
+            <ChevronLeftIcon className="size-5 -translate-x-px" />
+          </LiquidGlassButton>
+        </div>
 
-        {/* Right navigation button - centered on right edge of last visible image */}
-        <button
-          onClick={() => scroll("right")}
-          disabled={!canScrollRight}
-          className={clsx(
-            "absolute top-1/2 -right-1 md:right-0 -translate-y-1/2 md:translate-x-1/2 z-10 size-9 flex items-center justify-center rounded-full border border-zinc-100 bg-white shadow-sm transition-colors",
-            canScrollRight ? "text-gray-400 hover:text-gray-600" : "text-gray-300 cursor-default"
-          )}
-          aria-label="Scroll right"
-        >
-          <ChevronRightIcon className="size-5 translate-x-px" />
-        </button>
+        {/* Right navigation button */}
+        <div className="absolute top-1/2 -right-1 md:right-0 -translate-y-1/2 md:translate-x-1/2 z-10">
+          <LiquidGlassButton
+            onClick={() => scroll("right")}
+            disabled={!canScrollRight}
+            className={clsx(
+              "transition-colors",
+              canScrollRight ? "text-gray-500 hover:text-gray-700" : "text-gray-300/60 cursor-default"
+            )}
+            aria-label="Scroll right"
+          >
+            <ChevronRightIcon className="size-5 translate-x-px" />
+          </LiquidGlassButton>
+        </div>
       </div>
     </div>
   );

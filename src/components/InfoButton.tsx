@@ -20,7 +20,7 @@ const xLogoPath = "M10.6862 7.6055L17.3844 0H15.8002L9.97941 6.60311L5.36277 0H0
 function PopupLine() {
   return (
     <div className="h-px relative shrink-0 w-full">
-      <div className="absolute bg-[#e5e7eb] inset-0" />
+      <div className="absolute bg-zinc-100 inset-0" />
     </div>
   );
 }

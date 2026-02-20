@@ -549,27 +549,35 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
       >
         <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
       </div>
-      <div className="content-stretch flex font-['Figtree',sans-serif] -mt-1 font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.005em] w-full">
-        <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
+      <div className="content-stretch flex font-['Figtree',sans-serif] -mt-1 font-normal items-baseline leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.005em] w-full">
+        <p className="relative text-[#111827] text-left project-hover-text">
           <span>{project.title}</span>
-          {/* Show year only for non-Try It Out projects */}
           {!hasTryItOut && (
             <span className="text-[#9ca3af]"> • {project.year}</span>
           )}
-          {/* Try It Out tag - inline with title */}
           {hasTryItOut && (
             <>
-              <span className="text-[#9ca3af] md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
+              <span className="text-[#9ca3af] md:hidden"> • {project.year}</span>
+              <span className="text-[#9ca3af] hidden md:inline md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
               <a 
                 href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
                 onClick={(e) => e.stopPropagation()}
-                className="text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                className="hidden md:inline text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
               >
                 Try It Out!
               </a>
             </>
           )}
         </p>
+        {hasTryItOut && (
+          <a 
+            href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
+            onClick={(e) => e.stopPropagation()}
+            className="md:hidden text-blue-400 hover:text-blue-300 ml-auto shrink-0 text-base"
+          >
+            Try It Out!
+          </a>
+        )}
       </div>
     </button>
   );
@@ -584,7 +592,7 @@ type ProjectModalProps = {
 function PopupLine() {
   return (
     <div className="h-px relative shrink-0 w-full">
-      <div className="absolute bg-[#e5e7eb] inset-0" />
+      <div className="absolute bg-zinc-100 inset-0" />
     </div>
   );
 }
