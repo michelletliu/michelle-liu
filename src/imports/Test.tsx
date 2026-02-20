@@ -229,7 +229,7 @@ export default function Test() {
           <div className="flex flex-col items-center size-full">
             <div className="content-stretch flex flex-col gap-[60px] items-center px-[32px] py-[60px] relative w-full">
               <div className="content-stretch flex flex-col gap-[20px] items-start relative shrink-0 w-full">
-                <div className="bg-[#e5e7eb] h-px shrink-0 w-full" />
+                <div className="bg-zinc-100 h-px shrink-0 w-full" />
                 <div className="content-stretch flex items-start justify-between relative shrink-0 w-full">
                   <div className="content-stretch flex flex-col gap-[6px] items-start relative shrink-0">
                     <div className="content-stretch flex gap-[8px] items-center justify-center px-0 py-[4px] relative shrink-0">

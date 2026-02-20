@@ -606,7 +606,7 @@ export default function PolaroidPage() {
                 >
                   <div 
                     aria-hidden="true" 
-                    className="absolute border border-gray-300/80 border-solid inset-[-1px] pointer-events-none rounded-[6.88px] md:rounded-[8.475px]"
+                    className="absolute border border-gray-200/80 border-solid inset-[-1px] pointer-events-none rounded-[6.88px] md:rounded-[8.475px]"
                     style={{
                       borderColor: selectedColor ? selectedColor.border : undefined
                     }}
@@ -929,26 +929,26 @@ export default function PolaroidPage() {
 
       {/* Share Modal Overlay */}
       {showShareModal && (
-        isPopupMode ? (
+        isPopupMode ? createPortal(
         <>
           <div 
-            className={`cursor-pointer z-40 absolute inset-0 rounded-[26px] ${isClosingShareModal ? 'animate-overlay-out' : 'animate-overlay-in'}`}
+            className={`cursor-pointer z-[99998] fixed inset-0 ${isClosingShareModal ? 'animate-overlay-out' : 'animate-overlay-in'}`}
             style={{ 
               backgroundImage: "linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%), linear-gradient(90deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.25) 100%)"
             }}
             onClick={handleCloseShareModal}
           />
-          <div className={`bg-white left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[26px] z-50 ${
+          <div className={`bg-white left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[26px] ${
             isPopupMode 
-              ? 'absolute h-auto w-[85%] max-w-[320px] scale-[0.85] overflow-hidden' 
-              : 'fixed max-h-[calc(100vh-40px)] max-h-[calc(100dvh-40px)] sm:max-h-none w-[calc(100%-32px)] sm:w-auto sm:min-w-[400px] md:min-w-[530px] overflow-y-auto sm:overflow-visible'
+              ? 'fixed z-[99999] h-auto w-[95%] max-w-[530px] scale-[0.82] overflow-hidden' 
+              : 'fixed z-50 max-h-[calc(100vh-40px)] max-h-[calc(100dvh-40px)] sm:max-h-none w-[calc(100%-32px)] sm:w-auto sm:min-w-[400px] md:min-w-[530px] overflow-y-auto sm:overflow-visible'
           } ${isClosingShareModal ? 'animate-modal-scale-out' : 'animate-modal-scale-in'}`}>
             <div className={`content-stretch flex flex-col items-center overflow-clip relative rounded-[inherit] w-full ${
               isPopupMode 
-                ? 'gap-[16px] px-[24px] pt-[17px] pb-[32px]' 
+                ? 'gap-[10px] pl-[24px] pr-[17px] pt-[17px] pb-[17px]' 
                 : 'gap-[24px] sm:gap-[32px] px-[20px] sm:px-[28px] md:px-[36px] py-[24px] sm:py-[30px] pb-[48px] sm:pb-[40px] sm:min-w-[400px] md:min-w-[530px]'
             }`}>
-              <div className="content-stretch flex flex-col gap-[36px] items-center relative shrink-0 w-full">
+              <div className={`content-stretch flex flex-col items-center relative shrink-0 w-full ${isPopupMode ? 'gap-[20px]' : 'gap-[36px]'}`}>
                 <div className={`flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] min-w-full relative shrink-0 text-[22px] text-black tracking-[-0.26px] w-[min-content] ${isPopupMode ? 'self-start pl-0' : ''}`} style={{ fontVariationSettings: "'wdth' 100" }}>
                   <p className="leading-[28px]">Share Polaroid</p>
                 </div>
@@ -1219,7 +1219,8 @@ export default function PolaroidPage() {
             </div>
             <div aria-hidden="true" className="absolute border border-gray-200/50 border-solid inset-0 pointer-events-none rounded-[26px]" />
           </div>
-        </>
+        </>,
+        document.body
         ) : createPortal(
           <>
             <div 

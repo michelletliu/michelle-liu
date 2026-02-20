@@ -26,7 +26,7 @@ export default function HeaderBreakpoint({
           {text}
         </p>
       </div>
-      <div className="bg-gray-100 h-px w-full" />
+      <div className="bg-zinc-100 h-px w-full" />
     </div>
   );
 }

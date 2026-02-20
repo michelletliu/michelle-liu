@@ -23,7 +23,7 @@ type ProjectHeroHeaderProps = {
 function Line({ className }: { className?: string }) {
   return (
     <div className={clsx("relative", className)}>
-      <div className="absolute bg-[#e5e7eb] inset-0" />
+      <div className="absolute bg-zinc-100 inset-0" />
     </div>
   );
 }

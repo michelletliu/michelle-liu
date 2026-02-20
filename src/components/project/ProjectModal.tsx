@@ -723,7 +723,7 @@ const LogoIcon = () => (
 function Line() {
   return (
     <div className="h-px relative shrink-0 w-full">
-      <div className="absolute bg-[#e5e7eb] inset-0" />
+      <div className="absolute bg-zinc-100 inset-0" />
     </div>
   );
 }
@@ -2489,7 +2489,7 @@ function ContentBlock({
         return (
           <div className="px-8 md:px-[8%] xl:px-[175px] py-8 w-full">
             <div className="h-px relative shrink-0 w-full">
-              <div className="absolute bg-[#e5e7eb] inset-0" />
+              <div className="absolute bg-zinc-100 inset-0" />
             </div>
           </div>
         );
@@ -2661,7 +2661,7 @@ function ContentBlock({
               <div className="h-px relative shrink-0 w-full">
                 <div 
                   className="absolute inset-0" 
-                  style={{ backgroundColor: section.lineColor || '#e5e7eb' }}
+                  style={{ backgroundColor: section.lineColor || '#f4f4f5' }}
                 />
               </div>
             )}
@@ -2755,7 +2755,7 @@ function ContentBlock({
                   {section.sectionTitle}
                 </span>
                 {section.showDividerLine !== false && (
-                  <div className="flex-1 h-px bg-gray-200" />
+                  <div className="flex-1 h-px bg-zinc-100" />
                 )}
               </div>
             )}
@@ -3108,7 +3108,7 @@ function ContentBlock({
                 {/* Section Description - below horizontal line */}
                 {section.sectionDescription && (
                   <>
-                    <div className="w-full h-px bg-gray-300 mt-4" />
+                    <div className="w-full h-px bg-zinc-100 mt-4" />
                     <p className="text-sm md:text-base text-gray-400 mt-4 whitespace-pre-wrap">
                       {section.sectionDescription}
                     </p>

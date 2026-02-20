@@ -865,7 +865,7 @@ function ReceiptScreen({
 
   return (
     <div className="receipt-screen-container flex flex-col gap-6 items-center w-[337px] max-w-[90%] pt-16 pb-24 animate-slide-in transition-transform duration-400 mx-auto">
-      <div ref={receiptRef} className="bg-white relative shadow-md shrink-0 w-full border border-gray-200">
+      <div ref={receiptRef} className="bg-white relative shadow-md shrink-0 w-full border border-zinc-100">
         <div className="flex flex-col items-center size-full">
           <div className="flex flex-col gap-[32px] items-center px-[24px] py-[32px] relative w-full">
             <div className="flex flex-col gap-[24px] items-center relative shrink-0 w-full">
@@ -1046,7 +1046,7 @@ function ShareSheet({ onClose }: { onClose: () => void }) {
         className="bg-white rounded-t-[20px] w-full max-w-[402px] pb-8 animate-slide-in max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-center px-8 py-3 border-b border-gray-200">
+        <div className="flex items-center justify-center px-8 py-3 border-b border-zinc-100">
           <h3 className="font-mono text-[15px] font-semibold">Screen Time Receipt</h3>
         </div>
         
@@ -1067,7 +1067,7 @@ function ShareSheet({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        <div className="px-8 py-3 border-t border-gray-200">
+        <div className="px-8 py-3 border-t border-zinc-100">
           <div className="flex gap-4 justify-around">
             {shareApps.map((app, idx) => (
               <button key={idx} className="flex flex-col items-center gap-1">
@@ -1082,7 +1082,7 @@ function ShareSheet({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        <div className="px-8 py-3 border-t border-gray-200 space-y-1">
+        <div className="px-8 py-3 border-t border-zinc-100 space-y-1">
           {actions.map((action, idx) => (
             <button
               key={idx}
@@ -1356,7 +1356,7 @@ function UploadInstructions({
         </div>
         
         <div className="px-8 py-5 space-y-5 text-[15px]">
-        <div className="border-t border-gray-200" />
+        <div className="border-t border-zinc-100" />
           <div className="space-y-3">
             <h3 className="text-base text-black font-semibold">iPhone</h3>
             <ol className="space-y-1 pl-10 list-decimal text-gray-500 leading-normal">
@@ -1367,7 +1367,7 @@ function UploadInstructions({
             </ol>
           </div>
 
-          <div className="border-t border-gray-200 pt-5 space-y-3">
+          <div className="border-t border-zinc-100 pt-5 space-y-3">
             <h3 className="text-base text-black font-semibold">Android</h3>
             <ol className="space-y-1 pl-10 list-decimal text-gray-500 leading-normal">
               <li>Open <strong>Settings</strong></li>
