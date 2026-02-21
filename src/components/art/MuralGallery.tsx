@@ -173,7 +173,7 @@ export default function MuralGallery({
         
         
         {/* Metadata row - responsive layout */}
-        <div className="flex flex-col md:flex-row font-normal gap-5 items-start text-base w-full">
+        <div className="flex flex-col md:flex-row font-normal gap-6 items-start text-base w-full">
           {/* Location and Date */}
           <div className="flex flex-col items-start w-[202px] flex-shrink-0">
             <p className="text-gray-500 font-medium">
@@ -186,14 +186,12 @@ export default function MuralGallery({
           
           {/* Description */}
           {data.description && (
-            <p className="font-normal leading-normal pb-4 text-gray-400 max-w-[366px] mb-2 whitespace-pre-wrap">
+            <p className="font-normal leading-normal pb-4 text-gray-400 max-w-[366px] whitespace-pre-wrap">
               {data.description}
             </p>
           )}
         </div>
       </div>
-{/* Divider  */}
-        <div className="bg-zinc-100 h-px shrink-0 w-full mb-2" />
       {/* Scrollable gallery container */}
       <div className="relative w-full">
         {/* Scroll container - images have no padding, they touch container edges */}

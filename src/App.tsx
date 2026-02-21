@@ -480,6 +480,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
           className="content-stretch flex flex-col items-start justify-end overflow-clip relative rounded-[26px] shrink-0 w-full transition-transform duration-300 group-hover:scale-[0.99]"
         >
           <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
+          <div aria-hidden="true" className="absolute border border-zinc-100 inset-0 pointer-events-none rounded-[26px]" />
           {/* Floating title pill inside the card - desktop only */}
           <div className="absolute bottom-0 left-0 p-3 hidden md:block">
             <div className="bg-white border border-[#f3f4f6] border-solid flex items-center justify-center px-3 pt-[5px] pb-[4.8px] rounded-full">
@@ -548,6 +549,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
         className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full transition-transform duration-300 group-hover:scale-[0.99]"
       >
         <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
+        <div aria-hidden="true" className="absolute border border-zinc-100 inset-0 pointer-events-none rounded-[26px]" />
       </div>
       <div className="content-stretch flex font-['Michelle',sans-serif] -mt-1 font-normal items-baseline leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.005em] w-full">
         <p className="relative text-[#111827] text-left project-hover-text">
@@ -604,19 +606,33 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   return (
     <>
       <PopupLine />
-      <div className="font-['Michelle',sans-serif] font-normal gap-4 grid grid-cols-4 max-md:grid-cols-2 max-md:gap-y-4 relative shrink-0 text-[15px] w-full mt-2">
+      {/* Desktop: 4-column grid with label on top, tools below */}
+      <div className="font-['Michelle',sans-serif] font-normal gap-4 grid-cols-4 relative shrink-0 text-[15px] w-full mt-2 hidden md:grid">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
             <p className="leading-5 relative shrink-0 text-[#9ca3af]">
               {category.label}
             </p>
-            <div className="content-stretch flex flex-col gap-1 items-start leading-[0] relative shrink-0 text-[#4b5563] tracking-[-0.31px]">
+            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#4b5563] tracking-[-0.31px]">
               {category.tools.map((tool, toolIdx) => (
                 <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
                   <p className="leading-[21px] whitespace-nowrap">{tool}</p>
                 </div>
               ))}
             </div>
+          </div>
+        ))}
+      </div>
+      {/* Mobile: single column, label left + tools right */}
+      <div className="font-['Michelle',sans-serif] font-normal flex flex-col gap-1.5 relative shrink-0 text-sm w-full mt-2 md:hidden">
+        {categories.map((category, idx) => (
+          <div key={idx} className="flex items-baseline gap-6">
+            <p className="leading-5 shrink-0 text-[#9ca3af] w-[72px]">
+              {category.label}
+            </p>
+            <p className="leading-5 text-[#4b5563] tracking-[-0.31px]">
+              {category.tools.join(', ')}
+            </p>
           </div>
         ))}
       </div>
