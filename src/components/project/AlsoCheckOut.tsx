@@ -39,10 +39,10 @@ function ProjectCard({ project, className, onClick }: ProjectCardProps) {
           />
         </div>
       </div>
-      <div className="flex flex-col font-medium items-start px-2 gap-0 !text-lg w-full">
+      <div className="flex flex-col font-medium items-start px-2 gap-0 text-base tracking-[0.005em] w-full">
         <p className="text-[#111827] w-full">
           <span>{project.title} </span>
-          <span className="text-gray-400 font-normal">• {project.year}</span>
+          <span className="text-gray-400">• {project.year}</span>
         </p>
         <p className="text-[#9ca3af] w-full leading-tight font-normal text-base project-card-text opacity-0 translate-y-1 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:translate-y-0 max-md:opacity-100 max-md:translate-y-0">
           {project.description}
