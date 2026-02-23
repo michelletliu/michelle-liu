@@ -54,6 +54,14 @@ export const protectedSection = defineType({
       type: 'string',
       hidden: ({parent}) => !parent?.showPasswordProtection,
     }),
+    defineField({
+      name: 'unlockTargetSectionId',
+      title: 'Section To Expand To After Unlock',
+      description:
+        'Optional. Enter a target section number, section _key, or heading/title text to scroll to after correct password (e.g. "03" or "Chat Content Composer").',
+      type: 'string',
+      hidden: ({parent}) => !parent?.showPasswordProtection,
+    }),
   ],
   preview: {
     select: {

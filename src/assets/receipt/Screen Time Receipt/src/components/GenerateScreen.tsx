@@ -63,7 +63,7 @@ export function GenerateScreen({ period, onPeriodChange, onGenerate, onUploadCli
       
       <div className="relative w-full">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-[rgba(0,0,0,0.1)]"></div>
+          <div className="w-full border-t border-zinc-100"></div>
         </div>
         <div className="relative flex justify-center text-[11px]">
           <span className="bg-white px-2 text-[rgba(0,0,0,0.4)] font-['SF_Mono:Regular',sans-serif]">OR</span>
