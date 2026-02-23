@@ -1,4 +1,4 @@
-import { useRef, useEffect, useId, type ReactNode, type ButtonHTMLAttributes } from "react";
+import { useRef, useEffect, useId, useState, type ReactNode, type ButtonHTMLAttributes } from "react";
 
 function smoothStep(a: number, b: number, t: number) {
   t = Math.max(0, Math.min(1, (t - a) / (b - a)));
@@ -76,6 +76,18 @@ export default function LiquidGlassButton({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const scaleRef = useRef(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobile(mediaQuery.matches);
+    update();
+    mediaQuery.addEventListener("change", update);
+    return () => {
+      mediaQuery.removeEventListener("change", update);
+    };
+  }, []);
 
   useEffect(() => {
     const canvas = document.createElement("canvas");
@@ -98,14 +110,15 @@ export default function LiquidGlassButton({
         );
       }
       if (feDisp) {
-        feDisp.setAttribute("scale", maxScale.toString());
+        const displacementScale = maxScale * (isMobile ? 1.38 : 1);
+        feDisp.setAttribute("scale", displacementScale.toString());
       }
     }
 
     return () => {
       canvas.remove();
     };
-  }, [size, filterId]);
+  }, [size, filterId, isMobile]);
 
   return (
     <>
@@ -150,15 +163,45 @@ export default function LiquidGlassButton({
           alignItems: "center",
           justifyContent: "center",
           cursor: "pointer",
-          backdropFilter: `url(#lg${filterId}) blur(0.5px) contrast(1.1) brightness(1.03) saturate(1.3)`,
-          WebkitBackdropFilter: `url(#lg${filterId}) blur(0.5px) contrast(1.1) brightness(1.03) saturate(1.3)`,
-          boxShadow:
-            "0 1px 4px rgba(0, 0, 0, 0.1), inset 0 -2px 6px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.5)",
-          background: "transparent",
+          position: "relative",
+          overflow: "hidden",
+          isolation: "isolate",
+          boxShadow: isMobile
+            ? "0 6px 28px rgba(0, 0, 0, 0.22)"
+            : "0 4px 22px rgba(0, 0, 0, 0.15)",
+          backgroundColor: "transparent",
+          backdropFilter: isMobile ? `url(#lg${filterId}) blur(1.1px)` : `url(#lg${filterId})`,
+          WebkitBackdropFilter: isMobile
+            ? `url(#lg${filterId}) blur(1.1px)`
+            : `url(#lg${filterId})`,
           ...style,
         }}
       >
-        {children}
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            borderRadius: "inherit",
+            boxShadow: isMobile
+              ? "inset 0 0 22px -4px rgba(255, 255, 255, 0.56)"
+              : "inset 0 0 20px -5px rgba(255, 255, 255, 0.45)",
+            backgroundColor: isMobile ? "rgba(255, 255, 255, 0.1)" : "rgba(255, 255, 255, 0.06)",
+            pointerEvents: "none",
+            zIndex: 1,
+          }}
+        />
+        <span
+          style={{
+            position: "relative",
+            zIndex: 2,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {children}
+        </span>
       </button>
     </>
   );

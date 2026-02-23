@@ -49,6 +49,20 @@ function renderHighlightedText(text: string, highlightedText?: string, highlight
   );
 }
 
+function normalizeAnchorValue(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function getSectionAnchorHeading(section: ContentSection): string | undefined {
+  const candidates = [
+    (section as any).heading,
+    (section as any).title,
+    (section as any).sectionTitle,
+  ];
+
+  return candidates.find((value) => typeof value === "string" && value.trim().length > 0)?.trim();
+}
+
 // Factory function to create PortableText components with highlighting support
 function createPortableTextComponents(highlightedText?: string, highlightColor?: string): PortableTextComponents {
   // Helper to extract text content from React nodes
@@ -783,6 +797,7 @@ export default function ProjectModal({
   const [tocItems, setTocItems] = useState<
     { _key?: string; number?: string; title?: string; targetSectionId?: string }[]
   >([]);
+  const pendingUnlockTargetRef = React.useRef<string | null>(null);
 
   // Fetch project data from Sanity (uses preloaded cache if available)
   useEffect(() => {
@@ -1005,8 +1020,70 @@ export default function ProjectModal({
     }
   };
 
+  // If configured, scroll to a specific section after successful unlock.
+  useEffect(() => {
+    if (!isUnlocked || !pendingUnlockTargetRef.current) return;
+
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let attempts = 0;
+
+    const tryScrollToTarget = () => {
+      const targetSectionId = pendingUnlockTargetRef.current;
+      const container = scrollContainerRef.current;
+      if (!targetSectionId || !container) return;
+
+      const selectorTarget = targetSectionId
+        .replace(/\\/g, "\\\\")
+        .replace(/"/g, '\\"');
+
+      // Allow targeting by section number, section _key, or heading/title text.
+      let targetElement = container.querySelector(
+        `[data-section-number="${selectorTarget}"]`
+      ) as HTMLElement | null;
+
+      if (!targetElement) {
+        targetElement = container.querySelector(
+          `[data-section-key="${selectorTarget}"]`
+        ) as HTMLElement | null;
+      }
+
+      if (!targetElement) {
+        const normalizedTarget = normalizeAnchorValue(targetSectionId);
+        const sectionAnchors = Array.from(
+          container.querySelectorAll<HTMLElement>("[data-section-heading]")
+        );
+
+        targetElement =
+          sectionAnchors.find(
+            (element) =>
+              normalizeAnchorValue(element.dataset.sectionHeading || "") === normalizedTarget
+          ) || null;
+      }
+
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+        pendingUnlockTargetRef.current = null;
+        return;
+      }
+
+      attempts += 1;
+      if (attempts < 14) {
+        timer = setTimeout(tryScrollToTarget, 120);
+      }
+    };
+
+    timer = setTimeout(tryScrollToTarget, isFullscreen ? 0 : 220);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isUnlocked, isFullscreen, project]);
+
   // Handle unlocking a password-protected project
-  const handleUnlock = () => {
+  const handleUnlock = (targetSectionId?: string) => {
+    const normalizedTarget = targetSectionId?.trim();
+    pendingUnlockTargetRef.current = normalizedTarget || null;
+
     markProjectUnlocked(projectId);
     setIsUnlocked(true);
     
@@ -1341,42 +1418,61 @@ export default function ProjectModal({
                 // When locked, also include the protectedSection at its original position
                 // No longer truncating - just let visibility settings control everything
                 
-                return sections.map((section) => 
+                return sections.map((section) => {
+                  const sectionNumber =
+                    section._type === "sectionTitleSection" ? section.number : undefined;
+                  const sectionHeading = getSectionAnchorHeading(section);
+
+                  return (
                   // Testimonials have interactive expand/collapse - skip ScrollReveal
                   // to prevent animation from replaying when clicking "Read more"
                   section._type === "testimonialSection" ? (
-                    <ContentBlock
+                    <div
                       key={section._key}
-                      section={section}
-                      isFullscreen={isFullscreen}
-                      isUnlocked={isUnlocked}
-                      onUnlock={handleUnlock}
-                      projectId={projectId}
-                      skipStartRef={skipStartRef}
-                      skipEndRef={skipEndRef}
-                      scrollContainerRef={scrollContainerRef}
-                      missionRef={missionRef}
-                      tocRef={tocRef}
-                      setTocItems={setTocItems}
-                    />
-                  ) : (
-                    <ScrollReveal key={section._key}>
-                      <ContentBlock 
-                        section={section} 
-                        isFullscreen={isFullscreen} 
-                        isUnlocked={isUnlocked} 
+                      data-section-key={section._key}
+                      data-section-number={sectionNumber}
+                      data-section-heading={sectionHeading}
+                    >
+                      <ContentBlock
+                        section={section}
+                        isFullscreen={isFullscreen}
+                        isUnlocked={isUnlocked}
                         onUnlock={handleUnlock}
+                        projectId={projectId}
                         skipStartRef={skipStartRef}
                         skipEndRef={skipEndRef}
                         scrollContainerRef={scrollContainerRef}
-                        projectId={projectId}
                         missionRef={missionRef}
                         tocRef={tocRef}
                         setTocItems={setTocItems}
                       />
-                    </ScrollReveal>
+                    </div>
+                  ) : (
+                    <div
+                      key={section._key}
+                      data-section-key={section._key}
+                      data-section-number={sectionNumber}
+                      data-section-heading={sectionHeading}
+                    >
+                      <ScrollReveal>
+                        <ContentBlock 
+                          section={section} 
+                          isFullscreen={isFullscreen} 
+                          isUnlocked={isUnlocked} 
+                          onUnlock={handleUnlock}
+                          skipStartRef={skipStartRef}
+                          skipEndRef={skipEndRef}
+                          scrollContainerRef={scrollContainerRef}
+                          projectId={projectId}
+                          missionRef={missionRef}
+                          tocRef={tocRef}
+                          setTocItems={setTocItems}
+                        />
+                      </ScrollReveal>
+                    </div>
                   )
-                );
+                  );
+                });
               })()}
 
               {/* Also Check Out Section */}
@@ -1661,7 +1757,7 @@ function ContentBlock({
   section: ContentSection; 
   isFullscreen?: boolean; 
   isUnlocked?: boolean; 
-  onUnlock?: () => void;
+  onUnlock?: (targetSectionId?: string) => void;
   skipStartRef?: React.RefObject<HTMLDivElement | null>;
   skipEndRef?: React.RefObject<HTMLDivElement | null>;
   scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
@@ -1826,7 +1922,7 @@ function ContentBlock({
               {hasPassword && !isUnlocked && projectId && (
                 <PasswordInput 
                   projectId={projectId} 
-                  onUnlock={onUnlock}
+                  onUnlock={() => onUnlock?.(section.unlockTargetSectionId)}
                 />
               )}
             </div>
@@ -2659,10 +2755,7 @@ function ContentBlock({
             {/* Line */}
             {section.showLine !== false && (
               <div className="h-px relative shrink-0 w-full">
-                <div 
-                  className="absolute inset-0" 
-                  style={{ backgroundColor: section.lineColor || '#f4f4f5' }}
-                />
+                <div className="absolute inset-0 bg-zinc-100" />
               </div>
             )}
             

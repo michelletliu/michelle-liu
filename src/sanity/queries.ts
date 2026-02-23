@@ -122,6 +122,7 @@ export const PROJECT_BY_SLUG_QUERY = `
         message,
         contactEmail,
         showPasswordProtection,
+        unlockTargetSectionId,
         "hasPassword": defined(password) && password != "",
         visibility
       },
@@ -169,6 +170,7 @@ export const PROJECT_BY_COMPANY_QUERY = `
         message,
         contactEmail,
         showPasswordProtection,
+        unlockTargetSectionId,
         "hasPassword": defined(password) && password != "",
         visibility
       },

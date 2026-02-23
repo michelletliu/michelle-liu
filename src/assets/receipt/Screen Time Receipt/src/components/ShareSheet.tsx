@@ -37,7 +37,7 @@ export function ShareSheet({ onClose }: ShareSheetProps) {
         className="bg-white rounded-t-[20px] w-full max-w-[402px] pb-8 animate-in slide-in-from-bottom duration-300 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100">
           <h3 className="font-['SF_Mono:Semibold',sans-serif] text-[15px]">Screen Time Receipt</h3>
           <button 
             onClick={onClose}
@@ -67,7 +67,7 @@ export function ShareSheet({ onClose }: ShareSheetProps) {
           </div>
         </div>
 
-        <div className="px-4 py-3 border-t border-gray-200">
+        <div className="px-4 py-3 border-t border-zinc-100">
           <div className="flex gap-4 justify-around">
             {shareApps.map((app, idx) => (
               <button
@@ -85,7 +85,7 @@ export function ShareSheet({ onClose }: ShareSheetProps) {
           </div>
         </div>
 
-        <div className="px-4 py-3 border-t border-gray-200 space-y-1">
+        <div className="px-4 py-3 border-t border-zinc-100 space-y-1">
           {actions.map((action, idx) => (
             <button
               key={idx}

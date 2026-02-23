@@ -8,7 +8,7 @@ export function UploadInstructions({ onClose }: UploadInstructionsProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 animate-in fade-in p-4">
       <div className="bg-white rounded-[20px] w-full max-w-[500px] max-h-[90vh] overflow-y-auto shadow-[0px_4px_20px_0px_rgba(0,0,0,0.2)] animate-in slide-in-from-bottom duration-300">
-        <div className="sticky top-0 bg-white border-b border-gray-200 flex items-center justify-between px-6 py-4 rounded-t-[20px]">
+        <div className="sticky top-0 bg-white border-b border-zinc-100 flex items-center justify-between px-6 py-4 rounded-t-[20px]">
           <h2 className="font-['SF_Mono:Semibold',sans-serif] text-[17px] text-black">Upload Your Screen Time Data</h2>
           <button 
             onClick={onClose}
@@ -31,7 +31,7 @@ export function UploadInstructions({ onClose }: UploadInstructionsProps) {
             </ol>
           </div>
 
-          <div className="border-t border-gray-200 pt-6 space-y-3">
+          <div className="border-t border-zinc-100 pt-6 space-y-3">
             <h3 className="font-['SF_Mono:Semibold',sans-serif] text-[15px] text-black">🤖 For Android Users:</h3>
             <ol className="space-y-3 pl-5 list-decimal text-[rgba(0,0,0,0.8)] leading-[22px]">
               <li>Open the <strong>Settings</strong> app</li>
