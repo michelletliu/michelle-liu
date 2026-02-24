@@ -866,6 +866,7 @@ type SanityExperimentProject = {
 function HomePage() {
   const navigate = useNavigate();
   const { slug, mode } = useParams<{ slug?: string; mode?: string }>();
+  const [isContactBadgeExpanded, setIsContactBadgeExpanded] = useState(false);
   
   // State for projects with Sanity data merged in
   const [projects, setProjects] = useState<Project[]>(staticProjects);
@@ -1044,6 +1045,12 @@ function HomePage() {
       <PageHeader variant="work" heroAnimationPlayed={heroAnimationPlayed}>
         <>
           <div>
+                <span
+                  className={clsx(
+                    "transition-opacity duration-200 max-md:opacity-100",
+                    isContactBadgeExpanded ? "opacity-40" : "opacity-100",
+                  )}
+                >
                   <span>
                     Designing useful products to spark moments of{" "}</span>
                   <span>delight</span>
@@ -1071,7 +1078,12 @@ function HomePage() {
                   <span>{`, & `}</span>
                   <span className="text-[#374151]">NASA</span>
                   <span>.</span>
-                  <ContactBadge hoverMode className="max-md:hidden" />
+                </span>
+                <ContactBadge
+                  hoverMode
+                  className="max-md:hidden"
+                  onExpandedChange={setIsContactBadgeExpanded}
+                />
           </div>
         </>
       </PageHeader>

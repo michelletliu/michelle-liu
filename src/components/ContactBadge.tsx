@@ -8,6 +8,8 @@ type ContactBadgeProps = {
   scrollExpandMode?: boolean;
   /** Additional className */
   className?: string;
+  /** Called when expanded state changes */
+  onExpandedChange?: (isExpanded: boolean) => void;
 };
 
 /**
@@ -18,7 +20,8 @@ type ContactBadgeProps = {
 export default function ContactBadge({ 
   hoverMode = false, 
   scrollExpandMode = false,
-  className 
+  className,
+  onExpandedChange,
 }: ContactBadgeProps) {
   const [isExpanded, setIsExpanded] = useState(!hoverMode && !scrollExpandMode);
   const badgeRef = useRef<HTMLSpanElement>(null);
@@ -69,15 +72,20 @@ export default function ContactBadge({
     };
   }, [scrollExpandMode, isExpanded]);
 
+  useEffect(() => {
+    onExpandedChange?.(isExpanded);
+  }, [isExpanded, onExpandedChange]);
+
   return (
     <span 
       ref={badgeRef}
       className={clsx(
-        "relative inline-flex items-center justify-center rounded-[999px] transition-all ease-in-out w-fit bg-[#ecfdf5]",
+        "relative inline-flex items-center justify-center rounded-[999px] transition-all ease-in-out w-fit",
+        isExpanded ? "bg-[#ecfdf5]" : "bg-transparent",
         hoverMode && "align-middle -translate-y-[2px] [cursor:inherit] before:content-[''] before:absolute before:-inset-[2px] before:rounded-[999px] before:pointer-events-none",
         hoverMode && (isExpanded 
-          ? "gap-1.5 pl-1 pr-2.5 md:ml-1 duration-300" 
-          : "md:gap-0 pl-1 md:pr-0 md:ml-1 duration-300"
+          ? "gap-1.5 pl-1 pr-2.5 md:ml-0.5 duration-300" 
+          : "md:gap-0 pl-1 md:pr-0 md:ml-0.5 duration-300"
         ),
         scrollExpandMode && (isExpanded 
           ? "gap-1 pl-1.5 pr-2.5 py-0.5 duration-[800ms]" 
@@ -93,8 +101,7 @@ export default function ContactBadge({
         <span className={isExpanded ? "green-pulse-ring-off" : "green-pulse-ring"} />
         <svg className="block size-full relative z-10" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
           <g id="Background">
-            <rect fill="var(--fill-0, #A7F3D0)" height="16" rx="8" width="16" />
-            <circle cx="8" cy="8" fill="var(--fill-0, #10B981)" id="Ellipse 1" r="4" />
+            <circle cx="8" cy="8" fill="var(--fill-0, #34D399)" id="Ellipse 1" r="4" />
           </g>
         </svg>
       </span>
