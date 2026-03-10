@@ -506,14 +506,13 @@ export default function AboutPage() {
         <>
           {/* Desktop */}
           <div className="hidden md:block">
-            <p>Product, design, &lt;dev&gt;, &amp; everything in between.</p>
-            <p>Graduating from UCLA in June 2026. ⋆˙⟡</p>
+            <p>Product, design, &lt;dev&gt;,</p>
+            <p>&amp; everything in between. ⋆˙⟡</p>
           </div>
           {/* Mobile */}
           <div className="md:hidden">
             <p className="mb-0">Product, design, &lt;dev&gt;,</p>
-            <p> &amp; everything in between.</p>
-            <p>Graduating from UCLA in June 2026. ⋆˙⟡</p>
+            <p> &amp; everything in between. ⋆˙⟡</p>
           </div>
         </>
       </PageHeader>
@@ -586,7 +585,7 @@ export default function AboutPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <img src={academicCapIcon} alt="" className="w-4 h-4" />
-                    <span className="text-gray-400">Art B.A. & Cognitive Science B.S.&nbsp;&nbsp;/&nbsp;&nbsp;UCLA '26</span>
+                    <span className="text-gray-400">Art B.A. & Cognitive Science B.S.&nbsp;&nbsp;/&nbsp;&nbsp;UCLA</span>
                   </div>
                 </div>
               </ScrollReveal>

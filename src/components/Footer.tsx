@@ -6,26 +6,23 @@ import { imgGroup } from "../imports/svg-poktt";
 import { ScrollReveal } from "./ScrollReveal";
 import { ArrowUpRight } from "./ArrowUpRight";
 
-// Hook to fetch latest commit date from GitHub
+type ChangelogPayload = {
+  latestCommitDate?: string | null;
+};
+
+// Hook to fetch latest commit date from generated local changelog file
 function useLatestCommitDate() {
   const [commitDate, setCommitDate] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLatestCommit = async () => {
       try {
-        const response = await fetch(
-          'https://api.github.com/repos/michelletliu/michelle-liu/commits?per_page=1'
-        );
+        const response = await fetch('/changelog.json', { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed to fetch');
-        
-        const commits = await response.json();
-        if (commits && commits.length > 0) {
-          const date = new Date(commits[0].commit.committer.date);
-          // Format as mm-dd-yy
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          const year = String(date.getFullYear()).slice(-2);
-          setCommitDate(`${month}-${day}-${year}`);
+
+        const payload = (await response.json()) as ChangelogPayload;
+        if (payload?.latestCommitDate) {
+          setCommitDate(payload.latestCommitDate);
         }
       } catch (error) {
         console.error('Failed to fetch latest commit date:', error);

@@ -71,7 +71,9 @@
             "vite": "6.3.5"
       },
       "scripts": {
+            "predev": "node scripts/generate-changelog-json.js",
             "dev": "vite",
+            "prebuild": "node scripts/generate-changelog-json.js",
             "build": "vite build",
             "repair-spotify-links": "node scripts/repair-spotify-urls.js"
       }

@@ -101,7 +101,7 @@ export default function ContactBadge({
         <span className={isExpanded ? "green-pulse-ring-off" : "green-pulse-ring"} />
         <svg className="block size-full relative z-10" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
           <g id="Background">
-            <circle cx="8" cy="8" fill="var(--fill-0, #34D399)" id="Ellipse 1" r="4" />
+            <circle cx="8" cy="8" fill="var(--fill-0, #10B981)" id="Ellipse 1" r="4" />
           </g>
         </svg>
       </span>
