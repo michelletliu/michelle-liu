@@ -507,12 +507,12 @@ export default function AboutPage() {
           {/* Desktop */}
           <div className="hidden md:block">
             <p>Product, design, &lt;dev&gt;,</p>
-            <p>&amp; everything in between. ⋆˙⟡</p>
+            <p>&amp; everything in between.</p>
           </div>
           {/* Mobile */}
           <div className="md:hidden">
             <p className="mb-0">Product, design, &lt;dev&gt;,</p>
-            <p> &amp; everything in between. ⋆˙⟡</p>
+            <p> &amp; everything in between.</p>
           </div>
         </>
       </PageHeader>
@@ -627,14 +627,6 @@ export default function AboutPage() {
                 <h2 className="font-['Michelle',sans-serif] font-medium text-gray-700 text-3xl leading-normal shrink-0">
                   Experience
                 </h2>
-                <a
-                  href="https://drive.google.com/file/d/1EOn3qpj3TbgLuPjai2FN7S8IhVvx5gfS/view?usp=sharing"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-['Michelle',sans-serif] tracking-wide font-normal text-gray-400 text-lg hover:text-blue-500 transition-colors"
-                >
-                  Resume <ArrowUpRight />
-                </a>
               </div>
             </ScrollReveal>
             {isLoading ? (
@@ -643,7 +635,7 @@ export default function AboutPage() {
                 <span className="text-gray-400 text-sm">Loading...</span>
               </div>
             ) : experiences.length > 0 ? (
-              <div className="flex flex-col gap-8 md:gap-8">
+              <div className="flex flex-col gap-8 md:gap-8 md:pt-1">
                 {experiences.map((exp, index) => (
                   <ScrollReveal key={exp.id} delay={index * 80}>
                     <ExperienceCard data={exp} />
