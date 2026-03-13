@@ -10,7 +10,7 @@
 
 ### Protected sections security
 
-Protected project-section passwords are verified server-side by `api/password.ts`.
+Protected project-section passwords are verified server-side by `api/password.ts`
 
 - Passwords are stored as individual environment variables
 
