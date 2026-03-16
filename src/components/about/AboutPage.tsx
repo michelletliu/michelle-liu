@@ -146,6 +146,14 @@ function transformShelfItems(data: ShelfItem[]): MediaCardData[] {
 }
 
 function transformLoreItems(data: LoreItem[]): LoreCardData[] {
+  const normalizeLoreLink = (link?: string) => {
+    if (!link) return link;
+    if (link.includes("instagram.com/https.croissant")) {
+      return "https://www.instagram.com/studio.mliu";
+    }
+    return link;
+  };
+
   return data.map((item) => ({
     id: item._id,
     imageSrc: item.image ? urlFor(item.image).width(600).url() : undefined,
@@ -153,7 +161,7 @@ function transformLoreItems(data: LoreItem[]): LoreCardData[] {
     headline: item.headline,
     date: item.date,
     description: item.description,
-    link: item.link,
+    link: normalizeLoreLink(item.link),
   }));
 }
 
