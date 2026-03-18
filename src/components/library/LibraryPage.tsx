@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import clsx from "clsx";
 import { client, urlFor } from "../../sanity/client";
 import { SHELF_BOOKS_QUERY, BOOK_YEARS_QUERY } from "../../sanity/queries";
@@ -67,6 +67,8 @@ type FilterOption = {
 
 export default function LibraryPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { bookSlug } = useParams<{ bookSlug?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Fetch project info from Sanity (with fallback to defaults)
@@ -86,6 +88,50 @@ export default function LibraryPage() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const previousPopupModeRef = useRef(false);
+
+  const slugify = (value: string) =>
+    value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+  const getBookSlug = (book: Book) => slugify(book.title);
+
+  const findBookBySlug = (slug: string) => {
+    // Current format: title-only slug
+    const exact = books.find((book) => getBookSlug(book) === slug);
+    if (exact) return exact;
+
+    // Backward compatibility for old title+idSuffix slugs
+    const legacyMatch = slug.match(/^(.*)-([a-f0-9]{8})$/i);
+    if (legacyMatch?.[1]) {
+      const titleOnlySlug = legacyMatch[1];
+      return books.find((book) => getBookSlug(book) === titleOnlySlug);
+    }
+
+    return undefined;
+  };
+
+  const openBookPath = (slug: string) => {
+    if (isPopupMode || location.pathname.startsWith("/project/library/full")) {
+      return `/project/library/full/${encodeURIComponent(slug)}`;
+    }
+    return `/library/${encodeURIComponent(slug)}`;
+  };
+
+  const closeBookPath = () =>
+    location.pathname.startsWith("/project/library/full")
+      ? "/project/library/full"
+      : "/library";
+
+  const setFilterFromBookYear = (book: Book) => {
+    if (book.year && book.year.trim()) {
+      setActiveFilter(book.year);
+      return;
+    }
+    setActiveFilter("all");
+  };
 
   // Handle dropdown animation
   useEffect(() => {
@@ -186,18 +232,37 @@ export default function LibraryPage() {
     ? books.filter(book => book.isFavorite)
     : books.filter(book => book.year === activeFilter);
 
-  // Handle book query param from URL (when navigating from popup to fullscreen)
+  // Open selected book from path slug (shareable URL)
   useEffect(() => {
-    const bookId = searchParams.get('book');
-    if (bookId && books.length > 0 && !selectedBook) {
-      const book = books.find(b => b.id === bookId);
-      if (book) {
-        setSelectedBook(book);
-        // Clear the query param after selecting the book
-        setSearchParams({}, { replace: true });
+    if (!bookSlug || books.length === 0 || selectedBook) return;
+
+    const book = findBookBySlug(decodeURIComponent(bookSlug));
+    if (book) {
+      setSelectedBook(book);
+      setFilterFromBookYear(book);
+    }
+  }, [bookSlug, books, selectedBook]);
+
+  // Backward compatibility for old ?book=<id> links: resolve and redirect to slug path
+  useEffect(() => {
+    const bookParam = searchParams.get("book");
+    if (!bookParam || books.length === 0 || selectedBook) return;
+
+    const decoded = decodeURIComponent(bookParam);
+    const book =
+      books.find((b) => b.id === decoded) ||
+      findBookBySlug(decoded);
+
+    if (book) {
+      const slug = getBookSlug(book);
+      setSelectedBook(book);
+      setFilterFromBookYear(book);
+      setSearchParams({}, { replace: true });
+      if (location.pathname !== openBookPath(slug)) {
+        navigate(openBookPath(slug), { replace: true });
       }
     }
-  }, [searchParams, books, selectedBook, setSearchParams]);
+  }, [searchParams, books, selectedBook, setSearchParams, location.pathname, navigate, isPopupMode]);
 
   // Handle entrance animation and reset exit state when in fullscreen
   useEffect(() => {
@@ -404,11 +469,11 @@ export default function LibraryPage() {
             >
               {filteredBooks.map((book) => (
                 <BookCard key={book.id} book={book} onClick={() => {
-                  if (isPopupMode) {
-                    // Navigate instantly to fullscreen mode
-                    navigate(`/project/library/full?book=${encodeURIComponent(book.id)}`);
-                  } else {
-                    setSelectedBook(book);
+                  const slug = getBookSlug(book);
+                  setSelectedBook(book);
+                  const nextPath = openBookPath(slug);
+                  if (location.pathname !== nextPath) {
+                    navigate(nextPath);
                   }
                 }} />
               ))}
@@ -421,7 +486,16 @@ export default function LibraryPage() {
 
       {/* Book Detail Modal - outside transformed container for proper viewport centering */}
       {selectedBook && (
-        <BookDetailModal book={selectedBook} onClose={() => setSelectedBook(null)} isPopupMode={isPopupMode} />
+        <BookDetailModal
+          book={selectedBook}
+          onClose={() => {
+            setSelectedBook(null);
+            if (location.pathname !== closeBookPath()) {
+              navigate(closeBookPath(), { replace: true });
+            }
+          }}
+          isPopupMode={isPopupMode}
+        />
       )}
     </>
   );

@@ -231,6 +231,11 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                       favorites
                     </span>
                   )}
+                  {book.year && (
+                    <span className="bg-gray-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-base text-gray-600" style={{ fontVariationSettings: "'wdth' 100" }}>
+                      {book.year}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
