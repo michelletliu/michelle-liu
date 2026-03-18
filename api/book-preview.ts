@@ -134,10 +134,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const description = match.author
       ? `By ${match.author} · From Michelle Liu's library`
       : `From Michelle Liu's library`;
-    const imageUrl =
-      match.coverAssetUrl ||
-      match.externalCoverUrl ||
-      `${origin}/og-image.png?v=5`;
+    const imageUrl = `${origin}/og-image.png?v=5`;
     const canonicalUrl = `${origin}${pathname}`;
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
