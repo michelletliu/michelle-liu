@@ -1185,6 +1185,7 @@ export default function App() {
           <Route index element={null} />
           <Route path="project/:slug" element={null} />
           <Route path="project/:slug/:mode" element={null} />
+          <Route path="project/:slug/:mode/:bookSlug" element={null} />
         </Route>
         
         {/* Art page */}
@@ -1198,6 +1199,7 @@ export default function App() {
 
         {/* Library page */}
         <Route path="/library" element={<LibraryPage />} />
+        <Route path="/library/:bookSlug" element={<LibraryPage />} />
 
       {/* Screentime Receipt page */}
       <Route path="/screentime" element={<ScreentimePage />} />
