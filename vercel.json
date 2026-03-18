@@ -6,6 +6,14 @@
   ],
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
+    {
+      "source": "/project/library/full/:bookSlug",
+      "destination": "/api/book-preview?bookSlug=:bookSlug"
+    },
+    {
+      "source": "/library/:bookSlug",
+      "destination": "/api/book-preview?bookSlug=:bookSlug"
+    },
     { "source": "/(.*)", "destination": "/" }
   ]
 }
