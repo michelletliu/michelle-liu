@@ -68,16 +68,19 @@ function renderPreviewHtml({
   description,
   canonicalUrl,
   imageUrl,
+  redirectUrl,
 }: {
   title: string;
   description: string;
   canonicalUrl: string;
   imageUrl: string;
+  redirectUrl: string;
 }) {
   const t = escapeHtml(title);
   const d = escapeHtml(description);
   const u = escapeHtml(canonicalUrl);
   const i = escapeHtml(imageUrl);
+  const r = escapeHtml(redirectUrl);
 
   return `<!doctype html>
 <html lang="en">
@@ -95,9 +98,14 @@ function renderPreviewHtml({
     <meta name="twitter:title" content="${t}" />
     <meta name="twitter:description" content="${d}" />
     <meta name="twitter:image" content="${i}" />
+    <script>
+      if (typeof window !== "undefined") {
+        window.location.replace("${r}");
+      }
+    </script>
   </head>
   <body>
-    <p>${t}</p>
+    <p><a href="${r}">${t}</a></p>
   </body>
 </html>`;
 }
@@ -145,6 +153,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         description,
         canonicalUrl,
         imageUrl,
+        redirectUrl: appRedirectUrl,
       }),
     );
   } catch (error) {
