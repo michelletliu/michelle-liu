@@ -85,7 +85,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
       )}
     >
       {/* Mobile: Logo + Title row, Description below */}
-      <div className="flex w-full shrink-0 flex-col gap-4 lg:hidden">
+      <div className="flex w-full shrink-0 flex-col gap-6 lg:hidden">
         {/* Logo + Title row */}
         <div className="flex items-center gap-4">
           {data.logoSrc && (
