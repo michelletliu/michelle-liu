@@ -643,7 +643,7 @@ export default function AboutPage() {
                 <span className="text-gray-400 text-sm">Loading...</span>
               </div>
             ) : experiences.length > 0 ? (
-              <div className="flex flex-col gap-10 md:gap-12 md:pt-1 md:w-1/2 md:shrink-0">
+              <div className="flex flex-col gap-10 md:gap-12 md:pt-1.5 md:w-1/2 md:shrink-0">
                 {experiences.map((exp, index) => (
                   <ScrollReveal key={exp.id} delay={index * 80}>
                     <ExperienceCard data={exp} />
@@ -664,7 +664,7 @@ export default function AboutPage() {
                         </p>
                       </div>
                       {/* Startup logos row */}
-                      <div className="flex flex-wrap gap-y-4 md:justify-between">
+                      <div className="flex flex-wrap gap-y-4 md:justify-between md:-ml-2">
                         {startups.map((startup) => (
                           <StartupCard key={startup.id} data={startup} />
                         ))}

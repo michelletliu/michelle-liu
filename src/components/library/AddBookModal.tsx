@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { SendIcon, SmileyIcon } from "./icons";
+import { posthog, posthogEnabled } from "../../lib/posthog";
 
 interface AddBookModalProps {
   onClose: () => void;
@@ -15,6 +16,12 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
     if (bookTitle.trim() && !isSubmitting) {
       setIsSubmitting(true);
       setIsSubmitted(true);
+
+      if (posthogEnabled) {
+        posthog.capture("book_suggestion_submitted", {
+          title_length: bookTitle.trim().length,
+        });
+      }
 
       // Fire-and-forget: the "Thank you!" state shows immediately
       onAddBook(bookTitle).catch((error) => {
