@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import clsx from "clsx";
+import { posthog, posthogEnabled } from "../lib/posthog";
 
 type ContactBadgeProps = {
   /** Whether to show the badge in expanded state initially (for hover behavior on Work page) */
@@ -112,9 +113,14 @@ export default function ContactBadge({
         isExpanded ? "max-w-[500px] opacity-100" : "max-w-0 opacity-0"
       )}>
         <span>Working on something cool? Get in</span>{" "}
-        <a 
-          href="mailto:studio@liumichelle.com" 
+        <a
+          href="mailto:studio@liumichelle.com"
           className="[text-decoration-skip-ink:none] [text-underline-position:from-font] font-semibold text-emerald-500 hover:!text-blue-500 transition-colors"
+          onClick={() => {
+            if (posthogEnabled) {
+              posthog.capture("contact_link_clicked");
+            }
+          }}
         >
           touch
         </a>!

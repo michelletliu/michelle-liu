@@ -19,6 +19,7 @@ import { useScrollLock } from "../../utils/useScrollLock";
 import lockIcon from "../../assets/lock.svg";
 import expandIcon from "../../assets/Expand.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
+import { posthog, posthogEnabled } from "../../lib/posthog";
 
 // Helper to render text with highlighted portion
 function renderHighlightedText(text: string, highlightedText?: string, highlightColor?: string): React.ReactNode {
@@ -988,6 +989,9 @@ export default function ProjectModal({
   }, []);
 
   const handleClose = () => {
+    if (posthogEnabled) {
+      posthog.capture("project_closed", { project_id: projectId });
+    }
     setIsClosing(true);
     setIsVisible(false);
     setTimeout(() => {
@@ -996,6 +1000,9 @@ export default function ProjectModal({
   };
 
   const handleExpandToFullscreen = () => {
+    if (posthogEnabled) {
+      posthog.capture("project_expanded_fullscreen", { project_id: projectId });
+    }
     if (onExpandToFullscreen) {
       onExpandToFullscreen();
     }
@@ -1084,9 +1091,13 @@ export default function ProjectModal({
     const normalizedTarget = targetSectionId?.trim();
     pendingUnlockTargetRef.current = normalizedTarget || null;
 
+    if (posthogEnabled) {
+      posthog.capture("protected_content_unlocked", { project_id: projectId });
+    }
+
     markProjectUnlocked(projectId);
     setIsUnlocked(true);
-    
+
     if (!isFullscreen && onExpandToFullscreen) {
       onExpandToFullscreen();
     }
@@ -1095,6 +1106,9 @@ export default function ProjectModal({
   // Handle skip to final designs
   const handleSkipToFinalDesigns = (e: React.MouseEvent) => {
     e.preventDefault();
+    if (posthogEnabled) {
+      posthog.capture("skip_to_final_designs_clicked", { project_id: projectId });
+    }
     if (skipEndRef.current && scrollContainerRef.current) {
       // Use the same getOffsetTop helper to get correct position
       const getOffsetTop = (element: HTMLElement, container: HTMLElement): number => {

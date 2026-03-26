@@ -981,7 +981,14 @@ function HomePage() {
     // On mobile, go straight to fullscreen (except for sketchbook)
     const isMobile = window.innerWidth < 768;
     const shouldGoFullscreen = isMobile && projectId !== 'sketchbook';
-    
+
+    if (posthogEnabled) {
+      posthog.capture("project_opened", {
+        project_id: projectId,
+        view_mode: shouldGoFullscreen ? "fullscreen" : "popup",
+      });
+    }
+
     if (shouldGoFullscreen) {
       navigate(`/project/${projectId}/full`);
     } else {

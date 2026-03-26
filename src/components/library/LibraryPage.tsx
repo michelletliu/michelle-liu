@@ -11,6 +11,7 @@ import type { Book, ShelfBookData } from "./types";
 import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
+import { posthog, posthogEnabled } from '../../lib/posthog';
 
 // Default project info (fallback if Sanity fetch fails)
 const DEFAULT_LIBRARY_PROJECT = {
@@ -402,6 +403,9 @@ export default function LibraryPage() {
                           <button
                             key={option.value}
                             onClick={() => {
+                              if (posthogEnabled) {
+                                posthog.capture("book_filter_changed", { filter: option.value });
+                              }
                               setActiveFilter(option.value);
                               setShowFilterDropdown(false);
                             }}
@@ -469,6 +473,14 @@ export default function LibraryPage() {
             >
               {filteredBooks.map((book) => (
                 <BookCard key={book.id} book={book} onClick={() => {
+                  if (posthogEnabled) {
+                    posthog.capture("book_viewed", {
+                      book_title: book.title,
+                      book_rating: book.rating,
+                      book_year: book.year,
+                      is_favorite: book.isFavorite,
+                    });
+                  }
                   const slug = getBookSlug(book);
                   setSelectedBook(book);
                   const nextPath = openBookPath(slug);
