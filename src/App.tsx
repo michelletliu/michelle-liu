@@ -26,6 +26,7 @@ import ContactBadge from "./components/ContactBadge";
 import NavigationTabs from "./components/NavigationTabs";
 import NotFound from "./components/NotFound";
 import ExperimentModal from "./components/ExperimentModal";
+import { posthog, posthogEnabled } from "./lib/posthog";
 
 // CSS for fade up animation
 const fadeUpStyles = `
@@ -1171,10 +1172,23 @@ function HomePage() {
 }
 
 export default function App() {
+  const location = useLocation();
+
   // Initialize cursor compatibility checks on mount
   useEffect(() => {
     initCursorCompatibility();
   }, []);
+
+  useEffect(() => {
+    if (!posthogEnabled) return;
+
+    posthog.capture("$pageview", {
+      $current_url: window.location.href,
+      pathname: location.pathname,
+      search: location.search,
+      hash: location.hash,
+    });
+  }, [location.pathname, location.search, location.hash]);
 
   return (
     <>

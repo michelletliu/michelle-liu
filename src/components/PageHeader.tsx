@@ -58,7 +58,7 @@ export default function PageHeader({
             <div className="content-stretch flex items-start justify-between relative shrink-0 w-full">
               {isHomePage ? (
                 <motion.div 
-                  className="relative shrink-0 size-11"
+                  className="relative shrink-0 size-8 md:size-11"
                   initial={heroAnimationPlayed ? false : { opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
@@ -68,7 +68,7 @@ export default function PageHeader({
               ) : (
                 <motion.button
                   onClick={() => navigate("/")}
-                  className="relative shrink-0 size-11 cursor-pointer"
+                  className="relative shrink-0 size-8 md:size-11 cursor-pointer"
                   initial={heroAnimationPlayed ? false : { opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
@@ -86,7 +86,7 @@ export default function PageHeader({
       {/* Hero Text */}
       <div className="relative shrink-0 w-full" style={{ zIndex: 2 }}>
         <div className="size-full">
-          <div className="content-stretch flex flex-col gap-4 items-start pb-6 pt-14 px-16 max-md:px-6 max-md:pt-20 max-md:pb-2 relative w-full max-md:h-[210px] md:h-[176px]">
+          <div className="content-stretch flex flex-col gap-4 items-start pb-6 pt-14 px-16 max-md:px-6 max-md:pt-20 max-md:pb-2 relative w-full max-md:min-h-[210px] md:h-[176px]">
             <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
               <ScrollReveal variant="fade" rootMargin="0px" disabled={heroAnimationPlayed}>
                 {nameAddon ? (

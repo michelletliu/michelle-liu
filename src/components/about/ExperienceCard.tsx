@@ -30,7 +30,7 @@ export default function ExperienceCard({ className, data }: ExperienceCardProps)
       )}
     >
       {/* Logo */}
-      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full md:h-24 md:w-24">
+      <div className="relative size-14 shrink-0 overflow-hidden rounded-full md:size-20">
         {data.logoSrc ? (
           <img
             src={data.logoSrc}
@@ -44,7 +44,7 @@ export default function ExperienceCard({ className, data }: ExperienceCardProps)
 
       {/* Text content */}
       <div className="flex flex-1 flex-col items-start">
-        <p className="whitespace-pre-wrap text-base tracking-[0.005em] text-lg font-medium leading-[1.4] text-gray-700">
+        <p className="whitespace-pre-wrap tracking-[0.005em] text-lg font-medium leading-[1.4] text-gray-700">
           {data.company}
         </p>
         <div className="flex flex-wrap items-baseline gap-1 text-base tracking-[0.005em] font-normal leading-[1.4]">

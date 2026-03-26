@@ -139,7 +139,7 @@ export default function ProtectedContent({
               <div 
                 className={clsx(
                   "bg-white border border-solid content-stretch flex items-center justify-between pl-4 pr-3 py-2 relative rounded-full shrink-0 w-full transition-colors duration-200",
-                  error ? "border-[#f87171]" : "border-[#e5e7eb]"
+                  error ? "border-[#f87171]" : "border-transparent focus-within:border-[#d1d5db]"
                 )}
               >
                 <input
