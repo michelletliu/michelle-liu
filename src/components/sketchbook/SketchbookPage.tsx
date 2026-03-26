@@ -549,6 +549,42 @@ export default function SketchbookPage() {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [currentIndex, entries.length, animateToNextPage, animateToPrevPage]);
+
+  // Two-finger trackpad swipe (wheel) to navigate pages
+  useEffect(() => {
+    const container = pageContainerRef.current;
+    if (!container) return;
+    let accumulated = 0;
+    let timeout: ReturnType<typeof setTimeout>;
+    const threshold = 50;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (isAnimatingRef.current) return;
+      const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : 0;
+      if (dx === 0) return;
+      e.preventDefault();
+      accumulated += dx;
+
+      clearTimeout(timeout);
+      timeout = setTimeout(() => { accumulated = 0; }, 200);
+
+      if (accumulated > threshold && currentIndex < entries.length - 1) {
+        accumulated = 0;
+        setSwipeDirection('left');
+        animateToNextPage();
+      } else if (accumulated < -threshold && currentIndex > 0) {
+        accumulated = 0;
+        setSwipeDirection('right');
+        animateToPrevPage();
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+      clearTimeout(timeout);
+    };
+  }, [currentIndex, entries.length, animateToNextPage, animateToPrevPage]);
   
   // Handle drag end - swipe to change page with animation
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -629,12 +665,12 @@ export default function SketchbookPage() {
         <img 
           src={imgLogo} 
           alt="Michelle Liu Logo" 
-          className="w-[44px] h-[44px] object-contain"
+          className="w-8 h-8 md:w-[44px] md:h-[44px] object-contain"
         />
       </motion.button>
 
-      {/* Info Button - fixed top right */}
-      <InfoButton project={projectInfo} />
+      {/* Info Button - only in fullscreen (popup uses ExperimentModal header info button) */}
+      {isFullscreen && <InfoButton project={projectInfo} />}
       
       {/* Title and date - opacity responds to drag position */}
       <div className={`text-center px-6 shrink-0 relative transition-[padding] duration-300 ease-out ${isFullscreen ? 'pb-16' : 'pb-4 max-[650px]:pb-16'}`}>

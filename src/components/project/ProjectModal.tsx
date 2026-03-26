@@ -655,7 +655,7 @@ function PasswordInput({
         "bg-white border border-solid content-stretch flex items-center justify-between pl-4 pr-3 py-2 relative rounded-full shrink-0 w-full transition-colors duration-200",
         error
           ? "border-[#f87171] focus-within:border-[#f87171]"
-          : "border-[#e5e7eb] focus-within:border-[#d1d5db]"
+          : "border-transparent focus-within:border-[#d1d5db]"
       )}>
         <input
           type={showPassword ? "text" : "password"}
@@ -1208,7 +1208,7 @@ export default function ProjectModal({
                   onClick={handleBack}
                   className={clsx(
                     "overflow-clip relative shrink-0 cursor-pointer hover:opacity-80 transition-all duration-300 ease-out p-0 border-0 bg-transparent",
-                    isScrolled ? "size-7" : "size-[44px]"
+                    isScrolled ? "size-7" : "size-8 md:size-[44px]"
                   )}
                 >
                   <img

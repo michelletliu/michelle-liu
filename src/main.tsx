@@ -2,11 +2,13 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import App from "./App.tsx";
+import { initPostHog } from "./lib/posthog";
 import "./index.css";
 import "./styles/globals.css";
 
 // Console greeting for curious visitors
 console.log("✨ thanks for stopping by! say hi: studio@liumichelle.com");
+initPostHog();
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>

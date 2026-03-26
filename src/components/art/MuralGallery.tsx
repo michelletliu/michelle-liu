@@ -212,34 +212,36 @@ export default function MuralGallery({
 
         <EdgeGradients />
 
-        {/* Left navigation button */}
-        <div className="absolute top-1/2 -left-1 md:left-0 -translate-y-1/2 md:-translate-x-1/2 z-10">
-          <LiquidGlassButton
-            onClick={() => scroll("left")}
-            disabled={!canScrollLeft}
-            className={clsx(
-              "transition-colors",
-              canScrollLeft ? "text-gray-500 hover:text-gray-700" : "text-gray-300/60 cursor-default"
-            )}
-            aria-label="Scroll left"
-          >
-            <ChevronLeftIcon className="size-5 -translate-x-px" />
-          </LiquidGlassButton>
+        {/* Left hover zone + button */}
+        <div className="group/left absolute top-0 -left-1 md:left-0 h-full w-[20%] z-10 flex items-center">
+          <div className="md:-translate-x-1/2 md:opacity-0 md:scale-90 md:group-hover/left:opacity-100 md:group-hover/left:scale-100 transition-[opacity,transform] duration-150 ease-out">
+            <LiquidGlassButton
+              onClick={() => scroll("left")}
+              disabled={!canScrollLeft}
+              className={clsx(
+                canScrollLeft ? "text-gray-500 hover:text-gray-700" : "text-gray-300/60 cursor-default"
+              )}
+              aria-label="Scroll left"
+            >
+              <ChevronLeftIcon className="size-5 -translate-x-px" />
+            </LiquidGlassButton>
+          </div>
         </div>
 
-        {/* Right navigation button */}
-        <div className="absolute top-1/2 -right-1 md:right-0 -translate-y-1/2 md:translate-x-1/2 z-10">
-          <LiquidGlassButton
-            onClick={() => scroll("right")}
-            disabled={!canScrollRight}
-            className={clsx(
-              "transition-colors",
-              canScrollRight ? "text-gray-500 hover:text-gray-700" : "text-gray-300/60 cursor-default"
-            )}
-            aria-label="Scroll right"
-          >
-            <ChevronRightIcon className="size-5 translate-x-px" />
-          </LiquidGlassButton>
+        {/* Right hover zone + button */}
+        <div className="group/right absolute top-0 -right-1 md:right-0 h-full w-[20%] z-10 flex items-center justify-end">
+          <div className="md:translate-x-1/2 md:opacity-0 md:scale-90 md:group-hover/right:opacity-100 md:group-hover/right:scale-100 transition-[opacity,transform] duration-150 ease-out">
+            <LiquidGlassButton
+              onClick={() => scroll("right")}
+              disabled={!canScrollRight}
+              className={clsx(
+                canScrollRight ? "text-gray-500 hover:text-gray-700" : "text-gray-300/60 cursor-default"
+              )}
+              aria-label="Scroll right"
+            >
+              <ChevronRightIcon className="size-5 translate-x-px" />
+            </LiquidGlassButton>
+          </div>
         </div>
       </div>
     </div>

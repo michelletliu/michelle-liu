@@ -1528,7 +1528,7 @@ export default function ScreentimePage() {
         <img 
           src={imgLogo} 
           alt="Michelle Liu Logo" 
-          className="w-[44px] h-[44px] object-contain"
+          className="w-8 h-8 md:w-[44px] md:h-[44px] object-contain"
         />
       </button>
 

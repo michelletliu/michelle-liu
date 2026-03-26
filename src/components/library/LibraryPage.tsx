@@ -341,7 +341,7 @@ export default function LibraryPage() {
             <img
               src={imgLogo}
               alt="Michelle Liu Logo"
-              className="size-[44px] object-contain"
+              className="size-8 md:size-[44px] object-contain"
             />
           </button>
         </div>
@@ -350,7 +350,7 @@ export default function LibraryPage() {
         <div className="pt-8 px-8 md:px-16">
           <div className="flex flex-col gap-10 md:gap-12 items-start pb-5 md:pb-6">
             {/* Logo spacer - matches the logo size */}
-            <div className="size-[44px] shrink-0" />
+            <div className="size-8 md:size-[44px] shrink-0" />
           
           <div className="flex items-start justify-between w-full">
           {/* Title and Filter */}

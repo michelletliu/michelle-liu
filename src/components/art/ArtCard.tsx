@@ -22,7 +22,7 @@ export default function ArtCard({ className, data, onClick }: ArtCardProps) {
     <button
       onClick={onClick}
       className={clsx(
-        "flex flex-col gap-2 items-start w-full cursor-pointer group text-left break-inside-avoid mb-5",
+        "flex flex-col gap-2 items-start w-full cursor-pointer group text-left break-inside-avoid mb-0 md:mb-5",
         className
       )}
     >
