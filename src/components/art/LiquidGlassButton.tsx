@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { type ReactNode, type ButtonHTMLAttributes } from "react";
 
 interface LiquidGlassButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -9,11 +10,13 @@ export default function LiquidGlassButton({
   children,
   size = 36,
   style,
+  className,
   ...props
 }: LiquidGlassButtonProps) {
   return (
     <button
       {...props}
+      className={clsx("!rounded-full transition-transform duration-150 ease-out hover:scale-105", className)}
       style={{
         width: size,
         height: size,

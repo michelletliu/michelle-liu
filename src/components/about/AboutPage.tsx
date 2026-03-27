@@ -15,7 +15,6 @@ import StartupCard from "./StartupCard";
 import MediaCard from "./MediaCard";
 import AboutSidebar from "./AboutSidebar";
 import Footer from "../Footer";
-import ShimmerImage from "../ShimmerImage";
 import { ArrowUpRight } from "../ArrowUpRight";
 import ContactBadge from "../ContactBadge";
 import NavigationTabs from "../NavigationTabs";
@@ -91,12 +90,10 @@ function ProfilePhoto({ imageSrc, caption }: { imageSrc?: string; caption?: Reac
     <div className="flex flex-col gap-3 w-72 md:w-76">
       <div className="rounded-lg overflow-hidden">
         {imageSrc ? (
-          <ShimmerImage
+          <img
             src={imageSrc}
             alt="Michelle Liu"
-            className="w-full h-auto"
-            rounded="rounded-lg"
-            wrapperClassName="w-full"
+            className="w-full h-auto rounded-lg"
           />
         ) : (
           <div className="w-full aspect-[3/4] bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg" />
