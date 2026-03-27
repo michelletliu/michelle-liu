@@ -1302,7 +1302,7 @@ export default function ProjectModal({
                             <p className="font-medium relative shrink-0 text-[#9ca3af]">
                               {item.label}
                             </p>
-                            <p className="font-normal relative shrink-0 text-black">
+                            <p className="font-normal relative shrink-0 text-gray-700">
                               {item.value.map((v, i) => (
                                 <React.Fragment key={i}>
                                   {v}

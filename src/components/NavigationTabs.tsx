@@ -45,6 +45,7 @@ function TagBackgroundImageAndText({ text, active = false, onClick }: TagBackgro
 export default function NavigationTabs({ activeTab, heroAnimationPlayed = false }: NavigationTabsProps) {
   const navigate = useNavigate();
   const [skipAnim, setSkipAnim] = useState(false);
+
   useLayoutEffect(() => {
     if (sessionStorage.getItem("heroAnimationPlayed") === "true") {
       setSkipAnim(true);
