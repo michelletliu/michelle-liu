@@ -76,6 +76,8 @@ export default function SketchbookGallery({
   const [canScrollLeft, setCanScrollLeft] = useState(data.images.length > 1);
   const [canScrollRight, setCanScrollRight] = useState(data.images.length > 1);
   const [isHovered, setIsHovered] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const showArrows = isInView || isHovered;
 
   const loopedImages = useMemo(() => {
     if (data.images.length <= 1) return data.images;
@@ -131,7 +133,16 @@ export default function SketchbookGallery({
     };
   }, [data.images.length, loopedImages.length, scheduleRecenter]);
 
-  
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsInView(entry.isIntersecting),
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   
 
@@ -198,7 +209,7 @@ export default function SketchbookGallery({
         <div className="absolute top-0 -left-1 md:left-0 h-full w-[20%] z-10 flex items-center">
           <div className={clsx(
             "md:-translate-x-1/2 transition-[opacity,transform] duration-200 ease-out",
-            isHovered ? "md:opacity-100 md:scale-100" : "md:opacity-0 md:scale-90"
+            showArrows ? "md:opacity-100 md:scale-100" : "md:opacity-0 md:scale-90"
           )}>
             <LiquidGlassButton
               onClick={() => scroll("left")}
@@ -217,7 +228,7 @@ export default function SketchbookGallery({
         <div className="absolute top-0 -right-1 md:right-0 h-full w-[20%] z-10 flex items-center justify-end">
           <div className={clsx(
             "md:translate-x-1/2 transition-[opacity,transform] duration-200 ease-out",
-            isHovered ? "md:opacity-100 md:scale-100" : "md:opacity-0 md:scale-90"
+            showArrows ? "md:opacity-100 md:scale-100" : "md:opacity-0 md:scale-90"
           )}>
             <LiquidGlassButton
               onClick={() => scroll("right")}
