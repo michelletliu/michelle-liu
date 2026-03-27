@@ -7,7 +7,6 @@ import { useNavigate } from '@/lib/navigation';
 import InfoButton from '../InfoButton';
 import imgLogo from '../../assets/logo.png';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
-import ShimmerImage from '../ShimmerImage';
 import { client, urlFor } from '../../sanity/client';
 import { FLATLAY_SKETCHBOOKS_QUERY } from '../../sanity/queries';
 
@@ -488,18 +487,16 @@ export default function SketchbookPage() {
       duration: 0.25,
       ease: [0.25, 0.1, 0.25, 1],
       onComplete: () => {
-        // Instantly reset position and change index together
         x.jump(0);
         setCurrentIndex(prev => prev + 1);
-        isAnimatingRef.current = false;
+        // Hold the lock a bit longer so trackpad momentum doesn't trigger another navigation
+        setTimeout(() => {
+          isAnimatingRef.current = false;
+        }, 300);
       }
     });
-    // Allow next scroll input sooner
-    setTimeout(() => {
-      isAnimatingRef.current = false;
-    }, 150);
   }, [x, slideDistance]);
-  
+
   const animateToPrevPage = useCallback(() => {
     if (isAnimatingRef.current) return;
     isAnimatingRef.current = true;
@@ -509,16 +506,13 @@ export default function SketchbookPage() {
       duration: 0.25,
       ease: [0.25, 0.1, 0.25, 1],
       onComplete: () => {
-        // Instantly reset position and change index together
         x.jump(0);
         setCurrentIndex(prev => prev - 1);
-        isAnimatingRef.current = false;
+        setTimeout(() => {
+          isAnimatingRef.current = false;
+        }, 300);
       }
     });
-    // Allow next scroll input sooner
-    setTimeout(() => {
-      isAnimatingRef.current = false;
-    }, 150);
   }, [x, slideDistance]);
   
   // Reset x position (snap back)
@@ -761,8 +755,8 @@ export default function SketchbookPage() {
                 }}
               >
                 {entries[currentIndex - 2] && (
-                  <ShimmerImage 
-                    src={getImageUrl(entries[currentIndex - 2])} 
+                  <img
+                    src={getImageUrl(entries[currentIndex - 2])}
                     alt={entries[currentIndex - 2].note || `Sketch`}
                     className="w-full h-auto object-contain drop-shadow-sm"
                     style={{ maxHeight: isMobile ? '35vh' : isFullscreen ? '55vh' : '37.5vh', transition: 'max-height 0.3s ease-out' }}
@@ -783,8 +777,8 @@ export default function SketchbookPage() {
                 }}
               >
                 {entries[currentIndex - 1] && (
-                  <ShimmerImage 
-                    src={getImageUrl(entries[currentIndex - 1])} 
+                  <img
+                    src={getImageUrl(entries[currentIndex - 1])}
                     alt={entries[currentIndex - 1].note || `Sketch`}
                     className="w-full h-auto object-contain drop-shadow-sm"
                     style={{ maxHeight: isMobile ? '35vh' : isFullscreen ? '55vh' : '37.5vh', transition: 'max-height 0.3s ease-out' }}
@@ -804,8 +798,8 @@ export default function SketchbookPage() {
                 }}
               >
                 {currentEntry && getImageUrl(currentEntry) ? (
-                  <ShimmerImage 
-                    src={getImageUrl(currentEntry)} 
+                  <img
+                    src={getImageUrl(currentEntry)}
                     alt={currentEntry.note || `Sketch from ${formatDate(currentEntry.date)}`}
                     className="w-full h-auto object-contain drop-shadow-sm"
                     style={{ maxHeight: isMobile ? '35vh' : isFullscreen ? '55vh' : '37.5vh', transition: 'max-height 0.3s ease-out' }}
@@ -827,8 +821,8 @@ export default function SketchbookPage() {
                 }}
               >
                 {entries[currentIndex + 1] && (
-                  <ShimmerImage 
-                    src={getImageUrl(entries[currentIndex + 1])} 
+                  <img
+                    src={getImageUrl(entries[currentIndex + 1])}
                     alt={entries[currentIndex + 1].note || `Sketch`}
                     className="w-full h-auto object-contain drop-shadow-sm"
                     style={{ maxHeight: isMobile ? '35vh' : isFullscreen ? '55vh' : '37.5vh', transition: 'max-height 0.3s ease-out' }}
@@ -849,8 +843,8 @@ export default function SketchbookPage() {
                 }}
               >
                 {entries[currentIndex + 2] && (
-                  <ShimmerImage 
-                    src={getImageUrl(entries[currentIndex + 2])} 
+                  <img
+                    src={getImageUrl(entries[currentIndex + 2])}
                     alt={entries[currentIndex + 2].note || `Sketch`}
                     className="w-full h-auto object-contain drop-shadow-sm"
                     style={{ maxHeight: isMobile ? '35vh' : isFullscreen ? '55vh' : '37.5vh', transition: 'max-height 0.3s ease-out' }}
