@@ -71,9 +71,11 @@ export default function SketchbookGallery({
   onImageClick 
 }: SketchbookGalleryProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const recenterRaf = useRef<number | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(data.images.length > 1);
   const [canScrollRight, setCanScrollRight] = useState(data.images.length > 1);
+  const [isHovered, setIsHovered] = useState(false);
 
   const loopedImages = useMemo(() => {
     if (data.images.length <= 1) return data.images;
@@ -129,22 +131,9 @@ export default function SketchbookGallery({
     };
   }, [data.images.length, loopedImages.length, scheduleRecenter]);
 
-  // Convert vertical trackpad scroll to horizontal scroll over the gallery
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
+  
 
-    const handleWheel = (e: WheelEvent) => {
-      if (container.scrollWidth <= container.clientWidth) return;
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        e.preventDefault();
-        container.scrollLeft += e.deltaY;
-      }
-    };
-
-    container.addEventListener("wheel", handleWheel, { passive: false });
-    return () => container.removeEventListener("wheel", handleWheel);
-  }, []);
+  
 
   const handleImageLoad = () => {
     scheduleRecenter();
@@ -169,7 +158,12 @@ export default function SketchbookGallery({
   };
 
   return (
-    <div className={clsx("flex flex-col gap-6 pb-6 w-full", className)}>
+    <div
+      ref={containerRef}
+      className={clsx("flex flex-col gap-6 pb-6 w-full", className)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {/* Caption: Title and Date */}
       <div className="flex flex-col font-medium items-start leading-[1.4] text-base">
         <p className="text-gray-900 text-lg">
@@ -200,9 +194,12 @@ export default function SketchbookGallery({
 
         <EdgeGradients />
 
-        {/* Left hover zone + button */}
-        <div className="group/left absolute top-0 -left-1 md:left-0 h-full w-[20%] z-10 flex items-center">
-          <div className="md:-translate-x-1/2 md:opacity-0 md:scale-90 md:group-hover/left:opacity-100 md:group-hover/left:scale-100 transition-[opacity,transform] duration-150 ease-out">
+        {/* Left button */}
+        <div className="absolute top-0 -left-1 md:left-0 h-full w-[20%] z-10 flex items-center">
+          <div className={clsx(
+            "md:-translate-x-1/2 transition-[opacity,transform] duration-200 ease-out",
+            isHovered ? "md:opacity-100 md:scale-100" : "md:opacity-0 md:scale-90"
+          )}>
             <LiquidGlassButton
               onClick={() => scroll("left")}
               disabled={!canScrollLeft}
@@ -216,9 +213,12 @@ export default function SketchbookGallery({
           </div>
         </div>
 
-        {/* Right hover zone + button */}
-        <div className="group/right absolute top-0 -right-1 md:right-0 h-full w-[20%] z-10 flex items-center justify-end">
-          <div className="md:translate-x-1/2 md:opacity-0 md:scale-90 md:group-hover/right:opacity-100 md:group-hover/right:scale-100 transition-[opacity,transform] duration-150 ease-out">
+        {/* Right button */}
+        <div className="absolute top-0 -right-1 md:right-0 h-full w-[20%] z-10 flex items-center justify-end">
+          <div className={clsx(
+            "md:translate-x-1/2 transition-[opacity,transform] duration-200 ease-out",
+            isHovered ? "md:opacity-100 md:scale-100" : "md:opacity-0 md:scale-90"
+          )}>
             <LiquidGlassButton
               onClick={() => scroll("right")}
               disabled={!canScrollRight}

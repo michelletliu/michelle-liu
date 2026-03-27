@@ -11,9 +11,12 @@
 
   /* Circles and pills: stay perfectly round */
   .rounded-full,
+  .\!rounded-full,
   .rounded-\[999px\],
   .rounded-\[1000px\],
-  .rounded-\[100px\] {
+  .rounded-\[100px\],
+  [style*="border-radius: 50%"],
+  [style*="border-radius:50%"] {
     corner-shape: round;
   }
 
