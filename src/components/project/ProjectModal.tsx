@@ -1129,13 +1129,13 @@ export default function ProjectModal({
 
   return (
     <div className={clsx(
-      "fixed inset-0 z-50 flex items-center justify-center transition-all duration-500 ease-out",
+      "fixed inset-0 z-50 flex items-center justify-center transition-all duration-400 ease-out",
       isFullscreen ? "px-0" : "px-8"
     )}>
       {/* Overlay */}
       <div
         className={clsx(
-          "absolute inset-0 bg-black/20 transition-opacity duration-500",
+          "absolute inset-0 bg-black/20 transition-opacity duration-400",
           isVisible && !isFullscreen ? "opacity-100" : "opacity-0",
           isFullscreen && "pointer-events-none"
         )}
@@ -1145,7 +1145,7 @@ export default function ProjectModal({
       {/* Modal */}
       <div
         className={clsx(
-          "relative bg-white flex flex-col overflow-hidden transition-all duration-500 ease-out",
+          "relative bg-white flex flex-col overflow-hidden transition-all duration-400 ease-out",
           isFullscreen
             ? "w-full h-full rounded-none"
             : "rounded-[26px] w-[calc(100%*10/12)] max-md:w-full min-h-[80vh] sm:min-h-[90vh] max-h-[80vh] sm:max-h-[90vh]",
