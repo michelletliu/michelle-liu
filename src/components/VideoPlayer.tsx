@@ -156,27 +156,20 @@ export default function VideoPlayer({
         const hls = new Hls({
           enableWorker: true,
           lowLatencyMode: false,
-          startLevel: -1, // Will be set manually in MANIFEST_PARSED
+          startLevel: -1,                  // Let ABR auto-select based on bandwidth
+          abrEwmaDefaultEstimate: 8000000, // Assume ~8Mbps so ABR picks a high quality level by default
+          maxBufferLength: 10,
+          maxMaxBufferLength: 30,
         });
 
         hlsRef.current = hls;
         hls.loadSource(src);
         hls.attachMedia(video);
 
-        hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-          // Debug: see what levels are available
-          console.log('Available quality levels:', data.levels.map(l => `${l.height}p`));
-
-          // Lock to highest quality
-          const highestLevel = data.levels.length - 1;
-          hls.currentLevel = highestLevel;
-          hls.loadLevel = highestLevel; // Locks which level gets loaded
-
-          console.log(`Locked to level ${highestLevel}: ${data.levels[highestLevel]?.height}p`);
-
+        hls.on(Hls.Events.MANIFEST_PARSED, (_, _data) => {
+          // Let ABR handle quality — no quality lock so playback starts immediately
           initMuxMonitoring(hls);
           if (autoPlayRef.current) {
-            // Ensure muted is set right before play for autoplay to work
             if (mutedRef.current) {
               video.muted = true;
             }

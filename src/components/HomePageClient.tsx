@@ -201,7 +201,7 @@ type Project = {
 
 function getMuxUrls(playbackId: string) {
   return {
-    imageSrc: `https://image.mux.com/${playbackId}/thumbnail.png`,
+    imageSrc: `https://image.mux.com/${playbackId}/thumbnail.png?width=1920`,
     videoSrc: `https://stream.mux.com/${playbackId}.m3u8`,
   };
 }
@@ -244,7 +244,7 @@ const staticProjects: Project[] = [
     title: "Polaroid Studio",
     year: "2025",
     description: "A digital way to customize your own polaroid.",
-    imageSrc: "https://image.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w/thumbnail.png",
+    imageSrc: "https://image.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w/thumbnail.png?width=1920",
     videoSrc: "https://stream.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w.m3u8",
     xLink: "https://x.com/michelletliu/status/1991201412072734777",
     backgroundColor: "#f0f9ff",
@@ -260,7 +260,7 @@ const staticProjects: Project[] = [
     title: "Screentime Receipt",
     year: "2025",
     description: "A receipt for your daily or weekly screentime.",
-    imageSrc: "https://image.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI/thumbnail.png",
+    imageSrc: "https://image.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI/thumbnail.png?width=1920",
     videoSrc: "https://stream.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI.m3u8",
     xLink: "https://x.com/michelletliu/status/2000987498550383032",
     backgroundColor: "#f3f4f6",
@@ -276,7 +276,7 @@ const staticProjects: Project[] = [
     title: "Digital Sketchbook",
     year: "2025",
     description: "A digital home for sketches and visual journaling.",
-    imageSrc: "https://image.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg/thumbnail.png",
+    imageSrc: "https://image.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg/thumbnail.png?width=1920",
     videoSrc: "https://stream.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg.m3u8",
     backgroundColor: "#ffffff",
     toolCategories: [
@@ -291,7 +291,7 @@ const staticProjects: Project[] = [
     title: "Personal Library",
     year: "2025",
     description: "My dream digital bookshelf",
-    imageSrc: "https://image.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo/thumbnail.png",
+    imageSrc: "https://image.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo/thumbnail.png?width=1920",
     videoSrc: "https://stream.mux.com/a3NxNdblQi02JVCg0177eEWZRycP1BduGb2pt7o00FUPfo.m3u8",
     xLink: "https://x.com/michelletliu/status/1981030966044061894",
     backgroundColor: "#ffffff",
@@ -338,17 +338,25 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
 
   if (videoSrc) {
     return (
-      <div 
+      <div
         ref={containerRef}
         className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full overflow-hidden bg-[#e5e7eb]"
       >
+        {/* High-res thumbnail shown immediately, fades out once video is ready */}
+        {imageSrc && (
+          <img
+            src={imageSrc}
+            alt=""
+            className={clsx(
+              "absolute max-w-none object-cover size-full rounded-[26px] transition-opacity duration-500 ease-out pointer-events-none z-10",
+              videoLoaded ? "opacity-0" : "opacity-100"
+            )}
+          />
+        )}
         {isVisible && videoReady && (
           <VideoPlayer
             src={videoSrc}
-            className={clsx(
-              "absolute max-w-none object-cover rounded-[26px] size-full transition-opacity duration-500 ease-out",
-              videoLoaded ? "opacity-100" : "opacity-0 invisible"
-            )}
+            className="absolute max-w-none object-cover rounded-[26px] size-full"
             autoPlay
             muted
             loop
@@ -357,12 +365,15 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
             onLoaded={() => setVideoLoaded(true)}
           />
         )}
-        <div 
-          className={clsx(
-            "absolute inset-0 rounded-[26px] transition-opacity duration-500 ease-out bg-[#e5e7eb] z-10 pointer-events-none",
-            videoLoaded ? "opacity-0" : "opacity-100 animate-shimmer"
-          )}
-        />
+        {/* Shimmer only shown if no thumbnail available */}
+        {!imageSrc && (
+          <div
+            className={clsx(
+              "absolute inset-0 rounded-[26px] transition-opacity duration-500 ease-out bg-[#e5e7eb] z-10 pointer-events-none",
+              videoLoaded ? "opacity-0" : "opacity-100 animate-shimmer"
+            )}
+          />
+        )}
       </div>
     );
   }
