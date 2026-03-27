@@ -883,7 +883,15 @@ export default function HomePageClient({ slug, mode }: HomePageClientProps) {
     preloadLikelyPages();
   }, []);
 
-  const selectedProject = slug ? projects.find(p => p.id === slug) || null : null;
+  // Local slug for instant modal open — set immediately on click, URL syncs in background
+  const [localSlug, setLocalSlug] = useState(slug);
+
+  // Sync when the Next.js router eventually catches up (e.g. back/forward navigation)
+  useEffect(() => {
+    setLocalSlug(slug);
+  }, [slug]);
+
+  const selectedProject = localSlug ? projects.find(p => p.id === localSlug) || null : null;
 
   // Local fullscreen state for instant expand/collapse; URL syncs in background
   const [localFullscreen, setLocalFullscreen] = useState(mode === "full");
@@ -907,34 +915,38 @@ export default function HomePageClient({ slug, mode }: HomePageClientProps) {
     }
 
     if (shouldGoFullscreen) {
+      setLocalSlug(projectId);
       setLocalFullscreen(true);
       navigate(`/project/${projectId}/full`);
     } else {
+      setLocalSlug(projectId);
       setLocalFullscreen(false);
       navigate(`/project/${projectId}`);
     }
   }, [navigate]);
 
   const handleModalClose = () => {
+    setLocalSlug(undefined);
     setLocalFullscreen(false);
     navigate("/");
   };
 
   const handleExpandToFullscreen = () => {
-    if (slug) {
+    if (localSlug) {
       setLocalFullscreen(true);
-      navigate(`/project/${slug}/full`);
+      navigate(`/project/${localSlug}/full`);
     }
   };
 
   const handleCollapseFromFullscreen = () => {
-    if (slug) {
+    if (localSlug) {
       setLocalFullscreen(false);
-      navigate(`/project/${slug}`);
+      navigate(`/project/${localSlug}`);
     }
   };
 
   const handleProjectSwitch = (projectId: string) => {
+    setLocalSlug(projectId);
     const newPath = isFullscreenFromUrl
       ? `/project/${projectId}/full`
       : `/project/${projectId}`;
