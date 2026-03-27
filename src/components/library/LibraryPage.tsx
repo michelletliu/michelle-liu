@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
-import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "@/lib/navigation";
 import clsx from "clsx";
 import { client, urlFor } from "../../sanity/client";
 import { SHELF_BOOKS_QUERY, BOOK_YEARS_QUERY } from "../../sanity/queries";
@@ -66,10 +68,9 @@ type FilterOption = {
   isAll?: boolean;
 };
 
-export default function LibraryPage() {
+export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { bookSlug } = useParams<{ bookSlug?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Fetch project info from Sanity (with fallback to defaults)

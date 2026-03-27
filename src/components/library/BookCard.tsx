@@ -1,5 +1,6 @@
 import type { Book } from "./types";
 import { formatText } from "./BookDetailModal";
+import ShimmerImage from "../ShimmerImage";
 
 interface BookCardProps {
   book: Book;
@@ -14,9 +15,11 @@ export function BookCard({ book, onClick }: BookCardProps) {
     >
       {/* Book cover - default state */}
       <div className="absolute left-1/2 -translate-x-1/2 top-0 w-full md:w-[148px] lg:w-[160px] aspect-[2/3] md:h-[222px] lg:h-[246.753px] rounded-sm transition-all duration-[400ms] ease-out md:group-hover:top-[-16px] lg:group-hover:top-[-18px] md:group-hover:h-[227px] lg:group-hover:h-[253px] md:group-hover:w-[152px] lg:group-hover:w-[164px]">
-        <img
+        <ShimmerImage
           alt={`${book.title} by ${book.author}`}
-          className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-sm size-full shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] md:group-hover:shadow-none transition-shadow duration-[400ms] ease-out"
+          className="absolute inset-0 max-w-none object-cover pointer-events-none size-full shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] md:group-hover:shadow-none transition-shadow duration-[400ms] ease-out"
+          rounded="rounded-sm"
+          wrapperClassName="absolute inset-0 size-full"
           src={book.coverImage}
         />
       </div>

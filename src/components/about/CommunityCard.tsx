@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../utils/useScrollLock";
+import ShimmerImage from "../ShimmerImage";
 
 export type CommunityPhoto = {
   id: string;
@@ -90,10 +91,11 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
         <div className="flex items-center gap-4">
           {data.logoSrc && (
             <div className="relative h-14 w-14 shrink-0">
-              <img
+              <ShimmerImage
                 src={data.logoSrc}
                 alt={`${data.title} logo`}
                 className="h-full w-full object-contain"
+                wrapperClassName="h-full w-full"
               />
             </div>
           )}
@@ -127,10 +129,11 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
         <div className="flex shrink-0 items-center gap-4 xl:gap-8">
           {data.logoSrc && (
             <div className="relative size-20 shrink-0">
-              <img
+              <ShimmerImage
                 src={data.logoSrc}
                 alt={`${data.title} logo`}
                 className="h-full w-full object-contain"
+                wrapperClassName="h-full w-full"
               />
             </div>
           )}
@@ -202,11 +205,13 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                           isVertical ? "h-52 w-44" : "h-44 w-52"
                         )}
                       >
-                        <img
+                        <ShimmerImage
                           src={photo.imageSrc}
                           alt={photo.caption || "Community photo"}
                           className="h-full w-full object-cover"
                           loading="lazy"
+                          rounded="rounded-sm"
+                          wrapperClassName="absolute inset-0 h-full w-full"
                         />
                       </div>
                     </div>
@@ -251,11 +256,13 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                           isVertical ? "h-56 w-48" : "h-48 w-56"
                         )}
                       >
-                        <img
+                        <ShimmerImage
                           src={photo.imageSrc}
                           alt={photo.caption || "Community photo"}
                           className="h-full w-full object-cover"
                           loading="lazy"
+                          rounded="rounded-sm"
+                          wrapperClassName="absolute inset-0 h-full w-full"
                         />
                       </div>
                     </div>
@@ -314,11 +321,13 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                           isVertical ? "h-72 w-60" : "h-60 w-72"
                         )}
                       >
-                        <img
+                        <ShimmerImage
                           src={photo.imageSrc}
                           alt={photo.caption || "Community photo"}
                           className="h-full w-full object-cover"
                           loading="lazy"
+                          rounded="rounded-sm"
+                          wrapperClassName="absolute inset-0 h-full w-full"
                         />
                       </div>
                     </div>
@@ -393,10 +402,12 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                         : "h-auto max-h-[55vh] w-[80vw] max-w-[600px]"
                     )}
                   >
-                    <img
+                    <ShimmerImage
                       src={expandedPhoto.imageSrc}
                       alt={expandedPhoto.caption || "Community photo"}
                       className="h-full w-full object-contain"
+                      rounded="rounded-sm"
+                      wrapperClassName="absolute inset-0 h-full w-full"
                     />
                   </div>
                 </div>

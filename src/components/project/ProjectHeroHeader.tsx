@@ -1,5 +1,6 @@
 import React from "react";
 import clsx from "clsx";
+import ShimmerImage from "../ShimmerImage";
 
 type MetadataItem = {
   label: string;
@@ -127,8 +128,10 @@ export default function ProjectHeroHeader({
             isMobile && "aspect-[678/367.625] w-full"
           )}
         >
-          <img
-            className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full"
+          <ShimmerImage
+            wrapperClassName="absolute inset-0 size-full"
+            rounded="rounded-[26px]"
+            className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
             alt=""
             src={heroImageSrc}
           />

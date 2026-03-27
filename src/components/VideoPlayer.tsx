@@ -190,15 +190,15 @@ export default function VideoPlayer({
           if (data.fatal) {
             switch (data.type) {
               case Hls.ErrorTypes.NETWORK_ERROR:
-                console.error("Network error, attempting to recover...");
+                console.warn("HLS network error, attempting to recover...");
                 hls.startLoad();
                 break;
               case Hls.ErrorTypes.MEDIA_ERROR:
-                console.error("Media error, attempting to recover...");
+                console.warn("HLS media error, attempting to recover...");
                 hls.recoverMediaError();
                 break;
               default:
-                console.error("Fatal error, destroying HLS instance");
+                console.warn("HLS fatal error, destroying instance");
                 hls.destroy();
                 break;
             }

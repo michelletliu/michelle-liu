@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import clsx from "clsx";
+import ShimmerImage from "../ShimmerImage";
 import quoteGraphic from "../../assets/quote gray 200.png";
 
 // Quote mark using the quote.png asset
@@ -157,7 +158,9 @@ export default function Testimonial({
           >
             {/* Avatar */}
             <div className="relative rounded-full shrink-0 size-[120px] overflow-hidden">
-              <img
+              <ShimmerImage
+                wrapperClassName="absolute inset-0 size-full"
+                rounded="rounded-full"
                 className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
                 alt={authorName}
                 src={authorAvatar}

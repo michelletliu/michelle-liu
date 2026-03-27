@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { PortableText } from "@portabletext/react";
+import ShimmerImage from "../ShimmerImage";
 import { urlFor } from "../../sanity/client";
 import { useScrollLock } from "../../utils/useScrollLock";
 import type { SanityImage } from "../../sanity/types";
@@ -110,10 +111,11 @@ export default function SideQuestSection({
                 className="relative inline-block transform -rotate-2 transition-transform hover:rotate-0 duration-300 cursor-pointer"
                 onClick={() => setIsExpanded(true)}
               >
-                <img
+                <ShimmerImage
                   src={urlFor(image).width(600).url()}
                   alt={title}
-                  className="w-full max-w-[320px] h-auto rounded-lg"
+                  rounded="rounded-lg"
+                  className="w-full max-w-[320px] h-auto"
                 />
               </div>
             </div>
@@ -221,7 +223,7 @@ export default function SideQuestSection({
               onClick={(e) => e.stopPropagation()}
             >
               {/* Image - no additional border/shadow since image already has it */}
-              <img
+              <ShimmerImage
                 src={urlFor(image).width(1200).url()}
                 alt={title}
                 className="max-h-[70vh] w-auto object-contain"

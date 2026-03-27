@@ -1,5 +1,34 @@
 @import "tailwindcss";
 
+/* Squircle corners with compensated border-radius.
+   Full squircle visually shrinks corners, so we bump up border-radius
+   by ~1.3x when supported to maintain the same perceived roundness.
+   Unsupported browsers fall through to original border-radius values. */
+@supports (corner-shape: squircle) {
+  *, *::before, *::after {
+    corner-shape: squircle;
+  }
+
+  /* Circles and pills: stay perfectly round */
+  .rounded-full,
+  .rounded-\[999px\],
+  .rounded-\[1000px\],
+  .rounded-\[100px\] {
+    corner-shape: round;
+  }
+
+  /* Compensate border-radius to preserve visual size (~1.7x) */
+  .rounded-xl                { border-radius: 20px; }   /* 12px */
+  .rounded-2xl               { border-radius: 27px; }   /* 16px */
+  .rounded-3xl               { border-radius: 41px; }   /* 24px */
+  .rounded-\[12px\]          { border-radius: 20px; }
+  .rounded-\[16px\]          { border-radius: 27px; }
+  .rounded-\[20px\]          { border-radius: 34px; }
+  .rounded-\[24px\]          { border-radius: 41px; }
+  .rounded-\[26px\]          { border-radius: 44px; }
+  .rounded-\[28px\]          { border-radius: 48px; }
+}
+
 /* Michelle font (Figtree variable font, self-hosted) */
 @font-face {
   font-family: 'Michelle';

@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { PortableText } from '@portabletext/react';
+import ShimmerImage from '../ShimmerImage';
 import { urlFor } from '../../sanity/client';
 import type { TwoColumnImageSection } from '../../sanity/types';
 
@@ -76,11 +77,9 @@ export function TwoColumnImageSectionComponent({
                 "overflow-hidden w-full flex items-center justify-center",
                 section.rounded !== false && "rounded-[26px]"
               )}>
-                <img
-                  className={clsx(
-                    "w-full h-auto object-contain",
-                    section.rounded !== false && "rounded-[26px]"
-                  )}
+                <ShimmerImage
+                  rounded={section.rounded !== false ? "rounded-[26px]" : undefined}
+                  className="w-full h-auto object-contain"
                   alt=""
                   src={twoColLeftImageSrc}
                 />
@@ -103,11 +102,9 @@ export function TwoColumnImageSectionComponent({
                 "overflow-hidden w-full flex items-center justify-center max-md:h-auto",
                 section.rounded !== false && "rounded-[26px]"
               )}>
-                <img
-                  className={clsx(
-                    "w-full h-auto object-contain",
-                    section.rounded !== false && "rounded-[26px]"
-                  )}
+                <ShimmerImage
+                  rounded={section.rounded !== false ? "rounded-[26px]" : undefined}
+                  className="w-full h-auto object-contain"
                   alt=""
                   src={twoColRightImageSrc}
                 />
@@ -132,7 +129,8 @@ export function TwoColumnImageSectionComponent({
                 "overflow-hidden w-full flex items-center justify-center",
                 section.rounded !== false && "rounded-[26px]"
               )}>
-                <img
+                <ShimmerImage
+                  rounded={section.rounded !== false ? "rounded-[26px]" : undefined}
                   className="w-full h-auto object-contain"
                   alt=""
                   src={twoColLeftImageSrc}
@@ -179,7 +177,8 @@ export function TwoColumnImageSectionComponent({
                 "overflow-hidden w-full flex items-center justify-center max-md:h-auto max-md:w-full",
                 section.rounded !== false && "rounded-[26px]"
               )}>
-                <img
+                <ShimmerImage
+                  rounded={section.rounded !== false ? "rounded-[26px]" : undefined}
                   className="w-full h-auto object-contain"
                   alt=""
                   src={twoColRightImageSrc}
@@ -232,7 +231,8 @@ export function TwoColumnImageSectionComponent({
                   "overflow-hidden w-full flex items-center justify-center",
                   section.rounded !== false && "rounded-[26px]"
                 )}>
-                  <img
+                  <ShimmerImage
+                    rounded={section.rounded !== false ? "rounded-[26px]" : undefined}
                     className="w-full h-auto object-contain"
                     alt=""
                     src={twoColLeftImageSrc}
@@ -254,7 +254,8 @@ export function TwoColumnImageSectionComponent({
                 "overflow-hidden w-full flex items-center justify-center max-md:h-auto max-md:w-full",
                 section.rounded !== false && "rounded-[26px]"
               )}>
-                <img
+                <ShimmerImage
+                  rounded={section.rounded !== false ? "rounded-[26px]" : undefined}
                   className="w-full h-auto object-contain"
                   alt=""
                   src={twoColRightImageSrc}
