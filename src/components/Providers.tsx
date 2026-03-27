@@ -1,10 +1,14 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, lazy } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Analytics } from "@vercel/analytics/react";
 import { initPostHog, posthog, posthogEnabled } from "@/lib/posthog";
 import { initCursorCompatibility } from "@/utils/cursorCompat";
+
+const Agentation = lazy(() =>
+  import("agentation").then((mod) => ({ default: mod.Agentation }))
+);
 
 function PostHogPageViewInner() {
   const pathname = usePathname();
@@ -43,6 +47,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       {children}
       <PostHogPageView />
       <Analytics />
+      {process.env.NODE_ENV === "development" && (
+        <Suspense fallback={null}>
+          <Agentation />
+        </Suspense>
+      )}
     </>
   );
 }

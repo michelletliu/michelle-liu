@@ -72,7 +72,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
             <p className="leading-5 text-sm relative shrink-0 text-[#9ca3af]">
               {category.label}
             </p>
-            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-gray-500">
+            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-gray-700">
               {category.tools.map((tool, toolIdx) => (
                 <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
                   <p className="leading-[21px] whitespace-nowrap">{tool}</p>
@@ -88,7 +88,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
             <p className="leading-5 shrink-0 text-[#9ca3af] w-[72px]">
               {category.label}
             </p>
-            <p className="leading-5 text-gray-500 tracking-[-0.31px]">
+            <p className="leading-5 text-gray-700 tracking-[-0.31px]">
               {category.tools.join(', ')}
             </p>
           </div>
@@ -347,8 +347,8 @@ export default function ExperimentModal({ projectId, project, onClose, initialFu
               <button
                 onClick={() => setShowInfoModal(!showInfoModal)}
                 className={clsx(
-                  "cursor-pointer transition-colors duration-200 text-[#9ca3af] rounded-full p-1",
-                  showInfoModal ? "bg-gray-200" : "hover:bg-gray-100"
+                  "cursor-pointer transition-colors duration-200 text-[#9ca3af] rounded-full p-2 -m-1",
+                  showInfoModal ? "bg-gray-200/50" : "hover:bg-gray-200/50"
                 )}
                 aria-label="Project info"
                 data-info-button
@@ -560,7 +560,7 @@ function ToolsSectionCompact({ categories, isFullscreen = false }: { categories:
               {category.label}
             </p>
             <div className={clsx(
-              "content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-gray-500",
+              "content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-gray-700",
               isFullscreen ? "gap-1" : "gap-0.5"
             )}>
               {category.tools.map((tool, toolIdx) => (

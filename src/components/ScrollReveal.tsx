@@ -143,7 +143,7 @@ export function ScrollReveal({
   if (disabled) {
     return React.createElement(
       Component,
-      { className: clsx(variantClass, "revealed", className) },
+      { className },
       children
     );
   }

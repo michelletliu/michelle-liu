@@ -36,8 +36,8 @@ export default function PageHeader({
   const navigate = useNavigate();
   const isHomePage = variant === "work";
 
-  // Start false to match server render, then sync before first paint
   const [skipAnim, setSkipAnim] = useState(false);
+
   useLayoutEffect(() => {
     if (sessionStorage.getItem("heroAnimationPlayed") === "true") {
       setSkipAnim(true);
@@ -66,6 +66,7 @@ export default function PageHeader({
             <div className="content-stretch flex items-start justify-between relative shrink-0 w-full">
               {isHomePage ? (
                 <motion.div 
+                  key={skipAnim ? "logo-skip" : "logo-anim"}
                   className="relative shrink-0 size-8 md:size-11"
                   initial={skipAnim ? false : { opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -75,6 +76,7 @@ export default function PageHeader({
                 </motion.div>
               ) : (
                 <motion.button
+                  key={skipAnim ? "logo-skip" : "logo-anim"}
                   onClick={() => navigate("/")}
                   className="relative shrink-0 size-8 md:size-11 cursor-pointer"
                   initial={skipAnim ? false : { opacity: 0, scale: 0.8 }}
@@ -116,7 +118,6 @@ export default function PageHeader({
                   initial={{ opacity: 0, y: 4, filter: "blur(0px)" }}
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   transition={{ duration: 0.15, delay: 0, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  suppressHydrationWarning
                 >
                   {children}
                 </motion.div>

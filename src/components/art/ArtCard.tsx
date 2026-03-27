@@ -27,11 +27,11 @@ export default function ArtCard({ className, data, onClick }: ArtCardProps) {
       )}
     >
       {/* Image container with shimmer placeholder */}
-      <div className="relative w-full rounded-xl overflow-hidden">
+      <div className="relative w-full rounded-2xl overflow-hidden">
         {/* Shimmer placeholder - visible while image is loading */}
         <div 
           className={clsx(
-            "absolute inset-0 rounded-xl transition-opacity duration-500 ease-out",
+            "absolute inset-0 rounded-2xl transition-opacity duration-500 ease-out",
             imageLoaded ? "opacity-0" : "opacity-100 animate-shimmer"
           )}
         />
@@ -40,7 +40,7 @@ export default function ArtCard({ className, data, onClick }: ArtCardProps) {
           src={data.imageSrc}
           alt={data.title}
           className={clsx(
-            "w-full h-auto rounded-xl object-contain transition-opacity duration-500 ease-out",
+            "w-full h-auto rounded-2xl object-contain transition-opacity duration-500 ease-out",
             imageLoaded ? "opacity-100" : "opacity-0"
           )}
           onLoad={() => setImageLoaded(true)}
