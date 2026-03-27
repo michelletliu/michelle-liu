@@ -8,11 +8,16 @@ import ShimmerVideo from './ShimmerVideo';
 import { ArrowUpRight } from './ArrowUpRight';
 import type { ToolCategory } from './InfoButton';
 
-// Lazy load the experiment pages
-const PolaroidPage = lazy(() => import('./polaroid/PolaroidPage'));
-const LibraryPage = lazy(() => import('./library/LibraryPage'));
-const ScreentimePage = lazy(() => import('./screentime/ScreentimePage'));
-const SketchbookPage = lazy(() => import('./sketchbook/SketchbookPage'));
+// Kick off chunk fetches immediately when this module loads (not when modal opens)
+const polaroidPagePromise = import('./polaroid/PolaroidPage');
+const libraryPagePromise = import('./library/LibraryPage');
+const screentimePagePromise = import('./screentime/ScreentimePage');
+const sketchbookPagePromise = import('./sketchbook/SketchbookPage');
+
+const PolaroidPage = lazy(() => polaroidPagePromise);
+const LibraryPage = lazy(() => libraryPagePromise);
+const ScreentimePage = lazy(() => screentimePagePromise);
+const SketchbookPage = lazy(() => sketchbookPagePromise);
 
 // Expand icon SVG - same as used in main project modals (Expand.svg)
 function ExpandIcon() {
