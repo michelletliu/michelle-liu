@@ -1,6 +1,8 @@
+"use client";
+
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@/lib/navigation';
 import { domToPng } from 'modern-screenshot';
 
 // Import assets from the polaroid folder

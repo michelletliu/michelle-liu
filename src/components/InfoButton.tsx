@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import VideoPlayer from './VideoPlayer';
+import ShimmerImage from './ShimmerImage';
+import ShimmerVideo from './ShimmerVideo';
 import { ArrowUpRight } from './ArrowUpRight';
 import { useScrollLock } from '../utils/useScrollLock';
 
@@ -250,16 +251,20 @@ export default function InfoButton({ project }: InfoButtonProps) {
 
               {/* Video/Image content area */}
               <div className="relative rounded-[16px] border border-gray-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 mt-3">
-                <img
+                <ShimmerImage
                   alt=""
-                  className="absolute object-cover size-full rounded-[16px]"
+                  className="absolute object-cover size-full"
+                  wrapperClassName="absolute inset-0"
+                  rounded="rounded-[16px]"
                   src={project.imageSrc}
                 />
                 {project.videoSrc && videoReady && (
-                  <VideoPlayer
+                  <ShimmerVideo
                     key={project.id}
                     src={project.videoSrc}
                     className="absolute object-cover size-full rounded-[16px]"
+                    wrapperClassName="absolute inset-0"
+                    rounded="rounded-[16px]"
                     autoPlay
                     muted
                     loop

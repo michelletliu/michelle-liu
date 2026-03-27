@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@sanity/client";
 
 type BookPreviewDoc = {
@@ -26,32 +26,12 @@ const BOOK_PREVIEW_QUERY = `
   }
 `;
 
-const BOT_UA_REGEX =
-  /(Twitterbot|facebookexternalhit|Facebot|Slackbot|Discordbot|LinkedInBot|WhatsApp|TelegramBot|SkypeUriPreview|Applebot|Pinterest|crawler|spider|bot)/i;
-
 function slugify(value: string) {
   return value
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-}
-
-function getRequestOrigin(req: VercelRequest) {
-  const proto = (req.headers["x-forwarded-proto"] as string) || "https";
-  const host = (req.headers["x-forwarded-host"] as string) || req.headers.host;
-  return `${proto}://${host}`;
-}
-
-function getSlugFromRequest(req: VercelRequest) {
-  const fromParam = req.query.bookSlug;
-  if (typeof fromParam === "string") {
-    return decodeURIComponent(fromParam);
-  }
-  if (Array.isArray(fromParam) && fromParam.length > 0) {
-    return decodeURIComponent(fromParam[0]);
-  }
-  return "";
 }
 
 function escapeHtml(value: string) {
@@ -110,30 +90,22 @@ function renderPreviewHtml({
 </html>`;
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const slug = getSlugFromRequest(req);
-  const origin = getRequestOrigin(req);
+export async function GET(req: NextRequest) {
+  const { searchParams } = req.nextUrl;
+  const slug = searchParams.get("bookSlug") || "";
+  const origin = req.nextUrl.origin;
 
-  // Keep direct human navigation functional by routing into SPA query flow.
-  const pathname = req.url?.split("?")[0] || "";
+  const pathname = req.nextUrl.pathname;
   const isProjectFullPath = pathname.startsWith("/project/library/full/");
   const fallbackPath = isProjectFullPath ? "/project/library/full" : "/library";
   const appRedirectUrl = `${fallbackPath}?book=${encodeURIComponent(slug)}`;
-
-  const ua = String(req.headers["user-agent"] || "");
-  const isBotRequest = BOT_UA_REGEX.test(ua);
-
-  if (!isBotRequest) {
-    res.setHeader("Cache-Control", "no-store");
-    return res.redirect(307, appRedirectUrl);
-  }
 
   try {
     const books = await client.fetch<BookPreviewDoc[]>(BOOK_PREVIEW_QUERY);
     const match = books.find((book) => slugify(book.title || "") === slug);
 
     if (!match?.title) {
-      return res.redirect(302, appRedirectUrl);
+      return NextResponse.redirect(new URL(appRedirectUrl, origin), 302);
     }
 
     const previewTitle = match.year
@@ -145,9 +117,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const imageUrl = `${origin}/og-image.png?v=5`;
     const canonicalUrl = `${origin}${pathname}`;
 
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
-    return res.status(200).send(
+    return new NextResponse(
       renderPreviewHtml({
         title: previewTitle,
         description,
@@ -155,9 +125,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         imageUrl,
         redirectUrl: appRedirectUrl,
       }),
+      {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "public, max-age=300, s-maxage=300",
+        },
+      },
     );
   } catch (error) {
     console.error("[book-preview] Failed to build preview metadata", error);
-    return res.redirect(302, appRedirectUrl);
+    return NextResponse.redirect(new URL(appRedirectUrl, origin), 302);
   }
 }

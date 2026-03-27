@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router-dom";
+import { useState, useLayoutEffect } from "react";
+import { useNavigate } from "@/lib/navigation";
 import clsx from "clsx";
 import { ScrollReveal } from "./ScrollReveal";
 
@@ -43,10 +44,16 @@ function TagBackgroundImageAndText({ text, active = false, onClick }: TagBackgro
  */
 export default function NavigationTabs({ activeTab, heroAnimationPlayed = false }: NavigationTabsProps) {
   const navigate = useNavigate();
+  const [skipAnim, setSkipAnim] = useState(false);
+  useLayoutEffect(() => {
+    if (sessionStorage.getItem("heroAnimationPlayed") === "true") {
+      setSkipAnim(true);
+    }
+  }, []);
 
   return (
     <div className="content-stretch flex flex-col items-center pb-4 max-md:pb-1.75 pt-0 px-0 relative shrink-0 w-full">
-      <ScrollReveal variant="fade" delay={280} rootMargin="0px" className="relative shrink-0 w-full" disabled={heroAnimationPlayed}>
+      <ScrollReveal variant="fade" delay={280} rootMargin="0px" className="relative shrink-0 w-full" disabled={skipAnim || heroAnimationPlayed}>
         <div className="size-full">
           <div className="content-stretch flex flex-col gap-3 items-start pb-0 pt-4 px-16 max-md:px-6 relative w-full">
             <div className="content-stretch flex gap-1 items-start relative shrink-0">

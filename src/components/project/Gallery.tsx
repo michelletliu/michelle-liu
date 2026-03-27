@@ -1,5 +1,6 @@
 import React from "react";
 import clsx from "clsx";
+import ShimmerImage from "../ShimmerImage";
 
 type GalleryImage = {
   src: string;
@@ -54,9 +55,11 @@ export default function Gallery({
               isMobile && index % 2 === 1 && "col-[2] justify-self-stretch"
             )}
           >
-            <div className="flex-[1_0_0] min-h-px min-w-px relative rounded-xl shrink-0 w-full">
-              <img
-                className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-xl size-full"
+            <div className="flex-[1_0_0] min-h-px min-w-px relative rounded-xl shrink-0 w-full overflow-hidden">
+              <ShimmerImage
+                rounded="rounded-xl"
+                wrapperClassName="size-full min-h-0"
+                className="size-full max-w-none object-cover pointer-events-none"
                 alt={image.alt || ""}
                 src={image.src}
               />

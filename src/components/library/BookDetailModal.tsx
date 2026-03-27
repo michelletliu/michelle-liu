@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import type { Book } from "./types";
 import { useScrollLock } from "../../utils/useScrollLock";
+import ShimmerImage from "../ShimmerImage";
 
 interface BookDetailModalProps {
   book: Book;
@@ -173,10 +174,12 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
               }
             }}
           >
-            <img 
-              alt={`${book.title} by ${book.author}`} 
-              className={`w-full h-full object-cover rounded-md shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] ${book.goodreadsUrl ? 'transition-transform duration-300 group-hover:rotate-[2.5deg]' : ''}`}
-              src={book.coverImage} 
+            <ShimmerImage
+              alt={`${book.title} by ${book.author}`}
+              className={`w-full h-full object-cover shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] ${book.goodreadsUrl ? "transition-transform duration-300 group-hover:rotate-[2.5deg]" : ""}`}
+              rounded="rounded-md"
+              wrapperClassName="h-full w-full"
+              src={book.coverImage}
             />
           </div>
           
@@ -286,10 +289,12 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
               }
             }}
           >
-            <img 
-              alt={`${book.title} by ${book.author}`} 
-              className={`w-full h-full object-cover rounded-md shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] ${book.goodreadsUrl ? 'transition-transform duration-300 group-hover:rotate-[2.5deg]' : ''}`}
-              src={book.coverImage} 
+            <ShimmerImage
+              alt={`${book.title} by ${book.author}`}
+              className={`w-full h-full object-cover shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] ${book.goodreadsUrl ? "transition-transform duration-300 group-hover:rotate-[2.5deg]" : ""}`}
+              rounded="rounded-md"
+              wrapperClassName="h-full w-full"
+              src={book.coverImage}
             />
           </div>
           

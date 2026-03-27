@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/navigation";
 import clsx from "clsx";
 import { ScrollReveal } from "../ScrollReveal";
 import PageHeader from "../PageHeader";
@@ -13,6 +15,7 @@ import StartupCard from "./StartupCard";
 import MediaCard from "./MediaCard";
 import AboutSidebar from "./AboutSidebar";
 import Footer from "../Footer";
+import ShimmerImage from "../ShimmerImage";
 import { ArrowUpRight } from "../ArrowUpRight";
 import ContactBadge from "../ContactBadge";
 import NavigationTabs from "../NavigationTabs";
@@ -64,8 +67,21 @@ const fadeUpStyles = `
     transform: translateY(0);
   }
 }
+@keyframes fadeUpRight {
+  from {
+    opacity: 0;
+    transform: translate(-10px, 12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
 .animate-fade-up {
   animation: fadeUp 400ms ease-out forwards;
+}
+.animate-fade-up-right {
+  animation: fadeUpRight 420ms ease-out forwards;
 }
 `;
 
@@ -75,10 +91,12 @@ function ProfilePhoto({ imageSrc, caption }: { imageSrc?: string; caption?: Reac
     <div className="flex flex-col gap-3 w-72 md:w-76">
       <div className="rounded-lg overflow-hidden">
         {imageSrc ? (
-          <img
+          <ShimmerImage
             src={imageSrc}
             alt="Michelle Liu"
-            className="w-full h-auto rounded-lg"
+            className="w-full h-auto"
+            rounded="rounded-lg"
+            wrapperClassName="w-full"
           />
         ) : (
           <div className="w-full aspect-[3/4] bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg" />
@@ -190,19 +208,20 @@ export default function AboutPage() {
   const navigate = useNavigate();
 
   // Track if hero animation has been played this session
-  const [heroAnimationPlayed, setHeroAnimationPlayed] = useState(() => {
-    return sessionStorage.getItem('heroAnimationPlayed') === 'true';
-  });
+  // Always start false to avoid SSR/client hydration mismatch, then sync from sessionStorage
+  const [heroAnimationPlayed, setHeroAnimationPlayed] = useState(false);
 
   useEffect(() => {
-    if (!heroAnimationPlayed) {
+    if (sessionStorage.getItem('heroAnimationPlayed') === 'true') {
+      setHeroAnimationPlayed(true);
+    } else {
       const timer = setTimeout(() => {
         sessionStorage.setItem('heroAnimationPlayed', 'true');
         setHeroAnimationPlayed(true);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [heroAnimationPlayed]);
+  }, []);
 
   // Active category for sidebar
   const [activeCategory, setActiveCategory] = useState<AboutCategory>("hi");
@@ -520,7 +539,7 @@ export default function AboutPage() {
           {/* Mobile */}
           <div className="md:hidden">
             <p className="mb-0">Product, design, &lt;dev&gt;,</p>
-            <p> &amp; everything in between.</p>
+            <p>&amp; everything in between.</p>
           </div>
         </>
       </PageHeader>
@@ -665,8 +684,18 @@ export default function AboutPage() {
                       </div>
                       {/* Startup logos row */}
                       <div className="flex flex-wrap gap-y-4 md:justify-between md:-ml-2">
-                        {startups.map((startup) => (
-                          <StartupCard key={startup.id} data={startup} />
+                        {startups.map((startup, i) => (
+                          <div
+                            key={startup.id}
+                            className="animate-fade-up-right"
+                            style={{
+                              opacity: 0,
+                              animationDelay: `${i * 80}ms`,
+                              animationFillMode: "forwards",
+                            }}
+                          >
+                            <StartupCard data={startup} />
+                          </div>
                         ))}
                       </div>
                     </div>

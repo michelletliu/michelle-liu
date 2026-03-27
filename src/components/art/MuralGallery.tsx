@@ -139,6 +139,23 @@ export default function MuralGallery({
     };
   }, [data.images.length, loopedImages.length, scheduleRecenter]);
 
+  // Convert vertical trackpad scroll to horizontal scroll over the gallery
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (container.scrollWidth <= container.clientWidth) return;
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        container.scrollLeft += e.deltaY;
+      }
+    };
+
+    container.addEventListener("wheel", handleWheel, { passive: false });
+    return () => container.removeEventListener("wheel", handleWheel);
+  }, []);
+
   const handleImageLoad = () => {
     scheduleRecenter();
   };

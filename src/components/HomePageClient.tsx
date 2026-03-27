@@ -1,34 +1,27 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Routes, Route, Navigate, useParams, useNavigate, useLocation } from "react-router-dom";
-import { Analytics } from "@vercel/analytics/react";
-import svgPaths from "./imports/svg-2tsxp86msm";
-import clsx from "clsx";
-import { imgGroup } from "./imports/svg-poktt";
-import VideoPlayer from "./components/VideoPlayer";
-import Footer from "./components/Footer";
-import { ProjectModal as SanityProjectModal } from "./components/project";
-import ArtPage from "./components/art/ArtPage";
-import { AboutPage } from "./components/about";
-import { PolaroidPage } from "./components/polaroid";
-import { LibraryPage } from "./components/library";
-import { ScreentimePage } from "./components/screentime";
-import { SketchbookPage } from "./components/sketchbook";
-import { ScrollReveal } from "./components/ScrollReveal";
-import { TryItOutButton } from "./components/TryItOutButton";
-import { preloadLikelyPages } from "./sanity/preload";
-import PageHeader from "./components/PageHeader";
-import { client } from "./sanity/client";
-import { PROJECTS_QUERY, EXPERIMENT_PROJECTS_QUERY } from "./sanity/queries";
-import { ArrowUpRight } from "./components/ArrowUpRight";
-import { useScrollLock } from "./utils/useScrollLock";
-import { initCursorCompatibility } from "./utils/cursorCompat";
-import ContactBadge from "./components/ContactBadge";
-import NavigationTabs from "./components/NavigationTabs";
-import NotFound from "./components/NotFound";
-import ExperimentModal from "./components/ExperimentModal";
-import { posthog, posthogEnabled } from "./lib/posthog";
+"use client";
 
-// CSS for fade up animation
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "@/lib/navigation";
+import svgPaths from "../imports/svg-2tsxp86msm";
+import clsx from "clsx";
+import VideoPlayer from "./VideoPlayer";
+import ShimmerImage from "./ShimmerImage";
+import ShimmerVideo from "./ShimmerVideo";
+import Footer from "./Footer";
+import { ProjectModal as SanityProjectModal } from "./project";
+import { ScrollReveal } from "./ScrollReveal";
+import { TryItOutButton } from "./TryItOutButton";
+import { preloadLikelyPages } from "../sanity/preload";
+import PageHeader from "./PageHeader";
+import { client } from "../sanity/client";
+import { PROJECTS_QUERY, EXPERIMENT_PROJECTS_QUERY } from "../sanity/queries";
+import { ArrowUpRight } from "./ArrowUpRight";
+import { useScrollLock } from "../utils/useScrollLock";
+import ContactBadge from "./ContactBadge";
+import NavigationTabs from "./NavigationTabs";
+import ExperimentModal from "./ExperimentModal";
+import { posthog, posthogEnabled } from "../lib/posthog";
+
 const fadeUpStyles = `
 @keyframes fadeUp {
   from {
@@ -45,7 +38,6 @@ const fadeUpStyles = `
 }
 `;
 
-// Text Scramble Component
 type TextScrambleProps = {
   text: string;
   className?: string;
@@ -60,12 +52,10 @@ function TextScramble({ text, className }: TextScrambleProps) {
   
   const chars = '!@#$%^&*()_+-;:,.<>?ADELPSTUadelpstu0123456789';
 
-  // Keep text ref updated
   useEffect(() => {
     textRef.current = text;
   }, [text]);
 
-  // Generate scrambled text preserving spaces
   const generateScrambledText = (originalText: string) => {
     let scrambled = '';
     for (let i = 0; i < originalText.length; i++) {
@@ -78,7 +68,6 @@ function TextScramble({ text, className }: TextScrambleProps) {
     return scrambled;
   };
 
-  // Run the scramble animation (defined as regular function to avoid stale closures)
   const runScrambleAnimation = () => {
     const el = elementRef.current;
     const targetText = textRef.current;
@@ -88,7 +77,6 @@ function TextScramble({ text, className }: TextScrambleProps) {
     const oldText = el.innerText;
     const length = Math.max(oldText.length, targetText.length);
     
-    // Build queue for each character
     const queue: Array<{ from: string; to: string; start: number; end: number; char?: string }> = [];
     for (let i = 0; i < length; i++) {
       const from = oldText[i] || '';
@@ -133,28 +121,22 @@ function TextScramble({ text, className }: TextScrambleProps) {
     update();
   };
 
-  // Initialize with scrambled text and set up observer
   useEffect(() => {
     const el = elementRef.current;
     if (!el) return;
     
-    // Set initial scrambled text
     el.innerText = generateScrambledText(text);
     
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !isVisibleRef.current) {
-            // Element just became visible - trigger unscramble animation
             isVisibleRef.current = true;
             hasRevealedOnceRef.current = true;
             setTimeout(() => {
               runScrambleAnimation();
             }, 300);
           } else if (!entry.isIntersecting && isVisibleRef.current) {
-            // Element left the viewport
-            // Only reset if user actually scrolled away (not during modal transitions)
-            // Check if the element is truly out of viewport vs just a layout shift
             const rect = el.getBoundingClientRect();
             const windowHeight = window.innerHeight;
             const isTrulyOutOfView = rect.bottom < -100 || rect.top > windowHeight + 100;
@@ -178,10 +160,8 @@ function TextScramble({ text, className }: TextScrambleProps) {
     };
   }, [text]);
 
-  // Handle hover to re-trigger animation
   const handleMouseEnter = () => {
     if (!isAnimatingRef.current) {
-      // Re-scramble first, then animate to unscrambled
       const el = elementRef.current;
       if (el) {
         el.innerText = generateScrambledText(text);
@@ -202,26 +182,23 @@ function TextScramble({ text, className }: TextScrambleProps) {
   );
 }
 
-// Tool category type for the tools section
 type ToolCategory = {
   label: string;
   tools: string[];
 };
 
-// Project data type
 type Project = {
   id: string;
   title: string;
   year: string;
   description: string;
   imageSrc: string;
-  videoSrc?: string; // Optional HLS video URL
-  xLink?: string; // Optional X (Twitter) link
-  backgroundColor?: string; // Optional background color for experiment projects
-  toolCategories?: ToolCategory[]; // Optional tools section
+  videoSrc?: string;
+  xLink?: string;
+  backgroundColor?: string;
+  toolCategories?: ToolCategory[];
 };
 
-// Helper to generate Mux URLs from playback ID
 function getMuxUrls(playbackId: string) {
   return {
     imageSrc: `https://image.mux.com/${playbackId}/thumbnail.png`,
@@ -229,39 +206,38 @@ function getMuxUrls(playbackId: string) {
   };
 }
 
-// Static project data - main projects (apple, roblox, adobe, nasa) get heroVideo from Sanity
 const staticProjects: Project[] = [
   {
     id: "apple",
     title: "Apple",
     year: "2025",
     description: "Designing new features to drive engagement and user delight.",
-    imageSrc: "", // Will be populated from Sanity
-    videoSrc: "", // Will be populated from Sanity
+    imageSrc: "",
+    videoSrc: "",
   },
   {
     id: "roblox",
     title: "Roblox",
     year: "2024",
     description: "Reimagining the future of social gameplay and user communication.",
-    imageSrc: "", // Will be populated from Sanity
-    videoSrc: "", // Will be populated from Sanity
+    imageSrc: "",
+    videoSrc: "",
   },
   {
     id: "adobe",
     title: "Adobe",
     year: "2023",
     description: "Product strategy to drive user acquisition on college campuses.",
-    imageSrc: "", // Will be populated from Sanity
-    videoSrc: "", // Will be populated from Sanity
+    imageSrc: "",
+    videoSrc: "",
   },
   {
     id: "nasa",
     title: "NASA JPL",
     year: "2023-24",
     description: "Daring (& designing) mighty things at NASA's in-house DesignLab.",
-    imageSrc: "", // Will be populated from Sanity
-    videoSrc: "", // Will be populated from Sanity
+    imageSrc: "",
+    videoSrc: "",
   },
   {
     id: "polaroid",
@@ -333,14 +309,12 @@ type ProjectMediaProps = {
   videoSrc?: string;
 };
 
-// Memoize ProjectMedia to prevent re-renders when parent state changes (e.g., modal open/close)
 const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: ProjectMediaProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
 
-  // Intersection Observer to detect when card is visible
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -350,7 +324,6 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setIsVisible(true);
-            // Delay video loading slightly for smoother experience
             setTimeout(() => setVideoReady(true), 100);
             observer.disconnect();
           }
@@ -363,14 +336,12 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
     return () => observer.disconnect();
   }, []);
 
-  // If there's a video, show placeholder until video is fully loaded
   if (videoSrc) {
     return (
       <div 
         ref={containerRef}
         className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full overflow-hidden bg-[#e5e7eb]"
       >
-        {/* Actual video - plays full duration when visible, hidden until loaded */}
         {isVisible && videoReady && (
           <VideoPlayer
             src={videoSrc}
@@ -386,7 +357,6 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
             onLoaded={() => setVideoLoaded(true)}
           />
         )}
-        {/* Shimmer placeholder - on top, visible while video is loading */}
         <div 
           className={clsx(
             "absolute inset-0 rounded-[26px] transition-opacity duration-500 ease-out bg-[#e5e7eb] z-10 pointer-events-none",
@@ -397,7 +367,6 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
     );
   }
 
-  // If no videoSrc yet (still loading from Sanity) and no imageSrc, show shimmer placeholder
   if (!imageSrc) {
     return (
       <div 
@@ -409,12 +378,13 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
     );
   }
 
-  // Otherwise show image
   return (
-    <div ref={containerRef} className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full">
-      <img
+    <div ref={containerRef} className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full overflow-hidden">
+      <ShimmerImage
         alt=""
-        className="absolute max-w-none object-cover rounded-[26px] size-full"
+        className="absolute max-w-none object-cover size-full"
+        wrapperClassName="absolute inset-0"
+        rounded="rounded-[26px]"
         src={imageSrc}
         loading="lazy"
       />
@@ -452,25 +422,19 @@ type ProjectCardProps = {
   featured?: boolean;
 };
 
-// Memoize ProjectCard to prevent re-renders when parent state changes
 const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, featured = false }: ProjectCardProps) {
   const hasTryItOut = project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime' || project.id === 'sketchbook';
   
-  // Handle click - on desktop, open modal for all projects; on mobile, navigate directly for experiments
   const handleClick = () => {
-    // Check if desktop (md breakpoint = 768px)
     const isDesktop = window.innerWidth >= 768;
     
     if (hasTryItOut && !isDesktop) {
-      // Mobile: navigate directly to experiment pages
       window.location.href = project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library';
     } else {
-      // Desktop: open modal for all projects (including experiments)
       onProjectClick(project.id);
     }
   };
 
-  // Featured card style (for first 4 cards on desktop)
   if (featured) {
     return (
       <button
@@ -482,16 +446,13 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
         >
           <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
           <div aria-hidden="true" className="absolute border border-zinc-100 inset-0 pointer-events-none rounded-[26px]" />
-          {/* Floating title pill inside the card - desktop only */}
           <div className="absolute bottom-0 left-0 p-3 hidden md:block">
             <div className="bg-white border border-[#f3f4f6] border-solid flex items-center justify-center px-3 pt-[5px] pb-[4.8px] rounded-full">
               <p className="font-['Michelle',sans-serif] font-medium tracking-[0.005em] leading-[1.4] text-[#111827] text-base">
                 <span>{project.title}</span>
-                {/* Show year only for non-Try It Out projects */}
                 {!hasTryItOut && (
                   <span className="text-[#9ca3af]"> • {project.year}</span>
                 )}
-                {/* Try It Out tag - inline, appears on hover */}
                 {hasTryItOut && (
                   <>
                     <span className="text-[#9ca3af] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
@@ -508,19 +469,15 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
             </div>
           </div>
         </div>
-        {/* Desktop: just description */}
         <div className="hidden md:flex content-stretch items-start px-[13px] py-0 -mt-1.5 -mb-0.5 relative shrink-0 w-full">
           <p className="font-['Michelle',sans-serif] font-normal leading-[1.4] text-[#9ca3af] text-base tracking-[0.005em] text-left project-hover-text">{project.description}</p>
         </div>
-        {/* Mobile: title + description */}
         <div className="md:hidden content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.01em] gap-1">
           <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
             <span>{project.title}</span>
-            {/* Show year only for non-Try It Out projects */}
             {!hasTryItOut && (
               <span className="text-[#9ca3af]"> • {project.year}</span>
             )}
-            {/* Try It Out tag - inline with title */}
             {hasTryItOut && (
               <>
                 <span className="text-[#9ca3af]"> • </span>
@@ -540,7 +497,6 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
     );
   }
 
-  // Default card style
   return (
     <button
       onClick={handleClick}
@@ -591,7 +547,6 @@ type ProjectModalProps = {
   onClose: () => void;
 };
 
-// Horizontal divider line for popup modal
 function PopupLine() {
   return (
     <div className="h-px relative shrink-0 w-full">
@@ -600,14 +555,12 @@ function PopupLine() {
   );
 }
 
-// Tools Section component - 4-column grid for project modals
 function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   if (!categories || categories.length === 0) return null;
   
   return (
     <>
       <PopupLine />
-      {/* Desktop: 4-column grid with label on top, tools below */}
       <div className="font-['Michelle',sans-serif] font-normal gap-4 grid-cols-4 relative shrink-0 text-[15px] w-full mt-2 hidden md:grid">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
@@ -624,7 +577,6 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
           </div>
         ))}
       </div>
-      {/* Mobile: single column, label left + tools right */}
       <div className="font-['Michelle',sans-serif] font-normal flex flex-col gap-1.5 relative shrink-0 text-sm w-full mt-2 md:hidden">
         {categories.map((category, idx) => (
           <div key={idx} className="flex items-baseline gap-6">
@@ -641,29 +593,23 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   );
 }
 
-function ProjectModal({ project, onClose }: ProjectModalProps) {
-  const navigate = useNavigate();
+function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
 
-  // Lock body scroll when modal is open (flicker-free implementation)
   useScrollLock();
 
-  // Trigger enter animation on mount
   useEffect(() => {
-    // Small delay to ensure the initial state is rendered first
     requestAnimationFrame(() => {
       setIsVisible(true);
     });
-    // Delay video loading until after modal animation
     const timer = setTimeout(() => {
       setVideoReady(true);
     }, 350);
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle ESC key to close modal
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -678,7 +624,6 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
   const handleClose = () => {
     setIsClosing(true);
     setIsVisible(false);
-    // Wait for animation to complete before actually closing
     setTimeout(() => {
       onClose();
     }, 300);
@@ -686,13 +631,11 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-8">
-      {/* Overlay */}
       <div 
         className={`absolute inset-0 bg-black/20 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`} 
         onClick={handleClose} 
       />
       
-      {/* Modal - matches Figma PopUpCard design */}
       <div 
         className={clsx(
           "relative bg-white rounded-[26px] flex flex-col w-[calc(100%*10/12)] max-md:w-full max-h-[90vh] overflow-hidden transition-all duration-300 ease-out",
@@ -703,19 +646,11 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               : 'opacity-0 translate-y-8'
         )}
       >
-        {/* Inner container with top padding to keep scrollbar away from rounded corners */}
         <div className="flex flex-col flex-1 min-h-0 pt-6 max-md:pt-4">
-
-          {/* Scrollable content area */}
           <div className="overflow-y-auto flex-1">
-            {/* Content area with horizontal padding */}
             <div className="content-stretch flex flex-col gap-5 items-start px-44 max-md:px-10 pt-16 max-md:pt-4 pb-8 max-md:pb-10 relative shrink-0 w-full">
-          {/* Title, Description, and Try It Out button section */}
-          {/* Desktop: row layout with button on right */}
           <div className="hidden md:flex gap-2 items-start relative shrink-0 w-full">
-            {/* Title and Description - left side */}
             <div className="content-stretch flex flex-[1_0_0] flex-col gap-[6px] items-start min-h-px min-w-px relative shrink-0">
-              {/* Title row: Project Title • Year */}
               <div className="content-stretch flex items-start relative shrink-0 w-full">
                 <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
                   <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
@@ -730,7 +665,6 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
                 </div>
               </div>
               
-              {/* Description */}
               <div className="content-stretch flex gap-2 items-start relative w-full">
                 <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base tracking-[0.005em]">
                   {project.description}
@@ -738,17 +672,13 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               </div>
             </div>
 
-            {/* Try It Out button - desktop */}
             {(project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime' || project.id === 'sketchbook') && (
               <TryItOutButton href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'} />
             )}
           </div>
 
-          {/* Mobile: stacked layout */}
           <div className="md:hidden flex flex-col gap-3 items-start relative shrink-0 w-full">
-            {/* Title and Description */}
             <div className="content-stretch flex flex-col gap-[6px] items-start relative shrink-0 w-full">
-              {/* Title row: Project Title • Year */}
               <div className="content-stretch flex items-start relative shrink-0 w-full">
                 <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
                   <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
@@ -763,7 +693,6 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
                 </div>
               </div>
               
-              {/* Description */}
               <div className="content-stretch flex gap-2 items-start relative w-full">
                 <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base tracking-[0.005em]">
                   {project.description}
@@ -771,13 +700,11 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               </div>
             </div>
 
-            {/* Try It Out button - mobile */}
             {(project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime' || project.id === 'sketchbook') && (
               <TryItOutButton href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'} />
             )}
           </div>
 
-          {/* View on X button - only shown if xLink exists */}
           {project.xLink && (
             <a
               href={project.xLink}
@@ -788,7 +715,6 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
               <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-base tracking-[0.005em] text-white whitespace-nowrap">
                 View on
               </span>
-              {/* X logo - white */}
               <svg 
                 className="block w-[14px] h-[14px] fill-white" 
                 viewBox="0 0 19 18"
@@ -801,25 +727,25 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
             </a>
           )}
 
-          {/* Tools Section */}
           {project.toolCategories && project.toolCategories.length > 0 && (
             <ToolsSection categories={project.toolCategories} />
           )}
 
-          {/* Video/Image content area with rounded corners */}
           <div className="relative rounded-[16px] w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 mt-3">
-            {/* Always show poster/thumbnail as background */}
-            <img
+            <ShimmerImage
               alt=""
-              className="absolute object-cover size-full rounded-[16px]"
+              className="absolute object-cover size-full"
+              wrapperClassName="absolute inset-0"
+              rounded="rounded-[16px]"
               src={project.imageSrc}
             />
-            {/* Overlay video once ready */}
             {project.videoSrc && videoReady && (
-              <VideoPlayer
+              <ShimmerVideo
                 key={project.id}
                 src={project.videoSrc}
                 className="absolute object-cover size-full rounded-[16px]"
+                wrapperClassName="absolute inset-0"
+                rounded="rounded-[16px]"
                 autoPlay
                 muted
                 loop
@@ -836,19 +762,14 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
   );
 }
 
-// Side project IDs that use the simple modal
 const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library"];
-
-// Main project IDs that get heroVideo from Sanity
 const MAIN_PROJECT_IDS = ["apple", "roblox", "adobe", "nasa"];
 
-// Sanity project type for fetching
 type SanityProject = {
   company: string;
   heroVideo?: string;
 };
 
-// Sanity experiment project type for fetching
 type SanityExperimentProject = {
   _id: string;
   projectId: string;
@@ -863,31 +784,29 @@ type SanityExperimentProject = {
   toolCategories?: ToolCategory[];
 };
 
-// Main HomePage component that handles the portfolio display and modal routing
-function HomePage() {
+type HomePageClientProps = {
+  slug?: string;
+  mode?: string;
+  bookSlug?: string;
+};
+
+export default function HomePageClient({ slug, mode }: HomePageClientProps) {
   const navigate = useNavigate();
-  const { slug, mode } = useParams<{ slug?: string; mode?: string }>();
   const [isContactBadgeExpanded, setIsContactBadgeExpanded] = useState(false);
   
-  // State for projects with Sanity data merged in
   const [projects, setProjects] = useState<Project[]>(staticProjects);
   
-  // Track if hero animation has been played this session to prevent re-animation on tab switches
-  const [heroAnimationPlayed, setHeroAnimationPlayed] = useState(() => {
-    return sessionStorage.getItem('heroAnimationPlayed') === 'true';
-  });
+  // Always start false to avoid SSR/client hydration mismatch, then sync from sessionStorage
+  const [heroAnimationPlayed, setHeroAnimationPlayed] = useState(false);
   
-  // Fetch heroVideo from Sanity and merge with static project data
   useEffect(() => {
     async function fetchSanityProjects() {
       try {
-        // Fetch both main projects and experiment projects in parallel
         const [sanityProjects, experimentProjects] = await Promise.all([
           client.fetch<SanityProject[]>(PROJECTS_QUERY),
           client.fetch<SanityExperimentProject[]>(EXPERIMENT_PROJECTS_QUERY),
         ]);
 
-        // Create a map of company -> heroVideo for main projects
         const heroVideoMap: Record<string, string> = {};
         sanityProjects.forEach((sp) => {
           if (sp.company && sp.heroVideo) {
@@ -895,7 +814,6 @@ function HomePage() {
           }
         });
 
-        // Create a map of projectId -> experiment project data
         const experimentMap: Record<string, SanityExperimentProject> = {};
         experimentProjects.forEach((ep) => {
           if (ep.projectId) {
@@ -903,9 +821,7 @@ function HomePage() {
           }
         });
 
-        // Merge Sanity data with static projects
         const mergedProjects = staticProjects.map((project) => {
-          // Main projects: merge heroVideo
           if (MAIN_PROJECT_IDS.includes(project.id)) {
             const heroVideo = heroVideoMap[project.id];
             if (heroVideo) {
@@ -918,11 +834,9 @@ function HomePage() {
             }
           }
           
-          // Side/experiment projects: merge all Sanity data
           if (SIDE_PROJECT_IDS.includes(project.id)) {
             const experimentData = experimentMap[project.id];
             if (experimentData) {
-              // Use clip version for homepage, fall back to full version, then static
               const clipPlaybackId = experimentData.muxPlaybackIdClip || experimentData.muxPlaybackId;
               const muxUrls = clipPlaybackId 
                 ? getMuxUrls(clipPlaybackId)
@@ -947,7 +861,6 @@ function HomePage() {
         setProjects(mergedProjects);
       } catch (error) {
         console.error("Error fetching Sanity projects:", error);
-        // Keep static projects on error
       }
     }
 
@@ -955,30 +868,34 @@ function HomePage() {
   }, []);
   
   useEffect(() => {
-    if (!heroAnimationPlayed) {
-      // Mark as played after a short delay to let the animation complete
+    if (sessionStorage.getItem('heroAnimationPlayed') === 'true') {
+      setHeroAnimationPlayed(true);
+    } else {
       const timer = setTimeout(() => {
         sessionStorage.setItem('heroAnimationPlayed', 'true');
         setHeroAnimationPlayed(true);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [heroAnimationPlayed]);
+  }, []);
 
-  // Preload likely pages (Roblox, Apple, Art, About) when homepage loads
   useEffect(() => {
     preloadLikelyPages();
   }, []);
 
-  // Find project based on URL slug
   const selectedProject = slug ? projects.find(p => p.id === slug) || null : null;
-  
-  // Determine if we're in fullscreen mode based on URL
-  const isFullscreenFromUrl = mode === "full";
 
-  // Memoize to prevent ProjectCard re-renders when other state changes
+  // Local fullscreen state for instant expand/collapse; URL syncs in background
+  const [localFullscreen, setLocalFullscreen] = useState(mode === "full");
+
+  // Sync when the Next.js router eventually catches up
+  useEffect(() => {
+    setLocalFullscreen(mode === "full");
+  }, [mode]);
+
+  const isFullscreenFromUrl = localFullscreen;
+
   const handleProjectClick = useCallback((projectId: string) => {
-    // On mobile, go straight to fullscreen (except for sketchbook)
     const isMobile = window.innerWidth < 768;
     const shouldGoFullscreen = isMobile && projectId !== 'sketchbook';
 
@@ -990,50 +907,49 @@ function HomePage() {
     }
 
     if (shouldGoFullscreen) {
+      setLocalFullscreen(true);
       navigate(`/project/${projectId}/full`);
     } else {
-      // Desktop or sketchbook: show popup modal
+      setLocalFullscreen(false);
       navigate(`/project/${projectId}`);
     }
   }, [navigate]);
 
   const handleModalClose = () => {
-    // Navigate back to home
+    setLocalFullscreen(false);
     navigate("/");
   };
 
   const handleExpandToFullscreen = () => {
     if (slug) {
+      setLocalFullscreen(true);
       navigate(`/project/${slug}/full`);
     }
   };
 
   const handleCollapseFromFullscreen = () => {
     if (slug) {
+      setLocalFullscreen(false);
       navigate(`/project/${slug}`);
     }
   };
 
   const handleProjectSwitch = (projectId: string) => {
-    // When switching projects, maintain the current view mode
-    const newPath = isFullscreenFromUrl 
-      ? `/project/${projectId}/full` 
+    const newPath = isFullscreenFromUrl
+      ? `/project/${projectId}/full`
       : `/project/${projectId}`;
     navigate(newPath);
   };
 
   const handleViewAllProjects = () => {
-    // Navigate to home and scroll to top
     navigate("/");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
     <div className="bg-white content-stretch flex flex-col items-center relative size-full min-h-screen">
-      {/* Inject fade up animation styles */}
       <style>{fadeUpStyles}</style>
       
-      {/* SVG Gradient Definition for Social Icons */}
       <svg width="0" height="0" className="absolute">
         <defs>
           <linearGradient id="socialGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -1049,7 +965,6 @@ function HomePage() {
           </linearGradient>
         </defs>
       </svg>
-      {/* Header */}
       <PageHeader variant="work" heroAnimationPlayed={heroAnimationPlayed}>
         <>
           <div>
@@ -1096,10 +1011,8 @@ function HomePage() {
         </>
       </PageHeader>
 
-      {/* Navigation */}
       <NavigationTabs activeTab="work" heroAnimationPlayed={heroAnimationPlayed} />
 
-      {/* Projects Grid - Desktop (2 columns) */}
       <div className="hidden md:grid gap-6 grid-cols-2 px-16 max-md:px-8 pt-2.5 pb-2 relative shrink-0 w-full">
           {projects.map((project, index) => (
             <ScrollReveal 
@@ -1111,18 +1024,16 @@ function HomePage() {
               <ProjectCard 
                 project={project} 
                 onProjectClick={handleProjectClick} 
-                featured={index < 4} // First 4 cards use featured style on desktop
+                featured={index < 4}
               />
             </ScrollReveal>
           ))}
         </div>
 
-        {/* Projects Grid - Mobile (1 column) - reorder library before sketchbook */}
         <div className="md:hidden flex flex-col gap-8 px-6 py-4 relative shrink-0 w-full">
           {projects
             .map((p, i) => ({ project: p, originalIndex: i }))
             .sort((a, b) => {
-              // Swap sketchbook and library positions on mobile
               if (a.project.id === 'sketchbook' && b.project.id === 'library') return 1;
               if (a.project.id === 'library' && b.project.id === 'sketchbook') return -1;
               return a.originalIndex - b.originalIndex;
@@ -1142,12 +1053,9 @@ function HomePage() {
           ))}
         </div>
 
-      {/* Footer */}
       <Footer />
 
-      {/* Project Modal - Experiment modal for side projects, Sanity modal for main work */}
       {selectedProject && (
-        // Side projects (polaroid, screentime, sketchbook, library) use experiment modal with embedded app
         SIDE_PROJECT_IDS.includes(selectedProject.id) ? (
           <ExperimentModal 
             key={selectedProject.id}
@@ -1157,8 +1065,6 @@ function HomePage() {
             initialFullscreen={isFullscreenFromUrl}
           />
         ) : (
-          // Main work projects (apple, roblox, adobe, nasa) use Sanity-powered modal
-          // key prop forces React to create a new component instance when project changes
           <SanityProjectModal
             key={selectedProject.id}
             projectId={selectedProject.id}
@@ -1175,67 +1081,5 @@ function HomePage() {
         )
       )}
     </div>
-  );
-}
-
-export default function App() {
-  const location = useLocation();
-
-  // Initialize cursor compatibility checks on mount
-  useEffect(() => {
-    initCursorCompatibility();
-  }, []);
-
-  useEffect(() => {
-    if (!posthogEnabled) return;
-
-    posthog.capture("$pageview", {
-      $current_url: window.location.href,
-      pathname: location.pathname,
-      search: location.search,
-      hash: location.hash,
-    });
-  }, [location.pathname, location.search, location.hash]);
-
-  return (
-    <>
-    <Routes>
-        {/* Home page layout - stays mounted for all project modals */}
-        <Route path="/" element={<HomePage />}>
-          {/* These nested routes keep HomePage mounted when navigating between them */}
-          <Route index element={null} />
-          <Route path="project/:slug" element={null} />
-          <Route path="project/:slug/:mode" element={null} />
-          <Route path="project/:slug/:mode/:bookSlug" element={null} />
-        </Route>
-        
-        {/* Art page */}
-        <Route path="/art" element={<ArtPage />} />
-        
-        {/* About page */}
-        <Route path="/about" element={<AboutPage />} />
-        
-        {/* Polaroid Studio page */}
-        <Route path="/polaroid" element={<PolaroidPage />} />
-
-        {/* Library page */}
-        <Route path="/library" element={<LibraryPage />} />
-        <Route path="/library/:bookSlug" element={<LibraryPage />} />
-
-      {/* Screentime Receipt page */}
-      <Route path="/screentime" element={<ScreentimePage />} />
-
-      {/* Sketchbook page */}
-      <Route path="/sketchbook" element={<SketchbookPage />} />
-
-      {/* Redirects */}
-      <Route path="/home" element={<Navigate to="/" replace />} />
-      <Route path="/work" element={<Navigate to="/" replace />} />
-
-      {/* 404 - catch all invalid routes */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-    <Analytics />
-    </>
   );
 }

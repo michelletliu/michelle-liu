@@ -1,4 +1,6 @@
-import { Link } from "react-router-dom";
+"use client";
+
+import { Link } from "@/lib/navigation";
 import imgLogo from "../assets/logo.png";
 
 export default function NotFound() {

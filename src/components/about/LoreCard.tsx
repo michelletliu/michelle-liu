@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { ArrowUpRight } from "../ArrowUpRight";
+import ShimmerImage from "../ShimmerImage";
 
 export type LoreCardData = {
   id: string;
@@ -44,11 +45,13 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
       {/* Image */}
       <div className="relative h-[140px] md:h-[200px] w-full shrink-0 rounded-2xl sm:rounded-3xl">
         {hasImage ? (
-          <img
+          <ShimmerImage
             src={data.imageSrc}
             alt={data.headline}
-            className="absolute inset-0 h-full w-full rounded-2xl sm:rounded-3xl object-cover transition-transform duration-200 ease-out group-hover:scale-[0.99]"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-200 ease-out group-hover:scale-[0.99]"
             loading="lazy"
+            rounded="rounded-2xl sm:rounded-3xl"
+            wrapperClassName="absolute inset-0 h-full w-full"
           />
         ) : (
           <div

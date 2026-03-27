@@ -1,5 +1,6 @@
 import React from "react";
 import clsx from "clsx";
+import ShimmerImage from "../ShimmerImage";
 import ViewAllProjectsButton from "./ViewAllProjectsButton";
 
 type Project = {
@@ -32,8 +33,10 @@ function ProjectCard({ project, className, onClick }: ProjectCardProps) {
     >
       <div className="w-full overflow-hidden rounded-[26px] transition-transform duration-300 group-hover:scale-[0.99]">
         <div className="aspect-[678/367.625] w-full relative">
-          <img
-            className="absolute inset-0 object-cover rounded-[26px] w-full h-full"
+          <ShimmerImage
+            wrapperClassName="!absolute inset-0 size-full"
+            rounded="rounded-[26px]"
+            className="size-full object-cover"
             alt=""
             src={project.imageSrc}
           />

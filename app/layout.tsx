@@ -1,0 +1,63 @@
+import type { Metadata } from "next";
+import Providers from "@/components/Providers";
+import "@/index.css";
+import "@/styles/globals.css";
+
+export const metadata: Metadata = {
+  title: "michelle liu",
+  description: "Product Designer. Previously Apple, Roblox, and NASA.",
+  keywords:
+    "Michelle Liu, Product Designer, UX Designer, UI Designer, Apple Designer, Roblox Designer, NASA Designer, Design Portfolio",
+  authors: [{ name: "Michelle Liu" }],
+  openGraph: {
+    title: "michelle liu",
+    description: "Product Designer. Previously Apple, Roblox, and NASA.",
+    type: "website",
+    url: "https://www.liumichelle.com",
+    images: [
+      {
+        url: "https://www.liumichelle.com/og-image.png?v=5",
+        width: 1200,
+        height: 628,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@michelletliu",
+    creator: "@michelletliu",
+    title: "michelle liu",
+    description: "Product Designer. Previously Apple, Roblox, and NASA.",
+    images: ["https://www.liumichelle.com/og-image.png?v=5"],
+  },
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Manrope:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body suppressHydrationWarning>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}

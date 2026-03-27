@@ -1,10 +1,13 @@
+"use client";
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, useMotionValue, useTransform, animate, PanInfo, AnimatePresence, MotionValue } from 'framer-motion';
 import clsx from 'clsx';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@/lib/navigation';
 import InfoButton from '../InfoButton';
 import imgLogo from '../../assets/logo.png';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
+import ShimmerImage from '../ShimmerImage';
 import { client, urlFor } from '../../sanity/client';
 import { FLATLAY_SKETCHBOOKS_QUERY } from '../../sanity/queries';
 
@@ -267,17 +270,15 @@ export default function SketchbookPage() {
   const [entries, setEntries] = useState<FlatlaySketchbook[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  // Initialize isFullscreen based on URL path to avoid flash of wrong layout
-  const [isFullscreen, setIsFullscreen] = useState(() => {
-    return typeof window !== 'undefined' && window.location.pathname.includes('/full');
-  });
+  // Start false for SSR; useEffect below syncs from DOM on mount
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const pageContainerRef = useRef<HTMLDivElement>(null);
   
   // Motion values for drag
   const x = useMotionValue(0);
   const [cardWidth, setCardWidth] = useState(320);
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
+  const [isMobile, setIsMobile] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false); // Hide side images during mode transition
   const dragStartedRef = useRef(false); // Track if drag gesture started (to prevent click)
@@ -760,7 +761,7 @@ export default function SketchbookPage() {
                 }}
               >
                 {entries[currentIndex - 2] && (
-                  <img 
+                  <ShimmerImage 
                     src={getImageUrl(entries[currentIndex - 2])} 
                     alt={entries[currentIndex - 2].note || `Sketch`}
                     className="w-full h-auto object-contain drop-shadow-sm"
@@ -782,7 +783,7 @@ export default function SketchbookPage() {
                 }}
               >
                 {entries[currentIndex - 1] && (
-                  <img 
+                  <ShimmerImage 
                     src={getImageUrl(entries[currentIndex - 1])} 
                     alt={entries[currentIndex - 1].note || `Sketch`}
                     className="w-full h-auto object-contain drop-shadow-sm"
@@ -803,7 +804,7 @@ export default function SketchbookPage() {
                 }}
               >
                 {currentEntry && getImageUrl(currentEntry) ? (
-                  <img 
+                  <ShimmerImage 
                     src={getImageUrl(currentEntry)} 
                     alt={currentEntry.note || `Sketch from ${formatDate(currentEntry.date)}`}
                     className="w-full h-auto object-contain drop-shadow-sm"
@@ -826,7 +827,7 @@ export default function SketchbookPage() {
                 }}
               >
                 {entries[currentIndex + 1] && (
-                  <img 
+                  <ShimmerImage 
                     src={getImageUrl(entries[currentIndex + 1])} 
                     alt={entries[currentIndex + 1].note || `Sketch`}
                     className="w-full h-auto object-contain drop-shadow-sm"
@@ -848,7 +849,7 @@ export default function SketchbookPage() {
                 }}
               >
                 {entries[currentIndex + 2] && (
-                  <img 
+                  <ShimmerImage 
                     src={getImageUrl(entries[currentIndex + 2])} 
                     alt={entries[currentIndex + 2].note || `Sketch`}
                     className="w-full h-auto object-contain drop-shadow-sm"

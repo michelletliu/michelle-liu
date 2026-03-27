@@ -1,6 +1,8 @@
+"use client";
+
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@/lib/navigation';
 import { domToPng } from 'modern-screenshot';
 import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';

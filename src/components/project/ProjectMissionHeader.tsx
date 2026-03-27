@@ -1,5 +1,6 @@
 import React from "react";
 import clsx from "clsx";
+import ShimmerImage from "../ShimmerImage";
 
 type ProjectMissionHeaderProps = {
   type?: "Mission" | "Overview" | "Overview Centered";
@@ -77,10 +78,11 @@ export default function ProjectMissionHeader({
               isMobile && "w-full"
             )}
           >
-            <img
+            <ShimmerImage
               src={imageUrl}
               alt={imageAlt}
               className="w-full h-auto object-cover"
+              wrapperClassName="w-full"
             />
           </div>
         )}

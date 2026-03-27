@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/navigation";
 import clsx from "clsx";
 import { ScrollReveal } from "../ScrollReveal";
 import PageHeader from "../PageHeader";
@@ -105,20 +107,20 @@ export default function ArtPage() {
   const [activeMuralIndex, setActiveMuralIndex] = useState<number | undefined>(undefined);
 
   // Track if hero animation has been played this session to prevent re-animation on tab switches
-  const [heroAnimationPlayed, setHeroAnimationPlayed] = useState(() => {
-    return sessionStorage.getItem('heroAnimationPlayed') === 'true';
-  });
+  // Always start false to avoid SSR/client hydration mismatch, then sync from sessionStorage
+  const [heroAnimationPlayed, setHeroAnimationPlayed] = useState(false);
   
   useEffect(() => {
-    if (!heroAnimationPlayed) {
-      // Mark as played after a short delay to let the animation complete
+    if (sessionStorage.getItem('heroAnimationPlayed') === 'true') {
+      setHeroAnimationPlayed(true);
+    } else {
       const timer = setTimeout(() => {
         sessionStorage.setItem('heroAnimationPlayed', 'true');
         setHeroAnimationPlayed(true);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [heroAnimationPlayed]);
+  }, []);
 
   // Section refs for scrolling
   const paintingRef = useRef<HTMLDivElement>(null);

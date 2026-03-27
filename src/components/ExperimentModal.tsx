@@ -1,9 +1,10 @@
 import { useState, useEffect, lazy, Suspense, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@/lib/navigation';
 import clsx from 'clsx';
 import { useScrollLock } from '../utils/useScrollLock';
-import VideoPlayer from './VideoPlayer';
+import ShimmerImage from './ShimmerImage';
+import ShimmerVideo from './ShimmerVideo';
 import { ArrowUpRight } from './ArrowUpRight';
 import type { ToolCategory } from './InfoButton';
 
@@ -510,16 +511,20 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
           "relative border border-gray-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0",
           isFullscreen ? "rounded-[16px] mt-3" : "rounded-[12px] mt-1"
         )}>
-          <img
+          <ShimmerImage
             alt=""
-            className={clsx("absolute object-cover size-full", isFullscreen ? "rounded-[16px]" : "rounded-[12px]")}
+            className="absolute object-cover size-full"
+            wrapperClassName="absolute inset-0"
+            rounded={isFullscreen ? "rounded-[16px]" : "rounded-[12px]"}
             src={project.imageSrc}
           />
           {project.videoSrc && videoReady && (
-            <VideoPlayer
+            <ShimmerVideo
               key={project.id}
               src={project.videoSrc}
               className={clsx("absolute object-cover size-full", isFullscreen ? "rounded-[16px]" : "rounded-[12px]")}
+              wrapperClassName="absolute inset-0"
+              rounded={isFullscreen ? "rounded-[16px]" : "rounded-[12px]"}
               autoPlay
               muted
               loop

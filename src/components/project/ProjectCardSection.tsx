@@ -1,4 +1,5 @@
 import React from "react";
+import ShimmerImage from "../ShimmerImage";
 import { urlFor } from "../../sanity/client";
 import type { SanityImage } from "../../sanity/types";
 
@@ -33,10 +34,12 @@ function SingleProjectCard({ card }: { card: ProjectCard }) {
       {/* Right side: Image */}
       {card.image && (
         <div className="relative flex-shrink-0 w-full md:w-[340px] lg:w-[390px] rounded-[26px] overflow-hidden">
-          <img
+          <ShimmerImage
             src={urlFor(card.image).width(780).url()}
             alt={card.title}
-            className="w-full h-auto object-cover rounded-[26px]"
+            className="w-full h-auto object-cover"
+            rounded="rounded-[26px]"
+            wrapperClassName="w-full"
           />
         </div>
       )}

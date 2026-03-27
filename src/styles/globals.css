@@ -394,6 +394,7 @@ p a:hover {
   height: 26px;
   background-color: #bbf7d0;
   border-radius: 50%;
+  corner-shape: round;
   transform: translate(-50%, -50%) scale(0);
   pointer-events: none;
   z-index: 0;

@@ -8,7 +8,8 @@ import { PROJECT_BY_COMPANY_QUERY } from "../../sanity/queries";
 import { getCachedData } from "../../sanity/preload";
 import type { Project, ContentSection } from "../../sanity/types";
 import Footer from "../Footer";
-import VideoPlayer from "../VideoPlayer";
+import ShimmerImage from "../ShimmerImage";
+import ShimmerVideo from "../ShimmerVideo";
 import ViewAllProjectsButton from "./ViewAllProjectsButton";
 import AlsoCheckOut from "./AlsoCheckOut";
 import ProjectCardSection from "./ProjectCardSection";
@@ -157,6 +158,7 @@ const UNLOCKED_PROJECTS_KEY = 'unlockedProjects';
 
 function getUnlockedProjects(): string[] {
   try {
+    if (typeof window === "undefined") return [];
     const stored = sessionStorage.getItem(UNLOCKED_PROJECTS_KEY);
     return stored ? JSON.parse(stored) : [];
   } catch {
@@ -533,7 +535,7 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
         )}
         onClick={() => setIsExpanded(true)}
       >
-        <img
+        <ShimmerImage
           className={className}
           alt={alt}
           src={src}
@@ -581,10 +583,11 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
               onClick={(e) => e.stopPropagation()}
             >
               {/* Image */}
-              <img
+              <ShimmerImage
                 src={src}
                 alt={alt}
                 className="max-h-[85vh] w-auto object-contain rounded-3xl"
+                rounded="rounded-3xl"
               />
             </div>
           </div>,
@@ -774,14 +777,15 @@ export default function ProjectModal({
   const [error, setError] = useState<string | null>(null);
   // Check if project was previously unlocked in this session
   const [isUnlocked, setIsUnlocked] = useState(() => isProjectUnlocked(projectId));
-  // Initialize isMobile with actual value to prevent animation flash on mobile
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+  // Start false for SSR; useEffect below syncs from window.innerWidth on mount
+  const [isMobile, setIsMobile] = useState(false);
 
   // Detect mobile device changes
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
+    checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
@@ -896,7 +900,7 @@ export default function ProjectModal({
     };
   }, [project, loading]);
 
-  // Observe when mission section (or hero as fallback) leaves the viewport (for hiding breadcrumb)
+  // Observe when mission section enters the viewport (for hiding breadcrumb project name)
   useEffect(() => {
     // Use mission section if available, otherwise fall back to hero
     const targetElement = missionRef.current || heroRef.current;
@@ -906,13 +910,16 @@ export default function ProjectModal({
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // Check if element has scrolled OUT OF VIEW (above the viewport)
-          const elementTop = entry.boundingClientRect.top;
-          const rootTop = entry.rootBounds?.top ?? 0;
-          
-          // Element is past when its bottom is above the visible area (scrolled up and out)
-          const isPast = !entry.isIntersecting && elementTop < rootTop;
-          setIsPastHero(isPast);
+          if (targetElement === missionRef.current) {
+            // Hide breadcrumb as soon as the mission section enters view
+            setIsPastHero(entry.isIntersecting);
+          } else {
+            // Fallback to hero: hide when hero scrolls out of view (above viewport)
+            const elementTop = entry.boundingClientRect.top;
+            const rootTop = entry.rootBounds?.top ?? 0;
+            const isPast = !entry.isIntersecting && elementTop < rootTop;
+            setIsPastHero(isPast);
+          }
         });
       },
       {
@@ -1086,6 +1093,13 @@ export default function ProjectModal({
     };
   }, [isUnlocked, isFullscreen, project]);
 
+  // Sync unlock state from sessionStorage when transitioning to fullscreen
+  useEffect(() => {
+    if (isFullscreen && !isUnlocked && isProjectUnlocked(projectId)) {
+      setIsUnlocked(true);
+    }
+  }, [isFullscreen, isUnlocked, projectId]);
+
   // Handle unlocking a password-protected project
   const handleUnlock = (targetSectionId?: string) => {
     const normalizedTarget = targetSectionId?.trim();
@@ -1096,10 +1110,12 @@ export default function ProjectModal({
     }
 
     markProjectUnlocked(projectId);
-    setIsUnlocked(true);
 
     if (!isFullscreen && onExpandToFullscreen) {
+      // Navigate to fullscreen first; unlocked state syncs via the effect above
       onExpandToFullscreen();
+    } else {
+      setIsUnlocked(true);
     }
   };
 
@@ -1130,7 +1146,7 @@ export default function ProjectModal({
 
   const handleProjectClick = (company: string) => {
     if (onProjectClick) {
-      // Navigate immediately - the key prop in App.tsx will ensure
+      // Navigate immediately - the key prop will ensure
       // a fresh modal instance is created for the new project
       onProjectClick(company);
     }
@@ -1157,7 +1173,7 @@ export default function ProjectModal({
           "relative bg-white flex flex-col overflow-hidden transition-all duration-500 ease-out",
           isFullscreen
             ? "w-full h-full rounded-none"
-            : "rounded-[26px] w-[calc(100%*10/12)] max-md:w-full max-h-[80vh] sm:max-h-[90vh]",
+            : "rounded-[26px] w-[calc(100%*10/12)] max-md:w-full min-h-[80vh] sm:min-h-[90vh] max-h-[80vh] sm:max-h-[90vh]",
           isVisible
             ? "opacity-100 translate-y-0"
             : isClosing
@@ -1174,7 +1190,7 @@ export default function ProjectModal({
               {/* Expand button */}
               <button
                 onClick={handleExpandToFullscreen}
-                className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-sm hover:bg-gray-200 transition-colors duration-200 ease-out text-[#4b5563]"
+                className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-lg hover:bg-gray-200 transition-colors duration-200 ease-out text-[#4b5563]"
               >
                 <div className="relative shrink-0 size-[18px]">
                   <BackArrowIcon />
@@ -1191,7 +1207,7 @@ export default function ProjectModal({
               "fixed z-[100] font-medium text-gray-400 hover:text-blue-500 cursor-pointer leading-tight",
               "transition-all duration-300 ease-in-out",
               showSkipLink ? "opacity-100" : "opacity-0 pointer-events-none",
-              isFullscreen ? "top-16 left-14 max-md:left-6" : "top-16 left-8"
+              isFullscreen ? "top-16 left-16 max-md:left-6" : "top-16 left-8"
             )}
           >
             <div className="flex flex-col gap-0.5 items-start">
@@ -1243,7 +1259,7 @@ export default function ProjectModal({
             </div>
           )}
           {loading && (
-            <div className="flex items-center justify-center py-32">
+            <div className="flex items-center justify-center min-h-[80vh] sm:min-h-[90vh]">
               <div className="text-gray-400">Loading...</div>
             </div>
           )}
@@ -1344,16 +1360,18 @@ export default function ProjectModal({
                       <div className="aspect-[1090/591] relative rounded-[26px] shrink-0 w-full overflow-hidden bg-gray-100">
                         {/* Fallback image while video loads */}
                         {project.heroImage && (
-                          <img
-                            className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full"
+                          <ShimmerImage
+                            className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
+                            wrapperClassName="absolute inset-0"
                             alt=""
                             src={urlFor(project.heroImage).width(1200).url()}
                           />
                         )}
                         {/* Hero video */}
-                        <VideoPlayer
+                        <ShimmerVideo
                           src={`https://stream.mux.com/${project.heroVideo}.m3u8`}
-                          className="absolute inset-0 max-w-none object-cover rounded-[26px] size-full"
+                          className="absolute inset-0 max-w-none object-cover size-full"
+                          wrapperClassName="absolute inset-0"
                           autoPlay
                           muted
                           loop
@@ -1367,8 +1385,10 @@ export default function ProjectModal({
                   <ScrollReveal delay={480} rootMargin="0px" className="w-full">
                     <div ref={heroRef} className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
                       <div className="aspect-[1090/591] relative rounded-[26px] shrink-0 w-full">
-                        <img
-                          className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full"
+                        <ShimmerImage
+                          className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
+                          wrapperClassName="absolute inset-0"
+                          rounded="rounded-[26px]"
                           alt=""
                           src={urlFor(project.heroImage).width(1200).url()}
                         />
@@ -1662,8 +1682,10 @@ function TestimonialBlock({
             {/* Avatar */}
             <div className="relative rounded-full shrink-0 size-[120px] overflow-hidden bg-gray-100">
               {authorImage && (
-                <img
+                <ShimmerImage
                   className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
+                  wrapperClassName="absolute inset-0"
+                  rounded="rounded-full"
                   alt={authorName || ""}
                   src={urlFor(authorImage).width(240).height(240).url()}
                 />
@@ -1816,7 +1838,7 @@ function ContentBlock({
 
             {/* Image */}
             <div className="relative mt-8 w-[410px] max-md:w-full">
-              <img
+              <ShimmerImage
                 src={urlFor(section.missionImage).width(820).url()}
                 alt=""
                 className="w-full h-auto object-cover"
@@ -2013,7 +2035,7 @@ function ContentBlock({
 
                       {/* Heading */}
                       {section.heading && (
-                        <p className="leading-7 min-w-120 relative shrink-0 text-2xl text-black whitespace-pre-wrap">
+                        <p className="leading-8 min-w-120 relative shrink-0 text-3xl text-black whitespace-pre-wrap">
                           {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                         </p>
                       )}
@@ -2029,13 +2051,14 @@ function ContentBlock({
                 )}
 
                 {/* Media content - full width */}
-                <div className="w-full">
+                <div className="w-full flex justify-center">
                   {/* Video */}
                   {hasVideo && (
-                    <div className={clsx("w-full overflow-hidden rounded-[26px] mx-auto", mediaWidthClass)}>
-                      <VideoPlayer
+                    <div className={clsx("overflow-hidden rounded-[26px] inline-flex", mediaWidthClass)}>
+                      <ShimmerVideo
                         src={`https://stream.mux.com/${section.muxPlaybackId}.m3u8`}
-                        className="w-full h-auto rounded-[26px]"
+                        className="max-w-full max-h-[60vh] block"
+                        wrapperClassName="inline-block max-w-full"
                         controls={false}
                         autoPlay
                         muted
@@ -2108,7 +2131,7 @@ function ContentBlock({
               
               {/* Heading */}
               {section.heading && (
-                <p className="leading-7 min-w-120 relative shrink-0 text-2xl text-black whitespace-pre-wrap">
+                <p className="leading-8 min-w-120 relative shrink-0 text-3xl text-black whitespace-pre-wrap">
                   {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                 </p>
               )}
@@ -2123,13 +2146,15 @@ function ContentBlock({
             )}
 
             {/* Right: Image/Video and Description */}
-            <div className="leading-5 flex-1 flex-items-center relative text-[#4b5563] text-base whitespace-pre-wrap items-center flex flex-col gap-8">
+            <div className="leading-5 flex-1 relative text-[#4b5563] text-base whitespace-pre-wrap items-center justify-center flex flex-col gap-8">
               {/* Video */}
               {hasVideo && (
-                <div className={clsx("w-full overflow-hidden rounded-[26px] mx-auto", mediaWidthClass)}>
-                  <VideoPlayer
+                <div className={clsx("overflow-hidden rounded-[26px] mx-auto inline-flex", mediaWidthClass)}>
+                  <ShimmerVideo
                     src={`https://stream.mux.com/${section.muxPlaybackId}.m3u8`}
-                    className="w-full h-auto rounded-[26px]"
+                    className="max-w-full max-h-[60vh] block rounded-[26px] [clip-path:inset(0_round_26px)]"
+                    wrapperClassName="inline-block max-w-full overflow-hidden rounded-[26px]"
+                    rounded="rounded-[26px]"
                     controls={false}
                     autoPlay
                     muted
@@ -2143,12 +2168,12 @@ function ContentBlock({
                 <ExpandableImage
                   src={featureImageSrc}
                   alt={section.imageAlt || ""}
-                  className="w-full h-auto object-contain rounded-[26px]"
-                  containerClassName={clsx("overflow-hidden rounded-[26px] w-full mx-auto", mediaWidthClass)}
+                  className="max-h-[70vh] w-auto block rounded-[26px]"
+                  containerClassName="overflow-hidden rounded-[26px] mx-auto"
                 />
               )}
-              
-              
+
+
             </div>
           
           </div>
@@ -2174,7 +2199,7 @@ function ContentBlock({
                   key={image._key}
                   className="flex flex-col items-center rounded-[24px] shadow-[0px_2px_8px_0px_#eaeaea] overflow-hidden max-w-110 w-full"
                 >
-                  <img
+                  <ShimmerImage
                     className="block w-full h-auto object-contain"
                     alt={image.alt || ""}
                     src={urlFor(image).width(2000).quality(90).url()}
@@ -2220,7 +2245,7 @@ function ContentBlock({
                     shouldCenterOnMobile && "max-md:col-span-2 max-md:justify-self-center max-md:w-1/2"
                   )}
                 >
-                  <img
+                  <ShimmerImage
                     className="w-full h-auto object-contain"
                     alt={image.alt || ""}
                     src={urlFor(image).width(1600).quality(90).url()}
@@ -2377,7 +2402,7 @@ function ContentBlock({
               section.rounded !== false && "rounded-3xl"
             )}
           >
-            <img
+            <ShimmerImage
               className="w-full object-cover"
               alt={section.alt || ""}
               src={imageSrc}
@@ -2448,18 +2473,19 @@ function ContentBlock({
             )}
           >
             {/* Base Image */}
-            <img
+            <ShimmerImage
               className={clsx(
                 "w-full object-cover",
                 section.rounded !== false && "rounded-[26px]"
               )}
+              rounded={section.rounded !== false ? "rounded-[26px]" : undefined}
               alt=""
               src={baseImageSrc}
             />
             
             {/* Overlay Image */}
             {overlayImageSrc && (
-              <img
+              <ShimmerImage
                 src={overlayImageSrc}
                 alt=""
                 className={clsx(
@@ -2513,9 +2539,10 @@ function ContentBlock({
           <div className={clsx("w-full", videoSizeClass)}>
           {section.videoType === "mux" && section.muxPlaybackId && (
             <div className="aspect-video w-full overflow-hidden rounded-3xl">
-              <VideoPlayer
+              <ShimmerVideo
                 src={`https://stream.mux.com/${section.muxPlaybackId}.m3u8`}
                 className="w-full h-full object-cover"
+                wrapperClassName="w-full h-full"
                 controls={false}
                 autoPlay
                 muted
@@ -2628,9 +2655,10 @@ function ContentBlock({
                 {/* Video */}
                 {isVideo && section.muxPlaybackId && (
                   <div className="w-[90%] h-[90%] overflow-hidden rounded-3xl flex items-center justify-center">
-                    <VideoPlayer
+                    <ShimmerVideo
                       src={`https://stream.mux.com/${section.muxPlaybackId}.m3u8`}
-                      className="max-h-full max-w-full object-contain rounded-3xl"
+                      className="max-h-full max-w-full object-contain"
+                      wrapperClassName="flex items-center justify-center w-full h-full"
                       controls={false}
                       autoPlay
                       muted
@@ -2642,10 +2670,11 @@ function ContentBlock({
                 {/* GIF/Image */}
                 {!isVideo && gifSrc && (
                   <div className="w-[90%] h-[90%] overflow-hidden rounded-3xl flex items-center justify-center">
-                    <img
+                    <ShimmerImage
                       src={gifSrc}
                       alt=""
                       className="max-h-full max-w-full object-contain"
+                      wrapperClassName="flex items-center justify-center w-full h-full"
                     />
                   </div>
                 )}
@@ -2815,10 +2844,11 @@ function ContentBlock({
 <div className="max-md:w-full relative -mt-3 max-md:min-h-[300px] flex items-center justify-center px-8 md:px-[8%] xl:px-[175px] py-8">
   {textImageSrc && (
     <div className="inline-block rounded-3xl"             style={{ backgroundColor: textImageBgColor }}>
-      <img
+      <ShimmerImage
         src={textImageSrc}
         alt=""
         className="block max-w-full max-h-full object-contain rounded-lg"
+        rounded="rounded-lg"
       />
     </div>
   )}
@@ -2990,10 +3020,11 @@ function ContentBlock({
                             imageRounded,
                             !aspectRatio && "max-md:aspect-video"
                           )}>
-                            <img
+                            <ShimmerImage
                               src={cardImgSrc}
                               alt=""
                               className="w-full h-full object-cover"
+                              wrapperClassName="h-full w-full"
                             />
                           </div>
                         )}
@@ -3047,7 +3078,7 @@ function ContentBlock({
                       {/* Image */}
                       {cardImgSrc && (
 <div className={clsx("h-24 shrink-0 object-center overflow-hidden", imageRounded)}>
-<img src={cardImgSrc} alt="" className="h-full w-auto object-contain" />
+<ShimmerImage src={cardImgSrc} alt="" className="h-full w-auto object-contain" wrapperClassName="h-full" />
 </div>
 )}
                       <div className="flex flex-1 flex-col justify-center items-stretch">
@@ -3111,7 +3142,7 @@ function ContentBlock({
             <div className="flex items-center gap-4">
               {headerLeftImgSrc && (
                 <div className={clsx("rounded-lg object-contain overflow-hidden shrink-0", headerImageSize)}>
-                  <img
+                  <ShimmerImage
                     src={headerLeftImgSrc}
                     alt=""
                     className="w-full h-auto object-contain"
@@ -3150,7 +3181,7 @@ function ContentBlock({
               )}
               {headerRightImgSrc && (
                 <div className={clsx("rounded-lg object-contain overflow-hidden shrink-0", headerImageSize)}>
-                  <img
+                  <ShimmerImage
                     src={headerRightImgSrc}
                     alt=""
                     className="w-full h-auto object-contain"
@@ -3254,7 +3285,7 @@ function ContentBlock({
                       {/* Image/Icon */}
                       {itemImageSrc && (
                         <div className="w-12 h-12 md:w-16 md:h-16 shadow-none rounded-xl overflow-hidden bg-gray-100">
-                          <img
+                          <ShimmerImage
                             src={itemImageSrc}
                             alt=""
                             className="w-full h-full object-cover"

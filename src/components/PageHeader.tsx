@@ -1,5 +1,5 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useLayoutEffect } from "react";
+import { useNavigate } from "@/lib/navigation";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import { ScrollReveal } from "./ScrollReveal";
@@ -36,6 +36,14 @@ export default function PageHeader({
   const navigate = useNavigate();
   const isHomePage = variant === "work";
 
+  // Start false to match server render, then sync before first paint
+  const [skipAnim, setSkipAnim] = useState(false);
+  useLayoutEffect(() => {
+    if (sessionStorage.getItem("heroAnimationPlayed") === "true") {
+      setSkipAnim(true);
+    }
+  }, []);
+
   return (
     <div
       className="content-stretch flex flex-col items-start relative shrink-0 w-full header-gradient"
@@ -59,9 +67,9 @@ export default function PageHeader({
               {isHomePage ? (
                 <motion.div 
                   className="relative shrink-0 size-8 md:size-11"
-                  initial={heroAnimationPlayed ? false : { opacity: 0, scale: 0.8 }}
+                  initial={skipAnim ? false : { opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  transition={{ duration: skipAnim ? 0 : 0.5, ease: "easeOut" }}
                 >
                   <FinalSealLogoBackgroundImage additionalClassNames="size-full" />
                 </motion.div>
@@ -69,9 +77,9 @@ export default function PageHeader({
                 <motion.button
                   onClick={() => navigate("/")}
                   className="relative shrink-0 size-8 md:size-11 cursor-pointer"
-                  initial={heroAnimationPlayed ? false : { opacity: 0, scale: 0.8 }}
+                  initial={skipAnim ? false : { opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  transition={{ duration: skipAnim ? 0 : 0.5, ease: "easeOut" }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -88,7 +96,7 @@ export default function PageHeader({
         <div className="size-full">
           <div className="content-stretch flex flex-col gap-4 items-start pb-6 pt-14 px-16 max-md:px-6 max-md:pt-20 max-md:pb-2 relative w-full max-md:min-h-[210px] md:h-[176px]">
             <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
-              <ScrollReveal variant="fade" rootMargin="0px" disabled={heroAnimationPlayed}>
+              <ScrollReveal variant="fade" rootMargin="0px" disabled={skipAnim || heroAnimationPlayed}>
                 {nameAddon ? (
                   <div className="flex gap-3 items-baseline w-full">
                     <p className="font-['Michelle',sans-serif] tracking-[0.0125em] font-medium leading-normal text-[#374151] text-4xl max-md:text-4xl">
@@ -108,6 +116,7 @@ export default function PageHeader({
                   initial={{ opacity: 0, y: 4, filter: "blur(0px)" }}
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   transition={{ duration: 0.15, delay: 0, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  suppressHydrationWarning
                 >
                   {children}
                 </motion.div>

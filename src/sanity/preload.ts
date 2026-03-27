@@ -197,35 +197,34 @@ async function preloadLibraryPage(): Promise<void> {
 }
 
 /**
- * Preload all likely pages when user enters homepage
- * Uses requestIdleCallback for non-blocking preloading
+ * Preload all likely pages when user enters homepage.
+ * Apple and Roblox are fetched eagerly (most likely to be clicked first).
+ * Everything else is deferred to idle time so it doesn't compete for bandwidth.
  */
 export function preloadLikelyPages(): void {
   if (preloadingInProgress) return;
   preloadingInProgress = true;
 
-  const doPreload = async () => {
-    // Preload all likely pages in parallel
-    // Priority: All main work projects, Art and About are main nav items, Library is a side project
-    await Promise.all([
-      preloadProject("apple"),
-      preloadProject("roblox"),
-      preloadProject("adobe"),
-      preloadProject("nasa"),
-      preloadArtPage(),
-      preloadAboutPage(),
-      preloadLibraryPage(),
-    ]);
+  // High-priority: fetch immediately so data is ready before user clicks
+  Promise.all([preloadProject("apple"), preloadProject("roblox")]).then(
+    () => {
+      // Lower-priority: defer remaining fetches to idle time
+      const doRest = async () => {
+        await Promise.all([
+          preloadProject("adobe"),
+          preloadProject("nasa"),
+          preloadArtPage(),
+          preloadAboutPage(),
+          preloadLibraryPage(),
+        ]);
+        preloadingInProgress = false;
+      };
 
-    preloadingInProgress = false;
-  };
-
-  // Use requestIdleCallback if available, otherwise use setTimeout
-  // This ensures preloading doesn't block the main thread
-  if ("requestIdleCallback" in window) {
-    requestIdleCallback(() => doPreload(), { timeout: 3000 });
-  } else {
-    // Fallback: wait for initial render to complete
-    setTimeout(doPreload, 1000);
-  }
+      if ("requestIdleCallback" in window) {
+        requestIdleCallback(() => doRest(), { timeout: 3000 });
+      } else {
+        setTimeout(doRest, 500);
+      }
+    },
+  );
 }

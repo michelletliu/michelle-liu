@@ -133,16 +133,20 @@ export function ScrollReveal({
     };
   }, [threshold, rootMargin, disabled, delay]);
 
-  if (disabled) {
-    return <>{children}</>;
-  }
-
   // Get the appropriate class based on variant
   const variantClass = {
     slide: "scroll-reveal",
     fast: "scroll-reveal-fast",
     fade: "scroll-reveal-fade",
   }[actualVariant];
+
+  if (disabled) {
+    return React.createElement(
+      Component,
+      { className: clsx(variantClass, "revealed", className) },
+      children
+    );
+  }
 
   return React.createElement(
     Component,
