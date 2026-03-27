@@ -873,13 +873,20 @@ export default function ProjectModal({
       scrollHandler = () => {
         const scrollTop = scrollContainer.scrollTop;
         setIsScrolled(scrollTop > 20);
-        
+
+        // Hide breadcrumb once scrolled past the hero section (or TOC if present)
+        const anchorEl = tocRef.current || heroRef.current || missionRef.current;
+        if (anchorEl) {
+          const anchorBottom = getOffsetTop(anchorEl, scrollContainer) + anchorEl.offsetHeight;
+          setIsPastHero(scrollTop > anchorBottom);
+        }
+
         // Check if we should show the skip link (between configured start and end sections)
         if (skipStartRef.current && skipEndRef.current) {
           const startTop = getOffsetTop(skipStartRef.current, scrollContainer);
           const endTop = getOffsetTop(skipEndRef.current, scrollContainer);
           const scrollPosition = scrollTop;
-          
+
           // Show link if we've scrolled past start section but not yet reached end section
           setShowSkipLink(scrollPosition >= (startTop - 200) && scrollPosition < (endTop - 200));
         }
@@ -900,38 +907,6 @@ export default function ProjectModal({
     };
   }, [project, loading]);
 
-  // Observe when mission section enters the viewport (for hiding breadcrumb project name)
-  useEffect(() => {
-    // Use mission section if available, otherwise fall back to hero
-    const targetElement = missionRef.current || heroRef.current;
-    const scrollContainer = scrollContainerRef.current;
-    if (!targetElement || !scrollContainer || !isFullscreen) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (targetElement === missionRef.current) {
-            // Hide breadcrumb as soon as the mission section enters view
-            setIsPastHero(entry.isIntersecting);
-          } else {
-            // Fallback to hero: hide when hero scrolls out of view (above viewport)
-            const elementTop = entry.boundingClientRect.top;
-            const rootTop = entry.rootBounds?.top ?? 0;
-            const isPast = !entry.isIntersecting && elementTop < rootTop;
-            setIsPastHero(isPast);
-          }
-        });
-      },
-      {
-        root: scrollContainer,
-        threshold: 0,
-        rootMargin: "0px 0px 0px 0px",
-      }
-    );
-
-    observer.observe(targetElement);
-    return () => observer.disconnect();
-  }, [isFullscreen, project]);
 
   // Observe when TOC leaves viewport to show sticky mini-sidebar
   useEffect(() => {
@@ -1285,7 +1260,7 @@ export default function ProjectModal({
               {/* Project Hero Header - hidden on mobile when unlocked (NASA is allowed) */}
               {!(isUnlocked && isMobile && projectId !== 'nasa') && (
               <>
-              <div className="content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] pt-32 pb-16 relative shrink-0 w-full">
+              <div ref={heroRef} className="content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] pt-32 pb-16 relative shrink-0 w-full">
                 {/* Logo - skip animation for Apple on mobile since logo is visible from homepage */}
                 {project.logo && (
                   projectId === 'apple' && isMobile ? (
@@ -1356,7 +1331,7 @@ export default function ProjectModal({
                 {/* Hero Video or Image */}
                 {project.heroVideo ? (
                   <ScrollReveal delay={480} rootMargin="0px" className="w-full">
-                    <div ref={heroRef} className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
+                    <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
                       <div className="aspect-[1090/591] relative rounded-[26px] shrink-0 w-full overflow-hidden bg-gray-100">
                         {/* Fallback image while video loads */}
                         {project.heroImage && (
@@ -1383,7 +1358,7 @@ export default function ProjectModal({
                   </ScrollReveal>
                 ) : project.heroImage ? (
                   <ScrollReveal delay={480} rootMargin="0px" className="w-full">
-                    <div ref={heroRef} className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
+                    <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
                       <div className="aspect-[1090/591] relative rounded-[26px] shrink-0 w-full">
                         <ShimmerImage
                           className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
@@ -1890,7 +1865,7 @@ function ContentBlock({
             <p className="leading-5 relative shrink-0 text-[#9ca3af] uppercase text-base">
               {section.sectionLabel || "The Mission"}
             </p>
-            <p className="leading-7 w-full relative shrink-0 text-2xl text-black whitespace-pre-wrap text-pretty">
+            <p className="leading-normal w-full relative shrink-0 text-xl text-black whitespace-pre-wrap text-pretty">
               {renderHighlightedText(section.missionTitle, section.highlightedText, section.highlightColor)}
             </p>
           </div>
@@ -2035,7 +2010,7 @@ function ContentBlock({
 
                       {/* Heading */}
                       {section.heading && (
-                        <p className="leading-8 min-w-120 relative shrink-0 text-3xl text-black whitespace-pre-wrap">
+                        <p className="leading-normal min-w-120 relative shrink-0 text-2xl text-black whitespace-pre-wrap">
                           {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                         </p>
                       )}
@@ -2131,7 +2106,7 @@ function ContentBlock({
               
               {/* Heading */}
               {section.heading && (
-                <p className="leading-8 min-w-120 relative shrink-0 text-3xl text-black whitespace-pre-wrap">
+                <p className="leading-normal min-w-120 relative shrink-0 text-2xl text-black whitespace-pre-wrap">
                   {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                 </p>
               )}
