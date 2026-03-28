@@ -19,6 +19,13 @@ export function GenerateScreen({ period, onPeriodChange, onGenerate, onUploadCli
       </div>
       <div className="content-stretch flex items-start relative shrink-0" data-name="Segmented control">
         <div className="bg-[rgba(118,118,128,0.12)] content-stretch flex h-[36px] items-center justify-center overflow-clip px-[8px] py-[4px] relative rounded-[100px] shrink-0 w-[209px]" data-name="Segmented control">
+          <div
+            className="absolute inset-y-[4px] left-[4px] w-[calc(50%-4px)] bg-white rounded-full shadow-[0px_2px_20px_0px_rgba(0,0,0,0.06)]"
+            style={{
+              transform: period === 'weekly' ? 'translateX(100%)' : 'translateX(0)',
+              transition: 'transform 200ms cubic-bezier(0.77, 0, 0.175, 1)',
+            }}
+          />
           <button
             onClick={() => onPeriodChange('daily')}
             className="basis-0 grow h-full min-h-px min-w-px relative rounded-[7px] shrink-0 cursor-pointer"
@@ -26,9 +33,6 @@ export function GenerateScreen({ period, onPeriodChange, onGenerate, onUploadCli
           >
             <div className="flex flex-row items-center size-full">
               <div className="content-stretch flex items-center px-[10px] py-[2px] relative size-full">
-                {period === 'daily' && (
-                  <div className="absolute bg-white inset-[0_-4.5px_0_-4px] rounded-[20px] shadow-[0px_2px_20px_0px_rgba(0,0,0,0.06)]" data-name="Button" />
-                )}
                 <p className={`basis-0 font-['SF_Pro:${period === 'daily' ? 'Semibold' : 'Medium'}',sans-serif] font-[${period === 'daily' ? '590' : '510'}] grow leading-[18px] min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-[14px] text-black text-center text-nowrap tracking-[-0.08px]`} style={{ fontVariationSettings: "'wdth' 100" }}>
                   Daily
                 </p>
@@ -42,9 +46,6 @@ export function GenerateScreen({ period, onPeriodChange, onGenerate, onUploadCli
           >
             <div className="flex flex-row items-center size-full">
               <div className="content-stretch flex items-center px-[10px] py-[3px] relative size-full">
-                {period === 'weekly' && (
-                  <div className="absolute bg-white inset-[0_-4.5px_0_-4px] rounded-[20px] shadow-[0px_2px_20px_0px_rgba(0,0,0,0.06)]" data-name="Button" />
-                )}
                 <p className={`basis-0 font-['SF_Pro:${period === 'weekly' ? 'Semibold' : 'Medium'}',sans-serif] font-[${period === 'weekly' ? '590' : '510'}] grow leading-[18px] min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-[14px] text-black text-center text-nowrap tracking-[-0.08px]`} style={{ fontVariationSettings: "'wdth' 100" }}>
                   Weekly
                 </p>
