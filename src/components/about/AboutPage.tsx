@@ -680,7 +680,7 @@ export default function AboutPage() {
                         </p>
                       </div>
                       {/* Startup logos row */}
-                      <div className="flex justify-between md:flex-wrap md:-ml-2">
+                      <div className="flex justify-between md:flex-wrap md:gap-y-6 md:-ml-2">
                         {startups.map((startup, i) => (
                           <div
                             key={startup.id}
