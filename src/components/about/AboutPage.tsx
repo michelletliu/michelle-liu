@@ -680,11 +680,11 @@ export default function AboutPage() {
                         </p>
                       </div>
                       {/* Startup logos row */}
-                      <div className="flex flex-wrap gap-y-4 md:justify-between md:-ml-2">
+                      <div className="flex justify-between md:flex-wrap md:-ml-2">
                         {startups.map((startup, i) => (
                           <div
                             key={startup.id}
-                            className="animate-fade-up-right"
+                            className="animate-fade-up-right w-12 md:w-auto"
                             style={{
                               opacity: 0,
                               animationDelay: `${i * 80}ms`,

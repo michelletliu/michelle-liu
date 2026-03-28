@@ -354,7 +354,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
       {expandedPhoto &&
         createPortal(
           <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-[fadeIn_200ms_ease-out]"
+            className="fixed inset-0 z-[99999] isolate flex items-center justify-center p-4 animate-[fadeIn_200ms_ease-out]"
             onClick={() => setExpandedPhotoId(null)}
           >
             {/* Light grey translucent overlay */}
@@ -366,7 +366,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                 e.stopPropagation();
                 setExpandedPhotoId(null);
               }}
-              className="fixed right-4 top-4 z-[10000] flex h-10 w-10 items-center justify-center transition-all duration-200 hover:scale-110 animate-[fadeSlideDown_300ms_ease-out]"
+              className="fixed right-4 top-4 z-10 flex h-10 w-10 items-center justify-center transition-all duration-200 hover:scale-110 animate-[fadeSlideDown_300ms_ease-out]"
               aria-label="Close expanded photo"
             >
               <svg
