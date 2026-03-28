@@ -394,22 +394,17 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
               <div className="relative flex flex-col items-center gap-1">
                 <div className="relative">
                   <div className="absolute -inset-3 rounded-sm border border-gray-100 bg-white shadow-[0px_8px_24px_0px_rgba(0,0,0,0.15)]" />
-                  <div
+                  <ShimmerImage
+                    src={expandedPhoto.imageSrc}
+                    alt={expandedPhoto.caption || "Community photo"}
                     className={clsx(
-                      "relative overflow-hidden rounded-sm",
+                      "object-contain rounded-sm",
                       expandedPhoto.orientation === "vertical"
-                        ? "h-[65vh] max-h-[500px] w-auto"
-                        : "h-auto max-h-[55vh] w-[80vw] max-w-[600px]"
+                        ? "max-h-[65vh] w-auto"
+                        : "max-h-[55vh] max-w-[80vw]"
                     )}
-                  >
-                    <ShimmerImage
-                      src={expandedPhoto.imageSrc}
-                      alt={expandedPhoto.caption || "Community photo"}
-                      className="h-full w-full object-contain"
-                      rounded="rounded-sm"
-                      wrapperClassName="absolute inset-0 h-full w-full"
-                    />
-                  </div>
+                    rounded="rounded-sm"
+                  />
                 </div>
                 {expandedPhoto.caption && (
                   <p
