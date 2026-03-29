@@ -5,6 +5,9 @@ import LumaLogo from "../assets/LumaLogo.svg";
 import { imgGroup } from "../imports/svg-poktt";
 import { ScrollReveal } from "./ScrollReveal";
 import { ArrowUpRight } from "./ArrowUpRight";
+import { client } from "../sanity/client";
+import { OWNER_LOCATION_QUERY } from "../sanity/queries";
+import type { OwnerLocation } from "../sanity/types";
 
 type ChangelogPayload = {
   latestCommitDate?: string | null;
@@ -34,6 +37,69 @@ function useLatestCommitDate() {
   }, []);
 
   return commitDate;
+}
+
+const DEFAULT_CITY = "Los Angeles";
+const DEFAULT_TIMEZONE = "America/Los_Angeles";
+
+function useOwnerLocation() {
+  const [location, setLocation] = useState<{ city: string; timezone: string }>({
+    city: DEFAULT_CITY,
+    timezone: DEFAULT_TIMEZONE,
+  });
+
+  useEffect(() => {
+    client
+      .fetch<OwnerLocation | null>(OWNER_LOCATION_QUERY)
+      .then((data) => {
+        if (data?.city && data?.timezone) {
+          setLocation({ city: data.city, timezone: data.timezone });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  return location;
+}
+
+function useLocalTime(timezone: string) {
+  const format = (tz: string) => {
+    const raw = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz,
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date());
+    const [hStr, mStr] = raw.split(":");
+    const h24 = parseInt(hStr, 10);
+    const h12 = h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24;
+    const ampm = h24 >= 12 ? "PM" : "AM";
+    return `${h12}:${mStr} ${ampm}`;
+  };
+
+  const [time, setTime] = useState(() => format(timezone));
+
+  useEffect(() => {
+    setTime(format(timezone));
+    const id = setInterval(() => setTime(format(timezone)), 1000);
+    return () => clearInterval(id);
+  }, [timezone]);
+
+  return time;
+}
+
+function BlinkingTime({ time, city }: { time: string; city: string }) {
+  const colonIndex = time.indexOf(":");
+  if (colonIndex === -1) return <>{time} in {city}</>;
+  const before = time.slice(0, colonIndex);
+  const after = time.slice(colonIndex + 1);
+  return (
+    <>
+      {before}
+      <span className="animate-[blink_1.2s_ease-in-out_infinite]">:</span>
+      {after} in {city}
+    </>
+  );
 }
 
 // Text Scramble Component
@@ -191,6 +257,8 @@ export default function Footer() {
   const changelogText = latestCommitDate 
     ? `CHANGELOG: ${latestCommitDate}` 
     : 'CHANGELOG: ...';
+  const { city, timezone } = useOwnerLocation();
+  const localTime = useLocalTime(timezone);
 
   return (
     <div className="relative shrink-0 w-full">
@@ -201,8 +269,8 @@ export default function Footer() {
             
             {/* Desktop Grid (4 columns) */}
             <div className="hidden md:grid gap-5 grid-cols-[repeat(4,_minmax(0px,_1fr))] grid-rows-[repeat(1,_fit-content(100%))] relative shrink-0 w-full">
-              {/* Column 1: Logo */}
-              <div className="[grid-area:1_/_1] content-stretch flex flex-col items-start relative shrink-0">
+              {/* Column 1: Logo + Time */}
+              <div className="[grid-area:1_/_1] content-stretch flex flex-col gap-0 items-start relative shrink-0">
                 <a href="/" className="content-stretch flex gap-3 items-center justify-center relative shrink-0 hover:opacity-80 transition-opacity">
                   <div className="relative shrink-0 size-7">
                     <img
@@ -215,6 +283,9 @@ export default function Footer() {
                     michelle liu
                   </p>
                 </a>
+                <p className="font-['Michelle',sans-serif] font-normal leading-5 text-[#b5bcc5] text-base">
+                  <BlinkingTime time={localTime} city={city} />
+                </p>
               </div>
               
               {/* Column 3: Nav Links */}
@@ -282,8 +353,8 @@ export default function Footer() {
             
             {/* Mobile Layout (Vertical Stack) */}
             <div className="md:hidden content-stretch flex flex-col gap-10 items-start relative shrink-0 w-full">
-              {/* Logo Section */}
-              <div className="content-stretch flex flex-col gap-1.5 items-start relative shrink-0">
+              {/* Logo Section + Time */}
+              <div className="content-stretch flex flex-col gap-0 items-start relative shrink-0">
                 <a href="/" className="content-stretch flex gap-2 items-center justify-center relative shrink-0 hover:opacity-80 transition-opacity">
                   <div className="relative shrink-0 size-7">
                     <img
@@ -296,6 +367,9 @@ export default function Footer() {
                     michelle liu
                   </p>
                 </a>
+                <p className="font-['Michelle',sans-serif] font-normal leading-5 text-[#b5bcc5] text-base">
+                  <BlinkingTime time={localTime} city={city} />
+                </p>
               </div>
               
               {/* Contact + Social + Nav */}
@@ -306,7 +380,7 @@ export default function Footer() {
                     <p className="leading-6 relative shrink-0 text-base w-full break-all">
                       <a href="mailto:studio@liumichelle.com" className="group/email hover:text-blue-500 text-gray-600 font-medium transition-colors duration-200">
                         <span>{`studio@liumichelle.com`}</span>
-                        <span className="font-['Michelle',sans-serif] font-bold opacity-0 group-hover/email:opacity-100 transition-opacity duration-150 ease-out"><ArrowUpRight /></span>
+                        <span className="font-['Michelle',sans-serif] font-bold ml-0 group-hover/email:ml-1.5 opacity-0 group-hover/email:opacity-100 transition-all duration-150 ease-out"><ArrowUpRight /></span>
                       </a>
                     </p>
                   </div>

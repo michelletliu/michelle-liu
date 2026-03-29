@@ -15,6 +15,7 @@ import {loreItem} from './loreItem'
 import {aboutQuote} from './aboutQuote'
 import {bookSuggestion} from './bookSuggestion'
 import startup from './startup'
+import ownerLocation from './ownerLocation'
 
 // Object types (used in documents)
 import {metadataItem} from './objects/metadataItem'
@@ -58,6 +59,7 @@ export const schemaTypes = [
   aboutQuote,
   bookSuggestion,
   startup,
+  ownerLocation,
   
   // Objects (must be registered for use in arrays)
   metadataItem,

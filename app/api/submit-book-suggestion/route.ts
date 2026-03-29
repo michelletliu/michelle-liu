@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { bookTitle } = await req.json();
+    const { bookTitle, senderNote } = await req.json();
 
     if (!bookTitle || typeof bookTitle !== "string" || !bookTitle.trim()) {
       return NextResponse.json(
@@ -41,6 +41,9 @@ export async function POST(req: NextRequest) {
       bookTitle: bookTitle.trim(),
       submittedAt: new Date().toISOString(),
       status: "new",
+      ...(typeof senderNote === "string" && senderNote.trim()
+        ? { senderNote: senderNote.trim() }
+        : {}),
     });
 
     return NextResponse.json({ success: true });

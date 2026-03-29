@@ -244,4 +244,17 @@ export const structure = (S: StructureBuilder) =>
             .title('Book Suggestions')
             .defaultOrdering([{field: 'submittedAt', direction: 'desc'}])
         ),
+
+      S.divider(),
+
+      // Owner Location (singleton)
+      S.listItem()
+        .title('📍 My Location')
+        .id('owner-location')
+        .child(
+          S.document()
+            .schemaType('ownerLocation')
+            .documentId('ownerLocation')
+            .title('My Location')
+        ),
     ])

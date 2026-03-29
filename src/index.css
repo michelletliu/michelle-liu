@@ -605,3 +605,23 @@ video {
     transform: scale(1) translateY(0);
   }
 }
+
+@keyframes noteFieldIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-note-field-in {
+  animation: noteFieldIn 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes blink {
+  0%, 40%, 100% { opacity: 1; }
+  60%, 80% { opacity: 0; }
+}

@@ -33,6 +33,12 @@ export const bookSuggestion = defineType({
       initialValue: 'new',
     }),
     defineField({
+      name: 'senderNote',
+      title: 'Sender Note',
+      type: 'string',
+      description: 'Name or note left by the person who suggested the book',
+    }),
+    defineField({
       name: 'notes',
       title: 'Notes',
       type: 'text',
