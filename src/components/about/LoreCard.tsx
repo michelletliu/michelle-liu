@@ -66,7 +66,7 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
         {/* Headline row with arrow */}
         <div className="flex w-full items-center justify-between">
           <div className="flex flex-col gap-0 max-md:gap-1">
-            <span className="text-gray-600 text-base font-medium md:text-lg leading-5">
+            <span className="text-gray-600 text-base font-medium leading-5">
               {data.headline}
               {data.date && <span className="hidden md:inline text-gray-400 text-base font-normal"> • {data.date}</span>}
             </span>
@@ -81,7 +81,7 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
         </div>
         {/* Description - always visible on mobile, fade up on hover for desktop */}
         {data.description && (
-          <p className="whitespace-pre-wrap max-md:pt-1 pt-0.5 font-normal text-sm sm:text-base tracking-[0.005em] leading-5 max-md:leading-[1.45] text-gray-400 md:opacity-0 md:translate-y-1 md:transition-all md:duration-300 md:ease-out md:group-hover:opacity-100 md:group-hover:translate-y-0">{data.description}</p>
+          <p className="whitespace-pre-wrap max-md:pt-1 pt-0.5 font-normal text-sm  sm:text-base tracking-[0.005em] leading-5 max-md:leading-[1.45] text-gray-400 md:opacity-0 md:translate-y-1 md:transition-all md:duration-300 md:ease-out md:group-hover:opacity-100 md:group-hover:translate-y-0">{data.description}</p>
         )}
       </div>
     </>
