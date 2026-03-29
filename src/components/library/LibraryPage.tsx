@@ -435,7 +435,11 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
           {/* Plus button and modal container */}
           <div className="relative">
             <button 
-              onClick={() => setShowAddBookModal(!showAddBookModal)}
+              onClick={() => {
+                if (!showAddBookModal) {
+                  setShowAddBookModal(true);
+                }
+              }}
               className="bg-gray-500/10 content-stretch flex items-center justify-center rounded-full size-[36px] hover:bg-[rgba(0,0,0,0.1)] transition-all duration-300"
             >
               <div className={`flex items-center justify-center text-gray-400 transition-transform duration-300 ${showAddBookModal ? 'rotate-45' : 'rotate-0'}`}>
