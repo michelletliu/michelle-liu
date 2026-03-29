@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { bookTitle } = await req.json();
+    const { bookTitle, senderNote } = await req.json();
 
     if (!bookTitle || typeof bookTitle !== "string" || !bookTitle.trim()) {
       return NextResponse.json(
@@ -36,12 +36,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await client.create({
+    const doc: Record<string, string> = {
       _type: "bookSuggestion",
       bookTitle: bookTitle.trim(),
       submittedAt: new Date().toISOString(),
       status: "new",
-    });
+    };
+    if (typeof senderNote === "string" && senderNote.trim()) {
+      doc.senderNote = senderNote.trim();
+    }
+
+    await client.create(doc);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -303,11 +303,11 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
     }, 280);
   };
 
-  const handleAddBook = async (title: string) => {
+  const handleAddBook = async (title: string, senderNote?: string) => {
     const response = await fetch('/api/submit-book-suggestion', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bookTitle: title.trim() }),
+      body: JSON.stringify({ bookTitle: title.trim(), senderNote: senderNote?.trim() || undefined }),
     });
 
     const data = await response.json();
@@ -470,7 +470,7 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
             </div>
           ) : (
             <div 
-              className="library-book-grid grid grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-8 gap-y-2 md:gap-x-8 md:gap-y-8 w-full"
+              className="library-book-grid grid grid-cols-4 gap-x-8 gap-y-2 md:grid-cols-[repeat(4,auto)] md:gap-x-0 md:gap-y-8 md:justify-between lg:grid-cols-[repeat(5,auto)] xl:grid-cols-[repeat(6,auto)] w-full"
             >
               {filteredBooks.map((book) => (
                 <BookCard key={book.id} book={book} onClick={() => {

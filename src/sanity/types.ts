@@ -581,6 +581,19 @@ export interface Startup {
 // LIBRARY PAGE TYPES
 // ============================================
 
+// ============================================
+// OWNER LOCATION TYPES
+// ============================================
+
+export interface OwnerLocation {
+  city: string;
+  timezone: string;
+}
+
+// ============================================
+// LIBRARY TYPES
+// ============================================
+
 export type BookShelf = "favorites" | "read" | "currently-reading" | "want-to-read";
 
 export interface SanityBook {
