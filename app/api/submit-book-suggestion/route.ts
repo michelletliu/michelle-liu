@@ -36,17 +36,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const doc: Record<string, string> = {
+    await client.create({
       _type: "bookSuggestion",
       bookTitle: bookTitle.trim(),
       submittedAt: new Date().toISOString(),
       status: "new",
-    };
-    if (typeof senderNote === "string" && senderNote.trim()) {
-      doc.senderNote = senderNote.trim();
-    }
-
-    await client.create(doc);
+      ...(typeof senderNote === "string" && senderNote.trim()
+        ? { senderNote: senderNote.trim() }
+        : {}),
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
