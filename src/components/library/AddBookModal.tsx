@@ -12,9 +12,16 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
   const [senderNote, setSenderNote] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const noteInputRef = useRef<HTMLInputElement>(null);
   const [focusedField, setFocusedField] = useState<"title" | "note">("title");
   const hasTitle = bookTitle.trim().length > 0;
+
+  const animateClose = useCallback(() => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(onClose, 180);
+  }, [isClosing, onClose]);
 
   const handleSubmit = () => {
     if (!hasTitle || isSubmitting) return;
@@ -34,12 +41,8 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
     });
 
     setTimeout(() => {
-      setBookTitle("");
-      setSenderNote("");
-      setIsSubmitted(false);
-      setIsSubmitting(false);
-      onClose();
-    }, 2000);
+      animateClose();
+    }, 1600);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -50,16 +53,16 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
 
   const inputBorderClass = (active: boolean) =>
     `absolute border-[1.5px] border-solid inset-0 pointer-events-none rounded-[999px] transition-colors duration-300 ${
-      isSubmitted ? "border-[rgba(0,0,0,0.1)]" : active ? "border-blue-500" : "border-[rgba(0,0,0,0.1)]"
+      isSubmitted ? "border-[rgba(0,0,0,0.1)]" : active ? "border-[rgba(0,0,0,0.1)]" : "border-transparent"
     }`;
 
   const inputFont = { fontVariationSettings: "'wdth' 100" } as const;
 
   return (
     <>
-      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <div className="fixed inset-0 z-40" onClick={animateClose} />
 
-      <div onClick={(e) => e.stopPropagation()} className="absolute right-0 top-[calc(100%+12px)] z-50 bg-white rounded-[16px] w-[calc(100vw-64px)] sm:w-[420px] max-w-[420px] animate-modal-in">
+      <div onClick={(e) => e.stopPropagation()} className={`absolute right-0 top-[calc(100%+12px)] z-50 bg-white rounded-[16px] w-[calc(100vw-64px)] sm:w-[420px] max-w-[420px] ${isClosing ? 'animate-modal-out' : 'animate-modal-in'}`}>
         <div
           aria-hidden="true"
           className="absolute border border-gray-200 border-solid inset-0 pointer-events-none rounded-[16px] shadow-sm"
