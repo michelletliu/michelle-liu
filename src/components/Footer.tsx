@@ -118,7 +118,7 @@ function BlinkingTime({ time, h24, city }: { time: string; h24: number; city: st
     ? <SunIcon className="inline-block w-[11px] h-[11px] -mt-[2px] mr-1" />
     : <MoonIcon className="inline-block w-[11px] h-[11px] -mt-[2px] mr-1" />;
   const colonIndex = time.indexOf(":");
-  if (colonIndex === -1) return <>{icon}{time} in {city}</>;
+  if (colonIndex === -1) return <>{icon}{time}, {city}</>;
   const before = time.slice(0, colonIndex);
   const after = time.slice(colonIndex + 1);
   return (
@@ -126,7 +126,7 @@ function BlinkingTime({ time, h24, city }: { time: string; h24: number; city: st
       {icon}
       {before}
       <span className="animate-[blink_1.2s_ease-in-out_infinite]">:</span>
-      {after} in {city}
+      {after}, {city}
     </>
   );
 }

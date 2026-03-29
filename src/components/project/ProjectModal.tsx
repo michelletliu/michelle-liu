@@ -874,11 +874,11 @@ export default function ProjectModal({
         const scrollTop = scrollContainer.scrollTop;
         setIsScrolled(scrollTop > 20);
 
-        // Hide breadcrumb once scrolled past the hero section (or TOC if present)
+        // Hide breadcrumb before reaching the TOC (or end of hero/mission)
         const anchorEl = tocRef.current || heroRef.current || missionRef.current;
         if (anchorEl) {
-          const anchorBottom = getOffsetTop(anchorEl, scrollContainer) + anchorEl.offsetHeight;
-          setIsPastHero(scrollTop > anchorBottom);
+          const anchorTop = getOffsetTop(anchorEl, scrollContainer);
+          setIsPastHero(scrollTop > anchorTop - 60);
         }
 
         // Check if we should show the skip link (between configured start and end sections)
