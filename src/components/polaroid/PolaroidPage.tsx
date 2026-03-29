@@ -131,7 +131,7 @@ function Tooltip({ label, children, offsetY = 0 }: { label: string; children: Re
       {children}
       {isVisible && (
         <div 
-          className="tooltip absolute left-1/2 px-2.5 py-1.5 bg-gray-800 text-white text-[13px] font-medium rounded-md whitespace-nowrap pointer-events-none z-[9999] -translate-x-1/2"
+          className="tooltip absolute left-1/2 px-2.5 py-1.5 bg-gray-800 text-white text-[13px] font-medium rounded-[10px] whitespace-nowrap pointer-events-none z-[9999] -translate-x-1/2"
           data-ending-style={isEnding ? "" : undefined}
           data-instant={isInstant ? "" : undefined}
           style={{ 
@@ -1157,10 +1157,10 @@ export default function PolaroidPage() {
                 <div className="content-stretch flex gap-0 sm:gap-[28px] items-start justify-between sm:justify-center pb-0 pt-0 px-0 sm:px-[4px] relative shrink-0 w-full">
                   <button 
                     onClick={() => handleShareToApp('Instagram')}
-                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
+                    className="content-stretch flex flex-col gap-[6px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
-                      <img alt="Instagram" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgInstagramIcon} />
+                    <div className="relative rounded-[16px] sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
+                      <img alt="Instagram" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[16px] sm:rounded-[18.928px] size-full" src={imgInstagramIcon} />
                     </div>
                     <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Instagram
@@ -1169,10 +1169,10 @@ export default function PolaroidPage() {
 
                   <button 
                     onClick={() => handleShareToApp('LinkedIn')}
-                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
+                    className="content-stretch flex flex-col gap-[6px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="relative rounded-[14px] sm:rounded-[17.35px] shrink-0 size-[54px] sm:size-[69.402px]">
-                      <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[14px] sm:rounded-[17.35px]">
+                    <div className="relative rounded-[16px] sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
+                      <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[16px] sm:rounded-[18.928px]">
                         <img alt="LinkedIn" className="absolute h-[1236.21%] left-[-168.97%] max-w-none top-[-256.03%] w-[568.97%]" src={imgLinkedInIcon} />
                       </div>
                     </div>
@@ -1183,10 +1183,10 @@ export default function PolaroidPage() {
 
                   <button 
                     onClick={() => handleShareToApp('Mail')}
-                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
+                    className="content-stretch flex flex-col gap-[6px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
-                      <img alt="Mail" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgMailIcon} />
+                    <div className="relative rounded-[16px] sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
+                      <img alt="Mail" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[16px] sm:rounded-[18.928px] size-full" src={imgMailIcon} />
                     </div>
                     <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px]" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Mail
@@ -1195,10 +1195,10 @@ export default function PolaroidPage() {
 
                   <button 
                     onClick={() => handleShareToApp('X')}
-                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
+                    className="content-stretch flex flex-col gap-[6px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
-                      <img alt="X" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgXIcon} />
+                    <div className="relative rounded-[16px] sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
+                      <img alt="X" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[16px] sm:rounded-[18.928px] size-full" src={imgXIcon} />
                     </div>
                     <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       X
@@ -1207,10 +1207,10 @@ export default function PolaroidPage() {
 
                   <button 
                     onClick={() => handleShareToApp('Messages')}
-                    className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
+                    className="content-stretch flex flex-col gap-[6px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
-                      <img alt="Messages" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgMessagesIcon} />
+                    <div className="relative rounded-[16px] sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
+                      <img alt="Messages" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[16px] sm:rounded-[18.928px] size-full" src={imgMessagesIcon} />
                     </div>
                     <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-gray-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Messages
@@ -1448,8 +1448,8 @@ export default function PolaroidPage() {
                       onClick={() => handleShareToApp('LinkedIn')}
                       className="content-stretch flex flex-col gap-[8px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                     >
-                      <div className="relative rounded-[14px] sm:rounded-[17.35px] shrink-0 size-[54px] sm:size-[69.402px]">
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[14px] sm:rounded-[17.35px]">
+                      <div className="relative rounded-[15px] sm:rounded-[30px] shrink-0 size-[54px] sm:size-[69.402px]">
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[15px] sm:rounded-[30px]">
                           <img alt="LinkedIn" className="absolute h-[1236.21%] left-[-168.97%] max-w-none top-[-256.03%] w-[568.97%]" src={imgLinkedInIcon} />
                         </div>
                       </div>
