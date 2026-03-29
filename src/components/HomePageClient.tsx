@@ -1006,12 +1006,10 @@ export default function HomePageClient({ slug, mode }: HomePageClientProps) {
                     <br aria-hidden="true" />
                     {`Previously at `}
                   </span>
-                  <span
-                    className="text-[#374151] inline-flex items-center"
-                    style={{ fontVariationSettings: "'wdth' 100" }}
-                  >
+                  <span className="text-[#374151]" style={{ fontVariationSettings: "'wdth' 100" }}>
                     <svg 
-                      className="inline-block w-[0.9em] h-[0.9em] align-baseline -mt-[0.05em]" 
+                      className="inline w-[0.9em] h-[0.9em]" 
+                      style={{ verticalAlign: '-0.075em' }}
                       viewBox="0 0 814 1000" 
                       fill="currentColor"
                       aria-label="Apple"
