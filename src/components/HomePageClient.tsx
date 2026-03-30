@@ -1001,7 +1001,7 @@ export default function HomePageClient({ slug, mode }: HomePageClientProps) {
                     Designing useful products to spark moments of{" "}</span>
                   <span>delight</span>
                   <span>{` & `}</span>
-                  <span className="gradient-text-animated">human connection. ⟡˙⋆</span>
+                  <span>human connection.</span>
                   <span>
                     <br aria-hidden="true" />
                     {`Previously at `}
