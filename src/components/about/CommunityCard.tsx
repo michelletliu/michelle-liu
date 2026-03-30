@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../utils/useScrollLock";
 import ShimmerImage from "../ShimmerImage";
@@ -49,6 +49,7 @@ type CommunityCardProps = {
 export default function CommunityCard({ className, data }: CommunityCardProps) {
   const photos = data.photos || [];
   const [expandedPhotoId, setExpandedPhotoId] = useState<string | null>(null);
+  const [isClosingPhoto, setIsClosingPhoto] = useState(false);
 
   // Default rotations for photos if not specified
   const defaultRotations = [11, -2, -11, -9];
@@ -61,11 +62,20 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
   // Lock body scroll when modal is open (flicker-free implementation)
   useScrollLock(!!expandedPhotoId);
 
+  const handleClosePhoto = useCallback(() => {
+    if (isClosingPhoto) return;
+    setIsClosingPhoto(true);
+    setTimeout(() => {
+      setExpandedPhotoId(null);
+      setIsClosingPhoto(false);
+    }, 200);
+  }, [isClosingPhoto]);
+
   // Handle escape key to close expanded view
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && expandedPhotoId) {
-        setExpandedPhotoId(null);
+        handleClosePhoto();
       }
     };
 
@@ -76,7 +86,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [expandedPhotoId]);
+  }, [expandedPhotoId, handleClosePhoto]);
 
   return (
     <div
@@ -354,8 +364,8 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
       {expandedPhoto &&
         createPortal(
           <div
-            className="fixed inset-0 z-[99999] isolate flex items-center justify-center p-4 animate-[fadeIn_200ms_ease-out]"
-            onClick={() => setExpandedPhotoId(null)}
+            className={`fixed inset-0 z-[99999] isolate flex items-center justify-center p-4 transition-opacity duration-200 ease-out ${isClosingPhoto ? 'opacity-0' : 'animate-[fadeIn_200ms_ease-out]'}`}
+            onClick={handleClosePhoto}
           >
             {/* Light grey translucent overlay */}
             <div className="absolute inset-0 bg-gray-100/95" />
@@ -364,9 +374,9 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setExpandedPhotoId(null);
+                handleClosePhoto();
               }}
-              className="fixed right-4 top-4 z-10 flex h-10 w-10 items-center justify-center transition-all duration-200 hover:scale-110 animate-[fadeSlideDown_300ms_ease-out]"
+              className={`fixed right-4 top-4 z-10 flex h-10 w-10 items-center justify-center transition-all duration-200 hover:scale-110 ${isClosingPhoto ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
               aria-label="Close expanded photo"
             >
               <svg
@@ -387,7 +397,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
 
             {/* Expanded photo container */}
             <div
-              className="relative z-10 flex max-h-[85vh] max-w-[90vw] flex-col items-center animate-[scaleIn_300ms_ease-out]"
+              className={`relative z-10 flex max-h-[85vh] max-w-[90vw] flex-col items-center transition-all duration-200 ease-out ${isClosingPhoto ? 'opacity-0 scale-95' : 'animate-[scaleIn_300ms_ease-out]'}`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Photo card - polaroid style */}
@@ -408,7 +418,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                 </div>
                 {expandedPhoto.caption && (
                   <p
-                    className="mt-6 max-w-[600px] text-center font-['DM_Sans'] text-base tracking-[0.005em] font-normal leading-relaxed text-gray-600 animate-[fadeSlideUp_300ms_ease-out_100ms_both]"
+                    className={`mt-6 max-w-[600px] text-center font-['DM_Sans'] text-base tracking-[0.005em] font-normal leading-relaxed text-gray-600 ${isClosingPhoto ? '' : 'animate-[fadeSlideUp_300ms_ease-out_100ms_both]'}`}
                     style={{ fontVariationSettings: "'opsz' 9" }}
                   >
                     {expandedPhoto.caption}

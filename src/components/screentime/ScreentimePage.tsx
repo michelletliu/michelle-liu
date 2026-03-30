@@ -1539,7 +1539,7 @@ export default function ScreentimePage() {
       <InfoButton project={projectInfo} />
 
       <div 
-        className={`screentime-page-container relative w-full h-screen overflow-hidden px-4 flex flex-col items-center transition-all ${
+        className={`screentime-page-container relative w-full h-full min-h-screen overflow-hidden px-4 flex flex-col items-center transition-all ${
           screen === 'generate' ? 'justify-center' : 'justify-start'
         } ${
           isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'

@@ -77,7 +77,7 @@ function useLocalTime(timezone: string) {
     return { formatted: `${h12}:${mStr} ${ampm}`, h24 };
   };
 
-  const [state, setState] = useState(() => format(timezone));
+  const [state, setState] = useState<{ formatted: string; h24: number } | null>(null);
 
   useEffect(() => {
     setState(format(timezone));
@@ -113,6 +113,7 @@ function MoonIcon({ className }: { className?: string }) {
 }
 
 function BlinkingTime({ time, h24, city }: { time: string; h24: number; city: string }) {
+  if (!time) return null;
   const isDay = h24 >= 6 && h24 < 18;
   const icon = isDay
     ? <SunIcon className="inline-block w-[11px] h-[11px] -mt-[2px] mr-1" />
@@ -287,7 +288,9 @@ export default function Footer() {
     ? `CHANGELOG: ${latestCommitDate}` 
     : 'CHANGELOG: ...';
   const { city, timezone } = useOwnerLocation();
-  const { formatted: localTime, h24: localH24 } = useLocalTime(timezone);
+  const timeData = useLocalTime(timezone);
+  const localTime = timeData?.formatted ?? "";
+  const localH24 = timeData?.h24 ?? 12;
 
   return (
     <div className="relative shrink-0 w-full">

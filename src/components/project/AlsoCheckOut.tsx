@@ -27,7 +27,7 @@ function ProjectCard({ project, className, onClick }: ProjectCardProps) {
         onClick?.();
       }}
       className={clsx(
-        "flex flex-col gap-1.5 items-start cursor-pointer group text-left w-full",
+        "flex flex-col gap-2 items-start cursor-pointer group text-left w-full",
         className
       )}
     >

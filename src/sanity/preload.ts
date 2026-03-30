@@ -4,6 +4,7 @@
  * when users navigate to likely pages (Apple, Roblox, Adobe, NASA, Art, About)
  */
 
+import profilePic from "../assets/Website Profile Pic.png";
 import { client } from "./client";
 import {
   PROJECT_BY_COMPANY_QUERY,
@@ -116,6 +117,9 @@ async function preloadArtPage(): Promise<void> {
  * Preload about page data
  */
 async function preloadAboutPage(): Promise<void> {
+  const img = new Image();
+  img.src = profilePic;
+
   const cacheKeys = {
     experiences: "about:experiences",
     communities: "about:communities",

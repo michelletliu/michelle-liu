@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { useScrollLock } from "../../utils/useScrollLock";
 import { useNavigate } from "@/lib/navigation";
 import clsx from "clsx";
 import { ScrollReveal } from "../ScrollReveal";
@@ -84,29 +86,103 @@ const fadeUpStyles = `
 }
 `;
 
-// Profile photo component
+// Profile photo component with expandable modal
 function ProfilePhoto({ imageSrc, caption }: { imageSrc?: string; caption?: React.ReactNode }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  useScrollLock(isExpanded);
+
+  const handleClose = useCallback(() => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsExpanded(false);
+      setIsClosing(false);
+    }, 200);
+  }, [isClosing]);
+
+  useEffect(() => {
+    if (!isExpanded) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [isExpanded, handleClose]);
+
   return (
-    <div className="flex flex-col gap-3 w-72 md:w-76">
-      <div className="rounded-lg overflow-hidden">
-        {imageSrc ? (
-          <img
-            src={imageSrc}
-            alt="Michelle Liu"
-            className="w-full h-auto rounded-lg"
-          />
-        ) : (
-          <div className="w-full aspect-[3/4] bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg" />
+    <>
+      <div className="flex flex-col gap-3 w-72 md:w-76">
+        <div
+          className="rounded-lg overflow-hidden cursor-zoom-in"
+          onClick={() => imageSrc && setIsExpanded(true)}
+        >
+          {imageSrc ? (
+            <img
+              src={imageSrc}
+              alt="Michelle Liu"
+              className="w-full h-auto rounded-lg transition-transform duration-200 ease-out hover:scale-[0.99]"
+            />
+          ) : (
+            <div className="w-full aspect-[3/4] bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg" />
+          )}
+        </div>
+        {caption && (
+          <div className="px-6">
+            <p className="text-sm text-gray-400 text-center">
+              {caption}
+            </p>
+          </div>
         )}
       </div>
-      {caption && (
-        <div className="px-6">
-          <p className="text-sm text-gray-400 text-center">
-            {caption}
-          </p>
-        </div>
+
+      {isExpanded && imageSrc && createPortal(
+        <div
+          className={`fixed inset-0 z-[99999] isolate flex items-center justify-center p-4 transition-opacity duration-200 ease-out ${isClosing ? 'opacity-0' : 'animate-[fadeIn_200ms_ease-out]'}`}
+          onClick={handleClose}
+        >
+          <div className="absolute inset-0 bg-gray-100/95" />
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClose();
+            }}
+            className={`fixed right-4 top-4 z-10 flex h-10 w-10 items-center justify-center transition-all duration-200 hover:scale-110 ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
+            aria-label="Close expanded photo"
+          >
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 1L13 13M1 13L13 1" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
+
+          <div
+            className={`relative z-10 flex max-h-[85vh] max-w-[90vw] flex-col items-center transition-all duration-200 ease-out ${isClosing ? 'opacity-0 scale-95' : 'animate-[scaleIn_300ms_ease-out]'}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative flex flex-col items-center gap-1">
+              <div className="relative">
+                <img
+                  src={imageSrc}
+                  alt="Michelle Liu"
+                  className="object-contain rounded-lg max-h-[65vh] w-auto relative"
+                />
+              </div>
+              {caption && (
+                <p
+                  className={`mt-6 max-w-[600px] text-center font-['DM_Sans'] text-base tracking-[0.005em] font-normal leading-relaxed text-gray-500 [&_a]:text-gray-800 [&_a:hover]:text-gray-900 ${isClosing ? '' : 'animate-[fadeSlideUp_300ms_ease-out_100ms_both]'}`}
+                  style={{ fontVariationSettings: "'opsz' 9" }}
+                >
+                  {caption}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 }
 

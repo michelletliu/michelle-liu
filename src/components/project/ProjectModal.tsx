@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { PortableText } from "@portabletext/react";
@@ -504,15 +504,23 @@ interface ExpandableImageProps {
 
 function ExpandableImage({ src, alt = "", caption, className = "", containerClassName = "" }: ExpandableImageProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
-  // Lock body scroll when modal is open
   useScrollLock(isExpanded);
 
-  // Handle escape key to close expanded view
+  const handleClose = useCallback(() => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsExpanded(false);
+      setIsClosing(false);
+    }, 200);
+  }, [isClosing]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isExpanded) {
-        setIsExpanded(false);
+        handleClose();
       }
     };
 
@@ -523,11 +531,10 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isExpanded]);
+  }, [isExpanded, handleClose]);
 
   return (
     <>
-      {/* Clickable image with hover effect */}
       <div
         className={clsx(
           "cursor-pointer transition-transform duration-300 hover:scale-[1.004]",
@@ -542,23 +549,20 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
         />
       </div>
 
-      {/* Expanded Image Modal - renders via portal to cover entire page */}
       {isExpanded &&
         createPortal(
           <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-[fadeIn_200ms_ease-out]"
-            onClick={() => setIsExpanded(false)}
+            className={`fixed inset-0 z-[9999] flex items-center justify-center p-4 transition-opacity duration-200 ease-out ${isClosing ? 'opacity-0' : 'animate-[fadeIn_200ms_ease-out]'}`}
+            onClick={handleClose}
           >
-            {/* Light grey translucent overlay */}
             <div className="absolute inset-0 bg-gray-100/95" />
 
-            {/* Close button - fixed to top right of screen */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setIsExpanded(false);
+                handleClose();
               }}
-              className="fixed right-4 top-4 z-[10000] flex h-10 w-10 items-center justify-center transition-all duration-200 hover:scale-110 animate-[fadeSlideDown_300ms_ease-out]"
+              className={`fixed right-4 top-4 z-[10000] flex h-10 w-10 items-center justify-center transition-all duration-200 hover:scale-110 ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
               aria-label="Close expanded image"
             >
               <svg
@@ -577,12 +581,10 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
               </svg>
             </button>
 
-            {/* Expanded image container */}
             <div
-              className="relative z-10 flex max-h-[85vh] max-w-[90vw] flex-col items-center animate-[scaleIn_300ms_ease-out]"
+              className={`relative z-10 flex max-h-[85vh] max-w-[90vw] flex-col items-center transition-all duration-200 ease-out ${isClosing ? 'opacity-0 scale-95' : 'animate-[scaleIn_300ms_ease-out]'}`}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Image */}
               <ShimmerImage
                 src={src}
                 alt={alt}
