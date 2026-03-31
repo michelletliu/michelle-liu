@@ -698,17 +698,15 @@ export default function AboutPage() {
                     create extraordinary products for people.
                   </p>
                   <p>
-                    I believe thoughtful design makes life more intuitive (& beautiful). I want to
-                    bring more of it into the world—whether through my creations or the
-                    communities I'm helping to build. I like to think of it as my <a href="https://en.wikipedia.org/wiki/Ikigai" target="_blank" rel="noopener noreferrer" className="text-gray-600 font-semibold no-underline hover:text-blue-600 transition-colors">ikigai</a>: the constant
-                    pursuit of an intersection between passion, profession, & personal mission.
+                    I view myself as an artist at heart, designing for beauty to meet tactile utility. I like to think of it as my <a href="https://en.wikipedia.org/wiki/Ikigai" target="_blank" rel="noopener noreferrer" className="text-gray-600 font-semibold no-underline hover:text-blue-600 transition-colors">ikigai</a>: the
+                    constant pursuit of an intersection between passion, profession, & personal mission.
                   </p>
                   <p>
                     I also love discovering new hidden food spots, getting excited about
                     beautifully designed stationery, & listening to audiobooks on long drives.
                   </p>
                   <p>
-                    3 words to describe me: <em>Golden Retriever Energy.</em> (even on the bad days)
+                    3 words to describe me: <em>Golden Retriever Energy</em> (even on the bad days.)
                   </p>
                 </div>
               </ScrollReveal>

@@ -337,7 +337,7 @@ video {
 }
 
 .animate-modal-scale-in {
-  animation: modalScaleInPreserve 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: modalScaleInPreserve 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Overlay fade in */
@@ -351,7 +351,7 @@ video {
 }
 
 .animate-overlay-in {
-  animation: overlayFadeIn 200ms ease-out forwards;
+  animation: overlayFadeIn 200ms ease-out both;
 }
 
 /* Centered modal exit animation - scale down to center */
@@ -394,7 +394,7 @@ video {
 }
 
 .animate-modal-scale-in-flex {
-  animation: modalScaleInFlex 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: modalScaleInFlex 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes modalScaleOutFlex {

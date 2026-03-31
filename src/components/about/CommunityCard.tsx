@@ -228,7 +228,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                     {photo.caption && (
                       <p
                         className={clsx(
-                          "mt-3 font-['DM_Sans'] text-sm font-normal text-gray-500",
+                          "mt-2 font-['DM_Sans'] text-sm font-normal text-gray-500",
                           isVertical ? "w-44" : "w-52"
                         )}
                         style={{ fontVariationSettings: "'opsz' 9" }}
