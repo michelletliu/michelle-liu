@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import type { Book } from "./types";
-import { useScrollLock } from "../../utils/useScrollLock";
 import ShimmerImage from "../ShimmerImage";
 
 interface BookDetailModalProps {
@@ -112,8 +111,26 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
   const [isClosing, setIsClosing] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Lock body scroll when modal is open (flicker-free implementation)
-  useScrollLock();
+  // Block background scrolling via touch events instead of body overflow toggling (avoids white flash on mobile)
+  useEffect(() => {
+    const handleTouchMove = (e: TouchEvent) => {
+      // Allow scrolling inside the modal, block everything else
+      if (modalRef.current?.contains(e.target as Node)) return;
+      e.preventDefault();
+    };
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    return () => document.removeEventListener('touchmove', handleTouchMove);
+  }, []);
+
+  // Also block wheel scrolling on desktop for the overlay area
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (modalRef.current?.contains(e.target as Node)) return;
+      e.preventDefault();
+    };
+    document.addEventListener('wheel', handleWheel, { passive: false });
+    return () => document.removeEventListener('wheel', handleWheel);
+  }, []);
 
   // Show scrollbar only when actively scrolling
   useEffect(() => {
@@ -156,7 +173,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
       {/* Modal */}
       <div 
         ref={modalRef}
-        className={`fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] flex flex-col rounded-2xl overflow-y-auto modal-scroll-container bg-white border border-[rgba(0,0,0,0.1)] shadow-[0px_4px_36px_0px_rgba(0,0,0,0.15)] ${
+        className={`fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] flex flex-col rounded-2xl overflow-y-auto overscroll-contain modal-scroll-container bg-white border border-[rgba(0,0,0,0.1)] shadow-[0px_4px_36px_0px_rgba(0,0,0,0.15)] ${
           isPopupMode 
             ? 'gap-4 sm:gap-5 p-12 sm:p-16 w-[min(700px,85vw)] max-h-[70vh]' 
             : 'gap-6 sm:gap-8 md:gap-10 px-12 py-12 sm:p-10 md:p-16 lg:p-20 w-[calc(100vw-32px)] sm:w-[calc(100vw-80px)] md:w-[min(1137px,90vw)] max-h-[80vh] sm:max-h-[90vh]'
@@ -166,7 +183,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
         <div className="flex flex-col gap-12 sm:hidden w-full">
           {/* Book cover - centered */}
           <div 
-            className={`w-[142px] h-[219px] shrink-0 mx-auto group ${book.goodreadsUrl ? 'cursor-pointer' : ''}`}
+            className={`w-[110px] h-[170px] shrink-0 mx-auto group ${book.goodreadsUrl ? 'cursor-pointer' : ''}`}
             onClick={(e) => {
               if (book.goodreadsUrl) {
                 e.stopPropagation();

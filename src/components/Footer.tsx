@@ -417,7 +417,7 @@ export default function Footer() {
                     </p>
                   </div>
                   <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0 w-[326px]">
-                    <div className="content-stretch flex gap-11 items-start relative shrink-0">
+                    <div className="content-stretch flex gap-6 items-start relative shrink-0">
                       <a href="https://www.instagram.com/studio.mliu" target="_blank" rel="noopener noreferrer" className="social-link">
                         <SocialLinksBackgroundImage>
                           <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #c4c9d0)" id="Vector" />

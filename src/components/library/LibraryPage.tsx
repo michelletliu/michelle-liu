@@ -260,8 +260,9 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
       setSelectedBook(book);
       setFilterFromBookYear(book);
       setSearchParams({}, { replace: true });
-      if (location.pathname !== openBookPath(slug)) {
-        navigate(openBookPath(slug), { replace: true });
+      const targetPath = openBookPath(slug);
+      if (window.location.pathname !== targetPath) {
+        window.history.replaceState(null, '', targetPath);
       }
     }
   }, [searchParams, books, selectedBook, setSearchParams, location.pathname, navigate, isPopupMode]);
@@ -385,7 +386,7 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
                 
                 <div 
                   className={clsx(
-                    "absolute left-0 top-[calc(100%+4px)] bg-white rounded-lg shadow-lg border border-gray-100 z-50 w-36 transition-all duration-200 ease-out",
+                    "absolute left-0 top-[calc(100%+4px)] bg-white rounded-xl shadow-lg border border-gray-100 z-50 w-36 transition-all duration-200 ease-out",
                     showFilterDropdown ? "pointer-events-auto" : "pointer-events-none",
                     isDropdownVisible 
                       ? "opacity-100 translate-y-0" 
@@ -411,7 +412,7 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
                               setShowFilterDropdown(false);
                             }}
                             className={clsx(
-                              "flex items-center px-3 py-1 rounded-md transition-colors text-left",
+                              "flex items-center px-3 py-1 rounded-[10px] transition-colors text-left",
                               isActive ? "bg-gray-100" : "hover:bg-gray-50"
                             )}
                           >
@@ -489,8 +490,8 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
                   const slug = getBookSlug(book);
                   setSelectedBook(book);
                   const nextPath = openBookPath(slug);
-                  if (location.pathname !== nextPath) {
-                    navigate(nextPath);
+                  if (window.location.pathname !== nextPath) {
+                    window.history.pushState(null, '', nextPath);
                   }
                 }} />
               ))}
@@ -507,8 +508,9 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
           book={selectedBook}
           onClose={() => {
             setSelectedBook(null);
-            if (location.pathname !== closeBookPath()) {
-              navigate(closeBookPath(), { replace: true });
+            const closePath = closeBookPath();
+            if (window.location.pathname !== closePath) {
+              window.history.replaceState(null, '', closePath);
             }
           }}
           isPopupMode={isPopupMode}
