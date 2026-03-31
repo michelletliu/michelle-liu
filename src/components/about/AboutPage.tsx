@@ -86,6 +86,64 @@ const fadeUpStyles = `
 }
 `;
 
+// Startup logos with staggered reveal via IntersectionObserver (not ScrollReveal, to avoid parent opacity masking)
+function StartupLogosRow({ startups }: { startups: StartupCardData[] }) {
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = rowRef.current;
+    if (!el) return;
+
+    let observer: IntersectionObserver | null = null;
+    let cancelled = false;
+
+    // Wait two frames so layout is fully settled before observing
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (cancelled || !el) return;
+
+        // If already in viewport (above the fold), reveal immediately
+        const rect = el.getBoundingClientRect();
+        const windowH = window.innerHeight;
+        if (rect.top < windowH - 40 && rect.bottom > 0) {
+          el.classList.add("revealed");
+          return;
+        }
+
+        observer = new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) {
+              el.classList.add("revealed");
+              observer?.disconnect();
+            }
+          },
+          { threshold: 0, rootMargin: "0px 0px -40px 0px" }
+        );
+        observer.observe(el);
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      observer?.disconnect();
+    };
+  }, []);
+
+  return (
+    <div ref={rowRef} className="flex justify-between md:flex-wrap md:gap-y-6 md:-ml-2">
+      {startups.map((startup, i) => (
+        <div
+          key={startup.id}
+          className="animate-fade-up-right w-12 md:w-auto"
+          style={{ animationDelay: `${i * 80}ms` }}
+        >
+          <StartupCard data={startup} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // Profile photo component with expandable modal
 function ProfilePhoto({ imageSrc, caption }: { imageSrc?: string; caption?: React.ReactNode }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -623,7 +681,7 @@ export default function AboutPage() {
       {/* Main Content Area */}
       <div className="flex flex-col lg:flex-row gap-4 items-start px-16 max-md:px-6 pt-2 relative shrink-0 w-full">
         {/* Sidebar - hidden on mobile */}
-        <div className="hidden lg:block lg:sticky lg:top-8 pb-4 lg:pb-8 w-[202px] shrink-0">
+        <div className="hidden lg:block lg:sticky lg:top-8 pb-4 lg:pb-8 w-[202px] shrink-0 z-50">
           <AboutSidebar
             activeCategory={activeCategory}
             onCategoryClick={handleCategoryClick}
@@ -645,7 +703,7 @@ export default function AboutPage() {
         {/* Main Content */}
         <div className="flex-1 flex flex-col gap-20 items-start pb-8 min-w-0 w-full">
           {/* HI! Section - Hardcoded */}
-          <section ref={hiRef} className="flex flex-col md:flex-row gap-10 md:gap-16 items-center w-full max-w-5xl scroll-mt-8">
+          <section ref={hiRef} className="flex flex-col md:flex-row gap-10 md:gap-16 items-center md:items-start w-full max-w-5xl scroll-mt-8">
             {/* Profile Photo */}
             <ScrollReveal delay={100}>
               <div className="shrink-0">
@@ -698,12 +756,8 @@ export default function AboutPage() {
                     create extraordinary products for people.
                   </p>
                   <p>
-                    I view myself as an artist at heart, designing for beauty to meet tactile utility. I like to think of it as my <a href="https://en.wikipedia.org/wiki/Ikigai" target="_blank" rel="noopener noreferrer" className="text-gray-600 font-semibold no-underline hover:text-blue-600 transition-colors">ikigai</a>: the
+                    I view myself as an artist at heart, designing where beauty meets tactile utility. I like to think of it as my <a href="https://en.wikipedia.org/wiki/Ikigai" target="_blank" rel="noopener noreferrer" className="text-gray-600 font-semibold no-underline hover:text-blue-600 transition-colors">ikigai</a>: the
                     constant pursuit of an intersection between passion, profession, & personal mission.
-                  </p>
-                  <p>
-                    I also love discovering new hidden food spots, getting excited about
-                    beautifully designed stationery, & listening to audiobooks on long drives.
                   </p>
                   <p>
                     3 words to describe me: <em>Golden Retriever Energy</em> (even on the bad days.)
@@ -742,35 +796,19 @@ export default function AboutPage() {
 
                 {/* Startups Section */}
                 {startups.length > 0 && (
-                  <ScrollReveal delay={experiences.length * 80}>
-                    <div className="flex flex-col gap-8 pt-4">
-                      {/* Header */}
+                  <div className="flex flex-col gap-8 pt-4">
+                    <ScrollReveal delay={experiences.length * 80}>
                       <div className="flex flex-col">
-                      <p className="text-base md:text-lg font-medium text-gray-700 tracking-[0.005em]">
-    Freelance
-  </p>
+                        <p className="text-base md:text-lg font-medium text-gray-700 tracking-[0.005em]">
+                          Freelance
+                        </p>
                         <p className="text-base text-gray-500 tracking-[0.005em]">
                           Design Contracts<span className="text-gray-400 font-normal">, 2023 - Present</span>
                         </p>
                       </div>
-                      {/* Startup logos row */}
-                      <div className="flex justify-between md:flex-wrap md:gap-y-6 md:-ml-2">
-                        {startups.map((startup, i) => (
-                          <div
-                            key={startup.id}
-                            className="animate-fade-up-right w-12 md:w-auto"
-                            style={{
-                              opacity: 0,
-                              animationDelay: `${i * 80}ms`,
-                              animationFillMode: "forwards",
-                            }}
-                          >
-                            <StartupCard data={startup} />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </ScrollReveal>
+                    </ScrollReveal>
+                    <StartupLogosRow startups={startups} />
+                  </div>
                 )}
               </div>
             ) : (

@@ -81,47 +81,55 @@ export default function VideoPlayer({
 
     // Function to attempt playing the video
     const attemptPlay = () => {
-      if (!video.paused) return; // Already playing
-      video.muted = true; // Ensure muted before every play attempt
-      video.play().catch(() => {
-        // Silently fail - will retry on user interaction
-      });
+      if (!video.paused) return;
+      video.muted = true;
+      video.play().catch(() => {});
     };
 
     // Handler for when video has enough data to play
-    const handleCanPlay = () => {
+    const handleReady = () => {
       if (onLoadedRef.current && !hasCalledOnLoaded.current) {
         hasCalledOnLoaded.current = true;
         onLoadedRef.current();
       }
-      // Try to play when video is ready
       if (autoPlayRef.current) {
         attemptPlay();
       }
     };
 
-    // Retry playing on visibility change (when user returns to tab)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && autoPlayRef.current) {
         attemptPlay();
       }
     };
 
-    // Retry playing on first user interaction (touch/click anywhere)
     const handleUserInteraction = () => {
       if (autoPlayRef.current) {
         attemptPlay();
       }
-      // Remove listeners after first interaction
       document.removeEventListener('touchstart', handleUserInteraction);
       document.removeEventListener('click', handleUserInteraction);
     };
 
-    // Listen for canplaythrough event (video is ready to play through without buffering)
-    video.addEventListener('canplaythrough', handleCanPlay);
+    // Listen for multiple readiness events — mobile Safari often skips canplaythrough
+    video.addEventListener('loadeddata', handleReady);
+    video.addEventListener('canplay', handleReady);
+    video.addEventListener('canplaythrough', handleReady);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     document.addEventListener('touchstart', handleUserInteraction, { passive: true });
     document.addEventListener('click', handleUserInteraction, { passive: true });
+
+    // Periodic retry for mobile — some browsers need multiple attempts
+    const retryInterval = setInterval(() => {
+      if (!video.paused) {
+        clearInterval(retryInterval);
+        return;
+      }
+      if (autoPlayRef.current && video.readyState >= 2) {
+        attemptPlay();
+      }
+    }, 1000);
+    setTimeout(() => clearInterval(retryInterval), 10000);
 
     const isHlsSource = src.includes(".m3u8");
 
@@ -224,7 +232,10 @@ export default function VideoPlayer({
 
     // Cleanup
     return () => {
-      video.removeEventListener('canplaythrough', handleCanPlay);
+      clearInterval(retryInterval);
+      video.removeEventListener('loadeddata', handleReady);
+      video.removeEventListener('canplay', handleReady);
+      video.removeEventListener('canplaythrough', handleReady);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener('touchstart', handleUserInteraction);
       document.removeEventListener('click', handleUserInteraction);

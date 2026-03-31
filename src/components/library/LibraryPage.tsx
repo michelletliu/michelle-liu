@@ -321,7 +321,7 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
     <>
       <div 
         ref={containerRef}
-        className={`relative min-h-screen w-full bg-white transition-[opacity,transform] ${
+        className={`relative z-[41] min-h-screen w-full bg-white transition-[opacity,transform] ${
           isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
         }`} 
         style={{ 
@@ -330,10 +330,15 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
           transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out'
         }}
       >
+        {/* Top white gradient - sticky inside container (fixed doesn't work due to parent transform) */}
+        <div className="sticky top-0 left-0 right-0 h-32 -mb-32 pointer-events-none z-[9]" style={{
+          background: 'linear-gradient(180deg, hsla(0,0%,100%,.5) 0%, hsla(0,0%,100%,.369) 19%, hsla(0,0%,100%,.271) 34%, hsla(0,0%,100%,.191) 47%, hsla(0,0%,100%,.139) 56.5%, hsla(0,0%,100%,.097) 65%, hsla(0,0%,100%,.063) 73%, hsla(0,0%,100%,.038) 80.2%, hsla(0,0%,100%,.021) 86.1%, hsla(0,0%,100%,.011) 91%, hsla(0,0%,100%,.004) 95.2%, hsla(0,0%,100%,.001) 98.2%, transparent 100%)'
+        }} />
+
         {/* Info Button - scrolls with content */}
         <InfoButton project={projectInfo} />
 
-        {/* Logo - scrolls with content */}
+        {/* Logo */}
         <div className="absolute top-0 left-0 pt-8 px-6 md:px-16 z-10">
           <button
             ref={logoRef}
@@ -350,7 +355,7 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
         </div>
 
         {/* Header */}
-        <div className="pt-8 px-8 md:px-16">
+        <div className="pt-8 px-8 md:px-16 relative">
           <div className="flex flex-col gap-10 md:gap-12 items-start pb-5 md:pb-6">
             {/* Logo spacer - matches the logo size */}
             <div className="size-8 md:size-[44px] shrink-0" />

@@ -145,7 +145,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
       {/* Info Button - fixed top right */}
       <button
         onClick={handleOpen}
-        className="fixed top-8 right-8 md:right-16 z-40 cursor-pointer transition-colors duration-200 hover:bg-gray-200/50 rounded-full p-2 -m-1 text-gray-400"
+        className="fixed top-8 right-8 md:right-16 z-50 cursor-pointer transition-colors duration-200 hover:bg-gray-200/50 rounded-full p-2 -m-1 text-gray-400"
         aria-label="Project info"
       >
         <InfoIcon />

@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense, useRef } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from '@/lib/navigation';
 import clsx from 'clsx';
@@ -138,6 +138,54 @@ type ExperimentModalProps = {
   onClose: () => void;
   initialFullscreen?: boolean;
 };
+
+function ExpandTooltip({ children }: { children: React.ReactNode }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isEnding, setIsEnding] = useState(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    setIsEnding(false);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsVisible(true);
+    }, 800);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    if (isVisible) {
+      setIsEnding(true);
+      setTimeout(() => {
+        setIsVisible(false);
+        setIsEnding(false);
+      }, 125);
+    }
+  };
+
+  return (
+    <div
+      className="relative inline-flex"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {children}
+      {isVisible && (
+        <div
+          className="tooltip absolute left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-gray-950 text-white text-[13px] font-medium rounded-[10px] whitespace-nowrap pointer-events-none z-[9999]"
+          data-ending-style={isEnding ? "" : undefined}
+          style={{ top: 'calc(100% + 8px)', ['--transform-origin' as string]: 'center top' }}
+        >
+          Expand
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-gray-950" />
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ExperimentModal({ projectId, project, onClose, initialFullscreen = false }: ExperimentModalProps) {
   const navigate = useNavigate();
@@ -323,17 +371,24 @@ export default function ExperimentModal({ projectId, project, onClose, initialFu
         )}
         style={{ backgroundColor: getBackgroundColor(project) }}
       >
+        {/* Top white gradient overlay */}
+        <div className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-20" style={{
+          background: 'linear-gradient(180deg, hsla(0,0%,100%,.5) 0%, hsla(0,0%,100%,.369) 19%, hsla(0,0%,100%,.271) 34%, hsla(0,0%,100%,.191) 47%, hsla(0,0%,100%,.139) 56.5%, hsla(0,0%,100%,.097) 65%, hsla(0,0%,100%,.063) 73%, hsla(0,0%,100%,.038) 80.2%, hsla(0,0%,100%,.021) 86.1%, hsla(0,0%,100%,.011) 91%, hsla(0,0%,100%,.004) 95.2%, hsla(0,0%,100%,.001) 98.2%, transparent 100%)'
+        }} />
+
         {/* Header - expand button only in popup mode (fullscreen uses embedded page's logo) */}
         {!isFullscreen && (
           <div className="absolute top-0 left-0 z-[60] pointer-events-none pl-6 pt-6">
             <div className="pointer-events-auto">
-              <button
-                onClick={handleExpand}
-                className="cursor-pointer transition-colors duration-200 hover:bg-gray-100 text-[#4b5563] rounded-sm p-1"
-                aria-label="Expand to full page"
-              >
-                <ExpandIcon />
-              </button>
+              <ExpandTooltip>
+                <button
+                  onClick={handleExpand}
+                  className="cursor-pointer transition-colors duration-200 hover:bg-gray-100 text-[#4b5563] rounded-sm p-1"
+                  aria-label="Expand to full page"
+                >
+                  <ExpandIcon />
+                </button>
+              </ExpandTooltip>
             </div>
           </div>
         )}

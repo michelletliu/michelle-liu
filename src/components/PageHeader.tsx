@@ -47,6 +47,7 @@ export default function PageHeader({
   return (
     <div
       className="content-stretch flex flex-col items-start relative shrink-0 w-full header-gradient"
+      style={{ zIndex: 41 }}
     >
       {/* Grain texture overlay - sits on top of gradient but below content */}
       <div

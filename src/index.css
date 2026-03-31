@@ -265,6 +265,25 @@ video {
 }
 
 /* Shelf item fade up animation */
+@keyframes fadeUpRight {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up-right {
+  opacity: 0;
+}
+
+.revealed .animate-fade-up-right {
+  animation: fadeUpRight 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 @keyframes shelfItemFadeUp {
   from {
     opacity: 0;

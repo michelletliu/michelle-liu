@@ -22,6 +22,54 @@ import expandIcon from "../../assets/Expand.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
 import { posthog, posthogEnabled } from "../../lib/posthog";
 
+function ExpandTooltip({ children }: { children: React.ReactNode }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isEnding, setIsEnding] = useState(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    setIsEnding(false);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsVisible(true);
+    }, 800);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    if (isVisible) {
+      setIsEnding(true);
+      setTimeout(() => {
+        setIsVisible(false);
+        setIsEnding(false);
+      }, 125);
+    }
+  };
+
+  return (
+    <div
+      className="relative inline-flex"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {children}
+      {isVisible && (
+        <div
+          className="tooltip absolute left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-gray-950 text-white text-[13px] font-medium rounded-[10px] whitespace-nowrap pointer-events-none z-[9999]"
+          data-ending-style={isEnding ? "" : undefined}
+          style={{ top: 'calc(100% + 8px)', ['--transform-origin' as string]: 'center top' }}
+        >
+          Expand
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-gray-950" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Helper to render text with highlighted portion
 function renderHighlightedText(text: string, highlightedText?: string, highlightColor?: string): React.ReactNode {
   if (!highlightedText) {
@@ -843,6 +891,11 @@ export default function ProjectModal({
   // Lock body scroll when modal is open (popup mode only, flicker-free implementation)
   useScrollLock(!isFullscreen);
 
+  // Reset skip link visibility when transitioning between popup/fullscreen
+  useEffect(() => {
+    setShowSkipLink(false);
+  }, [isFullscreen]);
+
   // Trigger enter animation on mount
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -1158,21 +1211,27 @@ export default function ProjectModal({
             : "opacity-0 translate-y-8"
         )}
       >
+        {/* Top white gradient overlay */}
+        <div className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-20" style={{
+          background: 'linear-gradient(180deg, hsla(0,0%,100%,.5) 0%, hsla(0,0%,100%,.369) 19%, hsla(0,0%,100%,.271) 34%, hsla(0,0%,100%,.191) 47%, hsla(0,0%,100%,.139) 56.5%, hsla(0,0%,100%,.097) 65%, hsla(0,0%,100%,.063) 73%, hsla(0,0%,100%,.038) 80.2%, hsla(0,0%,100%,.021) 86.1%, hsla(0,0%,100%,.011) 91%, hsla(0,0%,100%,.004) 95.2%, hsla(0,0%,100%,.001) 98.2%, transparent 100%)'
+        }} />
+
         {/* Inner container */}
         <div className="flex flex-col flex-1 min-h-0 relative">
           {/* Non-fullscreen header - absolutely positioned to float over content */}
           {!isFullscreen && (
             /* Modal header with expand button */
             <div className="absolute top-0 left-0 right-0 flex items-start justify-start pl-6 pr-7 pt-6 pb-3 z-10">
-              {/* Expand button */}
-              <button
-                onClick={handleExpandToFullscreen}
-                className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-lg hover:bg-gray-200 transition-colors duration-200 ease-out text-[#4b5563]"
-              >
-                <div className="relative shrink-0 size-[18px]">
-                  <BackArrowIcon />
-                </div>
-              </button>
+              <ExpandTooltip>
+                <button
+                  onClick={handleExpandToFullscreen}
+                  className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-lg hover:bg-gray-200 transition-colors duration-200 ease-out text-[#4b5563]"
+                >
+                  <div className="relative shrink-0 size-[18px]">
+                    <BackArrowIcon />
+                  </div>
+                </button>
+              </ExpandTooltip>
             </div>
           )}
 
@@ -1203,7 +1262,7 @@ export default function ProjectModal({
           {isFullscreen && (
             <div 
               className={clsx(
-                "content-stretch flex flex-col items-start px-16 max-md:px-6 relative shrink-0 w-full md:sticky md:top-0 z-10 transition-all duration-300 ease-out",
+                "content-stretch flex flex-col items-start px-16 max-md:px-6 relative shrink-0 w-full md:sticky md:top-0 z-30 transition-all duration-300 ease-out",
                 isScrolled ? "py-4" : "py-8"
               )}
               /*style={{ 
