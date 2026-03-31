@@ -266,6 +266,34 @@ html {
   }
 }
 
+/* Fixed white top-edge gradient (à la benji.org) */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8rem;
+  background: linear-gradient(
+    180deg,
+    hsla(0,0%,100%,.5) 0%,
+    hsla(0,0%,100%,.369) 19%,
+    hsla(0,0%,100%,.271) 34%,
+    hsla(0,0%,100%,.191) 47%,
+    hsla(0,0%,100%,.139) 56.5%,
+    hsla(0,0%,100%,.097) 65%,
+    hsla(0,0%,100%,.063) 73%,
+    hsla(0,0%,100%,.038) 80.2%,
+    hsla(0,0%,100%,.021) 86.1%,
+    hsla(0,0%,100%,.011) 91%,
+    hsla(0,0%,100%,.004) 95.2%,
+    hsla(0,0%,100%,.001) 98.2%,
+    hsla(0,0%,100%,0) 100%
+  );
+  pointer-events: none;
+  z-index: 40;
+}
+
 .header-gradient {
   background: linear-gradient(190deg, #BACCFF 0%, #BACCFF 8%, #CCDAFF 15%, #F5E2FF 22%, #FDE9FA 28%, #FFF5FC 35%, #FFFEFF 42%, #ffffff 55%, #ffffff 100%);
   background-size: 120% 120%;
@@ -579,17 +607,33 @@ p a:hover {
    HIDE VIDEO PLAY BUTTON ON MOBILE
    ========================================== */
 @media (max-width: 767px) {
-  /* Hide native video play button */
-  video::-webkit-media-controls-start-playback-button {
+  video::-webkit-media-controls-panel,
+  video::-webkit-media-controls,
+  video::-webkit-media-controls-start-playback-button,
+  video::-webkit-media-controls-play-button,
+  video::-webkit-media-controls-overlay-play-button,
+  video::-webkit-media-controls-timeline,
+  video::-webkit-media-controls-current-time-display,
+  video::-webkit-media-controls-time-remaining-display,
+  video::-webkit-media-controls-mute-button,
+  video::-webkit-media-controls-volume-slider,
+  video::-webkit-media-controls-fullscreen-button,
+  video::-webkit-media-controls-enclosure {
     display: none !important;
+    -webkit-appearance: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
-  
-  video::-webkit-media-controls-play-button {
-    display: none !important;
-  }
-  
-  /* Hide play button overlay on video elements */
-  video::--webkit-media-controls-overlay-play-button {
-    display: none !important;
-  }
+}
+
+video::-webkit-media-controls {
+  display: none !important;
+}
+
+video::-webkit-media-controls-panel {
+  display: none !important;
+}
+
+video::-webkit-media-controls-enclosure {
+  display: none !important;
 }

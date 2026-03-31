@@ -657,6 +657,11 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
               : 'opacity-0 translate-y-8'
         )}
       >
+        {/* Top white gradient overlay */}
+        <div className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-20" style={{
+          background: 'linear-gradient(180deg, hsla(0,0%,100%,.5) 0%, hsla(0,0%,100%,.369) 19%, hsla(0,0%,100%,.271) 34%, hsla(0,0%,100%,.191) 47%, hsla(0,0%,100%,.139) 56.5%, hsla(0,0%,100%,.097) 65%, hsla(0,0%,100%,.063) 73%, hsla(0,0%,100%,.038) 80.2%, hsla(0,0%,100%,.021) 86.1%, hsla(0,0%,100%,.011) 91%, hsla(0,0%,100%,.004) 95.2%, hsla(0,0%,100%,.001) 98.2%, transparent 100%)'
+        }} />
+
         <div className="flex flex-col flex-1 min-h-0 pt-6 max-md:pt-4">
           <div className="overflow-y-auto flex-1">
             <div className="content-stretch flex flex-col gap-5 items-start px-44 max-md:px-10 pt-16 max-md:pt-4 pb-8 max-md:pb-10 relative shrink-0 w-full">
