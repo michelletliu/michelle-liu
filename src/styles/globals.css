@@ -266,32 +266,34 @@ html {
   }
 }
 
-/* Fixed white top-edge gradient (à la benji.org) */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 8rem;
-  background: linear-gradient(
-    180deg,
-    hsla(0,0%,100%,.5) 0%,
-    hsla(0,0%,100%,.369) 19%,
-    hsla(0,0%,100%,.271) 34%,
-    hsla(0,0%,100%,.191) 47%,
-    hsla(0,0%,100%,.139) 56.5%,
-    hsla(0,0%,100%,.097) 65%,
-    hsla(0,0%,100%,.063) 73%,
-    hsla(0,0%,100%,.038) 80.2%,
-    hsla(0,0%,100%,.021) 86.1%,
-    hsla(0,0%,100%,.011) 91%,
-    hsla(0,0%,100%,.004) 95.2%,
-    hsla(0,0%,100%,.001) 98.2%,
-    hsla(0,0%,100%,0) 100%
-  );
-  pointer-events: none;
-  z-index: 40;
+/* Fixed white top-edge gradient (à la benji.org) - desktop only */
+@media (min-width: 768px) {
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8rem;
+    background: linear-gradient(
+      180deg,
+      hsla(0,0%,100%,.5) 0%,
+      hsla(0,0%,100%,.369) 19%,
+      hsla(0,0%,100%,.271) 34%,
+      hsla(0,0%,100%,.191) 47%,
+      hsla(0,0%,100%,.139) 56.5%,
+      hsla(0,0%,100%,.097) 65%,
+      hsla(0,0%,100%,.063) 73%,
+      hsla(0,0%,100%,.038) 80.2%,
+      hsla(0,0%,100%,.021) 86.1%,
+      hsla(0,0%,100%,.011) 91%,
+      hsla(0,0%,100%,.004) 95.2%,
+      hsla(0,0%,100%,.001) 98.2%,
+      hsla(0,0%,100%,0) 100%
+    );
+    pointer-events: none;
+    z-index: 40;
+  }
 }
 
 .header-gradient {

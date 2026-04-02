@@ -265,7 +265,7 @@ export default function VideoPlayer({
       controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
       style={{ 
         WebkitAppearance: 'none',
-        pointerEvents: 'none'
+        pointerEvents: 'none',
       }}
     />
   );

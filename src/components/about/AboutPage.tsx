@@ -86,47 +86,25 @@ const fadeUpStyles = `
 }
 `;
 
-// Startup logos with staggered reveal via IntersectionObserver (not ScrollReveal, to avoid parent opacity masking)
 function StartupLogosRow({ startups }: { startups: StartupCardData[] }) {
   const rowRef = useRef<HTMLDivElement>(null);
+  const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
     const el = rowRef.current;
     if (!el) return;
 
-    let observer: IntersectionObserver | null = null;
-    let cancelled = false;
-
-    // Wait two frames so layout is fully settled before observing
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (cancelled || !el) return;
-
-        // If already in viewport (above the fold), reveal immediately
-        const rect = el.getBoundingClientRect();
-        const windowH = window.innerHeight;
-        if (rect.top < windowH - 40 && rect.bottom > 0) {
-          el.classList.add("revealed");
-          return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setRevealed(true);
+          observer.disconnect();
         }
-
-        observer = new IntersectionObserver(
-          ([entry]) => {
-            if (entry.isIntersecting) {
-              el.classList.add("revealed");
-              observer?.disconnect();
-            }
-          },
-          { threshold: 0, rootMargin: "0px 0px -40px 0px" }
-        );
-        observer.observe(el);
-      });
-    });
-
-    return () => {
-      cancelled = true;
-      observer?.disconnect();
-    };
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -20px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -134,8 +112,12 @@ function StartupLogosRow({ startups }: { startups: StartupCardData[] }) {
       {startups.map((startup, i) => (
         <div
           key={startup.id}
-          className="animate-fade-up-right w-12 md:w-auto"
-          style={{ animationDelay: `${i * 80}ms` }}
+          className="w-12 md:w-auto transition-all duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+          style={{
+            opacity: revealed ? 1 : 0,
+            transform: revealed ? 'translateY(0)' : 'translateY(10px)',
+            transitionDelay: revealed ? `${i * 100}ms` : '0ms',
+          }}
         >
           <StartupCard data={startup} />
         </div>

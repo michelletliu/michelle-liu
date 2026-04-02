@@ -354,16 +354,19 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
           />
         )}
         {isVisible && videoReady && (
-          <VideoPlayer
-            src={videoSrc}
-            className="absolute max-w-none object-cover rounded-[26px] size-full"
-            autoPlay
-            muted
-            loop
-            controls={false}
-            muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
-            onLoaded={() => setVideoLoaded(true)}
-          />
+          <>
+            <VideoPlayer
+              src={videoSrc}
+              className="absolute max-w-none object-cover rounded-[26px] size-full"
+              autoPlay
+              muted
+              loop
+              controls={false}
+              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+              onLoaded={() => setVideoLoaded(true)}
+            />
+            <div className="absolute inset-0 z-[2] rounded-[26px]" />
+          </>
         )}
         {/* Shimmer only shown if no thumbnail available */}
         {!imageSrc && (
@@ -657,8 +660,8 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
               : 'opacity-0 translate-y-8'
         )}
       >
-        {/* Top white gradient overlay */}
-        <div className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-20" style={{
+        {/* Top white gradient overlay - desktop only */}
+        <div className="hidden md:block absolute top-0 left-0 right-0 h-32 pointer-events-none z-20" style={{
           background: 'linear-gradient(180deg, hsla(0,0%,100%,.5) 0%, hsla(0,0%,100%,.369) 19%, hsla(0,0%,100%,.271) 34%, hsla(0,0%,100%,.191) 47%, hsla(0,0%,100%,.139) 56.5%, hsla(0,0%,100%,.097) 65%, hsla(0,0%,100%,.063) 73%, hsla(0,0%,100%,.038) 80.2%, hsla(0,0%,100%,.021) 86.1%, hsla(0,0%,100%,.011) 91%, hsla(0,0%,100%,.004) 95.2%, hsla(0,0%,100%,.001) 98.2%, transparent 100%)'
         }} />
 
