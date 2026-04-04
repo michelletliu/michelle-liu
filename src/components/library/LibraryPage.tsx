@@ -493,6 +493,11 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
                     });
                   }
                   const slug = getBookSlug(book);
+                  const isDesktop = window.innerWidth >= 768;
+                  if (isPopupMode && isDesktop) {
+                    navigate(`/project/library/full/${encodeURIComponent(slug)}`);
+                    return;
+                  }
                   setSelectedBook(book);
                   const nextPath = openBookPath(slug);
                   if (window.location.pathname !== nextPath) {
