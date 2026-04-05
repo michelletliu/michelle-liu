@@ -495,7 +495,7 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
                   const slug = getBookSlug(book);
                   const isDesktop = window.innerWidth >= 768;
                   if (isPopupMode && isDesktop) {
-                    navigate(`/project/library/full/${encodeURIComponent(slug)}`);
+                    navigate('/project/library/full');
                     return;
                   }
                   setSelectedBook(book);
