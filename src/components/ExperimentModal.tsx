@@ -136,6 +136,10 @@ type ExperimentModalProps = {
   projectId: 'polaroid' | 'library' | 'screentime' | 'sketchbook';
   project: ExperimentProject;
   onClose: () => void;
+  onExpandToFullscreen?: (bookSlug?: string) => void;
+  onCollapseFromFullscreen?: () => void;
+  onBookSlugChange?: (bookSlug?: string, options?: { replace?: boolean }) => void;
+  bookSlug?: string;
   initialFullscreen?: boolean;
 };
 
@@ -187,17 +191,12 @@ function ExpandTooltip({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function ExperimentModal({ projectId, project, onClose, initialFullscreen = false }: ExperimentModalProps) {
+export default function ExperimentModal({ projectId, project, onClose, onExpandToFullscreen, onCollapseFromFullscreen, onBookSlugChange, bookSlug, initialFullscreen = false }: ExperimentModalProps) {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(initialFullscreen);
   const [showInfoModal, setShowInfoModal] = useState(false);
-
-  // Sync fullscreen state with URL prop when it changes
-  useEffect(() => {
-    setIsFullscreen(initialFullscreen);
-  }, [initialFullscreen]);
+  const isFullscreen = initialFullscreen;
 
   // Auto-redirect to fullscreen on mobile for library
   useEffect(() => {
@@ -314,15 +313,19 @@ export default function ExperimentModal({ projectId, project, onClose, initialFu
   };
 
   const handleExpand = () => {
-    // Set local state for smooth animation, then update URL
-    setIsFullscreen(true);
-    navigate(`/project/${projectId}/full`, { replace: true });
+    if (onExpandToFullscreen) {
+      onExpandToFullscreen();
+    } else {
+      navigate(`/project/${projectId}/full`, { replace: true });
+    }
   };
 
   const handleCollapse = () => {
-    // Set local state for smooth animation, then update URL
-    setIsFullscreen(false);
-    navigate(`/project/${projectId}`, { replace: true });
+    if (onCollapseFromFullscreen) {
+      onCollapseFromFullscreen();
+    } else {
+      navigate(`/project/${projectId}`, { replace: true });
+    }
   };
 
   // Render the appropriate experiment component
@@ -331,7 +334,15 @@ export default function ExperimentModal({ projectId, project, onClose, initialFu
       case 'polaroid':
         return <PolaroidPage />;
       case 'library':
-        return <LibraryPage />;
+        return (
+          <LibraryPage
+            bookSlug={bookSlug}
+            isFullscreen={isFullscreen}
+            onCollapse={handleCollapse}
+            onOpenBookInFullscreen={onExpandToFullscreen}
+            onBookSlugChange={onBookSlugChange}
+          />
+        );
       case 'screentime':
         return <ScreentimePage />;
       case 'sketchbook':
@@ -371,10 +382,12 @@ export default function ExperimentModal({ projectId, project, onClose, initialFu
         )}
         style={{ backgroundColor: getBackgroundColor(project) }}
       >
-        {/* Top white gradient overlay - desktop only */}
-        <div className="hidden md:block absolute top-0 left-0 right-0 h-32 pointer-events-none z-20" style={{
-          background: 'linear-gradient(180deg, hsla(0,0%,100%,.5) 0%, hsla(0,0%,100%,.369) 19%, hsla(0,0%,100%,.271) 34%, hsla(0,0%,100%,.191) 47%, hsla(0,0%,100%,.139) 56.5%, hsla(0,0%,100%,.097) 65%, hsla(0,0%,100%,.063) 73%, hsla(0,0%,100%,.038) 80.2%, hsla(0,0%,100%,.021) 86.1%, hsla(0,0%,100%,.011) 91%, hsla(0,0%,100%,.004) 95.2%, hsla(0,0%,100%,.001) 98.2%, transparent 100%)'
-        }} />
+        {/* Top white gradient overlay - desktop only, hidden when fullscreen (fullscreen pages manage their own gradient) */}
+        {!isFullscreen && (
+          <div className="hidden md:block absolute top-0 left-0 right-0 h-32 pointer-events-none z-20" style={{
+            background: 'linear-gradient(180deg, hsla(0,0%,100%,.5) 0%, hsla(0,0%,100%,.369) 19%, hsla(0,0%,100%,.271) 34%, hsla(0,0%,100%,.191) 47%, hsla(0,0%,100%,.139) 56.5%, hsla(0,0%,100%,.097) 65%, hsla(0,0%,100%,.063) 73%, hsla(0,0%,100%,.038) 80.2%, hsla(0,0%,100%,.021) 86.1%, hsla(0,0%,100%,.011) 91%, hsla(0,0%,100%,.004) 95.2%, hsla(0,0%,100%,.001) 98.2%, transparent 100%)'
+          }} />
+        )}
 
         {/* Header - expand button only in popup mode (fullscreen uses embedded page's logo) */}
         {!isFullscreen && (

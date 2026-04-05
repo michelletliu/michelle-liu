@@ -86,7 +86,7 @@ const fadeUpStyles = `
 }
 `;
 
-function StartupLogosRow({ startups }: { startups: StartupCardData[] }) {
+function StartupLogosRow({ startups, startDelay = 0 }: { startups: StartupCardData[]; startDelay?: number }) {
   const rowRef = useRef<HTMLDivElement>(null);
   const [revealed, setRevealed] = useState(false);
 
@@ -94,29 +94,32 @@ function StartupLogosRow({ startups }: { startups: StartupCardData[] }) {
     const el = rowRef.current;
     if (!el) return;
 
+    let timeout: NodeJS.Timeout;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setRevealed(true);
+          timeout = setTimeout(() => setRevealed(true), startDelay);
           observer.disconnect();
         }
       },
       { threshold: 0.1, rootMargin: "0px 0px -20px 0px" }
     );
     observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+    return () => { observer.disconnect(); clearTimeout(timeout); };
+  }, [startDelay]);
 
   return (
     <div ref={rowRef} className="flex justify-between md:flex-wrap md:gap-y-6 md:-ml-2">
       {startups.map((startup, i) => (
         <div
           key={startup.id}
-          className="w-12 md:w-auto transition-all duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+          className="w-12 md:w-auto"
           style={{
             opacity: revealed ? 1 : 0,
-            transform: revealed ? 'translateY(0)' : 'translateY(10px)',
-            transitionDelay: revealed ? `${i * 100}ms` : '0ms',
+            transform: revealed ? 'translateY(0)' : 'translateY(8px)',
+            transition: 'opacity 500ms cubic-bezier(0.25,0.1,0.25,1), transform 500ms cubic-bezier(0.25,0.1,0.25,1)',
+            transitionDelay: revealed ? `${i * 120}ms` : '0ms',
+            willChange: revealed ? 'auto' : 'opacity, transform',
           }}
         >
           <StartupCard data={startup} />
@@ -789,7 +792,7 @@ export default function AboutPage() {
                         </p>
                       </div>
                     </ScrollReveal>
-                    <StartupLogosRow startups={startups} />
+                    <StartupLogosRow startups={startups} startDelay={experiences.length * 80 + 200} />
                   </div>
                 )}
               </div>

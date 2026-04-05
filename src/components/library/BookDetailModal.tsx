@@ -423,12 +423,12 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
             >
               Review
             </span>
-            <p 
+            <div 
               className="font-['SF_Pro:Regular',sans-serif] text-lg text-black leading-relaxed whitespace-pre-wrap"
               style={{ fontVariationSettings: "'wdth' 100" }}
             >
               {formatReview(book.review)}
-            </p>
+            </div>
           </div>
         )}
       </div>
