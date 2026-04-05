@@ -365,7 +365,7 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
               muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
               onLoaded={() => setVideoLoaded(true)}
             />
-            <div className="absolute inset-0 z-[2] rounded-[26px]" />
+            <div className="absolute inset-0 z-[2] rounded-[26px] pointer-events-none" />
           </>
         )}
         {/* Shimmer only shown if no thumbnail available */}
@@ -809,7 +809,7 @@ type HomePageClientProps = {
   bookSlug?: string;
 };
 
-export default function HomePageClient({ slug, mode }: HomePageClientProps) {
+export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientProps) {
   const navigate = useNavigate();
   const [isContactBadgeExpanded, setIsContactBadgeExpanded] = useState(false);
   
@@ -914,11 +914,16 @@ export default function HomePageClient({ slug, mode }: HomePageClientProps) {
 
   // Local fullscreen state for instant expand/collapse; URL syncs in background
   const [localFullscreen, setLocalFullscreen] = useState(mode === "full");
+  const [localBookSlug, setLocalBookSlug] = useState(bookSlug);
 
   // Sync when the Next.js router eventually catches up
   useEffect(() => {
     setLocalFullscreen(mode === "full");
   }, [mode]);
+
+  useEffect(() => {
+    setLocalBookSlug(bookSlug);
+  }, [bookSlug]);
 
   const isFullscreenFromUrl = localFullscreen;
 
@@ -936,10 +941,12 @@ export default function HomePageClient({ slug, mode }: HomePageClientProps) {
     if (shouldGoFullscreen) {
       setLocalSlug(projectId);
       setLocalFullscreen(true);
+      setLocalBookSlug(undefined);
       navigate(`/project/${projectId}/full`);
     } else {
       setLocalSlug(projectId);
       setLocalFullscreen(false);
+      setLocalBookSlug(undefined);
       navigate(`/project/${projectId}`);
     }
   }, [navigate]);
@@ -947,25 +954,55 @@ export default function HomePageClient({ slug, mode }: HomePageClientProps) {
   const handleModalClose = () => {
     setLocalSlug(undefined);
     setLocalFullscreen(false);
+    setLocalBookSlug(undefined);
     navigate("/");
   };
 
   const handleExpandToFullscreen = () => {
     if (localSlug) {
       setLocalFullscreen(true);
+      setLocalBookSlug(undefined);
       navigate(`/project/${localSlug}/full`);
+    }
+  };
+
+  const handleExpandExperimentToFullscreen = (bookSlug?: string) => {
+    if (localSlug) {
+      setLocalFullscreen(true);
+      setLocalBookSlug(bookSlug);
+      navigate(
+        bookSlug
+          ? `/project/${localSlug}/full/${encodeURIComponent(bookSlug)}`
+          : `/project/${localSlug}/full`
+      );
     }
   };
 
   const handleCollapseFromFullscreen = () => {
     if (localSlug) {
       setLocalFullscreen(false);
+      setLocalBookSlug(undefined);
       navigate(`/project/${localSlug}`);
     }
   };
 
+  const handleExperimentBookSlugChange = (nextBookSlug?: string, options?: { replace?: boolean }) => {
+    if (!localSlug) return;
+
+    const basePath = localFullscreen
+      ? `/project/${localSlug}/full`
+      : `/project/${localSlug}`;
+    const nextPath = nextBookSlug
+      ? `${basePath}/${encodeURIComponent(nextBookSlug)}`
+      : basePath;
+
+    setLocalBookSlug(nextBookSlug);
+    navigate(nextPath, { replace: options?.replace });
+  };
+
   const handleProjectSwitch = (projectId: string) => {
     setLocalSlug(projectId);
+    setLocalBookSlug(undefined);
     const newPath = isFullscreenFromUrl
       ? `/project/${projectId}/full`
       : `/project/${projectId}`;
@@ -1091,6 +1128,10 @@ export default function HomePageClient({ slug, mode }: HomePageClientProps) {
             projectId={selectedProject.id as 'polaroid' | 'library' | 'screentime' | 'sketchbook'}
             project={selectedProject} 
             onClose={handleModalClose}
+            onExpandToFullscreen={handleExpandExperimentToFullscreen}
+            onCollapseFromFullscreen={handleCollapseFromFullscreen}
+            bookSlug={localBookSlug}
+            onBookSlugChange={handleExperimentBookSlugChange}
             initialFullscreen={isFullscreenFromUrl}
           />
         ) : (

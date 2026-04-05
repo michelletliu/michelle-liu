@@ -86,7 +86,7 @@ const fadeUpStyles = `
 }
 `;
 
-function StartupLogosRow({ startups }: { startups: StartupCardData[] }) {
+function StartupLogosRow({ startups, startDelay = 0 }: { startups: StartupCardData[]; startDelay?: number }) {
   const rowRef = useRef<HTMLDivElement>(null);
   const [revealed, setRevealed] = useState(false);
 
@@ -94,18 +94,19 @@ function StartupLogosRow({ startups }: { startups: StartupCardData[] }) {
     const el = rowRef.current;
     if (!el) return;
 
+    let timeout: NodeJS.Timeout;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setRevealed(true);
+          timeout = setTimeout(() => setRevealed(true), startDelay);
           observer.disconnect();
         }
       },
       { threshold: 0.1, rootMargin: "0px 0px -20px 0px" }
     );
     observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+    return () => { observer.disconnect(); clearTimeout(timeout); };
+  }, [startDelay]);
 
   return (
     <div ref={rowRef} className="flex justify-between md:flex-wrap md:gap-y-6 md:-ml-2">
@@ -789,7 +790,7 @@ export default function AboutPage() {
                         </p>
                       </div>
                     </ScrollReveal>
-                    <StartupLogosRow startups={startups} />
+                    <StartupLogosRow startups={startups} startDelay={experiences.length * 80 + 600} />
                   </div>
                 )}
               </div>

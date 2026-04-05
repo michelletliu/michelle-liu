@@ -38,7 +38,7 @@ export default function ShimmerVideo({
       />
       <VideoPlayer {...props} onLoaded={handleLoaded} />
       {/* Transparent overlay to block iOS native video controls from showing */}
-      <div className="absolute inset-0 z-[2]" />
+      <div className="absolute inset-0 z-[2] pointer-events-none" />
     </div>
   );
 }

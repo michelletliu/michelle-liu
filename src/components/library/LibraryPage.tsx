@@ -68,28 +68,48 @@ type FilterOption = {
   isAll?: boolean;
 };
 
-export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
+export default function LibraryPage({
+  bookSlug: bookSlugProp,
+  isFullscreen = false,
+  onCollapse,
+  onOpenBookInFullscreen,
+  onBookSlugChange,
+}: {
+  bookSlug?: string;
+  isFullscreen?: boolean;
+  onCollapse?: () => void;
+  onOpenBookInFullscreen?: (slug: string) => void;
+  onBookSlugChange?: (slug?: string, options?: { replace?: boolean }) => void;
+}) {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Derive bookSlug from URL if not passed as prop (e.g. when rendered inside ExperimentModal)
+  const bookSlug = bookSlugProp ?? (() => {
+    const fullMatch = location.pathname.match(/\/project\/library\/full\/(.+)/);
+    if (fullMatch) return decodeURIComponent(fullMatch[1]);
+    const directMatch = location.pathname.match(/\/library\/(.+)/);
+    if (directMatch) return decodeURIComponent(directMatch[1]);
+    return undefined;
+  })();
   const [searchParams, setSearchParams] = useSearchParams();
+  const isEmbedded = Boolean(onCollapse || onOpenBookInFullscreen || onBookSlugChange);
+  const isPopupMode = isEmbedded && !isFullscreen;
   
   // Fetch project info from Sanity (with fallback to defaults)
   const projectInfo = useExperimentProject('library', DEFAULT_LIBRARY_PROJECT);
   const [books, setBooks] = useState<Book[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>([{ value: 'favorites', label: 'favorites', isFavorites: true }]);
   const [activeFilter, setActiveFilter] = useState<string>("favorites");
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [showAddBookModal, setShowAddBookModal] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [isEntering, setIsEntering] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-  const [isPopupMode, setIsPopupMode] = useState(false);
   const logoRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const previousPopupModeRef = useRef(false);
 
   const slugify = (value: string) =>
     value
@@ -127,13 +147,25 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
       ? "/project/library/full"
       : "/library";
 
-  const setFilterFromBookYear = (book: Book) => {
-    if (book.year && book.year.trim()) {
-      setActiveFilter(book.year);
+  const updateStandaloneLibraryPath = (nextPath: string, options?: { replace?: boolean }) => {
+    if (window.location.pathname === nextPath) return;
+
+    if (!isEmbedded && nextPath.startsWith("/library")) {
+      if (options?.replace) {
+        window.history.replaceState(null, "", nextPath);
+      } else {
+        window.history.pushState(null, "", nextPath);
+      }
       return;
     }
-    setActiveFilter("all");
+
+    navigate(nextPath, { replace: options?.replace });
   };
+
+  const selectedBook = (() => {
+    if (!bookSlug || books.length === 0) return null;
+    return findBookBySlug(decodeURIComponent(bookSlug)) ?? null;
+  })();
 
   // Handle dropdown animation
   useEffect(() => {
@@ -147,40 +179,6 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
       setIsDropdownVisible(false);
     }
   }, [showFilterDropdown]);
-
-  // Detect popup mode (inside experiment modal but not fullscreen)
-  useEffect(() => {
-    const checkPopupMode = () => {
-      if (containerRef.current) {
-        const isInModal = containerRef.current.closest('.experiment-modal-embed:not(.fullscreen)') !== null;
-        
-        // Reset exiting state when transitioning from popup to fullscreen
-        if (previousPopupModeRef.current && !isInModal) {
-          setIsExiting(false);
-          setIsEntering(false);
-        }
-        
-        previousPopupModeRef.current = isInModal;
-        setIsPopupMode(isInModal);
-      }
-    };
-    
-    checkPopupMode();
-    window.addEventListener('resize', checkPopupMode);
-    
-    // Watch for class changes on the modal embed (for fullscreen transitions)
-    const modalEmbed = containerRef.current?.closest('.experiment-modal-embed');
-    let observer: MutationObserver | null = null;
-    if (modalEmbed) {
-      observer = new MutationObserver(checkPopupMode);
-      observer.observe(modalEmbed, { attributes: true, attributeFilter: ['class'] });
-    }
-    
-    return () => {
-      window.removeEventListener('resize', checkPopupMode);
-      observer?.disconnect();
-    };
-  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -234,17 +232,6 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
     ? books.filter(book => book.isFavorite)
     : books.filter(book => book.year === activeFilter);
 
-  // Open selected book from path slug (shareable URL)
-  useEffect(() => {
-    if (!bookSlug || books.length === 0 || selectedBook) return;
-
-    const book = findBookBySlug(decodeURIComponent(bookSlug));
-    if (book) {
-      setSelectedBook(book);
-      setFilterFromBookYear(book);
-    }
-  }, [bookSlug, books, selectedBook]);
-
   // Backward compatibility for old ?book=<id> links: resolve and redirect to slug path
   useEffect(() => {
     const bookParam = searchParams.get("book");
@@ -257,19 +244,18 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
 
     if (book) {
       const slug = getBookSlug(book);
-      setSelectedBook(book);
-      setFilterFromBookYear(book);
       setSearchParams({}, { replace: true });
-      const targetPath = openBookPath(slug);
-      if (window.location.pathname !== targetPath) {
-        window.history.replaceState(null, '', targetPath);
+      if (onBookSlugChange && location.pathname.startsWith("/project/library/full")) {
+        onBookSlugChange(slug, { replace: true });
+      } else {
+        const targetPath = openBookPath(slug);
+        updateStandaloneLibraryPath(targetPath, { replace: true });
       }
     }
-  }, [searchParams, books, selectedBook, setSearchParams, location.pathname, navigate, isPopupMode]);
+  }, [searchParams, books, selectedBook, setSearchParams, location.pathname, navigate, isPopupMode, onBookSlugChange, isEmbedded]);
 
   // Handle entrance animation and reset exit state when in fullscreen
   useEffect(() => {
-    const isFullscreen = window.location.pathname.includes('/full');
     // If we're in fullscreen mode, ensure we're not in exiting state
     if (isFullscreen) {
       setIsExiting(false);
@@ -283,15 +269,25 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
 
   // Handle navigation back to home
   const handleBackToHome = () => {
-    const isFullscreen = window.location.pathname.includes('/full');
+    const pathname = window.location.pathname;
+    const isFullscreen = pathname.includes('/full');
     const isMobile = window.innerWidth < 768;
+    const hasBookOpen = pathname.match(/\/full\/.+/);
     
     if (isFullscreen) {
-      if (isMobile) {
-        // Mobile fullscreen: go directly to homepage
+      if (hasBookOpen) {
+        // Book detail open → close book, stay on fullscreen library
+        if (onBookSlugChange && pathname.startsWith("/project/library/full")) {
+          onBookSlugChange(undefined, { replace: true });
+        } else {
+          const closePath = closeBookPath();
+          updateStandaloneLibraryPath(closePath, { replace: true });
+        }
+      } else if (isMobile) {
         navigate('/');
+      } else if (onCollapse) {
+        onCollapse();
       } else {
-        // Desktop fullscreen: go to popup mode
         navigate('/project/library');
       }
       return;
@@ -330,8 +326,8 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
           transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out'
         }}
       >
-        {/* Top white gradient - sticky inside container, desktop only */}
-        <div className="hidden md:block sticky top-0 left-0 right-0 h-32 -mb-32 pointer-events-none z-[9]" style={{
+        {/* Top white gradient - sticky so it follows scroll, below logo (z-[5] < z-10) */}
+        <div className="hidden md:block sticky top-0 left-0 right-0 h-32 -mb-32 pointer-events-none z-[5]" style={{
           background: 'linear-gradient(180deg, hsla(0,0%,100%,.5) 0%, hsla(0,0%,100%,.369) 19%, hsla(0,0%,100%,.271) 34%, hsla(0,0%,100%,.191) 47%, hsla(0,0%,100%,.139) 56.5%, hsla(0,0%,100%,.097) 65%, hsla(0,0%,100%,.063) 73%, hsla(0,0%,100%,.038) 80.2%, hsla(0,0%,100%,.021) 86.1%, hsla(0,0%,100%,.011) 91%, hsla(0,0%,100%,.004) 95.2%, hsla(0,0%,100%,.001) 98.2%, transparent 100%)'
         }} />
 
@@ -339,7 +335,7 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
         <InfoButton project={projectInfo} />
 
         {/* Logo */}
-        <div className="absolute top-0 left-0 pt-8 px-6 md:px-16 z-10">
+        <div className="absolute top-0 left-0 pt-8 px-6 md:px-16 z-20">
           <button
             ref={logoRef}
             onClick={handleBackToHome}
@@ -355,7 +351,7 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
         </div>
 
         {/* Header */}
-        <div className="pt-8 px-8 md:px-16 relative">
+        <div className="pt-8 px-8 md:px-16 relative z-10">
           <div className="flex flex-col gap-10 md:gap-12 items-start pb-5 md:pb-6">
             {/* Logo spacer - matches the logo size */}
             <div className="size-8 md:size-[44px] shrink-0" />
@@ -493,15 +489,20 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
                     });
                   }
                   const slug = getBookSlug(book);
-                  const isDesktop = window.innerWidth >= 768;
-                  if (isPopupMode && isDesktop) {
-                    navigate('/project/library/full');
-                    return;
-                  }
-                  setSelectedBook(book);
-                  const nextPath = openBookPath(slug);
-                  if (window.location.pathname !== nextPath) {
-                    window.history.pushState(null, '', nextPath);
+                  if (isPopupMode && window.innerWidth >= 768) {
+                    if (onOpenBookInFullscreen) {
+                      onOpenBookInFullscreen(slug);
+                    } else {
+                      navigate(`/project/library/full/${encodeURIComponent(slug)}`);
+                    }
+                  } else {
+                    // Already fullscreen or standalone → update the route for the selected book
+                    if (onBookSlugChange && location.pathname.startsWith("/project/library/full")) {
+                      onBookSlugChange(slug);
+                    } else {
+                      const nextPath = openBookPath(slug);
+                      updateStandaloneLibraryPath(nextPath);
+                    }
                   }
                 }} />
               ))}
@@ -517,13 +518,14 @@ export default function LibraryPage({ bookSlug }: { bookSlug?: string }) {
         <BookDetailModal
           book={selectedBook}
           onClose={() => {
-            setSelectedBook(null);
-            const closePath = closeBookPath();
-            if (window.location.pathname !== closePath) {
-              window.history.replaceState(null, '', closePath);
+            if (onBookSlugChange && location.pathname.startsWith("/project/library/full")) {
+              onBookSlugChange(undefined, { replace: true });
+            } else {
+              const closePath = closeBookPath();
+              updateStandaloneLibraryPath(closePath, { replace: true });
             }
           }}
-          isPopupMode={isPopupMode}
+          isPopupMode={isPopupMode && window.innerWidth < 768}
         />
       )}
     </>
