@@ -116,9 +116,9 @@ function StartupLogosRow({ startups, startDelay = 0 }: { startups: StartupCardDa
           className="w-12 md:w-auto"
           style={{
             opacity: revealed ? 1 : 0,
-            transform: revealed ? 'translateY(0)' : 'translateY(8px)',
-            transition: 'opacity 500ms cubic-bezier(0.25,0.1,0.25,1), transform 500ms cubic-bezier(0.25,0.1,0.25,1)',
-            transitionDelay: revealed ? `${i * 120}ms` : '0ms',
+            transform: revealed ? 'translateY(0)' : 'translateY(6px)',
+            transition: 'opacity 400ms cubic-bezier(0.4,0,0.2,1), transform 300ms cubic-bezier(0.25,0.1,0.25,1)',
+            transitionDelay: revealed ? `${i * 40}ms` : '0ms',
             willChange: revealed ? 'auto' : 'opacity, transform',
           }}
         >
