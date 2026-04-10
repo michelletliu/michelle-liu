@@ -475,7 +475,7 @@ p a:hover {
   transform: translate3d(0, 20px, 0);
   transition-property: transform, opacity;
   transition-timing-function: ease-out;
-  transition-duration: 0.8s;
+  transition-duration: 0.5s;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
