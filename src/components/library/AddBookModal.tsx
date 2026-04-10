@@ -129,7 +129,7 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
           {/* Note Field — revealed after title is entered */}
           {hasTitle && !isSubmitted && (
             <div className="flex flex-col w-full animate-note-field-in pt-1.5">
-              <div className="h-px bg-gray-100 w-full" />
+              <div className="h-px bg-gray-100 w-[calc(100%+40px)] -mx-5" />
               <p
                 className="font-['SF_Pro:Regular',sans-serif] font-normal text-base text-black mt-3"
                 style={inputFont}
