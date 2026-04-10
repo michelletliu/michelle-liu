@@ -13,6 +13,7 @@ import imgMailIcon from '../../assets/polaroid/7d8c54338d14a1f9afdfff1bec90c4237
 import imgXIcon from '../../assets/receipt/icons-optimized/IMG_6929.png';
 import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';
+import Tooltip from '../Tooltip';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
 
 
@@ -44,108 +45,6 @@ type ColorOption = {
   border: string;
 };
 
-// Tooltip warmup state - tracks if any tooltip is currently open
-// This allows subsequent tooltips to open instantly without delay or animation
-let tooltipWarmupActive = false;
-let tooltipWarmupTimeout: NodeJS.Timeout | null = null;
-
-function setTooltipWarmup(active: boolean) {
-  if (tooltipWarmupTimeout) {
-    clearTimeout(tooltipWarmupTimeout);
-    tooltipWarmupTimeout = null;
-  }
-  
-  if (active) {
-    tooltipWarmupActive = true;
-  } else {
-    // Keep warmup active briefly to allow moving between tooltips
-    tooltipWarmupTimeout = setTimeout(() => {
-      tooltipWarmupActive = false;
-    }, 150);
-  }
-}
-
-// Tooltip component
-function Tooltip({ label, children, offsetY = 0 }: { label: string; children: React.ReactNode; offsetY?: number }) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isEnding, setIsEnding] = useState(false);
-  const [isInstant, setIsInstant] = useState(false);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  const handleMouseEnter = () => {
-    // Clear any existing timeout
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-    }
-    
-    setIsEnding(false);
-    
-    // If warmup is active (another tooltip was recently open), show instantly
-    if (tooltipWarmupActive) {
-      setIsInstant(true);
-      setIsVisible(true);
-      setTooltipWarmup(true);
-    } else {
-      // Show tooltip after 800ms delay
-      setIsInstant(false);
-      hoverTimeoutRef.current = setTimeout(() => {
-        setIsVisible(true);
-        setTooltipWarmup(true);
-      }, 800);
-    }
-  };
-  
-  const handleMouseLeave = () => {
-    // Clear the timeout if user leaves before 800ms
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
-    
-    if (isVisible) {
-      // Signal that we're closing (but keep warmup briefly active)
-      setTooltipWarmup(false);
-      
-      // If instant mode, hide immediately without animation
-      if (isInstant) {
-        setIsVisible(false);
-        setIsInstant(false);
-      } else {
-        // Trigger exit animation
-        setIsEnding(true);
-        // Remove after animation completes
-        setTimeout(() => {
-          setIsVisible(false);
-          setIsEnding(false);
-        }, 125);
-      }
-    }
-  };
-  
-  return (
-    <div 
-      className="relative inline-flex"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      {children}
-      {isVisible && (
-        <div 
-          className="tooltip absolute left-1/2 px-2.5 py-1.5 bg-gray-800 text-white text-[13px] font-medium rounded-[10px] whitespace-nowrap pointer-events-none z-[9999] -translate-x-1/2"
-          data-ending-style={isEnding ? "" : undefined}
-          data-instant={isInstant ? "" : undefined}
-          style={{ 
-            bottom: `calc(100% + 8px - ${offsetY}px)`,
-            ['--transform-origin' as string]: 'center bottom'
-          }}
-        >
-          {label}
-          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-gray-800" />
-        </div>
-      )}
-    </div>
-  );
-}
 
 const colors: ColorOption[] = [
   { id: 'red', name: 'Red', fill: '#FF383C', fillHover: '#E32226', tint: 'rgba(255, 56, 60, 0.15)', border: '#f0c8c9' },
@@ -170,7 +69,7 @@ function ColorButton({
 
   if (isSelected) {
     return (
-      <Tooltip label={color.name} offsetY={-5}>
+      <Tooltip label={color.name} position="top">
         <button
           onClick={onClick}
           onMouseEnter={() => setIsHovered(true)}
@@ -199,7 +98,7 @@ function ColorButton({
   }
 
   return (
-    <Tooltip label={color.name} offsetY={-5}>
+    <Tooltip label={color.name} position="top">
       <button
         onClick={onClick}
         onMouseEnter={() => setIsHovered(true)}
@@ -828,7 +727,7 @@ export default function PolaroidPage() {
               {/* Toggle Buttons Container */}
               <div className="flex gap-[10px] items-center">
                 {/* Date Toggle Button */}
-                <Tooltip label="Date">
+                <Tooltip label="Date" position="top">
                   <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
                     <div aria-hidden="true" className="absolute border border-gray-200/80 border-solid inset-0 pointer-events-none rounded-[1000px]" />
                     <button
@@ -858,7 +757,7 @@ export default function PolaroidPage() {
                 </Tooltip>
 
                 {/* Text Toggle Button */}
-                <Tooltip label="Caption">
+                <Tooltip label="Caption" position="top">
                   <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
                     <div aria-hidden="true" className="absolute border border-gray-200/80 border-solid inset-0 pointer-events-none rounded-[1000px]" />
                     <button

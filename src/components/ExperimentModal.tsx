@@ -6,6 +6,7 @@ import { useScrollLock } from '../utils/useScrollLock';
 import ShimmerImage from './ShimmerImage';
 import ShimmerVideo from './ShimmerVideo';
 import { ArrowUpRight } from './ArrowUpRight';
+import Tooltip from './Tooltip';
 import type { ToolCategory } from './InfoButton';
 
 // Kick off chunk fetches immediately when this module loads (not when modal opens)
@@ -142,54 +143,6 @@ type ExperimentModalProps = {
   bookSlug?: string;
   initialFullscreen?: boolean;
 };
-
-function ButtonTooltip({ children, label }: { children: React.ReactNode; label: string }) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isEnding, setIsEnding] = useState(false);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleMouseEnter = () => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    setIsEnding(false);
-    hoverTimeoutRef.current = setTimeout(() => {
-      setIsVisible(true);
-    }, 800);
-  };
-
-  const handleMouseLeave = () => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
-    if (isVisible) {
-      setIsEnding(true);
-      setTimeout(() => {
-        setIsVisible(false);
-        setIsEnding(false);
-      }, 125);
-    }
-  };
-
-  return (
-    <div
-      className="relative inline-flex"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      {children}
-      {isVisible && (
-        <div
-          className="tooltip absolute left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-gray-800 text-white text-[13px] font-medium rounded-xl whitespace-nowrap pointer-events-none z-[9999]"
-          data-ending-style={isEnding ? "" : undefined}
-          style={{ top: 'calc(100% + 8px)', ['--transform-origin' as string]: 'center top' }}
-        >
-          {label}
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-[calc(100%-6px)] w-2.5 h-2.5 bg-gray-800 rotate-45 rounded-tl-sm" />
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function ExperimentModal({ projectId, project, onClose, onExpandToFullscreen, onCollapseFromFullscreen, onBookSlugChange, bookSlug, initialFullscreen = false }: ExperimentModalProps) {
   const navigate = useNavigate();
@@ -393,15 +346,15 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
         {!isFullscreen && (
           <div className="absolute top-0 left-0 z-[60] pointer-events-none pl-6 pt-6">
             <div className="pointer-events-auto">
-              <ButtonTooltip label="Expand">
+              <Tooltip label="Expand" offset={2}>
                 <button
                   onClick={handleExpand}
-                  className="cursor-pointer transition-colors duration-200 hover:bg-gray-200/50 text-[#4b5563] rounded-xl to p-1.5"
+                  className="cursor-pointer transition-colors duration-200 hover:bg-gray-200/50 text-gray-400 rounded-lg p-1.5"
                   aria-label="Expand to full page"
                 >
                   <ExpandIcon />
                 </button>
-              </ButtonTooltip>
+              </Tooltip>
             </div>
           </div>
         )}
@@ -409,26 +362,26 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
         {/* Info button fixed top right - only in popup mode (fullscreen uses embedded page's InfoButton) */}
         {!isFullscreen && (
           <div className={clsx(
-            "absolute top-0 right-0 z-[60] pointer-events-none pr-7 pt-6"
+            "absolute top-0 right-0 z-[60] pointer-events-none pr-7 pt-[26px]"
           )}>
             <div className="pointer-events-auto relative" data-info-button-container>
-              <ButtonTooltip label="Process">
+              <Tooltip label="Process">
                 <button
                   onClick={() => setShowInfoModal(!showInfoModal)}
                   className={clsx(
-                    "cursor-pointer transition-colors duration-200 text-[#9ca3af] rounded-full p-2 -m-1",
-                    showInfoModal ? "bg-gray-200/50" : "hover:bg-gray-200/50"
+                    "cursor-pointer transition-colors duration-200 rounded-full p-2 -m-1",
+                    showInfoModal ? "bg-gray-200/50 text-gray-500" : "hover:bg-gray-200/50 text-gray-400"
                   )}
                   aria-label="Project info"
                   data-info-button
                 >
                   <InfoIcon />
                 </button>
-              </ButtonTooltip>
+              </Tooltip>
               
               {/* Dropdown popover below button */}
               {showInfoModal && (
-                <div className="absolute top-full right-0 mt-2 z-[70]">
+                <div className="absolute top-full -right-1 z-[70]">
                   <InfoPopover project={project} onClose={() => setShowInfoModal(false)} isFullscreen={false} />
                 </div>
               )}

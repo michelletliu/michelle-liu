@@ -669,7 +669,7 @@ function GenerateScreen({
           </button>
         </div>
       </div>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 py-2">
         <button
           onClick={onGenerate}
           className="bg-zinc-900 flex items-center justify-center px-6 py-[10px] relative rounded-full shrink-0 cursor-pointer hover:bg-zinc-700 transition-colors w-full"

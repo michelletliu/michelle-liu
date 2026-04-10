@@ -10,6 +10,7 @@ import type { Project, ContentSection } from "../../sanity/types";
 import Footer from "../Footer";
 import ShimmerImage from "../ShimmerImage";
 import ShimmerVideo from "../ShimmerVideo";
+import Tooltip from "../Tooltip";
 import ViewAllProjectsButton from "./ViewAllProjectsButton";
 import AlsoCheckOut from "./AlsoCheckOut";
 import ProjectCardSection from "./ProjectCardSection";
@@ -21,54 +22,6 @@ import lockIcon from "../../assets/lock.svg";
 import expandIcon from "../../assets/Expand.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
 import { posthog, posthogEnabled } from "../../lib/posthog";
-
-function ExpandTooltip({ children }: { children: React.ReactNode }) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isEnding, setIsEnding] = useState(false);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleMouseEnter = () => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    setIsEnding(false);
-    hoverTimeoutRef.current = setTimeout(() => {
-      setIsVisible(true);
-    }, 800);
-  };
-
-  const handleMouseLeave = () => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
-    if (isVisible) {
-      setIsEnding(true);
-      setTimeout(() => {
-        setIsVisible(false);
-        setIsEnding(false);
-      }, 125);
-    }
-  };
-
-  return (
-    <div
-      className="relative inline-flex"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      {children}
-      {isVisible && (
-        <div
-          className="tooltip absolute left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-gray-950 text-white text-[13px] font-medium rounded-[10px] whitespace-nowrap pointer-events-none z-[9999]"
-          data-ending-style={isEnding ? "" : undefined}
-          style={{ top: 'calc(100% + 8px)', ['--transform-origin' as string]: 'center top' }}
-        >
-          Expand
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-gray-950" />
-        </div>
-      )}
-    </div>
-  );
-}
 
 // Helper to render text with highlighted portion
 function renderHighlightedText(text: string, highlightedText?: string, highlightColor?: string): React.ReactNode {
@@ -1222,7 +1175,7 @@ export default function ProjectModal({
           {!isFullscreen && (
             /* Modal header with expand button */
             <div className="absolute top-0 left-0 right-0 flex items-start justify-start pl-6 pr-7 pt-6 pb-3 z-10">
-              <ExpandTooltip>
+              <Tooltip label="Expand">
                 <button
                   onClick={handleExpandToFullscreen}
                   className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-lg hover:bg-gray-200 transition-colors duration-200 ease-out text-[#4b5563]"
@@ -1231,7 +1184,7 @@ export default function ProjectModal({
                     <BackArrowIcon />
                   </div>
                 </button>
-              </ExpandTooltip>
+              </Tooltip>
             </div>
           )}
 
