@@ -349,7 +349,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
               <Tooltip label="Expand" offset={2}>
                 <button
                   onClick={handleExpand}
-                  className="cursor-pointer transition-colors duration-200 hover:bg-gray-200/50 text-[#4b5563] rounded-lg p-1.5"
+                  className="cursor-pointer transition-colors duration-200 hover:bg-gray-200/50 text-gray-400 rounded-lg p-1.5"
                   aria-label="Expand to full page"
                 >
                   <ExpandIcon />
@@ -362,15 +362,15 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
         {/* Info button fixed top right - only in popup mode (fullscreen uses embedded page's InfoButton) */}
         {!isFullscreen && (
           <div className={clsx(
-            "absolute top-0 right-0 z-[60] pointer-events-none pr-7 pt-6"
+            "absolute top-0 right-0 z-[60] pointer-events-none pr-7 pt-[26px]"
           )}>
             <div className="pointer-events-auto relative" data-info-button-container>
               <Tooltip label="Process">
                 <button
                   onClick={() => setShowInfoModal(!showInfoModal)}
                   className={clsx(
-                    "cursor-pointer transition-colors duration-200 text-[#9ca3af] rounded-full p-2 -m-1",
-                    showInfoModal ? "bg-gray-200/50" : "hover:bg-gray-200/50"
+                    "cursor-pointer transition-colors duration-200 rounded-full p-2 -m-1",
+                    showInfoModal ? "bg-gray-200/50 text-gray-500" : "hover:bg-gray-200/50 text-gray-400"
                   )}
                   aria-label="Project info"
                   data-info-button
@@ -381,7 +381,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
               
               {/* Dropdown popover below button */}
               {showInfoModal && (
-                <div className="absolute top-full right-0 mt-2 z-[70]">
+                <div className="absolute top-full -right-1 z-[70]">
                   <InfoPopover project={project} onClose={() => setShowInfoModal(false)} isFullscreen={false} />
                 </div>
               )}
