@@ -727,9 +727,9 @@ export default function PolaroidPage() {
               {/* Toggle Buttons Container */}
               <div className="flex gap-[10px] items-center">
                 {/* Date Toggle Button */}
-                <Tooltip label="Date" position="top">
-                  <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
-                    <div aria-hidden="true" className="absolute border border-gray-200/80 border-solid inset-0 pointer-events-none rounded-[1000px]" />
+                <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
+                  <div aria-hidden="true" className="absolute border border-gray-200/80 border-solid inset-0 pointer-events-none rounded-[1000px]" />
+                  <Tooltip label="Date" position="top" offset={1}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -753,13 +753,13 @@ export default function PolaroidPage() {
                         </svg>
                       </div>
                     </button>
-                  </div>
-                </Tooltip>
+                  </Tooltip>
+                </div>
 
                 {/* Text Toggle Button */}
-                <Tooltip label="Caption" position="top">
-                  <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
-                    <div aria-hidden="true" className="absolute border border-gray-200/80 border-solid inset-0 pointer-events-none rounded-[1000px]" />
+                <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
+                  <div aria-hidden="true" className="absolute border border-gray-200/80 border-solid inset-0 pointer-events-none rounded-[1000px]" />
+                  <Tooltip label="Caption" position="top" offset={1}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -789,8 +789,8 @@ export default function PolaroidPage() {
                         </svg>
                       </div>
                     </button>
-                  </div>
-                </Tooltip>
+                  </Tooltip>
+                </div>
               </div>
             </div>
           </div>
