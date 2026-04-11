@@ -6,23 +6,9 @@ import clsx from "clsx";
 import { ScrollReveal } from "../ScrollReveal";
 import PageHeader from "../PageHeader";
 import NavigationTabs from "../NavigationTabs";
-
-// CSS for fade up animation
-const fadeUpStyles = `
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-fade-up {
-  animation: fadeUp 400ms ease-out forwards;
-}
-`;
+import { useHeroAnimation } from "../../hooks/useHeroAnimation";
+import { fadeUpStyles } from "../../styles/animations";
+import LoadingSpinner from "../LoadingSpinner";
 import Footer from "../Footer";
 import HeaderBreakpoint from "./HeaderBreakpoint";
 import ArtGallery from "./ArtGallery";
@@ -106,21 +92,7 @@ export default function ArtPage() {
   const [activeSketchbookIndex, setActiveSketchbookIndex] = useState<number | undefined>(undefined);
   const [activeMuralIndex, setActiveMuralIndex] = useState<number | undefined>(undefined);
 
-  // Track if hero animation has been played this session to prevent re-animation on tab switches
-  // Always start false to avoid SSR/client hydration mismatch, then sync from sessionStorage
-  const [heroAnimationPlayed, setHeroAnimationPlayed] = useState(false);
-  
-  useEffect(() => {
-    if (sessionStorage.getItem('heroAnimationPlayed') === 'true') {
-      setHeroAnimationPlayed(true);
-    } else {
-      const timer = setTimeout(() => {
-        sessionStorage.setItem('heroAnimationPlayed', 'true');
-        setHeroAnimationPlayed(true);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+  const heroAnimationPlayed = useHeroAnimation();
 
   // Section refs for scrolling
   const paintingRef = useRef<HTMLDivElement>(null);
@@ -405,10 +377,7 @@ export default function ArtPage() {
           {/* Loading State */}
           {isLoading && (
             <div className="flex items-center justify-center w-full py-20">
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                <p className="text-gray-400 text-base">Loading artwork...</p>
-              </div>
+              <LoadingSpinner size="md" label="Loading artwork..." />
             </div>
           )}
 

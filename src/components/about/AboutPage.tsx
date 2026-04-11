@@ -7,6 +7,10 @@ import { useNavigate } from "@/lib/navigation";
 import clsx from "clsx";
 import { ScrollReveal } from "../ScrollReveal";
 import PageHeader from "../PageHeader";
+import { useHeroAnimation } from "../../hooks/useHeroAnimation";
+import { fadeUpStyles } from "../../styles/animations";
+import SectionHeading from "../SectionHeading";
+import LoadingSpinner from "../LoadingSpinner";
 
 // Components
 import ExperienceCard from "./ExperienceCard";
@@ -56,35 +60,7 @@ import type { LoreCardData } from "./LoreCard";
 import type { StartupCardData } from "./StartupCard";
 import type { MediaCardData } from "./MediaCard";
 
-// CSS for animations
-const fadeUpStyles = `
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes fadeUpRight {
-  from {
-    opacity: 0;
-    transform: translate(-10px, 12px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(0, 0);
-  }
-}
-.animate-fade-up {
-  animation: fadeUp 400ms ease-out forwards;
-}
-.animate-fade-up-right {
-  animation: fadeUpRight 420ms ease-out forwards;
-}
-`;
+// fadeUpStyles imported from shared animations
 
 function StartupLogosRow({ startups, startDelay = 0 }: { startups: StartupCardData[]; startDelay?: number }) {
   const rowRef = useRef<HTMLDivElement>(null);
@@ -323,21 +299,7 @@ function transformStartups(data: Startup[]): StartupCardData[] {
 export default function AboutPage() {
   const navigate = useNavigate();
 
-  // Track if hero animation has been played this session
-  // Always start false to avoid SSR/client hydration mismatch, then sync from sessionStorage
-  const [heroAnimationPlayed, setHeroAnimationPlayed] = useState(false);
-
-  useEffect(() => {
-    if (sessionStorage.getItem('heroAnimationPlayed') === 'true') {
-      setHeroAnimationPlayed(true);
-    } else {
-      const timer = setTimeout(() => {
-        sessionStorage.setItem('heroAnimationPlayed', 'true');
-        setHeroAnimationPlayed(true);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+  const heroAnimationPlayed = useHeroAnimation();
 
   // Active category for sidebar
   const [activeCategory, setActiveCategory] = useState<AboutCategory>("hi");
@@ -767,10 +729,7 @@ export default function AboutPage() {
               </div>
             </ScrollReveal>
             {isLoading ? (
-              <div className="flex items-center gap-3 py-4">
-                <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-400 rounded-full animate-spin" />
-                <span className="text-gray-400 text-sm">Loading...</span>
-              </div>
+              <LoadingSpinner label="Loading..." className="py-4" />
             ) : experiences.length > 0 ? (
               <div className="flex flex-col gap-10 md:gap-12 md:pt-1.5 md:w-1/2 md:shrink-0">
                 {experiences.map((exp, index) => (
@@ -815,10 +774,7 @@ export default function AboutPage() {
               </div>
             </ScrollReveal>
             {isLoading ? (
-              <div className="flex items-center gap-3 py-4">
-                <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-400 rounded-full animate-spin" />
-                <span className="text-gray-400 text-sm">Loading...</span>
-              </div>
+              <LoadingSpinner label="Loading..." className="py-4" />
             ) : communities.length > 0 ? (
               <div className="flex flex-col gap-12 pt-4">
                 {communities.map((community, index) => (
@@ -847,14 +803,7 @@ export default function AboutPage() {
           {/* Philosophy Section - Hardcoded placeholder */}
           <section ref={philosophyRef} className="flex flex-col gap-12 w-full scroll-mt-8">
             <ScrollReveal variant="fade">
-              <div className="flex flex-col">
-                <h2 className="font-['Michelle',sans-serif] font-medium text-gray-600 text-3xl leading-normal shrink-0">
-                  My Favorite Quotes
-                </h2>
-                <p className="font-['Michelle',sans-serif] tracking-wide font-normal text-gray-400 text-lg">
-                  a.k.a. my Design ( + Life ) Philosophy
-                </p>
-              </div>
+              <SectionHeading title="My Favorite Quotes" subtitle="a.k.a. my Design ( + Life ) Philosophy" />
             </ScrollReveal>
             {quotes.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:grid-rows-[1fr_1fr]">
@@ -872,21 +821,11 @@ export default function AboutPage() {
           {/* Shelf Section */}
           <section ref={shelfRef} className="flex flex-col gap-6 w-full scroll-mt-8">
             <ScrollReveal variant="fade">
-              <div className="flex flex-col">
-                <h2 className="font-['Michelle',sans-serif] font-medium text-gray-600 text-3xl leading-normal shrink-0">
-                  Shelf
-                </h2>
-                <p className="font-['Michelle',sans-serif] tracking-wide font-normal text-gray-400 text-lg">
-                  ★ - Favorites
-                </p>
-              </div>
+              <SectionHeading title="Shelf" subtitle="★ - Favorites" />
             </ScrollReveal>
             
             {isLoading ? (
-              <div className="flex items-center gap-3 py-4">
-                <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-400 rounded-full animate-spin" />
-                <span className="text-gray-400 text-sm">Loading...</span>
-              </div>
+              <LoadingSpinner label="Loading..." className="py-4" />
             ) : (
               <div className="flex flex-col gap-8">
                 {/* Books Shelf */}
@@ -953,20 +892,10 @@ export default function AboutPage() {
           {/* Lore Section */}
           <section ref={loreRef} className="flex flex-col gap-12 w-full scroll-mt-8">
             <ScrollReveal variant="fade">
-              <div className="flex flex-col">
-                <h2 className="font-['Michelle',sans-serif] font-medium text-gray-600 text-3xl leading-normal shrink-0">
-                Lore ⟡˙⋆
-                </h2>
-                <p className="font-['Michelle',sans-serif] tracking-wide font-normal text-gray-400 text-lg">
-                  Fun snippets from past lives
-                </p>
-              </div>
+              <SectionHeading title="Lore ⟡˙⋆" subtitle="Fun snippets from past lives" />
             </ScrollReveal>
             {isLoading ? (
-              <div className="flex items-center gap-3 py-4">
-                <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-400 rounded-full animate-spin" />
-                <span className="text-gray-400 text-sm">Loading...</span>
-              </div>
+              <LoadingSpinner label="Loading..." className="py-4" />
             ) : loreItems.length > 0 ? (
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 md:gap-y-5 md:gap-x-6">
                 {loreItems.map((lore, index) => (

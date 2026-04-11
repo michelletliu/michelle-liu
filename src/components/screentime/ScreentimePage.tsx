@@ -3,11 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from '@/lib/navigation';
-import { domToPng } from 'modern-screenshot';
+const loadDomToPng = () => import('modern-screenshot').then(m => m.domToPng);
 import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
-import Tesseract from 'tesseract.js';
 
 
 // Default project info (fallback if Sanity fetch fails)
@@ -149,19 +148,18 @@ function formatTime(minutes: number): string {
   return `${hours}h ${mins}m`;
 }
 
-// Get appropriate category label for an app
+const CATEGORY_SOCIAL = new Set(['instagram', 'twitter', 'x', 'tiktok', 'facebook', 'reddit', 'linkedin', 'hinge', 'bumble', 'tinder', 'beli']);
+const CATEGORY_COMM = new Set(['messages', 'imessage', 'messenger', 'whatsapp', 'discord']);
+const CATEGORY_WORK = new Set(['slack', 'notion', 'calendar', 'mail', 'gmail', 'outlook', 'notes']);
+const CATEGORY_ENTERTAINMENT = new Set(['youtube', 'netflix', 'spotify']);
+const CATEGORY_BROWSER = new Set(['safari', 'chrome']);
+
 function getCategoryForApp(appKey: string): string {
-  const socialApps = ['instagram', 'twitter', 'x', 'tiktok', 'facebook', 'reddit', 'linkedin', 'hinge', 'bumble', 'tinder', 'beli'];
-  const commApps = ['messages', 'imessage', 'messenger', 'whatsapp', 'discord'];
-  const workApps = ['slack', 'notion', 'calendar', 'mail', 'gmail', 'outlook', 'notes'];
-  const entertainmentApps = ['youtube', 'netflix', 'spotify'];
-  const browserApps = ['safari', 'chrome'];
-  
-  if (socialApps.includes(appKey)) return 'SOCIAL MEDIA';
-  if (commApps.includes(appKey)) return 'COMMUNICATION';
-  if (workApps.includes(appKey)) return 'PRODUCTIVITY';
-  if (entertainmentApps.includes(appKey)) return 'ENTERTAINMENT';
-  if (browserApps.includes(appKey)) return 'WEB BROWSING';
+  if (CATEGORY_SOCIAL.has(appKey)) return 'SOCIAL MEDIA';
+  if (CATEGORY_COMM.has(appKey)) return 'COMMUNICATION';
+  if (CATEGORY_WORK.has(appKey)) return 'PRODUCTIVITY';
+  if (CATEGORY_ENTERTAINMENT.has(appKey)) return 'ENTERTAINMENT';
+  if (CATEGORY_BROWSER.has(appKey)) return 'WEB BROWSING';
   return 'APP';
 }
 
@@ -232,15 +230,20 @@ async function parseScreenTimeOCR(ocrText: string): Promise<Partial<ReceiptData>
       'tinder': { key: 'instagram', displayName: 'TINDER' },
     };
 
-    const parsedApps: AppUsage[] = [];
-    
-    // Much more flexible time pattern to handle OCR variations
-    // Handles: 6h 27m, 6h27m, 6 h 27 m, 1hr, 15min, 15 min, 1 hour 27 minutes, etc.
-    const timePattern = /(\d+)\s*(?:h|hr|hour)(?:s|r)?\s*(\d+)\s*(?:m|min|minute)(?:s)?|(\d+)\s*(?:h|hr|hour)(?:s|r)?(?!\d)|(\d+)\s*(?:m|min|minute)(?:s)?(?!\d)/gi;
+    type PendingApp = {
+      name: string;
+      category: string;
+      minutes: number;
+      iconKey: string;
+      appKey: string;
+      needsFetch: boolean;
+    };
+
+    const pendingApps: PendingApp[] = [];
+    const seenNames = new Set<string>();
     
     console.log('=== STARTING LINE-BY-LINE PARSING ===');
     
-    // Process each line in the relevant section
     for (let i = 0; i < relevantLines.length; i++) {
       const line = relevantLines[i];
       const nextLine = relevantLines[i + 1] || '';
@@ -248,7 +251,6 @@ async function parseScreenTimeOCR(ocrText: string): Promise<Partial<ReceiptData>
       
       console.log(`Processing line ${i}: "${line}"`);
       
-      // Stop if we hit another section like "Pickups" or "Show More"
       if (line.toLowerCase().includes('pickup') || 
           line.toLowerCase().includes('show more') ||
           line.toLowerCase().includes('daily average')) {
@@ -256,7 +258,6 @@ async function parseScreenTimeOCR(ocrText: string): Promise<Partial<ReceiptData>
         break;
       }
       
-      // Skip "Show Categories" button and subtotals
       if (line.toLowerCase().includes('show categories') || 
           line.toLowerCase().includes('categories') ||
           line.toLowerCase().includes('subtotal')) {
@@ -264,19 +265,15 @@ async function parseScreenTimeOCR(ocrText: string): Promise<Partial<ReceiptData>
         continue;
       }
       
-      // Look for time patterns in current line and next line
       const lineLower = line.toLowerCase();
       const nextLineLower = nextLine.toLowerCase();
       
-      // Try to find time in current line first (more flexible patterns)
-      // Handles: 6h 27m, 6h27m, 1hr, 15min, 15 min, etc.
       let timeMatch = lineLower.match(/(\d+)\s*(?:h|hr)(?:r|our)?\s*(\d+)\s*(?:m|min)/i) || 
                       lineLower.match(/(\d+)\s*(?:h|hr)(?:r|our)?(?!\d)/i) ||
                       lineLower.match(/(\d+)\s*(?:m|min)(?:ute)?(?:s)?(?!\d)/i);
       let timeInNextLine = false;
       
       if (!timeMatch) {
-        // Try next line
         timeMatch = nextLineLower.match(/(\d+)\s*(?:h|hr)(?:r|our)?\s*(\d+)\s*(?:m|min)/i) || 
                     nextLineLower.match(/(\d+)\s*(?:h|hr)(?:r|our)?(?!\d)/i) ||
                     nextLineLower.match(/(\d+)\s*(?:m|min)(?:ute)?(?:s)?(?!\d)/i);
@@ -286,106 +283,80 @@ async function parseScreenTimeOCR(ocrText: string): Promise<Partial<ReceiptData>
       if (timeMatch) {
         console.log(`  Found time: ${timeMatch[0]} (in ${timeInNextLine ? 'next' : 'current'} line)`);
         
-        // Parse the time
         let totalMinutes = 0;
         
         if (timeMatch[1] && timeMatch[2]) {
-          // Format: "6h 27m"
           totalMinutes = parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]);
         } else if (timeMatch[3]) {
-          // Format: "6h" only
           totalMinutes = parseInt(timeMatch[3]) * 60;
         } else if (timeMatch[4]) {
-          // Format: "27m" only
           totalMinutes = parseInt(timeMatch[4]);
         }
         
         console.log(`  Parsed time: ${totalMinutes} minutes`);
         
         if (totalMinutes > 0) {
-          // Look for app name in previous line (since time is often on the same line or next line after app name)
           const searchLine = timeInNextLine ? lineLower : prevLine.toLowerCase();
           console.log(`  Searching for app name in: "${timeInNextLine ? line : prevLine}"`);
           
           let foundApp = false;
           
-          // Check against known app names
           for (const [key, value] of Object.entries(appNameMap)) {
-            if (searchLine.includes(key)) {
-              // Avoid duplicates
-              if (!parsedApps.some(app => app.name === value.displayName)) {
-                // Check if we have a local icon, otherwise fetch from App Store
-                let iconUrl = APP_ICONS[value.key as keyof typeof APP_ICONS];
-                
-                // If using a fallback icon (instagram), fetch the real one
-                if (!iconUrl || value.key === 'instagram' && !['instagram', 'facebook', 'tiktok'].includes(key)) {
-                  console.log(`  Fetching icon for ${value.displayName} from App Store...`);
-                  const fetchedIcon = await fetchAppIcon(value.displayName);
-                  iconUrl = fetchedIcon || APP_ICONS.instagram;
-                }
-                
-                parsedApps.push({
-                  name: value.displayName,
-                  category: getCategoryForApp(key),
-                  minutes: totalMinutes,
-                  icon: iconUrl,
-                });
-                console.log(`  ✓ Parsed: ${value.displayName} - ${totalMinutes}m`);
-                foundApp = true;
-                break;
-              }
+            if (searchLine.includes(key) && !seenNames.has(value.displayName)) {
+              seenNames.add(value.displayName);
+              const hasLocalIcon = APP_ICONS[value.key as keyof typeof APP_ICONS];
+              const needsFetch = !hasLocalIcon || (value.key === 'instagram' && !['instagram', 'facebook', 'tiktok'].includes(key));
+              
+              pendingApps.push({
+                name: value.displayName,
+                category: getCategoryForApp(key),
+                minutes: totalMinutes,
+                iconKey: value.key,
+                appKey: key,
+                needsFetch,
+              });
+              console.log(`  ✓ Parsed: ${value.displayName} - ${totalMinutes}m`);
+              foundApp = true;
+              break;
             }
           }
           
           if (!foundApp) {
             console.log(`  ✗ No matching app found for "${timeInNextLine ? line : prevLine}"`);
           }
-        } else {
-          console.log(`  No valid time parsed`);
         }
       } else {
-        // No time found in typical formats, try to find ANY numbers followed by h/m
-        // This catches cases where OCR reads "6h 27m" as separate tokens
         const numbersInLine = lineLower.match(/\d+/g);
         if (numbersInLine && numbersInLine.length >= 1) {
-          // Check if this looks like it could be a time (has 'h' or 'm' nearby)
           if (lineLower.includes('h') || lineLower.includes('m') || 
               nextLineLower.includes('h') || nextLineLower.includes('m')) {
             console.log(`  Found numbers ${numbersInLine} with h/m indicators nearby`);
           }
         }
         
-        // No time found, but maybe there's an app name we can use with a default time
-        // This handles cases where OCR can read app names but not times (gray text issues)
         for (const [key, value] of Object.entries(appNameMap)) {
-          if (lineLower.includes(key) && !parsedApps.some(app => app.name === value.displayName)) {
-            // Found an app without a time - assign a reasonable default based on app type
-            let defaultMinutes = 60; // 1 hour default
+          if (lineLower.includes(key) && !seenNames.has(value.displayName)) {
+            seenNames.add(value.displayName);
+            let defaultMinutes = 60;
             
-            // Social/Entertainment apps typically have more usage
             if (['instagram', 'x', 'twitter', 'tiktok', 'youtube', 'netflix', 'spotify'].includes(key)) {
-              defaultMinutes = Math.floor(Math.random() * 180) + 120; // 2-5 hours
+              defaultMinutes = Math.floor(Math.random() * 180) + 120;
             } else if (['messages', 'linkedin', 'slack', 'mail', 'notion'].includes(key)) {
-              defaultMinutes = Math.floor(Math.random() * 120) + 60; // 1-3 hours
+              defaultMinutes = Math.floor(Math.random() * 120) + 60;
             } else {
-              defaultMinutes = Math.floor(Math.random() * 60) + 30; // 30min - 1.5 hours
+              defaultMinutes = Math.floor(Math.random() * 60) + 30;
             }
             
-            // Check if we have a local icon, otherwise fetch from App Store
-            let iconUrl = APP_ICONS[value.key as keyof typeof APP_ICONS];
+            const hasLocalIcon = APP_ICONS[value.key as keyof typeof APP_ICONS];
+            const needsFetch = !hasLocalIcon || (value.key === 'instagram' && !['instagram', 'facebook', 'tiktok'].includes(key));
             
-            // If using a fallback icon (instagram), fetch the real one
-            if (!iconUrl || value.key === 'instagram' && !['instagram', 'facebook', 'tiktok'].includes(key)) {
-              console.log(`  Fetching icon for ${value.displayName} from App Store...`);
-              const fetchedIcon = await fetchAppIcon(value.displayName);
-              iconUrl = fetchedIcon || APP_ICONS.instagram;
-            }
-            
-            parsedApps.push({
+            pendingApps.push({
               name: value.displayName,
               category: getCategoryForApp(key),
               minutes: defaultMinutes,
-              icon: iconUrl,
+              iconKey: value.key,
+              appKey: key,
+              needsFetch,
             });
             console.log(`  ✓ Parsed: ${value.displayName} - ${defaultMinutes}m (estimated - OCR couldn't read time)`);
             break;
@@ -393,32 +364,50 @@ async function parseScreenTimeOCR(ocrText: string): Promise<Partial<ReceiptData>
         }
       }
     }
+
+    // Fetch all missing icons in parallel instead of sequentially
+    const iconFetchPromises = pendingApps
+      .filter(app => app.needsFetch)
+      .map(app => fetchAppIcon(app.name).then(icon => ({ name: app.name, icon })));
+    
+    const fetchedIcons = await Promise.all(iconFetchPromises);
+    const iconMap = new Map(fetchedIcons.map(r => [r.name, r.icon]));
+
+    const parsedApps: AppUsage[] = pendingApps.map(app => ({
+      name: app.name,
+      category: app.category,
+      minutes: app.minutes,
+      icon: app.needsFetch
+        ? (iconMap.get(app.name) || APP_ICONS.instagram)
+        : APP_ICONS[app.iconKey as keyof typeof APP_ICONS],
+    }));
     
     // If we found some apps, organize them into categories
     if (parsedApps.length > 0) {
       console.log(`✅ Successfully parsed ${parsedApps.length} apps from screenshot`);
       console.log('Parsed apps:', parsedApps.map(a => `${a.name} (${a.minutes}m)`).join(', '));
       
-      // Group by type
-      const socialApps = parsedApps.filter(app => 
-        ['INSTAGRAM', 'X', 'TWITTER/X', 'LINKEDIN', 'FACEBOOK', 'TIKTOK', 'REDDIT', 'HINGE', 'BELI'].includes(app.name)
-      );
-      const commApps = parsedApps.filter(app => 
-        ['MESSAGES', 'MESSENGER', 'WHATSAPP', 'DISCORD'].includes(app.name)
-      );
-      const workApps = parsedApps.filter(app => 
-        ['SLACK', 'NOTION', 'CALENDAR', 'MAIL', 'GMAIL', 'OUTLOOK', 'NOTES'].includes(app.name)
-      );
-      const entertainmentApps = parsedApps.filter(app => 
-        ['YOUTUBE', 'NETFLIX', 'SPOTIFY'].includes(app.name)
-      );
-      const browserApps = parsedApps.filter(app => 
-        ['SAFARI', 'CHROME'].includes(app.name)
-      );
-      const otherApps = parsedApps.filter(app => 
-        !socialApps.includes(app) && !commApps.includes(app) && !workApps.includes(app) && 
-        !entertainmentApps.includes(app) && !browserApps.includes(app)
-      );
+      const socialNames = new Set(['INSTAGRAM', 'X', 'TWITTER/X', 'LINKEDIN', 'FACEBOOK', 'TIKTOK', 'REDDIT', 'HINGE', 'BELI']);
+      const commNames = new Set(['MESSAGES', 'MESSENGER', 'WHATSAPP', 'DISCORD']);
+      const workNames = new Set(['SLACK', 'NOTION', 'CALENDAR', 'MAIL', 'GMAIL', 'OUTLOOK', 'NOTES']);
+      const entertainmentNames = new Set(['YOUTUBE', 'NETFLIX', 'SPOTIFY']);
+      const browserNames = new Set(['SAFARI', 'CHROME']);
+
+      const socialApps: AppUsage[] = [];
+      const commApps: AppUsage[] = [];
+      const workApps: AppUsage[] = [];
+      const entertainmentApps: AppUsage[] = [];
+      const browserApps: AppUsage[] = [];
+      const otherApps: AppUsage[] = [];
+
+      for (const app of parsedApps) {
+        if (socialNames.has(app.name)) socialApps.push(app);
+        else if (commNames.has(app.name)) commApps.push(app);
+        else if (workNames.has(app.name)) workApps.push(app);
+        else if (entertainmentNames.has(app.name)) entertainmentApps.push(app);
+        else if (browserNames.has(app.name)) browserApps.push(app);
+        else otherApps.push(app);
+      }
       
       const categories = [];
       
@@ -813,7 +802,7 @@ function ReceiptScreen({
     setIsSaving(true);
     
     try {
-      // Capture the receipt as PNG
+      const domToPng = await loadDomToPng();
       const dataUrl = await domToPng(receiptRef.current, {
         scale: 3, // Higher resolution
         backgroundColor: '#ffffff',
@@ -1235,8 +1224,9 @@ function UploadInstructions({
         
         // Run OCR to check if it's a Screen Time screenshot and extract data
         try {
-          const worker = await Tesseract.createWorker('eng', 1, {
-            logger: (m) => {
+          const TesseractModule = await import('tesseract.js');
+          const worker = await TesseractModule.default.createWorker('eng', 1, {
+            logger: (m: { status: string; progress: number }) => {
               if (m.status === 'recognizing text') {
                 console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
               }

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import svgPaths from "../imports/svg-2tsxp86msm";
 import imgFinalSealLogo1 from "../assets/logo.png";
 import LumaLogo from "../assets/LumaLogo.svg";
@@ -8,6 +8,8 @@ import { ArrowUpRight } from "./ArrowUpRight";
 import { client } from "../sanity/client";
 import { OWNER_LOCATION_QUERY } from "../sanity/queries";
 import type { OwnerLocation } from "../sanity/types";
+import TextScramble from "./TextScramble";
+import { SocialLinksBackgroundImage, LinksBackgroundImageAndText } from "./SocialLinks";
 
 type ChangelogPayload = {
   latestCommitDate?: string | null;
@@ -129,156 +131,6 @@ function BlinkingTime({ time, h24, city }: { time: string; h24: number; city: st
       <span className="animate-[blink_1.2s_ease-in-out_infinite]">:</span>
       {after}, {city}
     </>
-  );
-}
-
-// Text Scramble Component
-type TextScrambleProps = {
-  text: string;
-  className?: string;
-};
-
-function TextScramble({ text, className }: TextScrambleProps) {
-  const elementRef = useRef<HTMLParagraphElement>(null);
-  const isAnimatingRef = useRef(false);
-  const textRef = useRef(text);
-  const hasAnimatedOnScrollRef = useRef(false);
-  
-  const chars = '!@#$%^&*()_+-;:,.<>?ADELPSTUadelpstu0123456789';
-
-  // Keep text ref updated
-  useEffect(() => {
-    textRef.current = text;
-  }, [text]);
-
-  // Run the scramble animation
-  const runScrambleAnimation = () => {
-    const el = elementRef.current;
-    const targetText = textRef.current;
-    if (!el || isAnimatingRef.current) return;
-    
-    isAnimatingRef.current = true;
-    const length = targetText.length;
-    
-    // Build queue for each character
-    const queue: Array<{ to: string; start: number; end: number; char?: string }> = [];
-    for (let i = 0; i < length; i++) {
-      const to = targetText[i] || '';
-      const start = Math.floor(Math.random() * 40);
-      const end = start + Math.floor(Math.random() * 40);
-      queue.push({ to, start, end });
-    }
-    
-    let frame = 0;
-    
-    const update = () => {
-      let output = '';
-      let complete = 0;
-      
-      for (let i = 0; i < queue.length; i++) {
-        const { to, start, end } = queue[i];
-        
-        if (frame >= end) {
-          complete++;
-          output += to;
-        } else if (frame >= start) {
-          if (!queue[i].char || Math.random() < 0.28) {
-            queue[i].char = chars[Math.floor(Math.random() * chars.length)];
-          }
-          output += `<span style="color: #c4c4c4">${queue[i].char}</span>`;
-        } else {
-          output += to;
-        }
-      }
-      
-      el.innerHTML = output;
-      
-      if (complete === queue.length) {
-        isAnimatingRef.current = false;
-      } else {
-        requestAnimationFrame(update);
-        frame++;
-      }
-    };
-    
-    update();
-  };
-
-  // Handle hover to trigger scramble animation
-  const handleMouseEnter = () => {
-    runScrambleAnimation();
-  };
-
-  // Set up intersection observer for initial scroll animation
-  useEffect(() => {
-    const el = elementRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasAnimatedOnScrollRef.current) {
-            hasAnimatedOnScrollRef.current = true;
-            // Small delay before starting animation
-            setTimeout(() => {
-              runScrambleAnimation();
-            }, 100);
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(el);
-
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <p 
-      ref={elementRef} 
-      className={`${className} cursor-pointer`}
-      onMouseEnter={handleMouseEnter}
-    >
-      {text}
-    </p>
-  );
-}
-
-function SocialLinksBackgroundImage({ children }: React.PropsWithChildren<{}>) {
-  return (
-    <div className="relative shrink-0 size-6">
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 24">
-        <g id="Social Links">{children}</g>
-      </svg>
-    </div>
-  );
-}
-
-type LinksBackgroundImageAndTextProps = {
-  text: string;
-  href?: string;
-};
-
-function LinksBackgroundImageAndText({ text, href }: LinksBackgroundImageAndTextProps) {
-  const content = (
-    <p className={`font-['Michelle',sans-serif] leading-5 relative shrink-0 text-[#9ca3af] text-base text-nowrap tracking-[0.16px] ${href ? 'hover:text-blue-500 transition-colors duration-200' : ''}`}>
-      {text}
-    </p>
-  );
-
-  if (href) {
-    return (
-      <a href={href} className="content-stretch flex items-center justify-center px-0.5 py-0 relative rounded-full shrink-0">
-        {content}
-      </a>
-    );
-  }
-
-  return (
-    <div className="content-stretch flex items-center justify-center px-0.5 py-0 relative rounded-full shrink-0">
-      {content}
-    </div>
   );
 }
 

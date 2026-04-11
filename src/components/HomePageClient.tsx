@@ -21,166 +21,11 @@ import ContactBadge from "./ContactBadge";
 import NavigationTabs from "./NavigationTabs";
 import ExperimentModal from "./ExperimentModal";
 import { posthog, posthogEnabled } from "../lib/posthog";
+import { useHeroAnimation } from "../hooks/useHeroAnimation";
+import { fadeUpStyles } from "../styles/animations";
 
-const fadeUpStyles = `
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-fade-up {
-  animation: fadeUp 400ms ease-out forwards;
-}
-`;
-
-type TextScrambleProps = {
-  text: string;
-  className?: string;
-};
-
-function TextScramble({ text, className }: TextScrambleProps) {
-  const elementRef = useRef<HTMLParagraphElement>(null);
-  const isAnimatingRef = useRef(false);
-  const textRef = useRef(text);
-  const isVisibleRef = useRef(false);
-  const hasRevealedOnceRef = useRef(false);
-  
-  const chars = '!@#$%^&*()_+-;:,.<>?ADELPSTUadelpstu0123456789';
-
-  useEffect(() => {
-    textRef.current = text;
-  }, [text]);
-
-  const generateScrambledText = (originalText: string) => {
-    let scrambled = '';
-    for (let i = 0; i < originalText.length; i++) {
-      if (originalText[i] === ' ' || originalText[i] === ':' || originalText[i] === '-') {
-        scrambled += originalText[i];
-      } else {
-        scrambled += chars[Math.floor(Math.random() * chars.length)];
-      }
-    }
-    return scrambled;
-  };
-
-  const runScrambleAnimation = () => {
-    const el = elementRef.current;
-    const targetText = textRef.current;
-    if (!el || isAnimatingRef.current) return;
-    
-    isAnimatingRef.current = true;
-    const oldText = el.innerText;
-    const length = Math.max(oldText.length, targetText.length);
-    
-    const queue: Array<{ from: string; to: string; start: number; end: number; char?: string }> = [];
-    for (let i = 0; i < length; i++) {
-      const from = oldText[i] || '';
-      const to = targetText[i] || '';
-      const start = Math.floor(Math.random() * 40);
-      const end = start + Math.floor(Math.random() * 40);
-      queue.push({ from, to, start, end });
-    }
-    
-    let frame = 0;
-    
-    const update = () => {
-      let output = '';
-      let complete = 0;
-      
-      for (let i = 0; i < queue.length; i++) {
-        const { from, to, start, end } = queue[i];
-        
-        if (frame >= end) {
-          complete++;
-          output += to;
-        } else if (frame >= start) {
-          if (!queue[i].char || Math.random() < 0.28) {
-            queue[i].char = chars[Math.floor(Math.random() * chars.length)];
-          }
-          output += `<span style="color: #c4c4c4">${queue[i].char}</span>`;
-        } else {
-          output += from;
-        }
-      }
-      
-      el.innerHTML = output;
-      
-      if (complete === queue.length) {
-        isAnimatingRef.current = false;
-      } else {
-        requestAnimationFrame(update);
-        frame++;
-      }
-    };
-    
-    update();
-  };
-
-  useEffect(() => {
-    const el = elementRef.current;
-    if (!el) return;
-    
-    el.innerText = generateScrambledText(text);
-    
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !isVisibleRef.current) {
-            isVisibleRef.current = true;
-            hasRevealedOnceRef.current = true;
-            setTimeout(() => {
-              runScrambleAnimation();
-            }, 300);
-          } else if (!entry.isIntersecting && isVisibleRef.current) {
-            const rect = el.getBoundingClientRect();
-            const windowHeight = window.innerHeight;
-            const isTrulyOutOfView = rect.bottom < -100 || rect.top > windowHeight + 100;
-            
-            if (isTrulyOutOfView) {
-              isVisibleRef.current = false;
-              if (!isAnimatingRef.current) {
-                el.innerText = generateScrambledText(text);
-              }
-            }
-          }
-        });
-      },
-      { threshold: 0.1, rootMargin: '0px' }
-    );
-
-    observer.observe(el);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [text]);
-
-  const handleMouseEnter = () => {
-    if (!isAnimatingRef.current) {
-      const el = elementRef.current;
-      if (el) {
-        el.innerText = generateScrambledText(text);
-        setTimeout(() => {
-          runScrambleAnimation();
-        }, 50);
-      }
-    }
-  };
-
-  return (
-    <p
-      ref={elementRef}
-      className={className}
-      onMouseEnter={handleMouseEnter}
-      style={{ cursor: 'default' }}
-    />
-  );
-}
+// TextScramble is now imported from shared component when needed in this file's scope.
+// The HomePageClient doesn't directly render TextScramble — it's used in Footer.
 
 type ToolCategory = {
   label: string;
@@ -406,29 +251,7 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
   );
 });
 
-function SocialLinksBackgroundImage({ children }: React.PropsWithChildren<{}>) {
-  return (
-    <div className="relative shrink-0 size-6">
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 24">
-        <g id="Social Links">{children}</g>
-      </svg>
-    </div>
-  );
-}
-
-type LinksBackgroundImageAndTextProps = {
-  text: string;
-};
-
-function LinksBackgroundImageAndText({ text }: LinksBackgroundImageAndTextProps) {
-  return (
-    <div className="content-stretch flex items-center justify-center px-0.5 py-0 relative rounded-full shrink-0">
-      <p className="font-['Michelle',sans-serif] leading-5 relative shrink-0 text-[#9ca3af] text-base text-nowrap tracking-[0.16px]">
-        {text}
-      </p>
-    </div>
-  );
-}
+// SocialLinksBackgroundImage and LinksBackgroundImageAndText are now in src/components/SocialLinks.tsx
 
 type ProjectCardProps = {
   project: Project;
@@ -815,8 +638,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
   
   const [projects, setProjects] = useState<Project[]>(staticProjects);
   
-  // Always start false to avoid SSR/client hydration mismatch, then sync from sessionStorage
-  const [heroAnimationPlayed, setHeroAnimationPlayed] = useState(false);
+  const heroAnimationPlayed = useHeroAnimation();
   
   useEffect(() => {
     async function fetchSanityProjects() {
@@ -884,18 +706,6 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     }
 
     fetchSanityProjects();
-  }, []);
-  
-  useEffect(() => {
-    if (sessionStorage.getItem('heroAnimationPlayed') === 'true') {
-      setHeroAnimationPlayed(true);
-    } else {
-      const timer = setTimeout(() => {
-        sessionStorage.setItem('heroAnimationPlayed', 'true');
-        setHeroAnimationPlayed(true);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
   }, []);
 
   useEffect(() => {

@@ -8,6 +8,7 @@ import ShimmerVideo from './ShimmerVideo';
 import { ArrowUpRight } from './ArrowUpRight';
 import Tooltip from './Tooltip';
 import type { ToolCategory } from './InfoButton';
+import LoadingSpinner from './LoadingSpinner';
 
 // Kick off chunk fetches immediately when this module loads (not when modal opens)
 const polaroidPagePromise = import('./polaroid/PolaroidPage');
@@ -39,11 +40,10 @@ function InfoIcon() {
   );
 }
 
-// Loading spinner
-function LoadingSpinner() {
+function ModalLoadingSpinner() {
   return (
     <div className="flex items-center justify-center w-full h-full min-h-[400px]">
-      <div className="w-8 h-8 border-2 border-gray-200 border-t-gray-400 rounded-full animate-spin" />
+      <LoadingSpinner size="md" />
     </div>
   );
 }
@@ -391,7 +391,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
 
         {/* Embedded experiment content */}
         <div ref={scrollContainerRef} className="flex-1 overflow-hidden transition-all duration-500 ease-out">
-          <Suspense fallback={<LoadingSpinner />}>
+          <Suspense fallback={<ModalLoadingSpinner />}>
             <div 
               className={clsx(
                 "w-full h-full experiment-modal-embed modal-scroll-container relative transition-all duration-500 ease-out overflow-auto",
