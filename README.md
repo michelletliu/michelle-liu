@@ -2,9 +2,25 @@
 
   Personal portfolio website. Designed in Figma, built with Next.js.
 
-  ### Develop Project Overlay
+  ### Repo map
 
-  This is a code bundle for Develop Project Overlay. The original project is available at https://www.figma.com/design/8FInO8lSUrUMMkOx8IVVxJ/Develop-Project-Overlay.
+  - `app/`: Next.js routes (App Router)
+  - `src/components/`: shared UI and feature components
+  - `src/hooks/`: shared hooks
+  - `src/styles/`: shared styling constants
+  - `src/sanity/` + `studio-michelle-liu/`: CMS integration and Sanity Studio
+  - `scripts/`: one-off data and maintenance scripts
+  - `public/`: static assets served directly
+
+  ### Generated files you can safely clean locally
+
+  - `.next/`
+  - `dist/`
+  - `*.tsbuildinfo`
+
+  Run:
+
+  `npm run clean`
 
   ### Running the code
 

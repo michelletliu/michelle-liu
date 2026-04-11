@@ -51,6 +51,7 @@ const figmaAssetAlias = {
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  outputFileTracingRoot: path.resolve(__dirname),
   async redirects() {
     return [
       { source: "/home", destination: "/", permanent: true },

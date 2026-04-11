@@ -71,6 +71,7 @@
             "typescript": "^5.9.3"
       },
       "scripts": {
+            "clean": "rm -rf .next dist tsconfig.tsbuildinfo",
             "predev": "node scripts/generate-changelog-json.js",
             "dev": "next dev --port 3000 --webpack",
             "prebuild": "node scripts/generate-changelog-json.js",
