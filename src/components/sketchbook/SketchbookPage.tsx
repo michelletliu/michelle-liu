@@ -545,7 +545,7 @@ export default function SketchbookPage() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [currentIndex, entries.length, animateToNextPage, animateToPrevPage]);
 
-  // Two-finger trackpad swipe (wheel) to navigate pages
+  // Wheel: same as /film — dominant axis drives horizontal navigation (vertical scroll → advance pages)
   useEffect(() => {
     const container = pageContainerRef.current;
     if (!container) return;
@@ -555,13 +555,16 @@ export default function SketchbookPage() {
 
     const handleWheel = (e: WheelEvent) => {
       if (isAnimatingRef.current) return;
-      const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : 0;
-      if (dx === 0) return;
+      const delta =
+        Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if (delta === 0) return;
       e.preventDefault();
-      accumulated += dx;
+      accumulated += delta;
 
       clearTimeout(timeout);
-      timeout = setTimeout(() => { accumulated = 0; }, 200);
+      timeout = setTimeout(() => {
+        accumulated = 0;
+      }, 200);
 
       if (accumulated > threshold && currentIndex < entries.length - 1) {
         accumulated = 0;
