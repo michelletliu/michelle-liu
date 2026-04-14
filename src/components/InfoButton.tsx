@@ -250,6 +250,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
               )}
 
               {/* Video/Image content area */}
+              {project.imageSrc && (
               <div className="relative rounded-[16px] border border-gray-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 mt-3">
                 <ShimmerImage
                   alt=""
@@ -273,6 +274,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   />
                 )}
               </div>
+              )}
             </div>
           </div>
         </div>,
