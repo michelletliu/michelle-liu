@@ -109,13 +109,13 @@ const FILM_FRAME_WIDEN_SLOT_RANGE = 2.12;
 /** Softer spring for arrow keys so each step feels less abrupt. */
 const FILM_KEYBOARD_SNAP_SPRING = { stiffness: 175, damping: 36 };
 /** Release snap should glide a bit more softly than keyboard stepping. */
-const FILM_IDLE_SNAP_SPRING = { stiffness: 220, damping: 28 };
+const FILM_IDLE_SNAP_SPRING = { stiffness: 180, damping: 26 };
 /** After wheel / trackpad scroll settles, snap to the nearest photo (grid-aligned scroll). */
-const FILM_SCROLL_IDLE_SNAP_MS = 80;
+const FILM_SCROLL_IDLE_SNAP_MS = 140;
 /** After autoplay advances, hold before moving to the next photo. */
-const FILM_AUTOPLAY_HOLD_MS = 1200;
+const FILM_AUTOPLAY_HOLD_MS = 900;
 /** Total dwell per photo while autoplay is on (hold + transition breathing room). */
-const FILM_AUTOPLAY_ADVANCE_MS = FILM_AUTOPLAY_HOLD_MS + 1200;
+const FILM_AUTOPLAY_ADVANCE_MS = FILM_AUTOPLAY_HOLD_MS + 900;
 /** Slightly softer than keyboard stepping so autoplay feels less abrupt. */
 const FILM_AUTOPLAY_SNAP_SPRING = { stiffness: 160, damping: 34 };
 /** Ignore wheel for this long after each autoplay `scrollTop` — some UAs emit wheel after programmatic scroll. */
@@ -135,7 +135,7 @@ const MOBILE_BASE_WIDTH = 72;
 /** Portrait center scale on narrow viewports (landscape uses width cap below). */
 const MOBILE_PORTRAIT_CENTER_SCALE = 1.92;
 /** While scrolling, lerp layout toward the target (reduces jitter). Keep well below 1 so we don’t lag forever when idle. */
-const FILM_LAYOUT_SMOOTH_K_SCROLL = 0.52;
+const FILM_LAYOUT_SMOOTH_K_SCROLL = 0.68;
 /** When `galleryX` is nearly still, snap layout in one step so strip alignment and distance-based scales stay correct. */
 const FILM_LAYOUT_VELOCITY_IDLE = 28;
 /** During framer snap, use 1 so layout tracks `galleryX` exactly — avoids double-easing (tween + lerp) feeling bouncy. */
@@ -288,11 +288,11 @@ function filmEffectiveMaxScrollPx(photoCount: number): number {
 
 /** Center-to-center pitch is half of the previous 12+5 layout (text position uses same math; width of label does not affect ticks). */
 const HASH_TICK_W = 6;
-const HASH_GAP = 2.5;
+const HASH_GAP = 4;
 const HASH_PITCH = HASH_TICK_W + HASH_GAP;
 /** Inset inside the scroll strip so month/year (centered on ticks with -translate-x-1/2) is not clipped at the ends. */
 const HASH_LABEL_GUTTER_PX = 64;
-const LINEMARK_MIN_PX = 19;
+const LINEMARK_MIN_PX = 28;
 const LINEMARK_INTENSITY_PX = 8;
 const LINEMARK_CEILING = 1;
 /** Selected (active) tick is this × the proximity-scaled height. */
@@ -300,7 +300,7 @@ const LINEMARK_SELECTED_HEIGHT_MULT = 2;
 /** Max extra px at hovered mark (neighbors fall off like sketchbook indicators). */
 const LINEMARK_HOVER_BONUS_PX = 14;
 const LINEMARK_COLOR_ACTIVE = '#18181b';
-const LINEMARK_COLOR_IDLE = '#d4d4d8';
+const LINEMARK_COLOR_IDLE = '#a1a1aa';
 /**
  * Keep tablist row height constant while bar heights animate; the timeline is bottom-anchored,
  * so a changing row height shifts the whole block up/down and makes the note “bounce.”
@@ -518,7 +518,7 @@ function FilmPhotoHashmarks({
   return (
     <div
       ref={timelineViewportRef}
-      className="relative w-full max-w-full md:max-w-[min(92vw,720px)]"
+      className="relative w-full max-w-full overflow-hidden md:max-w-[min(92vw,720px)]"
       role="group"
       aria-label="Film photos timeline"
     >
@@ -588,8 +588,9 @@ function FilmPhotoHashmarks({
                     ref={(el) => {
                       tickBarRefs.current[i] = el;
                     }}
-                    className="block w-px rounded-full"
+                    className="block rounded-full"
                     style={{
+                      width: 1.5,
                       height: LINEMARK_MIN_PX,
                       backgroundColor: LINEMARK_COLOR_IDLE,
                     }}
@@ -745,6 +746,8 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
   const [filmRewindingToStart, setFilmRewindingToStart] = useState(false);
   const [filmLayoutReady, setFilmLayoutReady] = useState(false);
   const filmLayoutReadyRef = useRef(false);
+  const [firstImageLoaded, setFirstImageLoaded] = useState(false);
+  const firstImageLoadedRef = useRef(false);
   const filmAutoplayStepTimerRef = useRef<number | null>(null);
   const filmManualScrollFadeTimerRef = useRef<number | null>(null);
   /** True while autoplay mutates `scrollTop` — some UAs emit `wheel` synchronously; ignore so we don’t stop playback. */
@@ -902,7 +905,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     filmManualScrollFadeTimerRef.current = window.setTimeout(() => {
       filmManualScrollFadeTimerRef.current = null;
       setFilmManualScrollActive(false);
-    }, 260);
+    }, 800);
   }, []);
 
   useEffect(() => () => {
@@ -1652,10 +1655,12 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
           ref={playBarRef}
           className="pointer-events-none fixed inset-x-0 top-0 z-[90] flex justify-center px-4 min-[640px]:px-8"
           style={{
-            opacity: filmManualScrollActive ? 0 : 1,
-            transition: filmManualScrollActive
-              ? 'opacity 200ms ease-out'
-              : 'opacity 600ms cubic-bezier(0.16, 1, 0.3, 1)',
+            opacity: !firstImageLoaded || filmManualScrollActive ? 0 : 1,
+            transition: !firstImageLoaded
+              ? 'none'
+              : filmManualScrollActive
+                ? 'opacity 200ms ease-out'
+                : 'opacity 600ms cubic-bezier(0.16, 1, 0.3, 1)',
           }}
         >
           {filmRewindingToStart || activeIndex >= photos.length - 1 ? (
@@ -1744,6 +1749,10 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
                   e.currentTarget.naturalWidth,
                   e.currentTarget.naturalHeight,
                 );
+                if (!firstImageLoadedRef.current) {
+                  firstImageLoadedRef.current = true;
+                  setFirstImageLoaded(true);
+                }
               }}
             />
           </button>
