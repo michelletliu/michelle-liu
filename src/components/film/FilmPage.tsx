@@ -111,7 +111,9 @@ const FILM_KEYBOARD_SNAP_SPRING = { stiffness: 175, damping: 36 };
 /** Release snap should glide a bit more softly than keyboard stepping. */
 const FILM_IDLE_SNAP_SPRING = { stiffness: 180, damping: 26 };
 /** After wheel / trackpad scroll settles, snap to the nearest photo (grid-aligned scroll). */
-const FILM_SCROLL_IDLE_SNAP_MS = 140;
+const FILM_SCROLL_IDLE_SNAP_MS = 0;
+/** Longer settle time for touch scroll (mobile momentum needs more room). */
+const FILM_SCROLL_IDLE_SNAP_TOUCH_MS = 350;
 /** After autoplay advances, hold before moving to the next photo. */
 const FILM_AUTOPLAY_HOLD_MS = 900;
 /** Total dwell per photo while autoplay is on (hold + transition breathing room). */
@@ -129,13 +131,13 @@ const FILM_EDGE_GRADIENT_LEFT =
 const FILM_EDGE_GRADIENT_RIGHT =
   'linear-gradient(to left, rgb(250,250,250) 0%, rgba(250,250,250,0.97) 8%, rgba(250,250,250,0.9) 16%, rgba(250,250,250,0.8) 25%, rgba(250,250,250,0.65) 34%, rgba(250,250,250,0.5) 45%, rgba(250,250,250,0.35) 55%, rgba(250,250,250,0.2) 70%, rgba(250,250,250,0.08) 85%, transparent 100%)';
 /** Multiplier on wheel delta → `scrollTop` (lower = slower travel per scroll). */
-const FILM_WHEEL_SCROLL_FACTOR = 0.92;
+const FILM_WHEEL_SCROLL_FACTOR = 0.55;
 const CENTER_SCALE = 2.2;
 const MOBILE_BASE_WIDTH = 72;
 /** Portrait center scale on narrow viewports (landscape uses width cap below). */
 const MOBILE_PORTRAIT_CENTER_SCALE = 1.92;
 /** While scrolling, lerp layout toward the target (reduces jitter). Keep well below 1 so we don’t lag forever when idle. */
-const FILM_LAYOUT_SMOOTH_K_SCROLL = 0.68;
+const FILM_LAYOUT_SMOOTH_K_SCROLL = 0.82;
 /** When `galleryX` is nearly still, snap layout in one step so strip alignment and distance-based scales stay correct. */
 const FILM_LAYOUT_VELOCITY_IDLE = 28;
 /** During framer snap, use 1 so layout tracks `galleryX` exactly — avoids double-easing (tween + lerp) feeling bouncy. */
@@ -752,6 +754,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
   const filmManualScrollFadeTimerRef = useRef<number | null>(null);
   /** True while autoplay mutates `scrollTop` — some UAs emit `wheel` synchronously; ignore so we don’t stop playback. */
   const filmAutoplayApplyingScrollRef = useRef(false);
+  const lastInputWasTouchRef = useRef(false);
   /** `performance.now()` deadline: wheel during autoplay should not pause playback (async wheel after scroll). */
   const filmAutoplayWheelGraceUntilRef = useRef(0);
 
@@ -1300,10 +1303,13 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
       if (!filmAutoplayPlayingRef.current) {
         clearIdleSnapTimer();
+        const snapDelay = lastInputWasTouchRef.current
+          ? FILM_SCROLL_IDLE_SNAP_TOUCH_MS
+          : FILM_SCROLL_IDLE_SNAP_MS;
         scrollIdleSnapTimerRef.current = setTimeout(() => {
           scrollIdleSnapTimerRef.current = null;
           runIdleScrollSnap();
-        }, FILM_SCROLL_IDLE_SNAP_MS);
+        }, snapDelay);
       }
     };
 
@@ -1337,6 +1343,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       const { bw } = getLayoutInfo(vw, n);
       const step = bw + GAP;
       const maxScroll = filmEffectiveMaxScrollPx(n);
+      lastInputWasTouchRef.current = false;
       const delta = wheelDeltaPixels(e, vw) * FILM_WHEEL_SCROLL_FACTOR;
       if (Math.abs(delta) >= 0.5) {
         scrollSnapDirectionRef.current = delta > 0 ? 1 : -1;
@@ -1402,7 +1409,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     const onPointerMove = (e: PointerEvent) => {
       if (e.pointerId !== drag.pointerId) return;
       const dx = e.clientX - drag.startX;
-      if (Math.abs(dx) > 5) {
+      if (Math.abs(dx) > 3) {
         if (!drag.moved) {
           drag.moved = true;
           isGalleryTweeningRef.current = false;
@@ -1424,6 +1431,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.pointerType === 'mouse') return;
+      lastInputWasTouchRef.current = true;
       const t = e.target as HTMLElement | null;
       if (t?.closest('button[aria-label="Go back to home"]')) return;
       if (t?.closest('button[role="tab"]')) return;
@@ -1742,7 +1750,9 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
               alt=""
               className="pointer-events-none h-full w-full object-cover"
               draggable={false}
-              loading="lazy"
+              loading={Math.abs(i - activeIndex) <= 3 ? 'eager' : 'lazy'}
+              fetchPriority={i === activeIndex ? 'high' : undefined}
+              decoding={Math.abs(i - activeIndex) <= 1 ? 'sync' : 'async'}
               onLoad={(e) => {
                 syncPhotoAspectRatio(
                   photo.id,
