@@ -89,9 +89,9 @@ function filmPlayBandBottomPx(vw: number, vh: number): number {
   return filmPlayBarTopPx(vh, vw >= 640) + FILM_PLAY_CONTROL_APPROX_H_PX;
 }
 /** First paint only: stagger each frame’s entrance left → right. */
-const FILM_INTRO_STAGGER_MS = 48;
-const FILM_INTRO_FADE_MS = 400;
-const FILM_INTRO_SLIDE_PX = 14;
+const FILM_INTRO_STAGGER_MS = 60;
+const FILM_INTRO_FADE_MS = 520;
+const FILM_INTRO_SLIDE_PX = 18;
 /**
  * Film strip “frame” widths (same idea as clip inset 72↔480, but real layout width — no clip-path).
  * Inactive ≈ collapsed width; under the focal slot ≈ expanded (capped on small viewports / portrait).
@@ -290,7 +290,7 @@ const HASH_GAP = 2.5;
 const HASH_PITCH = HASH_TICK_W + HASH_GAP;
 /** Inset inside the scroll strip so month/year (centered on ticks with -translate-x-1/2) is not clipped at the ends. */
 const HASH_LABEL_GUTTER_PX = 64;
-const LINEMARK_MIN_PX = 15;
+const LINEMARK_MIN_PX = 19;
 const LINEMARK_INTENSITY_PX = 8;
 const LINEMARK_CEILING = 1;
 /** Selected (active) tick is this × the proximity-scaled height. */
@@ -693,6 +693,9 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
   const isGalleryTweeningRef = useRef(false);
   const filmIntroStartMsRef = useRef<number | null>(null);
   const filmIntroDoneRef = useRef(false);
+  const topGradientRef = useRef<HTMLDivElement>(null);
+  const bottomGradientRef = useRef<HTMLDivElement>(null);
+  const playBarRef = useRef<HTMLDivElement>(null);
   const layoutSmoothPrevRef = useRef<{
     n: number;
     widths: number[];
@@ -1117,14 +1120,46 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
           );
           introLerp = smoothstep(u);
         }
-        // Distance-based opacity only — intro used slide only (introLerp×0 made frame 1 fully invisible).
-        el.style.opacity = String(opacities[i]);
+        el.style.opacity = String(introLerp < 1 ? opacities[i] * introLerp : opacities[i]);
 
         el.style.transformOrigin = 'center center';
         el.style.transform =
           introLerp < 1
             ? `translate3d(${-(1 - introLerp) * FILM_INTRO_SLIDE_PX}px, 0, 0)`
             : '';
+      }
+
+      const focalIdx = Math.max(0, Math.min(n - 1, Math.round(focalSlot)));
+      const centerH = heights[focalIdx] ?? 0;
+      const imageTop = midY - centerH / 2;
+      const imageBottom = midY + centerH / 2;
+      const playBandBottom = filmPlayBandBottomPx(vw, vh);
+      const bottomReserve = mdUp
+        ? filmDesktopBottomReservePx(vh)
+        : filmMobileBottomReservePx(vh);
+      const timelineTop = vh - bottomReserve;
+
+      if (topGradientRef.current) {
+        const topGap = imageTop - playBandBottom;
+        const topOp = smoothstep(Math.max(0, Math.min(1, (100 - topGap) / 120)));
+        topGradientRef.current.style.opacity = String(topOp);
+      }
+      if (bottomGradientRef.current) {
+        const bottomGap = timelineTop - imageBottom;
+        const bottomOp = smoothstep(Math.max(0, Math.min(1, (160 - bottomGap) / 140)));
+        bottomGradientRef.current.style.opacity = String(bottomOp);
+      }
+
+      if (playBarRef.current) {
+        if (!mdUp) {
+          const logoBottom = 72;
+          const buttonH = 40;
+          const playCenter = (logoBottom + imageTop) / 2;
+          const playTop = Math.max(logoBottom, playCenter - buttonH / 2);
+          playBarRef.current.style.top = `${playTop}px`;
+        } else {
+          playBarRef.current.style.top = '';
+        }
       }
 
       if (!filmLayoutReadyRef.current) {
@@ -1572,7 +1607,8 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
       {photos.length > 1 ? (
         <div
-          className="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top,0px)+clamp(2.25rem,1.625rem+5vh,10rem))] z-[90] flex justify-center px-4 transition-opacity duration-300 ease-out min-[640px]:top-[calc(env(safe-area-inset-top,0px)+clamp(2.75rem,1.625rem+7vh,7.25rem))] min-[640px]:px-8"
+          ref={playBarRef}
+          className="pointer-events-none fixed inset-x-0 top-0 z-[90] flex justify-center px-4 transition-opacity duration-300 ease-out min-[640px]:top-[calc(env(safe-area-inset-top,0px)+clamp(2.75rem,1.625rem+7vh,7.25rem))] min-[640px]:px-8"
           style={{ opacity: filmManualScrollActive ? 0 : 1 }}
         >
           {filmRewindingToStart || activeIndex >= photos.length - 1 ? (
@@ -1605,6 +1641,27 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
           )}
         </div>
       ) : null}
+
+      <div
+        ref={topGradientRef}
+        className="pointer-events-none fixed inset-x-0 top-0 z-[16] h-[36vh]"
+        style={{
+          opacity: 0,
+          background:
+            'linear-gradient(to bottom, rgb(250,250,250) 0%, rgb(250,250,250) 30%, rgba(250,250,250,0.95) 45%, rgba(250,250,250,0.78) 58%, rgba(250,250,250,0.5) 70%, rgba(250,250,250,0.2) 84%, transparent 100%)',
+        }}
+        aria-hidden
+      />
+      <div
+        ref={bottomGradientRef}
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-[16] h-[48vh]"
+        style={{
+          opacity: 0,
+          background:
+            'linear-gradient(to top, rgb(250,250,250) 0%, rgb(250,250,250) 30%, rgba(250,250,250,0.95) 45%, rgba(250,250,250,0.78) 58%, rgba(250,250,250,0.5) 70%, rgba(250,250,250,0.2) 84%, transparent 100%)',
+        }}
+        aria-hidden
+      />
 
       <div
         ref={stripRef}
