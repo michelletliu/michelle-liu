@@ -696,6 +696,8 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
   const topGradientRef = useRef<HTMLDivElement>(null);
   const bottomGradientRef = useRef<HTMLDivElement>(null);
   const playBarRef = useRef<HTMLDivElement>(null);
+  const playBarTopSmoothed = useRef<number | null>(null);
+  const prevVhForPlayBar = useRef(0);
   const layoutSmoothPrevRef = useRef<{
     n: number;
     widths: number[];
@@ -1139,27 +1141,35 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         : filmMobileBottomReservePx(vh);
       const timelineTop = vh - bottomReserve;
 
+      let playBarBottom = playBandBottom;
+      if (playBarRef.current) {
+        const buttonH = 40;
+        const logoBottom = mdUp ? 80 : 72;
+        const gap = imageTop - logoBottom;
+        const playCenter = logoBottom + gap * 0.36;
+        const targetTop = Math.max(logoBottom, playCenter - buttonH / 2);
+
+        const vhChanged = Math.abs(vh - prevVhForPlayBar.current) > 2;
+        prevVhForPlayBar.current = vh;
+        const prev = playBarTopSmoothed.current;
+        const playTop = prev === null || vhChanged
+          ? targetTop
+          : prev + (targetTop - prev) * 0.04;
+        playBarTopSmoothed.current = playTop;
+
+        playBarRef.current.style.top = `${playTop}px`;
+        playBarBottom = playTop + buttonH;
+      }
+
       if (topGradientRef.current) {
-        const topGap = imageTop - playBandBottom;
-        const topOp = smoothstep(Math.max(0, Math.min(1, (100 - topGap) / 120)));
+        const topGap = imageTop - playBarBottom;
+        const topOp = smoothstep(Math.max(0, Math.min(1, (20 - topGap) / 60)));
         topGradientRef.current.style.opacity = String(topOp);
       }
       if (bottomGradientRef.current) {
         const bottomGap = timelineTop - imageBottom;
-        const bottomOp = smoothstep(Math.max(0, Math.min(1, (160 - bottomGap) / 140)));
+        const bottomOp = smoothstep(Math.max(0, Math.min(1, (20 - bottomGap) / 60)));
         bottomGradientRef.current.style.opacity = String(bottomOp);
-      }
-
-      if (playBarRef.current) {
-        if (!mdUp) {
-          const logoBottom = 72;
-          const buttonH = 40;
-          const playCenter = (logoBottom + imageTop) / 2;
-          const playTop = Math.max(logoBottom, playCenter - buttonH / 2);
-          playBarRef.current.style.top = `${playTop}px`;
-        } else {
-          playBarRef.current.style.top = '';
-        }
       }
 
       if (!filmLayoutReadyRef.current) {
@@ -1608,8 +1618,13 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       {photos.length > 1 ? (
         <div
           ref={playBarRef}
-          className="pointer-events-none fixed inset-x-0 top-0 z-[90] flex justify-center px-4 transition-opacity duration-300 ease-out min-[640px]:top-[calc(env(safe-area-inset-top,0px)+clamp(2.75rem,1.625rem+7vh,7.25rem))] min-[640px]:px-8"
-          style={{ opacity: filmManualScrollActive ? 0 : 1 }}
+          className="pointer-events-none fixed inset-x-0 top-0 z-[90] flex justify-center px-4 min-[640px]:px-8"
+          style={{
+            opacity: filmManualScrollActive ? 0 : 1,
+            transition: filmManualScrollActive
+              ? 'opacity 200ms ease-out'
+              : 'opacity 600ms cubic-bezier(0.16, 1, 0.3, 1)',
+          }}
         >
           {filmRewindingToStart || activeIndex >= photos.length - 1 ? (
             <button
