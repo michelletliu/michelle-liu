@@ -18,6 +18,8 @@ import {
 } from 'framer-motion';
 import { useNavigate } from '@/lib/navigation';
 import imgLogo from '../../assets/logo.png';
+import InfoButton from '../InfoButton';
+import { useExperimentProject } from '../../hooks/useExperimentProject';
 import type { FilmPhoto } from './film-data';
 import {
   lerpLinemarkTowardTarget,
@@ -107,9 +109,9 @@ const FILM_FRAME_WIDEN_SLOT_RANGE = 2.12;
 /** Softer spring for arrow keys so each step feels less abrupt. */
 const FILM_KEYBOARD_SNAP_SPRING = { stiffness: 175, damping: 36 };
 /** Release snap should glide a bit more softly than keyboard stepping. */
-const FILM_IDLE_SNAP_SPRING = { stiffness: 118, damping: 30 };
+const FILM_IDLE_SNAP_SPRING = { stiffness: 220, damping: 28 };
 /** After wheel / trackpad scroll settles, snap to the nearest photo (grid-aligned scroll). */
-const FILM_SCROLL_IDLE_SNAP_MS = 150;
+const FILM_SCROLL_IDLE_SNAP_MS = 80;
 /** After autoplay advances, hold before moving to the next photo. */
 const FILM_AUTOPLAY_HOLD_MS = 1200;
 /** Total dwell per photo while autoplay is on (hold + transition breathing room). */
@@ -363,7 +365,7 @@ function FilmAutoplayIcon({ playing }: { playing: boolean }) {
 function FilmRewindIcon() {
   return (
     <svg
-      className="h-3 w-3 md:h-3.5 md:w-3.5"
+      className="h-4 w-4 md:h-[18px] md:w-[18px]"
       viewBox="0 0 120 131"
       fill="none"
       aria-hidden
@@ -675,8 +677,25 @@ const FILM_POLL_MS = 90_000;
  */
 const NOTE_INDEX_DEBOUNCE_MS = 55;
 
+const DEFAULT_FILM_PROJECT = {
+  id: 'film',
+  title: 'Film Diary',
+  year: '2026',
+  description: 'A digital photo timeline, featuring scenes from sundays in la.',
+  imageSrc: 'https://image.mux.com/RiCfoo00W9xVF5jrY11sXY3DVU7GE5P02q1KDHnbiNyiE/thumbnail.png',
+  videoSrc: 'https://stream.mux.com/RiCfoo00W9xVF5jrY11sXY3DVU7GE5P02q1KDHnbiNyiE.m3u8',
+  tryItOutHref: '/film',
+  toolCategories: [
+    { label: 'Design', tools: ['Figma'] },
+    { label: 'Frontend', tools: ['TypeScript', 'React', 'Framer Motion', 'Tailwind CSS'] },
+    { label: 'Data', tools: ['Notion API'] },
+    { label: 'AI', tools: ['Cursor', 'Opus 4.6'] },
+  ],
+};
+
 export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmPhoto[] }) {
   const navigate = useNavigate();
+  const projectInfo = useExperimentProject('film', DEFAULT_FILM_PROJECT);
   const pageRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -697,6 +716,8 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
   const bottomGradientRef = useRef<HTMLDivElement>(null);
   const playBarRef = useRef<HTMLDivElement>(null);
   const playBarTopSmoothed = useRef<number | null>(null);
+  const playBarTargetTop = useRef<number | null>(null);
+  const playBarOrientation = useRef<'landscape' | 'portrait' | null>(null);
   const prevVhForPlayBar = useRef(0);
   const layoutSmoothPrevRef = useRef<{
     n: number;
@@ -1147,14 +1168,25 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         const logoBottom = mdUp ? 80 : 72;
         const gap = imageTop - logoBottom;
         const playCenter = logoBottom + gap * 0.36;
-        const targetTop = Math.max(logoBottom, playCenter - buttonH / 2);
+        const candidateTop = Math.max(logoBottom, playCenter - buttonH / 2);
+
+        const focalAr = filmSafeAspectRatio(list[focalIdx]?.aspectRatio);
+        const orientation = focalAr > 1 ? 'landscape' : 'portrait';
+        const orientationChanged = orientation !== playBarOrientation.current;
+        playBarOrientation.current = orientation;
 
         const vhChanged = Math.abs(vh - prevVhForPlayBar.current) > 2;
         prevVhForPlayBar.current = vh;
+
+        if (playBarTargetTop.current === null || vhChanged || orientationChanged) {
+          playBarTargetTop.current = candidateTop;
+        }
+
+        const target = playBarTargetTop.current;
         const prev = playBarTopSmoothed.current;
         const playTop = prev === null || vhChanged
-          ? targetTop
-          : prev + (targetTop - prev) * 0.04;
+          ? target
+          : prev + (target - prev) * 0.06;
         playBarTopSmoothed.current = playTop;
 
         playBarRef.current.style.top = `${playTop}px`;
@@ -1759,6 +1791,8 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
           className="relative z-[100] h-8 w-8 object-contain md:h-[44px] md:w-[44px]"
         />
       </button>
+
+      <InfoButton project={projectInfo} />
     </motion.div>
     <div
       data-film-page
