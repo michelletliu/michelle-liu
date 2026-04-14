@@ -300,7 +300,7 @@ const LINEMARK_SELECTED_HEIGHT_MULT = 2;
 /** Max extra px at hovered mark (neighbors fall off like sketchbook indicators). */
 const LINEMARK_HOVER_BONUS_PX = 14;
 const LINEMARK_COLOR_ACTIVE = '#18181b';
-const LINEMARK_COLOR_IDLE = '#a1a1aa';
+const LINEMARK_COLOR_IDLE = '#e4e4e7';
 /**
  * Keep tablist row height constant while bar heights animate; the timeline is bottom-anchored,
  * so a changing row height shifts the whole block up/down and makes the note “bounce.”
