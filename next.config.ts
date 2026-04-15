@@ -65,6 +65,8 @@ const nextConfig: NextConfig = {
       { hostname: "image.mux.com" },
       { hostname: "cdn.sanity.io" },
       { hostname: "stream.mux.com" },
+      { hostname: "prod-files-secure.s3.us-west-2.amazonaws.com" },
+      { hostname: "**.amazonaws.com" },
     ],
   },
 
