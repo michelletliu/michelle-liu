@@ -728,8 +728,8 @@ const DEFAULT_FILM_PROJECT = {
   title: 'Film Diary',
   year: '2026',
   description: (<>A digital photo timeline, featuring scenes from <a href="https://sundays.rsvp" target="_blank" rel="noopener noreferrer" className="text-gray-600 font-medium hover:text-gray-900 transition-colors">sundays in la</a>.</>),
-  imageSrc: 'https://image.mux.com/Shz026KGCDXGF00Oab6XWSEuBgacy02009JFF7fSl00Dmzts/thumbnail.png',
-  videoSrc: 'https://stream.mux.com/Shz026KGCDXGF00Oab6XWSEuBgacy02009JFF7fSl00Dmzts.m3u8',
+  imageSrc: 'https://image.mux.com/4N35Nkdvphy5Buw02C6noekNGW43NyC7zQdfZcHh5Xjo/thumbnail.png',
+  videoSrc: 'https://stream.mux.com/4N35Nkdvphy5Buw02C6noekNGW43NyC7zQdfZcHh5Xjo.m3u8',
   tryItOutHref: '/film',
   toolCategories: [
     { label: 'Design', tools: ['Figma'] },
@@ -1109,16 +1109,6 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     layoutSmoothPrevRef.current = null;
     const w = window.innerWidth;
     vwRef.current = w;
-    const n0 = photosRef.current.length;
-    const { startOff } = getLayoutInfo(w, n0);
-    const currentX = galleryX.get();
-    const isAtDefault =
-      n0 === 0 || Math.abs(currentX - startOff) < 1;
-    if (isAtDefault) {
-      posRef.current = startOff;
-      galleryX.set(startOff);
-    }
-    const initialPos = isAtDefault ? startOff : currentX;
 
     const applyFrame = (scrollPos: number, vw: number) => {
       const list = photosRef.current;
@@ -1345,7 +1335,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       }
     };
 
-    applyFrame(initialPos, w);
+    applyFrame(galleryX.get(), w);
 
     const tick = () => {
       const vw = window.innerWidth;
@@ -1587,6 +1577,20 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       const t = e.target as HTMLElement | null;
       if (t?.closest('button[aria-label="Go back to home"]')) return;
       if (t?.closest('button[role="tab"]')) return;
+
+      if (galleryTweenRef.current) {
+        galleryTweenRef.current.stop();
+        galleryTweenRef.current = null;
+        isGalleryTweeningRef.current = false;
+      }
+      if (scrollIdleSnapTimerRef.current !== null) {
+        clearTimeout(scrollIdleSnapTimerRef.current);
+        scrollIdleSnapTimerRef.current = null;
+      }
+      scrollCumulativeDeltaRef.current = 0;
+      scrollSnapDirectionRef.current = 0;
+      scrolledToScrollYRef.current = window.scrollY;
+
       drag.pointerId = e.pointerId;
       drag.startX = e.clientX;
       drag.startY = e.clientY;
