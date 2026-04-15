@@ -786,6 +786,8 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
   const lastInputWasTouchRef = useRef(false);
   /** `performance.now()` deadline: wheel during autoplay should not pause playback (async wheel after scroll). */
   const filmAutoplayWheelGraceUntilRef = useRef(0);
+  /** True while a touch drag is actively moving the gallery — scroll handler must not fight. */
+  const isTouchDraggingRef = useRef(false);
 
   const galleryX = useMotionValue(0);
 
@@ -1330,6 +1332,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     };
 
     const onScroll = () => {
+      if (isTouchDraggingRef.current) return;
       const sy = window.scrollY;
       if (Math.abs(scrolledToScrollYRef.current - sy) < 1) return;
       const delta = sy - scrolledToScrollYRef.current;
@@ -1436,6 +1439,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     const onPointerUp = (e: PointerEvent) => {
       if (e.pointerId !== drag.pointerId) return;
       drag.pointerId = null;
+      isTouchDraggingRef.current = false;
       cleanupListeners();
       const n = photosRef.current.length;
       if (n > 1 && drag.moved) {
@@ -1466,16 +1470,17 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       if (Math.abs(dx) > 3) {
         if (!drag.moved) {
           drag.moved = true;
+          isTouchDraggingRef.current = true;
           isGalleryTweeningRef.current = false;
           cancelScrollSnap();
           setFilmAutoplayPlaying(false);
         }
-        scrollSnapDirectionRef.current = dx < 0 ? 1 : -1;
+        scrollSnapDirectionRef.current = dx > 0 ? 1 : -1;
         showManualScrollFade();
         e.preventDefault();
         galleryX.set(
           clampPos(
-            drag.startGallery + dx,
+            drag.startGallery - dx,
             window.innerWidth,
             photosRef.current.length,
           ),
