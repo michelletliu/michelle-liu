@@ -697,8 +697,8 @@ const DEFAULT_FILM_PROJECT = {
   title: 'Film Diary',
   year: '2026',
   description: (<>A digital photo timeline, featuring scenes from <a href="https://sundays.rsvp" target="_blank" rel="noopener noreferrer" className="text-gray-600 font-medium hover:text-gray-900 transition-colors">sundays in la</a>.</>),
-  imageSrc: 'https://image.mux.com/RiCfoo00W9xVF5jrY11sXY3DVU7GE5P02q1KDHnbiNyiE/thumbnail.png',
-  videoSrc: 'https://stream.mux.com/RiCfoo00W9xVF5jrY11sXY3DVU7GE5P02q1KDHnbiNyiE.m3u8',
+  imageSrc: 'https://image.mux.com/Shz026KGCDXGF00Oab6XWSEuBgacy02009JFF7fSl00Dmzts/thumbnail.png',
+  videoSrc: 'https://stream.mux.com/Shz026KGCDXGF00Oab6XWSEuBgacy02009JFF7fSl00Dmzts.m3u8',
   tryItOutHref: '/film',
   toolCategories: [
     { label: 'Design', tools: ['Figma'] },
