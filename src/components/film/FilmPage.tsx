@@ -28,7 +28,7 @@ import {
 } from './film-linemark-scale';
 
 const FILM_IMG_WIDTH_DESKTOP = 828;
-const FILM_IMG_WIDTH_MOBILE = 384;
+const FILM_IMG_WIDTH_MOBILE = 640;
 const FILM_IMG_QUALITY = 75;
 
 function filmOptimizedSrc(src: string, mobile = false): string {
@@ -800,6 +800,44 @@ const DEFAULT_FILM_PROJECT = {
   ],
 };
 
+const FILM_LOADING_PHRASES = [
+  'film reel loading',
+  'developing photos',
+  'rolling the negatives',
+  'dust off the enlarger',
+  'mixing the chemicals',
+  'checking the light meter',
+  'hanging prints to dry',
+];
+
+function FilmLoadingText() {
+  const [idx, setIdx] = useState(0);
+  const [fade, setFade] = useState(true);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setIdx((i) => (i + 1) % FILM_LOADING_PHRASES.length);
+        setFade(true);
+      }, 300);
+    }, 2800);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <p className="text-sm text-zinc-600">
+      <span
+        className="inline-block transition-opacity duration-300"
+        style={{ opacity: fade ? 1 : 0 }}
+      >
+        {FILM_LOADING_PHRASES[idx]}
+      </span>
+      <span className="film-dot" style={{ animationDelay: '0s' }}>.</span>
+      <span className="film-dot" style={{ animationDelay: '0.2s' }}>.</span>
+      <span className="film-dot" style={{ animationDelay: '0.4s' }}>.</span>
+    </p>
+  );
+}
+
 export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmPhoto[] }) {
   const navigate = useNavigate();
   const projectInfo = useExperimentProject('film', DEFAULT_FILM_PROJECT);
@@ -895,50 +933,24 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
   useEffect(() => {
     let cancelled = false;
-    const mobile = window.innerWidth < 640;
-    const FIRST_BATCH = mobile ? 30 : 12;
 
-    async function fetchBatch(limit?: number) {
-      const url = limit
-        ? `/api/film-photos?limit=${limit}`
-        : '/api/film-photos';
-      const res = await fetch(url, { cache: 'no-store' });
+    async function fetchAll() {
+      const res = await fetch('/api/film-photos', { cache: 'no-store' });
       return (await res.json()) as {
         photos?: FilmPhoto[];
         error?: string;
-        total?: number;
-        hasMore?: boolean;
       };
     }
 
-    let didInitialLoad = false;
-
     async function pull() {
       try {
-        if (!didInitialLoad) {
-          const first = await fetchBatch(FIRST_BATCH);
-          if (cancelled) return;
-          if (Array.isArray(first.photos) && first.photos.length > 0) {
-            setPhotos(first.photos);
-            setLoadError(null);
-            if (first.hasMore) {
-              const full = await fetchBatch();
-              if (cancelled) return;
-              if (Array.isArray(full.photos) && full.photos.length > 0) {
-                setPhotos(full.photos);
-              }
-            }
-          } else {
-            setLoadError(first.error ?? 'Could not load film photos');
-          }
-          didInitialLoad = true;
+        const data = await fetchAll();
+        if (cancelled) return;
+        if (Array.isArray(data.photos) && data.photos.length > 0) {
+          setPhotos(data.photos);
+          setLoadError(null);
         } else {
-          const full = await fetchBatch();
-          if (cancelled) return;
-          if (Array.isArray(full.photos) && full.photos.length > 0) {
-            setPhotos(full.photos);
-            setLoadError(null);
-          }
+          setLoadError(data.error ?? 'Could not load film photos');
         }
       } catch {
         if (!cancelled) {
@@ -1117,17 +1129,22 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     const baseIdx = Math.floor(rawSlot);
     const frac = rawSlot - baseIdx;
     const dir = scrollSnapDirectionRef.current;
-    const advanceTh = mobile ? 0.12 : FILM_SNAP_ADVANCE_THRESHOLD;
-    const forwardTh =
-      baseIdx === 0
-        ? (mobile ? 0.12 : FILM_SNAP_FIRST_SLOT_FORWARD_THRESHOLD)
-        : advanceTh;
-    const targetIdx =
-      dir > 0
-        ? (frac >= forwardTh ? baseIdx + 1 : baseIdx)
-        : dir < 0
-          ? (frac <= (1 - advanceTh) ? baseIdx : baseIdx + 1)
-          : (frac >= 0.5 ? baseIdx + 1 : baseIdx);
+    const nearest = frac >= 0.5 ? baseIdx + 1 : baseIdx;
+    let targetIdx: number;
+    if (mobile) {
+      targetIdx = dir > 0 ? nearest + 1 : dir < 0 ? nearest - 1 : nearest;
+    } else {
+      const forwardTh =
+        baseIdx === 0
+          ? FILM_SNAP_FIRST_SLOT_FORWARD_THRESHOLD
+          : FILM_SNAP_ADVANCE_THRESHOLD;
+      targetIdx =
+        dir > 0
+          ? (frac >= forwardTh ? baseIdx + 1 : baseIdx)
+          : dir < 0
+            ? (frac <= (1 - FILM_SNAP_ADVANCE_THRESHOLD) ? baseIdx : baseIdx + 1)
+            : nearest;
+    }
     const clampedIdx = Math.max(0, Math.min(n - 1, targetIdx));
     const targetX = clampPos(
       vpCenter - (clampedIdx * layoutStep + bw / 2),
@@ -1965,16 +1982,19 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       data-film-page
       className="fixed inset-0 z-[50] isolate overflow-hidden overscroll-none bg-[#fafafa]"
     >
-      {photos.length === 0 ? (
-        <div className="absolute inset-0 z-[5] flex flex-col items-center justify-center gap-2 px-8 text-center">
-          <p className="text-sm text-zinc-600">film reel loading…</p>
-          {loadError ? (
-            <p className="max-w-sm text-xs leading-relaxed text-zinc-500">
-              {loadError}
-            </p>
-          ) : null}
-        </div>
-      ) : null}
+      <div
+        className={`absolute inset-0 z-[5] flex flex-col items-center justify-center gap-2 px-8 text-center transition-opacity duration-700 ease-out ${
+          filmLayoutReady ? 'pointer-events-none opacity-0' : 'opacity-100'
+        }`}
+      >
+        <FilmLoadingText />
+        <style>{`@keyframes film-dot-pulse{0%,80%,100%{opacity:.15}40%{opacity:1}}.film-dot{animation:film-dot-pulse 1.4s ease-in-out infinite;opacity:.15}`}</style>
+        {loadError ? (
+          <p className="max-w-sm text-xs leading-relaxed text-zinc-500">
+            {loadError}
+          </p>
+        ) : null}
+      </div>
 
       {/* Play/pause bar hidden — ref kept for layout calculations */}
       <div

@@ -62,6 +62,8 @@ const nextConfig: NextConfig = {
 
   images: {
     disableStaticImages: true,
+    minimumCacheTTL: 2678400,
+    formats: ['image/webp'],
     remotePatterns: [
       { hostname: "image.mux.com" },
       { hostname: "cdn.sanity.io" },
