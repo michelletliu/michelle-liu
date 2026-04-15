@@ -751,7 +751,8 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
   const galleryTweenRef = useRef<AnimationPlaybackControls | null>(null);
   /** Last known `window.scrollY` (ignore near-duplicate events after programmatic scroll). */
   const scrolledToScrollYRef = useRef(0);
-  /** Last user-driven travel direction: 1 forward/down, -1 backward/up. */
+  /** Cumulative scroll displacement since last snap — sign determines snap direction. */
+  const scrollCumulativeDeltaRef = useRef(0);
   const scrollSnapDirectionRef = useRef(0);
   /** Debounce wheel/trackpad settle → snap scroll to nearest photo. */
   const scrollIdleSnapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1037,6 +1038,8 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       document.documentElement.scrollTop = targetSy;
       galleryX.set(startOff - targetSy * (layoutStep / scrollStep));
       layoutSmoothPrevRef.current = null;
+      scrollSnapDirectionRef.current = 0;
+      scrollCumulativeDeltaRef.current = 0;
       return;
     }
 
@@ -1066,6 +1069,8 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       onComplete: () => {
         isGalleryTweeningRef.current = false;
         galleryTweenRef.current = null;
+        scrollSnapDirectionRef.current = 0;
+        scrollCumulativeDeltaRef.current = 0;
       },
     });
   }, [galleryX]);
@@ -1372,16 +1377,19 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       const sy = window.scrollY;
       if (Math.abs(scrolledToScrollYRef.current - sy) < 1) return;
       const delta = sy - scrolledToScrollYRef.current;
-      if (Math.abs(delta) >= 1) {
-        scrollSnapDirectionRef.current = delta > 0 ? 1 : -1;
+      if (isGalleryTweeningRef.current) {
+        if (Math.abs(delta) < 3) return;
+        galleryTweenRef.current?.stop();
+        galleryTweenRef.current = null;
+        isGalleryTweeningRef.current = false;
+      }
+      scrollCumulativeDeltaRef.current += delta;
+      if (Math.abs(scrollCumulativeDeltaRef.current) >= 2) {
+        scrollSnapDirectionRef.current =
+          scrollCumulativeDeltaRef.current > 0 ? 1 : -1;
       }
       if (!filmAutoplayPlayingRef.current && !filmAutoplayApplyingScrollRef.current) {
         showManualScrollFade();
-      }
-      if (galleryTweenRef.current) {
-        galleryTweenRef.current.stop();
-        galleryTweenRef.current = null;
-        isGalleryTweeningRef.current = false;
       }
       const n = photosRef.current.length;
       if (n === 0) return;
@@ -1443,6 +1451,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       const delta = wheelDeltaPixels(e, vw) * FILM_WHEEL_SCROLL_FACTOR;
       if (Math.abs(delta) >= 0.5) {
         scrollSnapDirectionRef.current = delta > 0 ? 1 : -1;
+        scrollCumulativeDeltaRef.current = delta;
         showManualScrollFade();
       }
       const next = Math.max(0, Math.min(maxScroll, window.scrollY + delta));
@@ -1523,6 +1532,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
           setFilmAutoplayPlaying(false);
         }
         scrollSnapDirectionRef.current = dx < 0 ? 1 : -1;
+        scrollCumulativeDeltaRef.current = dx < 0 ? 1 : -1;
         showManualScrollFade();
         e.preventDefault();
         galleryX.set(
