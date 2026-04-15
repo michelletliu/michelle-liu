@@ -26,6 +26,12 @@ import {
   transformMarkHoverBonus,
   transformScale,
 } from './film-linemark-scale';
+
+function filmOptimizedSrc(src: string, width = 640, quality = 75): string {
+  if (!src || src.startsWith('/_next/image')) return src;
+  return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=${quality}`;
+}
+
 const BASE_WIDTH = 120;
 const GAP = 4;
 /** Lift film strip above vertical center: fixed + vh fraction (+ mobile) so timeline text never crowds photos. */
@@ -111,7 +117,7 @@ const FILM_KEYBOARD_SNAP_SPRING = { stiffness: 175, damping: 36 };
 /** Release snap should glide a bit more softly than keyboard stepping. */
 const FILM_IDLE_SNAP_SPRING = { stiffness: 180, damping: 26 };
 /** After wheel / trackpad scroll settles, snap to the nearest photo (grid-aligned scroll). */
-const FILM_SCROLL_IDLE_SNAP_MS = 0;
+const FILM_SCROLL_IDLE_SNAP_MS = 50;
 /** Longer settle time for touch scroll (mobile momentum needs more room). */
 const FILM_SCROLL_IDLE_SNAP_TOUCH_MS = 350;
 /** After autoplay advances, hold before moving to the next photo. */
@@ -131,7 +137,7 @@ const FILM_EDGE_GRADIENT_LEFT =
 const FILM_EDGE_GRADIENT_RIGHT =
   'linear-gradient(to left, rgb(250,250,250) 0%, rgba(250,250,250,0.97) 8%, rgba(250,250,250,0.9) 16%, rgba(250,250,250,0.8) 25%, rgba(250,250,250,0.65) 34%, rgba(250,250,250,0.5) 45%, rgba(250,250,250,0.35) 55%, rgba(250,250,250,0.2) 70%, rgba(250,250,250,0.08) 85%, transparent 100%)';
 /** Multiplier on wheel delta → `scrollTop` (lower = slower travel per scroll). */
-const FILM_WHEEL_SCROLL_FACTOR = 0.55;
+const FILM_WHEEL_SCROLL_FACTOR = 0.68;
 const CENTER_SCALE = 2.2;
 const MOBILE_BASE_WIDTH = 72;
 /** Portrait center scale on narrow viewports (landscape uses width cap below). */
@@ -301,7 +307,7 @@ const LINEMARK_CEILING = 1;
 const LINEMARK_SELECTED_HEIGHT_MULT = 2;
 /** Max extra px at hovered mark (neighbors fall off like sketchbook indicators). */
 const LINEMARK_HOVER_BONUS_PX = 14;
-const LINEMARK_COLOR_ACTIVE = '#18181b';
+const LINEMARK_COLOR_ACTIVE = '#27272a';
 const LINEMARK_COLOR_IDLE = '#e4e4e7';
 /**
  * Keep tablist row height constant while bar heights animate; the timeline is bottom-anchored,
@@ -715,7 +721,6 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
   const isGalleryTweeningRef = useRef(false);
   const filmIntroStartMsRef = useRef<number | null>(null);
   const filmIntroDoneRef = useRef(false);
-  const topGradientRef = useRef<HTMLDivElement>(null);
   const bottomGradientRef = useRef<HTMLDivElement>(null);
   const playBarRef = useRef<HTMLDivElement>(null);
   const playBarTopSmoothed = useRef<number | null>(null);
@@ -1199,11 +1204,6 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         playBarBottom = playTop + buttonH;
       }
 
-      if (topGradientRef.current) {
-        const topGap = imageTop - playBarBottom;
-        const topOp = smoothstep(Math.max(0, Math.min(1, (20 - topGap) / 60)));
-        topGradientRef.current.style.opacity = String(topOp);
-      }
       if (bottomGradientRef.current) {
         const bottomGap = timelineTop - imageBottom;
         const bottomOp = smoothstep(Math.max(0, Math.min(1, (20 - bottomGap) / 60)));
@@ -1658,67 +1658,21 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         </div>
       ) : null}
 
-      {photos.length > 1 ? (
-        <div
-          ref={playBarRef}
-          className="pointer-events-none fixed inset-x-0 top-0 z-[90] flex justify-center px-4 min-[640px]:px-8"
-          style={{
-            opacity: !firstImageLoaded || filmManualScrollActive ? 0 : 1,
-            transition: !firstImageLoaded
-              ? 'none'
-              : filmManualScrollActive
-                ? 'opacity 200ms ease-out'
-                : 'opacity 600ms cubic-bezier(0.16, 1, 0.3, 1)',
-          }}
-        >
-          {filmRewindingToStart || activeIndex >= photos.length - 1 ? (
-            <button
-              type="button"
-              data-film-autoplay-control
-              aria-label="Rewind to first photo"
-              onClick={rewindFilmToStart}
-              className="pointer-events-auto flex min-h-10 min-w-10 touch-manipulation items-center justify-center rounded-full border border-gray-200 p-1.5 text-gray-400 transition-opacity hover:opacity-80 active:opacity-70 md:min-h-10 md:min-w-10 md:p-2"
-            >
-              <FilmRewindIcon />
-            </button>
-          ) : (
-            <button
-              type="button"
-              data-film-autoplay-control
-              aria-label={filmAutoplayPlaying ? 'Pause slideshow' : 'Play slideshow'}
-              aria-pressed={filmAutoplayPlaying}
-              onClick={() => {
-                if (filmAutoplayPlaying) {
-                  setFilmAutoplayPlaying(false);
-                  return;
-                }
-                startFilmAutoplay();
-              }}
-              className="pointer-events-auto flex min-h-10 min-w-10 touch-manipulation items-center justify-center rounded-full border border-gray-200 p-1.5 text-gray-400 transition-opacity hover:opacity-80 active:opacity-70 md:min-h-10 md:min-w-10 md:p-2"
-            >
-              <FilmAutoplayIcon playing={filmAutoplayPlaying} />
-            </button>
-          )}
-        </div>
-      ) : null}
-
+      {/* Play/pause bar hidden — ref kept for layout calculations */}
       <div
-        ref={topGradientRef}
-        className="pointer-events-none fixed inset-x-0 top-0 z-[16] h-[36vh]"
-        style={{
-          opacity: 0,
-          background:
-            'linear-gradient(to bottom, rgb(250,250,250) 0%, rgb(250,250,250) 30%, rgba(250,250,250,0.95) 45%, rgba(250,250,250,0.78) 58%, rgba(250,250,250,0.5) 70%, rgba(250,250,250,0.2) 84%, transparent 100%)',
-        }}
+        ref={playBarRef}
+        className="pointer-events-none fixed inset-x-0 top-0 z-[90] flex justify-center px-4 min-[640px]:px-8"
+        style={{ opacity: 0 }}
         aria-hidden
       />
+
       <div
         ref={bottomGradientRef}
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-[16] h-[48vh]"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-[16] h-[72vh]"
         style={{
           opacity: 0,
           background:
-            'linear-gradient(to top, rgb(250,250,250) 0%, rgb(250,250,250) 30%, rgba(250,250,250,0.95) 45%, rgba(250,250,250,0.78) 58%, rgba(250,250,250,0.5) 70%, rgba(250,250,250,0.2) 84%, transparent 100%)',
+            'linear-gradient(to top, rgb(250,250,250) 0%, rgb(250,250,250) 35%, rgba(250,250,250,0.97) 45%, rgba(250,250,250,0.9) 55%, rgba(250,250,250,0.7) 65%, rgba(250,250,250,0.4) 76%, rgba(250,250,250,0.15) 88%, transparent 100%)',
         }}
         aria-hidden
       />
@@ -1746,7 +1700,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
             onClick={() => scrollToIndex(i)}
           >
             <img
-              src={photo.src}
+              src={filmOptimizedSrc(photo.src)}
               alt=""
               className="pointer-events-none h-full w-full object-cover"
               draggable={false}
