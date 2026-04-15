@@ -93,6 +93,32 @@ export default function InfoButton({ project }: InfoButtonProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
 
+  // Preload HLS manifest + thumbnail so the video is warm when modal opens
+  useEffect(() => {
+    if (!project.videoSrc) return;
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'fetch';
+    link.crossOrigin = 'anonymous';
+    link.href = project.videoSrc;
+    document.head.appendChild(link);
+
+    if (project.imageSrc) {
+      const imgLink = document.createElement('link');
+      imgLink.rel = 'preload';
+      imgLink.as = 'image';
+      imgLink.href = project.imageSrc;
+      document.head.appendChild(imgLink);
+      return () => {
+        document.head.removeChild(link);
+        document.head.removeChild(imgLink);
+      };
+    }
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, [project.videoSrc, project.imageSrc]);
+
   // Lock body scroll when modal is open (flicker-free implementation)
   useScrollLock(showModal);
 

@@ -27,9 +27,14 @@ import {
   transformScale,
 } from './film-linemark-scale';
 
-function filmOptimizedSrc(src: string, width = 828, quality = 75): string {
+const FILM_IMG_WIDTH_DESKTOP = 828;
+const FILM_IMG_WIDTH_MOBILE = 384;
+const FILM_IMG_QUALITY = 75;
+
+function filmOptimizedSrc(src: string, mobile = false): string {
   if (!src || src.startsWith('/_next/image')) return src;
-  return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=${quality}`;
+  const w = mobile ? FILM_IMG_WIDTH_MOBILE : FILM_IMG_WIDTH_DESKTOP;
+  return `/_next/image?url=${encodeURIComponent(src)}&w=${w}&q=${FILM_IMG_QUALITY}`;
 }
 
 const BASE_WIDTH = 120;
@@ -144,6 +149,8 @@ const FILM_EDGE_GRADIENT_RIGHT =
   'linear-gradient(to left, rgb(250,250,250) 0%, rgba(250,250,250,0.97) 8%, rgba(250,250,250,0.9) 16%, rgba(250,250,250,0.8) 25%, rgba(250,250,250,0.65) 34%, rgba(250,250,250,0.5) 45%, rgba(250,250,250,0.35) 55%, rgba(250,250,250,0.2) 70%, rgba(250,250,250,0.08) 85%, transparent 100%)';
 /** Multiplier on wheel delta → `scrollTop` (lower = slower travel per scroll). */
 const FILM_WHEEL_SCROLL_FACTOR = 0.68;
+/** On mobile, each photo needs less physical scroll — this shrinks the scroll spacer per step. */
+const FILM_MOBILE_SCROLL_STEP_RATIO = 0.55;
 const CENTER_SCALE = 2.2;
 const MOBILE_BASE_WIDTH = 72;
 /** Portrait center scale on narrow viewports (landscape uses width cap below). */
@@ -300,13 +307,19 @@ function wheelDeltaPixels(e: WheelEvent, vw: number): number {
  * value or "overshoot end" fires while still between photos.
  * Always uses `window.innerWidth` so pitch matches the scroll spacer (never a stale `vwRef` e.g. 1440 on mobile).
  */
+/** Pixels of vertical scroll per photo on the current viewport. Smaller on mobile for lighter touch. */
+function filmScrollStepPx(vw: number, photoCount: number): number {
+  const { bw } = getLayoutInfo(vw, photoCount);
+  const step = bw + GAP;
+  return vw < 640 ? Math.round(step * FILM_MOBILE_SCROLL_STEP_RATIO) : step;
+}
+
 function filmEffectiveMaxScrollPx(photoCount: number): number {
   if (photoCount <= 1) return 0;
   const vw =
     typeof window !== 'undefined' ? window.innerWidth : 1200;
-  const { bw } = getLayoutInfo(vw, photoCount);
-  const step = bw + GAP;
-  const layoutMax = (photoCount - 1) * step;
+  const scrollStep = filmScrollStepPx(vw, photoCount);
+  const layoutMax = (photoCount - 1) * scrollStep;
   if (typeof document === 'undefined') return layoutMax;
   const domRange =
     document.documentElement.scrollHeight - window.innerHeight;
@@ -793,13 +806,17 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
   /** Always start {0,0} so SSR and hydration match; real size is set in `useEffect`. */
   const [viewport, setViewport] = useState({ w: 0, h: 0 });
+  const mobileImg = viewport.w > 0 && viewport.w < 640;
   const scrollDriverHeightPx = useMemo(() => {
     if (photos.length === 0) return 0;
     const w = viewport.w;
     const h = viewport.h;
     if (h === 0) return 0;
-    const bw = w < 640 ? MOBILE_BASE_WIDTH : BASE_WIDTH;
-    return (photos.length - 1) * (bw + GAP) + h;
+    const mobile = w < 640;
+    const bw = mobile ? MOBILE_BASE_WIDTH : BASE_WIDTH;
+    const step = bw + GAP;
+    const scrollPerPhoto = mobile ? Math.round(step * FILM_MOBILE_SCROLL_STEP_RATIO) : step;
+    return (photos.length - 1) * scrollPerPhoto + h;
   }, [photos.length, viewport.w, viewport.h]);
   useLayoutEffect(() => {
     vwRef.current = window.innerWidth;
@@ -814,20 +831,38 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
   useEffect(() => {
     let cancelled = false;
-    const shouldPullImmediately = initialPhotos.length === 0;
+    const mobile = window.innerWidth < 640;
+    const FIRST_BATCH = mobile ? 8 : 12;
+
+    async function fetchBatch(limit?: number) {
+      const url = limit
+        ? `/api/film-photos?limit=${limit}`
+        : '/api/film-photos';
+      const res = await fetch(url, { cache: 'no-store' });
+      return (await res.json()) as {
+        photos?: FilmPhoto[];
+        error?: string;
+        total?: number;
+        hasMore?: boolean;
+      };
+    }
 
     async function pull() {
       try {
-        const res = await fetch('/api/film-photos', { cache: 'no-store' });
-        const data = (await res.json()) as { photos?: FilmPhoto[]; error?: string };
+        const first = await fetchBatch(FIRST_BATCH);
         if (cancelled) return;
-        if (Array.isArray(data.photos)) {
-          setPhotos(data.photos);
-          setLoadError(
-            data.photos.length === 0 && data.error ? data.error : null,
-          );
+        if (Array.isArray(first.photos) && first.photos.length > 0) {
+          setPhotos(first.photos);
+          setLoadError(null);
+          if (first.hasMore) {
+            const full = await fetchBatch();
+            if (cancelled) return;
+            if (Array.isArray(full.photos) && full.photos.length > 0) {
+              setPhotos(full.photos);
+            }
+          }
         } else {
-          setLoadError(data.error ?? 'Could not load film photos');
+          setLoadError(first.error ?? 'Could not load film photos');
         }
       } catch {
         if (!cancelled) {
@@ -836,9 +871,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       }
     }
 
-    if (shouldPullImmediately) {
-      void pull();
-    }
+    void pull();
     const interval = setInterval(pull, FILM_POLL_MS);
     const onVis = () => {
       if (document.visibilityState === 'visible') void pull();
@@ -849,7 +882,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       clearInterval(interval);
       document.removeEventListener('visibilitychange', onVis);
     };
-  }, [initialPhotos.length]);
+  }, []);
 
   useEffect(() => {
     if (photos.length === 0) return;
@@ -868,18 +901,18 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     const lo = activeIndex + IMG_RENDER_WINDOW + 1;
     const hi = Math.min(photos.length - 1, activeIndex + IMG_RENDER_WINDOW + IMG_PRELOAD_AHEAD);
     for (let i = lo; i <= hi; i++) {
-      const src = filmOptimizedSrc(photos[i].src);
+      const src = filmOptimizedSrc(photos[i].src, mobileImg);
       const img = new Image();
       img.src = src;
     }
     const loBack = Math.max(0, activeIndex - IMG_RENDER_WINDOW - IMG_PRELOAD_AHEAD);
     const hiBack = activeIndex - IMG_RENDER_WINDOW - 1;
     for (let i = loBack; i <= hiBack; i++) {
-      const src = filmOptimizedSrc(photos[i].src);
+      const src = filmOptimizedSrc(photos[i].src, mobileImg);
       const img = new Image();
       img.src = src;
     }
-  }, [activeIndex, photos]);
+  }, [activeIndex, photos, mobileImg]);
 
   const syncPhotoAspectRatio = useCallback(
     (photoId: string, naturalWidth: number, naturalHeight: number) => {
@@ -974,11 +1007,12 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     const vw = window.innerWidth;
     vwRef.current = vw;
     const { bw, startOff, vpCenter } = getLayoutInfo(vw, n);
-    const step = bw + GAP;
+    const layoutStep = bw + GAP;
+    const scrollStep = filmScrollStepPx(vw, n);
     const maxScroll = filmEffectiveMaxScrollPx(n);
     let sy = window.scrollY;
     sy = Math.max(0, Math.min(maxScroll, sy));
-    const rawIdx = sy / step;
+    const rawIdx = sy / scrollStep;
     const baseIdx = Math.floor(rawIdx);
     const frac = rawIdx - baseIdx;
     const dir = scrollSnapDirectionRef.current;
@@ -993,7 +1027,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
           ? (frac <= (1 - FILM_SNAP_ADVANCE_THRESHOLD) ? baseIdx : baseIdx + 1)
           : (frac >= 0.5 ? baseIdx + 1 : baseIdx);
     const clampedIdx = Math.max(0, Math.min(n - 1, targetIdx));
-    const targetSy = clampedIdx * step;
+    const targetSy = clampedIdx * scrollStep;
     if (Math.abs(sy - targetSy) <= 1) return;
     const reduceMotion =
       typeof window.matchMedia === 'function' &&
@@ -1001,13 +1035,13 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     if (reduceMotion) {
       scrolledToScrollYRef.current = targetSy;
       document.documentElement.scrollTop = targetSy;
-      galleryX.set(startOff - targetSy);
+      galleryX.set(startOff - targetSy * (layoutStep / scrollStep));
       layoutSmoothPrevRef.current = null;
       return;
     }
 
     const targetX = clampPos(
-      vpCenter - (clampedIdx * step + bw / 2),
+      vpCenter - (clampedIdx * layoutStep + bw / 2),
       vw,
       n,
     );
@@ -1024,7 +1058,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       onUpdate: (latest) => {
         const nextSy = Math.max(
           0,
-          Math.min(maxScroll, startOff - Number(latest)),
+          Math.min(maxScroll, (startOff - Number(latest)) * (scrollStep / layoutStep)),
         );
         scrolledToScrollYRef.current = nextSy;
         document.documentElement.scrollTop = nextSy;
@@ -1294,12 +1328,14 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       vwRef.current = w;
       const n = photosRef.current.length;
       if (n === 0) return;
-      const { startOff } = getLayoutInfo(w, n);
+      const { bw, startOff } = getLayoutInfo(w, n);
+      const layoutStep = bw + GAP;
+      const scrollStep = filmScrollStepPx(w, n);
       const maxScroll = Math.max(0, filmEffectiveMaxScrollPx(n));
       const sy = Math.min(maxScroll, Math.max(0, window.scrollY));
       document.documentElement.scrollTop = sy;
       scrolledToScrollYRef.current = sy;
-      posRef.current = clampPos(startOff - sy, w, n);
+      posRef.current = clampPos(startOff - sy * (layoutStep / scrollStep), w, n);
       galleryX.set(posRef.current);
       layoutSmoothPrevRef.current = null;
     };
@@ -1351,8 +1387,11 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       if (n === 0) return;
       const vw = window.innerWidth;
       vwRef.current = vw;
-      const { startOff } = getLayoutInfo(vw, n);
-      galleryX.set(startOff - sy);
+      const { bw, startOff } = getLayoutInfo(vw, n);
+      const layoutStep = bw + GAP;
+      const scrollStep = filmScrollStepPx(vw, n);
+      const galleryFromScroll = startOff - sy * (layoutStep / scrollStep);
+      galleryX.set(galleryFromScroll);
       layoutSmoothPrevRef.current = null;
       scrolledToScrollYRef.current = sy;
 
@@ -1448,11 +1487,12 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         const vw = window.innerWidth;
         vwRef.current = vw;
         const { bw, startOff } = getLayoutInfo(vw, n);
-        const step = bw + GAP;
+        const layoutStep = bw + GAP;
+        const scrollStep = filmScrollStepPx(vw, n);
         const maxScroll = filmEffectiveMaxScrollPx(n);
         const impliedSy = Math.max(
           0,
-          Math.min(maxScroll, startOff - galleryX.get()),
+          Math.min(maxScroll, (startOff - galleryX.get()) * (scrollStep / layoutStep)),
         );
         if (scrollIdleSnapTimerRef.current !== null) {
           clearTimeout(scrollIdleSnapTimerRef.current);
@@ -1460,7 +1500,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         }
         document.documentElement.scrollTop = impliedSy;
         scrolledToScrollYRef.current = impliedSy;
-        galleryX.set(startOff - impliedSy);
+        galleryX.set(startOff - impliedSy * (layoutStep / scrollStep));
         layoutSmoothPrevRef.current = null;
         runIdleScrollSnap();
       }
@@ -1562,8 +1602,9 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         );
       vwRef.current = vw;
       const { bw, vpCenter } = getLayoutInfo(vw, n);
-      const step = bw + GAP;
-      const centerScroll = Math.min(idx * step, filmEffectiveMaxScrollPx(n));
+      const layoutStep = bw + GAP;
+      const scrollStep = filmScrollStepPx(vw, n);
+      const centerScroll = Math.min(idx * scrollStep, filmEffectiveMaxScrollPx(n));
       scrolledToScrollYRef.current = centerScroll;
       if (preserveAutoplay) {
         filmAutoplayWheelGraceUntilRef.current =
@@ -1575,7 +1616,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       } finally {
         filmAutoplayApplyingScrollRef.current = false;
       }
-      const target = clampPos(vpCenter - (idx * step + bw / 2), vw, n);
+      const target = clampPos(vpCenter - (idx * layoutStep + bw / 2), vw, n);
       isGalleryTweeningRef.current = true;
       galleryTweenRef.current?.stop();
       galleryTweenRef.current = animate(galleryX, target, {
@@ -1776,7 +1817,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
           >
             {shouldRenderImg ? (
             <img
-              src={filmOptimizedSrc(photo.src)}
+              src={filmOptimizedSrc(photo.src, mobileImg)}
               alt=""
               className="pointer-events-none h-full w-full object-cover"
               draggable={false}
