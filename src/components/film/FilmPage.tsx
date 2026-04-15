@@ -450,8 +450,66 @@ function FilmPhotoHashmarks({
   const [hoverLabelIndex, setHoverLabelIndex] = useState<number | null>(null);
   const hoverLabelIndexRef = useRef<number | null>(null);
   hoverLabelIndexRef.current = hoverLabelIndex;
+  const tablistRef = useRef<HTMLDivElement>(null);
+  const scrubActiveRef = useRef(false);
+  const scrubLastIdxRef = useRef(-1);
 
   const stripMinW = rowW + 2 * HASH_LABEL_GUTTER_PX;
+
+  const resolveIndexFromX = useCallback(
+    (clientX: number): number => {
+      const el = tablistRef.current;
+      if (!el) return 0;
+      const rect = el.getBoundingClientRect();
+      const relX = clientX - rect.left;
+      const idx = Math.round(relX / HASH_PITCH);
+      return Math.max(0, Math.min(total - 1, idx));
+    },
+    [total],
+  );
+
+  useEffect(() => {
+    const el = tablistRef.current;
+    if (!el) return;
+
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse') return;
+      el.setPointerCapture(e.pointerId);
+      scrubActiveRef.current = true;
+      const idx = resolveIndexFromX(e.clientX);
+      scrubLastIdxRef.current = idx;
+      onSelect(idx);
+      e.preventDefault();
+    };
+
+    const onMove = (e: PointerEvent) => {
+      if (!scrubActiveRef.current) return;
+      const idx = resolveIndexFromX(e.clientX);
+      if (idx !== scrubLastIdxRef.current) {
+        scrubLastIdxRef.current = idx;
+        onSelect(idx);
+      }
+      e.preventDefault();
+    };
+
+    const onUp = () => {
+      scrubActiveRef.current = false;
+      scrubLastIdxRef.current = -1;
+    };
+
+    el.addEventListener('pointerdown', onDown, { passive: false });
+    el.addEventListener('pointermove', onMove, { passive: false });
+    el.addEventListener('pointerup', onUp);
+    el.addEventListener('pointercancel', onUp);
+    el.addEventListener('lostpointercapture', onUp);
+    return () => {
+      el.removeEventListener('pointerdown', onDown);
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointercancel', onUp);
+      el.removeEventListener('lostpointercapture', onUp);
+    };
+  }, [resolveIndexFromX, onSelect]);
 
   useEffect(() => {
     let frameId = 0;
@@ -600,8 +658,9 @@ function FilmPhotoHashmarks({
           ) : null}
 
           <div
-            className="-mt-2 flex shrink-0 items-end"
-            style={{ width: rowW, gap: HASH_GAP, minHeight: HASH_TABLIST_MIN_H_PX }}
+            ref={tablistRef}
+            className="-mt-2 flex shrink-0 items-end pb-2 pt-3 sm:pt-0 sm:pb-0"
+            style={{ width: rowW, gap: HASH_GAP, minHeight: HASH_TABLIST_MIN_H_PX, touchAction: 'none' }}
             role="tablist"
           >
             {photos.map((photo, i) => {
@@ -614,11 +673,13 @@ function FilmPhotoHashmarks({
                   aria-selected={isActive}
                   aria-label={`${photo.month} ${photo.year}, photo ${i + 1} of ${total}`}
                   onClick={() => onSelect(i)}
-                  onMouseEnter={() => {
+                  onPointerEnter={(e) => {
+                    if (e.pointerType !== 'mouse') return;
                     hoveredMarkIndexRef.current = i;
                     setHoverLabelIndex(i);
                   }}
-                  onMouseLeave={() => {
+                  onPointerLeave={(e) => {
+                    if (e.pointerType !== 'mouse') return;
                     hoveredMarkIndexRef.current = null;
                     setHoverLabelIndex(null);
                   }}
@@ -728,8 +789,8 @@ const DEFAULT_FILM_PROJECT = {
   title: 'Film Diary',
   year: '2026',
   description: (<>A digital photo timeline, featuring scenes from <a href="https://sundays.rsvp" target="_blank" rel="noopener noreferrer" className="text-gray-600 font-medium hover:text-gray-900 transition-colors">sundays in la</a>.</>),
-  imageSrc: 'https://image.mux.com/4N35Nkdvphy5Buw02C6noekNGW43NyC7zQdfZcHh5Xjo/thumbnail.png',
-  videoSrc: 'https://stream.mux.com/4N35Nkdvphy5Buw02C6noekNGW43NyC7zQdfZcHh5Xjo.m3u8',
+  imageSrc: 'https://image.mux.com/cUHD6AJLNxSi5VnldLaSehN70266tHEAfdiMQCCsQ4pA/thumbnail.png',
+  videoSrc: 'https://stream.mux.com/cUHD6AJLNxSi5VnldLaSehN70266tHEAfdiMQCCsQ4pA.m3u8',
   tryItOutHref: '/film',
   toolCategories: [
     { label: 'Design', tools: ['Figma'] },
@@ -1576,7 +1637,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       lastInputWasTouchRef.current = true;
       const t = e.target as HTMLElement | null;
       if (t?.closest('button[aria-label="Go back to home"]')) return;
-      if (t?.closest('button[role="tab"]')) return;
+      if (t?.closest('[role="tablist"]')) return;
 
       if (galleryTweenRef.current) {
         galleryTweenRef.current.stop();
