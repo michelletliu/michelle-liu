@@ -8,12 +8,11 @@ export async function GET(request: NextRequest) {
   const limit = limitParam ? Math.max(1, parseInt(limitParam, 10)) : undefined;
 
   try {
-    const photos = await fetchFilmPhotosFromNotion();
-    const sliced = limit ? photos.slice(0, limit) : photos;
+    const photos = await fetchFilmPhotosFromNotion(limit);
     return NextResponse.json({
-      photos: sliced,
+      photos,
       total: photos.length,
-      hasMore: limit ? photos.length > limit : false,
+      hasMore: !!limit,
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Unknown error';

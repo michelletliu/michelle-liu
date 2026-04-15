@@ -50,6 +50,7 @@ const figmaAssetAlias = {
 };
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ['frightful-ozella-colonially.ngrok-free.dev'],
   devIndicators: false,
   outputFileTracingRoot: path.resolve(__dirname),
   async redirects() {

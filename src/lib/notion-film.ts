@@ -369,23 +369,62 @@ function imageUrlFromBlock(block: {
   return img.file?.url ?? img.external?.url ?? null;
 }
 
-async function fetchFilmPhotosFromNotionUncached(): Promise<FilmPhoto[]> {
-  const databaseId = resolveFilmDatabaseId();
+type SortedPage = {
+  page: NotionPage;
+  title: string;
+  month: string;
+  year: number;
+  note?: string;
+};
 
-  const allPages: NotionPage[] = [];
-  let cursor: string | undefined;
-  do {
-    const body: Record<string, unknown> = { page_size: 100 };
-    if (cursor) body.start_cursor = cursor;
-    const resp = (await notionFetch(`/v1/databases/${databaseId}/query`, {
-      method: 'POST',
-      body: JSON.stringify(body),
-    })) as { results?: NotionPage[]; has_more?: boolean; next_cursor?: string };
-    allPages.push(...(resp.results ?? []));
-    if (!resp.has_more) break;
-    cursor = resp.next_cursor;
-  } while (cursor);
+let sortedPagesCache: { pages: SortedPage[]; fetchedAt: number } | null = null;
+let sortedPagesInFlight: Promise<SortedPage[]> | null = null;
 
+async function fetchSortedPages(): Promise<SortedPage[]> {
+  const now = Date.now();
+  if (sortedPagesCache && now - sortedPagesCache.fetchedAt < FILM_PHOTOS_CACHE_TTL_MS) {
+    return sortedPagesCache.pages;
+  }
+  if (sortedPagesInFlight) return sortedPagesInFlight;
+
+  sortedPagesInFlight = (async () => {
+    const databaseId = resolveFilmDatabaseId();
+    const allPages: NotionPage[] = [];
+    let cursor: string | undefined;
+    do {
+      const body: Record<string, unknown> = { page_size: 100 };
+      if (cursor) body.start_cursor = cursor;
+      const resp = (await notionFetch(`/v1/databases/${databaseId}/query`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      })) as { results?: NotionPage[]; has_more?: boolean; next_cursor?: string };
+      allPages.push(...(resp.results ?? []));
+      if (!resp.has_more) break;
+      cursor = resp.next_cursor;
+    } while (cursor);
+
+    const sorted: SortedPage[] = allPages.map((page) => ({
+      page,
+      title: pageTitle(page.properties),
+      month: pageMonth(page.properties),
+      year: pageYear(page.properties),
+      note: pageNote(page.properties),
+    }));
+    sorted.sort((a, b) => {
+      if (a.year !== b.year) return a.year - b.year;
+      const mA = MONTH_ORDER.indexOf(a.month as (typeof MONTH_ORDER)[number]);
+      const mB = MONTH_ORDER.indexOf(b.month as (typeof MONTH_ORDER)[number]);
+      if (mA !== mB) return (mA === -1 ? 99 : mA) - (mB === -1 ? 99 : mB);
+      return a.title.localeCompare(b.title);
+    });
+    sortedPagesCache = { pages: sorted, fetchedAt: Date.now() };
+    return sorted;
+  })().finally(() => { sortedPagesInFlight = null; });
+
+  return sortedPagesInFlight;
+}
+
+async function resolvePhotosFromPages(pages: SortedPage[]): Promise<FilmPhoto[]> {
   type RawEntry = {
     pageId: string;
     title: string;
@@ -393,27 +432,23 @@ async function fetchFilmPhotosFromNotionUncached(): Promise<FilmPhoto[]> {
     year: number;
     url: string;
     note?: string;
+    sortIdx: number;
   };
 
-  const batchSize = 12;
+  const batchSize = pages.length <= 12 ? pages.length : 12;
   const raw: RawEntry[] = [];
 
-  for (let i = 0; i < allPages.length; i += batchSize) {
-    const slice = allPages.slice(i, i + batchSize);
+  for (let i = 0; i < pages.length; i += batchSize) {
+    const slice = pages.slice(i, i + batchSize);
     const part = await Promise.all(
-      slice.map(async (page) => {
-        const props = page.properties;
-        const title = pageTitle(props);
-        const month = pageMonth(props);
-        const year = pageYear(props);
-        const note = pageNote(props);
+      slice.map(async (sp, j) => {
         let blocks: NotionBlockChildren | null;
         try {
-          blocks = await notionFetchBlockChildrenOrNull(page.id);
+          blocks = await notionFetchBlockChildrenOrNull(sp.page.id);
         } catch (error) {
           if (process.env.NODE_ENV === 'development') {
             console.warn(
-              `[notion-film] Skipping page after block fetch failure: ${page.id}`,
+              `[notion-film] Skipping page after block fetch failure: ${sp.page.id}`,
               error,
             );
           }
@@ -423,23 +458,26 @@ async function fetchFilmPhotosFromNotionUncached(): Promise<FilmPhoto[]> {
         const imageBlock = blocks.results?.find((b) => b.type === 'image');
         const url = imageBlock ? imageUrlFromBlock(imageBlock) : null;
         if (!url) return null;
-        return { pageId: page.id, title, month, year, url, ...(note ? { note } : {}) };
+        return {
+          pageId: sp.page.id,
+          title: sp.title,
+          month: sp.month,
+          year: sp.year,
+          url,
+          ...(sp.note ? { note: sp.note } : {}),
+          sortIdx: i + j,
+        };
       }),
     );
     raw.push(...part.filter((x): x is RawEntry => x != null));
   }
 
-  raw.sort((a, b) => {
-    if (a.year !== b.year) return a.year - b.year;
-    const mA = MONTH_ORDER.indexOf(a.month as (typeof MONTH_ORDER)[number]);
-    const mB = MONTH_ORDER.indexOf(b.month as (typeof MONTH_ORDER)[number]);
-    if (mA !== mB) return (mA === -1 ? 99 : mA) - (mB === -1 ? 99 : mB);
-    return a.title.localeCompare(b.title);
-  });
+  raw.sort((a, b) => a.sortIdx - b.sortIdx);
 
+  const concurrency = Math.min(raw.length, ASPECT_PROBE_CONCURRENCY);
   const photos: FilmPhoto[] = [];
-  for (let i = 0; i < raw.length; i += ASPECT_PROBE_CONCURRENCY) {
-    const chunk = raw.slice(i, i + ASPECT_PROBE_CONCURRENCY);
+  for (let i = 0; i < raw.length; i += concurrency) {
+    const chunk = raw.slice(i, i + concurrency);
     const aspects = await Promise.all(
       chunk.map((e) => aspectForPage(e.pageId, e.url)),
     );
@@ -459,7 +497,20 @@ async function fetchFilmPhotosFromNotionUncached(): Promise<FilmPhoto[]> {
   return photos;
 }
 
-export async function fetchFilmPhotosFromNotion(): Promise<FilmPhoto[]> {
+async function fetchFilmPhotosFromNotionUncached(limit?: number): Promise<FilmPhoto[]> {
+  const sorted = await fetchSortedPages();
+  const pages = limit ? sorted.slice(0, limit) : sorted;
+  return resolvePhotosFromPages(pages);
+}
+
+export async function fetchFilmPhotosFromNotion(limit?: number): Promise<FilmPhoto[]> {
+  if (limit) {
+    if (filmPhotosCache && Date.now() - filmPhotosCache.fetchedAt < FILM_PHOTOS_CACHE_TTL_MS) {
+      return filmPhotosCache.photos.slice(0, limit);
+    }
+    return fetchFilmPhotosFromNotionUncached(limit);
+  }
+
   const now = Date.now();
   if (filmPhotosCache && now - filmPhotosCache.fetchedAt < FILM_PHOTOS_CACHE_TTL_MS) {
     return filmPhotosCache.photos;
