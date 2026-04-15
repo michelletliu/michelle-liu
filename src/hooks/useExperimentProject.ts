@@ -76,9 +76,8 @@ export function useExperimentProject(
             toolCategories: data.toolCategories || defaultProject.toolCategories,
           });
         }
-      } catch (error) {
-        console.error(`Error fetching experiment project ${projectId}:`, error);
-        // Keep default project on error
+      } catch {
+        // Sanity fetch failed — keep default project data
       }
     }
 

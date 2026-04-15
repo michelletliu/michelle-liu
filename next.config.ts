@@ -50,6 +50,7 @@ const figmaAssetAlias = {
 };
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ['frightful-ozella-colonially.ngrok-free.dev'],
   devIndicators: false,
   outputFileTracingRoot: path.resolve(__dirname),
   async redirects() {
@@ -61,6 +62,8 @@ const nextConfig: NextConfig = {
 
   images: {
     disableStaticImages: true,
+    minimumCacheTTL: 2678400,
+    formats: ['image/webp'],
     remotePatterns: [
       { hostname: "image.mux.com" },
       { hostname: "cdn.sanity.io" },

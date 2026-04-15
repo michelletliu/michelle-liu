@@ -28,7 +28,7 @@ import {
 } from './film-linemark-scale';
 
 const FILM_IMG_WIDTH_DESKTOP = 828;
-const FILM_IMG_WIDTH_MOBILE = 384;
+const FILM_IMG_WIDTH_MOBILE = 640;
 const FILM_IMG_QUALITY = 75;
 
 function filmOptimizedSrc(src: string, mobile = false): string {
@@ -800,6 +800,44 @@ const DEFAULT_FILM_PROJECT = {
   ],
 };
 
+const FILM_LOADING_PHRASES = [
+  'film reel loading',
+  'developing photos',
+  'rolling the negatives',
+  'dust off the enlarger',
+  'mixing the chemicals',
+  'checking the light meter',
+  'hanging prints to dry',
+];
+
+function FilmLoadingText() {
+  const [idx, setIdx] = useState(0);
+  const [fade, setFade] = useState(true);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setIdx((i) => (i + 1) % FILM_LOADING_PHRASES.length);
+        setFade(true);
+      }, 300);
+    }, 2800);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <p className="text-sm text-zinc-600">
+      <span
+        className="inline-block transition-opacity duration-300"
+        style={{ opacity: fade ? 1 : 0 }}
+      >
+        {FILM_LOADING_PHRASES[idx]}
+      </span>
+      <span className="film-dot" style={{ animationDelay: '0s' }}>.</span>
+      <span className="film-dot" style={{ animationDelay: '0.2s' }}>.</span>
+      <span className="film-dot" style={{ animationDelay: '0.4s' }}>.</span>
+    </p>
+  );
+}
+
 export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmPhoto[] }) {
   const navigate = useNavigate();
   const projectInfo = useExperimentProject('film', DEFAULT_FILM_PROJECT);
@@ -866,17 +904,17 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
   /** Always start {0,0} so SSR and hydration match; real size is set in `useEffect`. */
   const [viewport, setViewport] = useState({ w: 0, h: 0 });
-  const mobileImg = viewport.w > 0 && viewport.w < 640;
+  const isMobile = viewport.w > 0 && viewport.w < 640;
+  const mobileImg = isMobile;
   const scrollDriverHeightPx = useMemo(() => {
     if (photos.length === 0) return 0;
     const w = viewport.w;
     const h = viewport.h;
     if (h === 0) return 0;
-    const mobile = w < 640;
-    const bw = mobile ? MOBILE_BASE_WIDTH : BASE_WIDTH;
+    if (w < 640) return 0;
+    const bw = BASE_WIDTH;
     const step = bw + GAP;
-    const scrollPerPhoto = mobile ? Math.round(step * FILM_MOBILE_SCROLL_STEP_RATIO) : step;
-    return (photos.length - 1) * scrollPerPhoto + h;
+    return (photos.length - 1) * step + h;
   }, [photos.length, viewport.w, viewport.h]);
   useLayoutEffect(() => {
     vwRef.current = window.innerWidth;
@@ -888,53 +926,31 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     window.addEventListener('resize', sync);
     return () => window.removeEventListener('resize', sync);
   }, []);
+  useEffect(() => {
+    if (viewport.w === 0 || viewport.w >= 640) return;
+    window.scrollTo(0, 0);
+  }, [viewport.w]);
 
   useEffect(() => {
     let cancelled = false;
-    const mobile = window.innerWidth < 640;
-    const FIRST_BATCH = mobile ? 8 : 12;
 
-    async function fetchBatch(limit?: number) {
-      const url = limit
-        ? `/api/film-photos?limit=${limit}`
-        : '/api/film-photos';
-      const res = await fetch(url, { cache: 'no-store' });
+    async function fetchAll() {
+      const res = await fetch('/api/film-photos', { cache: 'no-store' });
       return (await res.json()) as {
         photos?: FilmPhoto[];
         error?: string;
-        total?: number;
-        hasMore?: boolean;
       };
     }
 
-    let didInitialLoad = false;
-
     async function pull() {
       try {
-        if (!didInitialLoad) {
-          const first = await fetchBatch(FIRST_BATCH);
-          if (cancelled) return;
-          if (Array.isArray(first.photos) && first.photos.length > 0) {
-            setPhotos(first.photos);
-            setLoadError(null);
-            if (first.hasMore) {
-              const full = await fetchBatch();
-              if (cancelled) return;
-              if (Array.isArray(full.photos) && full.photos.length > 0) {
-                setPhotos(full.photos);
-              }
-            }
-          } else {
-            setLoadError(first.error ?? 'Could not load film photos');
-          }
-          didInitialLoad = true;
+        const data = await fetchAll();
+        if (cancelled) return;
+        if (Array.isArray(data.photos) && data.photos.length > 0) {
+          setPhotos(data.photos);
+          setLoadError(null);
         } else {
-          const full = await fetchBatch();
-          if (cancelled) return;
-          if (Array.isArray(full.photos) && full.photos.length > 0) {
-            setPhotos(full.photos);
-            setLoadError(null);
-          }
+          setLoadError(data.error ?? 'Could not load film photos');
         }
       } catch {
         if (!cancelled) {
@@ -1050,19 +1066,27 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       const { startOff } = getLayoutInfo(w, photos.length);
       posRef.current = startOff;
       galleryX.set(startOff);
-      scrolledToScrollYRef.current = 0;
-      document.documentElement.scrollTop = 0;
+      if (w >= 640) {
+        scrolledToScrollYRef.current = 0;
+        document.documentElement.scrollTop = 0;
+      }
     } else {
       const idx = getFilmClosestPhotoIndex(galleryX.get(), w, prevCount);
-      const { bw, startOff } = getLayoutInfo(w, photos.length);
+      const { bw, vpCenter, startOff } = getLayoutInfo(w, photos.length);
       const layoutStep = bw + GAP;
-      const scrollStep = filmScrollStepPx(w, photos.length);
-      const targetSy = idx * scrollStep;
-      const targetX = startOff - targetSy * (layoutStep / scrollStep);
-      posRef.current = targetX;
-      galleryX.set(targetX);
-      scrolledToScrollYRef.current = targetSy;
-      document.documentElement.scrollTop = targetSy;
+      if (w < 640) {
+        const targetX = clampPos(vpCenter - (idx * layoutStep + bw / 2), w, photos.length);
+        posRef.current = targetX;
+        galleryX.set(targetX);
+      } else {
+        const scrollStep = filmScrollStepPx(w, photos.length);
+        const targetSy = idx * scrollStep;
+        const targetX = startOff - targetSy * (layoutStep / scrollStep);
+        posRef.current = targetX;
+        galleryX.set(targetX);
+        scrolledToScrollYRef.current = targetSy;
+        document.documentElement.scrollTop = targetSy;
+      }
     }
   }, [photos.length, galleryX]);
 
@@ -1089,77 +1113,101 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     }
   }, []);
 
-  /** Snap vertical scroll to the nearest photo column (wheel / trackpad release, after sync from touch drag). */
+  /** Snap gallery to the nearest photo column. */
   const runIdleScrollSnap = useCallback(() => {
     if (isGalleryTweeningRef.current) return;
     const n = photosRef.current.length;
     if (n <= 1) return;
     const vw = window.innerWidth;
     vwRef.current = vw;
+    const mobile = vw < 640;
     const { bw, startOff, vpCenter } = getLayoutInfo(vw, n);
     const layoutStep = bw + GAP;
-    const scrollStep = filmScrollStepPx(vw, n);
-    const maxScroll = filmEffectiveMaxScrollPx(n);
-    let sy = window.scrollY;
-    sy = Math.max(0, Math.min(maxScroll, sy));
-    const rawIdx = sy / scrollStep;
-    const baseIdx = Math.floor(rawIdx);
-    const frac = rawIdx - baseIdx;
-    const dir = scrollSnapDirectionRef.current;
-    const forwardTh =
-      baseIdx === 0
-        ? FILM_SNAP_FIRST_SLOT_FORWARD_THRESHOLD
-        : FILM_SNAP_ADVANCE_THRESHOLD;
-    const targetIdx =
-      dir > 0
-        ? (frac >= forwardTh ? baseIdx + 1 : baseIdx)
-        : dir < 0
-          ? (frac <= (1 - FILM_SNAP_ADVANCE_THRESHOLD) ? baseIdx : baseIdx + 1)
-          : (frac >= 0.5 ? baseIdx + 1 : baseIdx);
-    const clampedIdx = Math.max(0, Math.min(n - 1, targetIdx));
-    const targetSy = clampedIdx * scrollStep;
-    if (Math.abs(sy - targetSy) <= 1) return;
-    const reduceMotion =
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduceMotion) {
-      scrolledToScrollYRef.current = targetSy;
-      document.documentElement.scrollTop = targetSy;
-      galleryX.set(startOff - targetSy * (layoutStep / scrollStep));
-      layoutSmoothPrevRef.current = null;
-      scrollSnapDirectionRef.current = 0;
-      return;
-    }
 
+    const currentX = galleryX.get();
+    const rawSlot = (startOff - currentX) / layoutStep;
+    const baseIdx = Math.floor(rawSlot);
+    const frac = rawSlot - baseIdx;
+    const dir = scrollSnapDirectionRef.current;
+    const nearest = frac >= 0.5 ? baseIdx + 1 : baseIdx;
+    let targetIdx: number;
+    if (mobile) {
+      targetIdx = dir > 0 ? nearest + 1 : dir < 0 ? nearest - 1 : nearest;
+    } else {
+      const forwardTh =
+        baseIdx === 0
+          ? FILM_SNAP_FIRST_SLOT_FORWARD_THRESHOLD
+          : FILM_SNAP_ADVANCE_THRESHOLD;
+      targetIdx =
+        dir > 0
+          ? (frac >= forwardTh ? baseIdx + 1 : baseIdx)
+          : dir < 0
+            ? (frac <= (1 - FILM_SNAP_ADVANCE_THRESHOLD) ? baseIdx : baseIdx + 1)
+            : nearest;
+    }
+    const clampedIdx = Math.max(0, Math.min(n - 1, targetIdx));
     const targetX = clampPos(
       vpCenter - (clampedIdx * layoutStep + bw / 2),
       vw,
       n,
     );
+    if (Math.abs(currentX - targetX) <= 1) return;
+    const reduceMotion =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+      galleryX.set(targetX);
+      layoutSmoothPrevRef.current = null;
+      scrollSnapDirectionRef.current = 0;
+      if (!mobile) {
+        const scrollStep = filmScrollStepPx(vw, n);
+        const targetSy = clampedIdx * scrollStep;
+        scrolledToScrollYRef.current = targetSy;
+        document.documentElement.scrollTop = targetSy;
+      }
+      return;
+    }
+
     const snapSpring =
-      lastInputWasTouchRef.current || vw < 640
+      lastInputWasTouchRef.current || mobile
         ? FILM_TOUCH_IDLE_SNAP_SPRING
         : FILM_IDLE_SNAP_SPRING;
     isGalleryTweeningRef.current = true;
     galleryTweenRef.current?.stop();
-    galleryTweenRef.current = animate(galleryX, targetX, {
-      type: 'spring',
-      stiffness: snapSpring.stiffness,
-      damping: snapSpring.damping,
-      onUpdate: (latest) => {
-        const nextSy = Math.max(
-          0,
-          Math.min(maxScroll, (startOff - Number(latest)) * (scrollStep / layoutStep)),
-        );
-        scrolledToScrollYRef.current = nextSy;
-        document.documentElement.scrollTop = nextSy;
-      },
-      onComplete: () => {
-        isGalleryTweeningRef.current = false;
-        galleryTweenRef.current = null;
-        scrollSnapDirectionRef.current = 0;
-      },
-    });
+
+    if (mobile) {
+      galleryTweenRef.current = animate(galleryX, targetX, {
+        type: 'spring',
+        stiffness: snapSpring.stiffness,
+        damping: snapSpring.damping,
+        onComplete: () => {
+          isGalleryTweeningRef.current = false;
+          galleryTweenRef.current = null;
+          scrollSnapDirectionRef.current = 0;
+        },
+      });
+    } else {
+      const scrollStep = filmScrollStepPx(vw, n);
+      const maxScroll = filmEffectiveMaxScrollPx(n);
+      galleryTweenRef.current = animate(galleryX, targetX, {
+        type: 'spring',
+        stiffness: snapSpring.stiffness,
+        damping: snapSpring.damping,
+        onUpdate: (latest) => {
+          const nextSy = Math.max(
+            0,
+            Math.min(maxScroll, (startOff - Number(latest)) * (scrollStep / layoutStep)),
+          );
+          scrolledToScrollYRef.current = nextSy;
+          document.documentElement.scrollTop = nextSy;
+        },
+        onComplete: () => {
+          isGalleryTweeningRef.current = false;
+          galleryTweenRef.current = null;
+          scrollSnapDirectionRef.current = 0;
+        },
+      });
+    }
   }, [galleryX]);
 
   useEffect(() => {
@@ -1416,15 +1464,22 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       vwRef.current = w;
       const n = photosRef.current.length;
       if (n === 0) return;
-      const { bw, startOff } = getLayoutInfo(w, n);
+      const { bw, startOff, vpCenter } = getLayoutInfo(w, n);
       const layoutStep = bw + GAP;
-      const scrollStep = filmScrollStepPx(w, n);
-      const maxScroll = Math.max(0, filmEffectiveMaxScrollPx(n));
-      const sy = Math.min(maxScroll, Math.max(0, window.scrollY));
-      document.documentElement.scrollTop = sy;
-      scrolledToScrollYRef.current = sy;
-      posRef.current = clampPos(startOff - sy * (layoutStep / scrollStep), w, n);
-      galleryX.set(posRef.current);
+      if (w < 640) {
+        const idx = activeIndexRef.current;
+        const target = clampPos(vpCenter - (idx * layoutStep + bw / 2), w, n);
+        posRef.current = target;
+        galleryX.set(target);
+      } else {
+        const scrollStep = filmScrollStepPx(w, n);
+        const maxScroll = Math.max(0, filmEffectiveMaxScrollPx(n));
+        const sy = Math.min(maxScroll, Math.max(0, window.scrollY));
+        document.documentElement.scrollTop = sy;
+        scrolledToScrollYRef.current = sy;
+        posRef.current = clampPos(startOff - sy * (layoutStep / scrollStep), w, n);
+        galleryX.set(posRef.current);
+      }
       layoutSmoothPrevRef.current = null;
     };
     window.addEventListener('resize', onResize);
@@ -1456,6 +1511,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     };
 
     const onScroll = () => {
+      if (window.innerWidth < 640) return;
       if (isTouchDraggingRef.current) return;
       if (isGalleryTweeningRef.current) return;
       const sy = window.scrollY;
@@ -1552,9 +1608,10 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
   useEffect(() => {
     const root = pageRef.current;
     if (!root) return;
+    const mobile = window.innerWidth < 640;
 
     const drag = {
-      pointerId: null as number | null,
+      active: false,
       startX: 0,
       startY: 0,
       startGallery: 0,
@@ -1562,50 +1619,36 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       axis: null as 'h' | 'v' | null,
     };
 
-    const cleanupListeners = () => {
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerup', onPointerUp);
-      window.removeEventListener('pointercancel', onPointerUp);
+    const beginDrag = (clientX: number, clientY: number, target: Element | null) => {
+      if (target?.closest('button[aria-label="Go back to home"]')) return;
+      if (target?.closest('[role="tablist"]')) return;
+      lastInputWasTouchRef.current = true;
+
+      if (isGalleryTweeningRef.current) {
+        galleryTweenRef.current?.stop();
+        galleryTweenRef.current = null;
+        isGalleryTweeningRef.current = false;
+      }
+
+      drag.active = true;
+      drag.startX = clientX;
+      drag.startY = clientY;
+      drag.startGallery = galleryX.get();
+      drag.moved = false;
+      drag.axis = null;
     };
 
-    const onPointerUp = (e: PointerEvent) => {
-      if (e.pointerId !== drag.pointerId) return;
-      drag.pointerId = null;
-      isTouchDraggingRef.current = false;
-      cleanupListeners();
-      const n = photosRef.current.length;
-      if (n > 1 && drag.moved && drag.axis === 'h') {
-        const vw = window.innerWidth;
-        vwRef.current = vw;
-        const { bw, startOff } = getLayoutInfo(vw, n);
-        const layoutStep = bw + GAP;
-        const scrollStep = filmScrollStepPx(vw, n);
-        const maxScroll = filmEffectiveMaxScrollPx(n);
-        const impliedSy = Math.max(
-          0,
-          Math.min(maxScroll, (startOff - galleryX.get()) * (scrollStep / layoutStep)),
-        );
-        if (scrollIdleSnapTimerRef.current !== null) {
-          clearTimeout(scrollIdleSnapTimerRef.current);
-          scrollIdleSnapTimerRef.current = null;
-        }
-        document.documentElement.scrollTop = impliedSy;
-        scrolledToScrollYRef.current = impliedSy;
-        galleryX.set(startOff - impliedSy * (layoutStep / scrollStep));
-        layoutSmoothPrevRef.current = null;
-        runIdleScrollSnap();
+    const moveDrag = (clientX: number, clientY: number): boolean => {
+      if (!drag.active) return false;
+      const dx = clientX - drag.startX;
+      const dy = clientY - drag.startY;
+      const axisDeadzone = mobile ? 2 : 6;
+      if (drag.axis === null && (Math.abs(dx) > axisDeadzone || Math.abs(dy) > axisDeadzone)) {
+        drag.axis = mobile ? 'h' : (Math.abs(dx) >= Math.abs(dy) ? 'h' : 'v');
       }
-    };
-
-    const onPointerMove = (e: PointerEvent) => {
-      if (e.pointerId !== drag.pointerId) return;
-      const dx = e.clientX - drag.startX;
-      const dy = e.clientY - drag.startY;
-      if (drag.axis === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
-        drag.axis = Math.abs(dx) >= Math.abs(dy) ? 'h' : 'v';
-      }
-      if (drag.axis === 'v') return;
-      if (drag.axis === 'h' && Math.abs(dx) > 3) {
+      if (drag.axis === 'v') return false;
+      const threshold = mobile ? 1 : 3;
+      if (drag.axis === 'h' && Math.abs(dx) > threshold) {
         if (!drag.moved) {
           drag.moved = true;
           isTouchDraggingRef.current = true;
@@ -1615,7 +1658,6 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         }
         scrollSnapDirectionRef.current = dx < 0 ? 1 : -1;
         showManualScrollFade();
-        e.preventDefault();
         galleryX.set(
           clampPos(
             drag.startGallery + dx,
@@ -1623,43 +1665,95 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
             photosRef.current.length,
           ),
         );
+        return true;
       }
+      return false;
     };
 
-    const onPointerDown = (e: PointerEvent) => {
-      if (e.pointerType === 'mouse') return;
-      lastInputWasTouchRef.current = true;
-      const t = e.target as HTMLElement | null;
-      if (t?.closest('button[aria-label="Go back to home"]')) return;
-      if (t?.closest('[role="tablist"]')) return;
-
-      if (isGalleryTweeningRef.current) {
-        galleryTweenRef.current?.stop();
-        galleryTweenRef.current = null;
-        isGalleryTweeningRef.current = false;
+    const endDrag = () => {
+      if (!drag.active) return;
+      drag.active = false;
+      isTouchDraggingRef.current = false;
+      const n = photosRef.current.length;
+      if (n > 1 && drag.moved && drag.axis === 'h') {
         const vw = window.innerWidth;
-        const n = photosRef.current.length;
-        if (n > 0) {
+        vwRef.current = vw;
+        if (vw < 640) {
+          runIdleScrollSnap();
+        } else {
           const { bw, startOff } = getLayoutInfo(vw, n);
           const layoutStep = bw + GAP;
           const scrollStep = filmScrollStepPx(vw, n);
           const maxScroll = filmEffectiveMaxScrollPx(n);
-          const currentX = galleryX.get();
-          const sy = Math.max(0, Math.min(maxScroll, (startOff - currentX) * (scrollStep / layoutStep)));
-          document.documentElement.scrollTop = sy;
-          scrolledToScrollYRef.current = sy;
+          const impliedSy = Math.max(
+            0,
+            Math.min(maxScroll, (startOff - galleryX.get()) * (scrollStep / layoutStep)),
+          );
+          if (scrollIdleSnapTimerRef.current !== null) {
+            clearTimeout(scrollIdleSnapTimerRef.current);
+            scrollIdleSnapTimerRef.current = null;
+          }
+          document.documentElement.scrollTop = impliedSy;
+          scrolledToScrollYRef.current = impliedSy;
+          galleryX.set(startOff - impliedSy * (layoutStep / scrollStep));
+          layoutSmoothPrevRef.current = null;
+          runIdleScrollSnap();
         }
       }
+    };
 
-      drag.pointerId = e.pointerId;
-      drag.startX = e.clientX;
-      drag.startY = e.clientY;
-      drag.startGallery = galleryX.get();
-      drag.moved = false;
-      drag.axis = null;
-      window.addEventListener('pointermove', onPointerMove, { passive: false });
-      window.addEventListener('pointerup', onPointerUp);
-      window.addEventListener('pointercancel', onPointerUp);
+    if (mobile) {
+      const onTouchStart = (e: TouchEvent) => {
+        const t = e.touches[0];
+        if (!t) return;
+        beginDrag(t.clientX, t.clientY, e.target as Element | null);
+      };
+      const onTouchMove = (e: TouchEvent) => {
+        const t = e.touches[0];
+        if (!t) return;
+        const handled = moveDrag(t.clientX, t.clientY);
+        if (handled) e.preventDefault();
+      };
+      const onTouchEnd = () => endDrag();
+
+      root.addEventListener('touchstart', onTouchStart, { passive: true });
+      root.addEventListener('touchmove', onTouchMove, { passive: false });
+      root.addEventListener('touchend', onTouchEnd);
+      root.addEventListener('touchcancel', onTouchEnd);
+      return () => {
+        root.removeEventListener('touchstart', onTouchStart);
+        root.removeEventListener('touchmove', onTouchMove);
+        root.removeEventListener('touchend', onTouchEnd);
+        root.removeEventListener('touchcancel', onTouchEnd);
+      };
+    }
+
+    let pointerId: number | null = null;
+    const cleanupListeners = () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+    };
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse') return;
+      pointerId = e.pointerId;
+      beginDrag(e.clientX, e.clientY, e.target as Element | null);
+      if (drag.active) {
+        window.addEventListener('pointermove', onPointerMove, { passive: false });
+        window.addEventListener('pointerup', onPointerUp);
+        window.addEventListener('pointercancel', onPointerUp);
+      }
+    };
+    const onPointerMove = (e: PointerEvent) => {
+      if (e.pointerId !== pointerId) return;
+      const handled = moveDrag(e.clientX, e.clientY);
+      if (handled) e.preventDefault();
+    };
+    const onPointerUp = (e: PointerEvent) => {
+      if (e.pointerId !== pointerId) return;
+      pointerId = null;
+      endDrag();
+      cleanupListeners();
     };
 
     root.addEventListener('pointerdown', onPointerDown);
@@ -1713,18 +1807,20 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       vwRef.current = vw;
       const { bw, vpCenter } = getLayoutInfo(vw, n);
       const layoutStep = bw + GAP;
-      const scrollStep = filmScrollStepPx(vw, n);
-      const centerScroll = Math.min(idx * scrollStep, filmEffectiveMaxScrollPx(n));
-      scrolledToScrollYRef.current = centerScroll;
-      if (preserveAutoplay) {
-        filmAutoplayWheelGraceUntilRef.current =
-          performance.now() + FILM_AUTOPLAY_WHEEL_GRACE_MS;
-        filmAutoplayApplyingScrollRef.current = true;
-      }
-      try {
-        document.documentElement.scrollTop = centerScroll;
-      } finally {
-        filmAutoplayApplyingScrollRef.current = false;
+      if (vw >= 640) {
+        const scrollStep = filmScrollStepPx(vw, n);
+        const centerScroll = Math.min(idx * scrollStep, filmEffectiveMaxScrollPx(n));
+        scrolledToScrollYRef.current = centerScroll;
+        if (preserveAutoplay) {
+          filmAutoplayWheelGraceUntilRef.current =
+            performance.now() + FILM_AUTOPLAY_WHEEL_GRACE_MS;
+          filmAutoplayApplyingScrollRef.current = true;
+        }
+        try {
+          document.documentElement.scrollTop = centerScroll;
+        } finally {
+          filmAutoplayApplyingScrollRef.current = false;
+        }
       }
       const target = clampPos(vpCenter - (idx * layoutStep + bw / 2), vw, n);
       isGalleryTweeningRef.current = true;
@@ -1809,28 +1905,44 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     vwRef.current = vw;
     const { startOff } = getLayoutInfo(vw, n);
     if (reduceMotion) {
-      document.documentElement.scrollTop = 0;
-      scrolledToScrollYRef.current = 0;
+      if (vw >= 640) {
+        document.documentElement.scrollTop = 0;
+        scrolledToScrollYRef.current = 0;
+      }
       galleryX.set(startOff);
       layoutSmoothPrevRef.current = null;
       setFilmRewindingToStart(false);
       return;
     }
     setFilmRewindingToStart(true);
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-    let rewindFallbackId = 0;
-    const onRewindScroll = () => {
-      if (window.scrollY <= 1) {
+    if (vw < 640) {
+      isGalleryTweeningRef.current = true;
+      galleryTweenRef.current = animate(galleryX, startOff, {
+        type: 'spring',
+        stiffness: 80,
+        damping: 20,
+        onComplete: () => {
+          isGalleryTweeningRef.current = false;
+          galleryTweenRef.current = null;
+          setFilmRewindingToStart(false);
+        },
+      });
+    } else {
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+      let rewindFallbackId = 0;
+      const onRewindScroll = () => {
+        if (window.scrollY <= 1) {
+          window.removeEventListener('scroll', onRewindScroll);
+          window.clearTimeout(rewindFallbackId);
+          setFilmRewindingToStart(false);
+        }
+      };
+      window.addEventListener('scroll', onRewindScroll, { passive: true });
+      rewindFallbackId = window.setTimeout(() => {
         window.removeEventListener('scroll', onRewindScroll);
-        window.clearTimeout(rewindFallbackId);
         setFilmRewindingToStart(false);
-      }
-    };
-    window.addEventListener('scroll', onRewindScroll, { passive: true });
-    rewindFallbackId = window.setTimeout(() => {
-      window.removeEventListener('scroll', onRewindScroll);
-      setFilmRewindingToStart(false);
-    }, 8000);
+      }, 8000);
+    }
   }, [cancelScrollSnap, galleryX]);
 
   useEffect(() => {
@@ -1870,16 +1982,19 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       data-film-page
       className="fixed inset-0 z-[50] isolate overflow-hidden overscroll-none bg-[#fafafa]"
     >
-      {photos.length === 0 ? (
-        <div className="absolute inset-0 z-[5] flex flex-col items-center justify-center gap-2 px-8 text-center">
-          <p className="text-sm text-zinc-600">Loading film…</p>
-          {loadError ? (
-            <p className="max-w-sm text-xs leading-relaxed text-zinc-500">
-              {loadError}
-            </p>
-          ) : null}
-        </div>
-      ) : null}
+      <div
+        className={`absolute inset-0 z-[5] flex flex-col items-center justify-center gap-2 px-8 text-center transition-opacity duration-700 ease-out ${
+          filmLayoutReady ? 'pointer-events-none opacity-0' : 'opacity-100'
+        }`}
+      >
+        <FilmLoadingText />
+        <style>{`@keyframes film-dot-pulse{0%,80%,100%{opacity:.15}40%{opacity:1}}.film-dot{animation:film-dot-pulse 1.4s ease-in-out infinite;opacity:.15}`}</style>
+        {loadError ? (
+          <p className="max-w-sm text-xs leading-relaxed text-zinc-500">
+            {loadError}
+          </p>
+        ) : null}
+      </div>
 
       {/* Play/pause bar hidden — ref kept for layout calculations */}
       <div
