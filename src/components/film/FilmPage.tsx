@@ -1426,8 +1426,10 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     const drag = {
       pointerId: null as number | null,
       startX: 0,
+      startY: 0,
       startGallery: 0,
       moved: false,
+      axis: null as 'h' | 'v' | null,
     };
 
     const cleanupListeners = () => {
@@ -1442,7 +1444,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       isTouchDraggingRef.current = false;
       cleanupListeners();
       const n = photosRef.current.length;
-      if (n > 1 && drag.moved) {
+      if (n > 1 && drag.moved && drag.axis === 'h') {
         const vw = window.innerWidth;
         vwRef.current = vw;
         const { bw, startOff } = getLayoutInfo(vw, n);
@@ -1467,7 +1469,12 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     const onPointerMove = (e: PointerEvent) => {
       if (e.pointerId !== drag.pointerId) return;
       const dx = e.clientX - drag.startX;
-      if (Math.abs(dx) > 3) {
+      const dy = e.clientY - drag.startY;
+      if (drag.axis === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
+        drag.axis = Math.abs(dx) >= Math.abs(dy) ? 'h' : 'v';
+      }
+      if (drag.axis === 'v') return;
+      if (drag.axis === 'h' && Math.abs(dx) > 3) {
         if (!drag.moved) {
           drag.moved = true;
           isTouchDraggingRef.current = true;
@@ -1475,12 +1482,12 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
           cancelScrollSnap();
           setFilmAutoplayPlaying(false);
         }
-        scrollSnapDirectionRef.current = dx > 0 ? 1 : -1;
+        scrollSnapDirectionRef.current = dx < 0 ? 1 : -1;
         showManualScrollFade();
         e.preventDefault();
         galleryX.set(
           clampPos(
-            drag.startGallery - dx,
+            drag.startGallery + dx,
             window.innerWidth,
             photosRef.current.length,
           ),
@@ -1496,8 +1503,10 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       if (t?.closest('button[role="tab"]')) return;
       drag.pointerId = e.pointerId;
       drag.startX = e.clientX;
+      drag.startY = e.clientY;
       drag.startGallery = galleryX.get();
       drag.moved = false;
+      drag.axis = null;
       window.addEventListener('pointermove', onPointerMove, { passive: false });
       window.addEventListener('pointerup', onPointerUp);
       window.addEventListener('pointercancel', onPointerUp);
