@@ -116,10 +116,12 @@ const FILM_FRAME_WIDEN_SLOT_RANGE = 2.12;
 const FILM_KEYBOARD_SNAP_SPRING = { stiffness: 175, damping: 36 };
 /** Release snap should glide a bit more softly than keyboard stepping. */
 const FILM_IDLE_SNAP_SPRING = { stiffness: 160, damping: 30 };
+/** Tighter spring after touch / narrow viewports so the snap finishes sooner. */
+const FILM_TOUCH_IDLE_SNAP_SPRING = { stiffness: 300, damping: 36 };
 /** After wheel / trackpad scroll settles, snap to the nearest photo (grid-aligned scroll). */
 const FILM_SCROLL_IDLE_SNAP_MS = 40;
-/** Longer settle time for touch scroll (mobile momentum needs more room). */
-const FILM_SCROLL_IDLE_SNAP_TOUCH_MS = 80;
+/** After touch scroll settles — keep short so mobile doesn’t feel like it’s waiting. */
+const FILM_SCROLL_IDLE_SNAP_TOUCH_MS = 22;
 /** Fraction of a photo slot that must be crossed before snapping to the next photo. */
 const FILM_SNAP_ADVANCE_THRESHOLD = 0.6;
 /** Easier threshold leaving the first photo — 60% feels like a lot of travel on a narrow mobile slot. */
@@ -993,12 +995,16 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       vw,
       n,
     );
+    const snapSpring =
+      lastInputWasTouchRef.current || vw < 640
+        ? FILM_TOUCH_IDLE_SNAP_SPRING
+        : FILM_IDLE_SNAP_SPRING;
     isGalleryTweeningRef.current = true;
     galleryTweenRef.current?.stop();
     galleryTweenRef.current = animate(galleryX, targetX, {
       type: 'spring',
-      stiffness: FILM_IDLE_SNAP_SPRING.stiffness,
-      damping: FILM_IDLE_SNAP_SPRING.damping,
+      stiffness: snapSpring.stiffness,
+      damping: snapSpring.damping,
       onUpdate: (latest) => {
         const nextSy = Math.max(
           0,
@@ -1335,9 +1341,10 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
       if (!filmAutoplayPlayingRef.current) {
         clearIdleSnapTimer();
-        const snapDelay = lastInputWasTouchRef.current
-          ? FILM_SCROLL_IDLE_SNAP_TOUCH_MS
-          : FILM_SCROLL_IDLE_SNAP_MS;
+        const snapDelay =
+          lastInputWasTouchRef.current || vw < 640
+            ? FILM_SCROLL_IDLE_SNAP_TOUCH_MS
+            : FILM_SCROLL_IDLE_SNAP_MS;
         scrollIdleSnapTimerRef.current = setTimeout(() => {
           scrollIdleSnapTimerRef.current = null;
           runIdleScrollSnap();
