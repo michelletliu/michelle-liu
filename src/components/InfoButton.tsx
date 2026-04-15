@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ShimmerImage from './ShimmerImage';
 import ShimmerVideo from './ShimmerVideo';
@@ -36,7 +36,7 @@ export type ProjectInfo = {
   id: string;
   title: string;
   year: string;
-  description: string;
+  description: React.ReactNode;
   imageSrc: string;
   videoSrc?: string;
   xLink?: string;
@@ -153,7 +153,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
 
       {/* Modal - portal to escape transformed containers on /full pages */}
       {showModal && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center px-8">
+        <div data-info-modal className="fixed inset-0 z-[100] flex items-center justify-center px-8">
           {/* Overlay */}
           <div 
             className={`absolute inset-0 bg-black/20 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`} 

@@ -6,9 +6,8 @@ import { useScrollLock } from '../utils/useScrollLock';
 import ShimmerImage from './ShimmerImage';
 import ShimmerVideo from './ShimmerVideo';
 import { ArrowUpRight } from './ArrowUpRight';
-import Tooltip from './Tooltip';
 import type { ToolCategory } from './InfoButton';
-import LoadingSpinner from './LoadingSpinner';
+import { TryItOutButton } from './TryItOutButton';
 
 // Kick off chunk fetches immediately when this module loads (not when modal opens)
 const polaroidPagePromise = import('./polaroid/PolaroidPage');
@@ -40,10 +39,11 @@ function InfoIcon() {
   );
 }
 
-function ModalLoadingSpinner() {
+// Loading spinner
+function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center w-full h-full min-h-[400px]">
-      <LoadingSpinner size="md" />
+      <div className="w-8 h-8 border-2 border-gray-200 border-t-gray-400 rounded-full animate-spin" />
     </div>
   );
 }
@@ -103,10 +103,11 @@ export type ExperimentProject = {
   id: string;
   title: string;
   year: string;
-  description: string;
+  description: React.ReactNode;
   imageSrc: string;
   videoSrc?: string;
   xLink?: string;
+  tryItOutHref?: string;
   backgroundColor?: string;
   toolCategories?: ToolCategory[];
 };
@@ -134,7 +135,7 @@ function Logo({ onClick }: { onClick: () => void }) {
 }
 
 type ExperimentModalProps = {
-  projectId: 'polaroid' | 'library' | 'screentime' | 'sketchbook';
+  projectId: string;
   project: ExperimentProject;
   onClose: () => void;
   onExpandToFullscreen?: (bookSlug?: string) => void;
@@ -143,6 +144,118 @@ type ExperimentModalProps = {
   bookSlug?: string;
   initialFullscreen?: boolean;
 };
+
+function ExpandTooltip({ children }: { children: React.ReactNode }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isEnding, setIsEnding] = useState(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    setIsEnding(false);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsVisible(true);
+    }, 800);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    if (isVisible) {
+      setIsEnding(true);
+      setTimeout(() => {
+        setIsVisible(false);
+        setIsEnding(false);
+      }, 125);
+    }
+  };
+
+  return (
+    <div
+      className="relative inline-flex"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {children}
+      {isVisible && (
+        <div
+          className="tooltip absolute left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-gray-950 text-white text-[13px] font-medium rounded-[10px] whitespace-nowrap pointer-events-none z-[9999]"
+          data-ending-style={isEnding ? "" : undefined}
+          style={{ top: 'calc(100% + 8px)', ['--transform-origin' as string]: 'center top' }}
+        >
+          Expand
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-gray-950" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function GenericExperimentEmbed({ project }: { project: ExperimentProject }) {
+  const [videoReady, setVideoReady] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVideoReady(true), 350);
+    return () => clearTimeout(t);
+  }, []);
+
+  const hasMedia = Boolean(
+    (project.imageSrc && project.imageSrc.trim()) || project.videoSrc,
+  );
+
+  return (
+    <div className="font-['Michelle',sans-serif] min-h-full w-full box-border flex flex-col gap-6 px-6 py-16 md:px-16 md:py-20 text-[#111827]">
+      <header className="flex flex-col gap-2 max-w-2xl">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <h1 className="text-2xl md:text-3xl font-normal">{project.title}</h1>
+          <span className="text-[#9ca3af] text-xl">•</span>
+          <span className="text-[#9ca3af] text-xl">{project.year}</span>
+        </div>
+        <p className="text-base leading-relaxed text-[#6b7280]">
+          {project.description}
+        </p>
+        {project.tryItOutHref?.trim() ? (
+          <TryItOutButton
+            href={project.tryItOutHref.trim()}
+            className="w-fit mt-1"
+          />
+        ) : null}
+      </header>
+      {hasMedia ? (
+        <div className="relative w-full max-w-4xl aspect-video overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 shrink-0">
+          {project.imageSrc?.trim() ? (
+            <ShimmerImage
+              alt=""
+              className="absolute object-cover size-full"
+              wrapperClassName="absolute inset-0"
+              rounded="rounded-2xl"
+              src={project.imageSrc}
+            />
+          ) : null}
+          {project.videoSrc && videoReady ? (
+            <ShimmerVideo
+              key={project.id}
+              src={project.videoSrc}
+              className="absolute object-cover size-full rounded-2xl"
+              wrapperClassName="absolute inset-0"
+              rounded="rounded-2xl"
+              autoPlay
+              muted
+              loop
+              controls={false}
+              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+            />
+          ) : null}
+        </div>
+      ) : null}
+      {project.toolCategories && project.toolCategories.length > 0 ? (
+        <ToolsSection categories={project.toolCategories} />
+      ) : null}
+    </div>
+  );
+}
 
 export default function ExperimentModal({ projectId, project, onClose, onExpandToFullscreen, onCollapseFromFullscreen, onBookSlugChange, bookSlug, initialFullscreen = false }: ExperimentModalProps) {
   const navigate = useNavigate();
@@ -301,7 +414,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
       case 'sketchbook':
         return <SketchbookPage />;
       default:
-        return null;
+        return <GenericExperimentEmbed project={project} />;
     }
   };
 
@@ -346,15 +459,15 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
         {!isFullscreen && (
           <div className="absolute top-0 left-0 z-[60] pointer-events-none pl-6 pt-6">
             <div className="pointer-events-auto">
-              <Tooltip label="Expand" offset={2}>
+              <ExpandTooltip>
                 <button
                   onClick={handleExpand}
-                  className="cursor-pointer transition-colors duration-200 hover:bg-gray-200/50 text-gray-400 rounded-lg p-1.5"
+                  className="cursor-pointer transition-colors duration-200 hover:bg-gray-100 text-[#4b5563] rounded-sm p-1"
                   aria-label="Expand to full page"
                 >
                   <ExpandIcon />
                 </button>
-              </Tooltip>
+              </ExpandTooltip>
             </div>
           </div>
         )}
@@ -362,26 +475,24 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
         {/* Info button fixed top right - only in popup mode (fullscreen uses embedded page's InfoButton) */}
         {!isFullscreen && (
           <div className={clsx(
-            "absolute top-0 right-0 z-[60] pointer-events-none pr-7 pt-[26px]"
+            "absolute top-0 right-0 z-[60] pointer-events-none pr-7 pt-6"
           )}>
             <div className="pointer-events-auto relative" data-info-button-container>
-              <Tooltip label="Process">
-                <button
-                  onClick={() => setShowInfoModal(!showInfoModal)}
-                  className={clsx(
-                    "cursor-pointer transition-colors duration-200 rounded-full p-2 -m-1",
-                    showInfoModal ? "bg-gray-200/50 text-gray-500" : "hover:bg-gray-200/50 text-gray-400"
-                  )}
-                  aria-label="Project info"
-                  data-info-button
-                >
-                  <InfoIcon />
-                </button>
-              </Tooltip>
+              <button
+                onClick={() => setShowInfoModal(!showInfoModal)}
+                className={clsx(
+                  "cursor-pointer transition-colors duration-200 text-[#9ca3af] rounded-full p-2 -m-1",
+                  showInfoModal ? "bg-gray-200/50" : "hover:bg-gray-200/50"
+                )}
+                aria-label="Project info"
+                data-info-button
+              >
+                <InfoIcon />
+              </button>
               
               {/* Dropdown popover below button */}
               {showInfoModal && (
-                <div className="absolute top-full -right-1 z-[70]">
+                <div className="absolute top-full right-0 mt-2 z-[70]">
                   <InfoPopover project={project} onClose={() => setShowInfoModal(false)} isFullscreen={false} />
                 </div>
               )}
@@ -391,7 +502,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
 
         {/* Embedded experiment content */}
         <div ref={scrollContainerRef} className="flex-1 overflow-hidden transition-all duration-500 ease-out">
-          <Suspense fallback={<ModalLoadingSpinner />}>
+          <Suspense fallback={<LoadingSpinner />}>
             <div 
               className={clsx(
                 "w-full h-full experiment-modal-embed modal-scroll-container relative transition-all duration-500 ease-out overflow-auto",

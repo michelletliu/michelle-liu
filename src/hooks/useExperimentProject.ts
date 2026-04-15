@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { client } from '../sanity/client';
 import { EXPERIMENT_PROJECT_BY_ID_QUERY } from '../sanity/queries';
 import type { ToolCategory } from '../components/InfoButton';
@@ -23,7 +23,7 @@ export type ProjectInfo = {
   id: string;
   title: string;
   year: string;
-  description: string;
+  description: React.ReactNode;
   imageSrc: string;
   videoSrc?: string;
   xLink?: string;
