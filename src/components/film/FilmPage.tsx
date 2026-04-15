@@ -27,7 +27,7 @@ import {
   transformScale,
 } from './film-linemark-scale';
 
-function filmOptimizedSrc(src: string, width = 640, quality = 75): string {
+function filmOptimizedSrc(src: string, width = 828, quality = 75): string {
   if (!src || src.startsWith('/_next/image')) return src;
   return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=${quality}`;
 }
@@ -115,11 +115,13 @@ const FILM_FRAME_WIDEN_SLOT_RANGE = 2.12;
 /** Softer spring for arrow keys so each step feels less abrupt. */
 const FILM_KEYBOARD_SNAP_SPRING = { stiffness: 175, damping: 36 };
 /** Release snap should glide a bit more softly than keyboard stepping. */
-const FILM_IDLE_SNAP_SPRING = { stiffness: 180, damping: 26 };
+const FILM_IDLE_SNAP_SPRING = { stiffness: 160, damping: 30 };
 /** After wheel / trackpad scroll settles, snap to the nearest photo (grid-aligned scroll). */
-const FILM_SCROLL_IDLE_SNAP_MS = 50;
+const FILM_SCROLL_IDLE_SNAP_MS = 40;
 /** Longer settle time for touch scroll (mobile momentum needs more room). */
-const FILM_SCROLL_IDLE_SNAP_TOUCH_MS = 350;
+const FILM_SCROLL_IDLE_SNAP_TOUCH_MS = 220;
+/** Fraction of a photo slot that must be crossed before snapping to the next photo. */
+const FILM_SNAP_ADVANCE_THRESHOLD = 0.6;
 /** After autoplay advances, hold before moving to the next photo. */
 const FILM_AUTOPLAY_HOLD_MS = 900;
 /** Total dwell per photo while autoplay is on (hold + transition breathing room). */
@@ -685,12 +687,16 @@ const FILM_POLL_MS = 90_000;
  * Short enough to feel tied to scroll; long enough to skip single-frame jitter.
  */
 const NOTE_INDEX_DEBOUNCE_MS = 55;
+/** Only mount <img> elements for photos within this many slots of the active index. */
+const IMG_RENDER_WINDOW = 5;
+/** Preload images this many slots beyond the render window. */
+const IMG_PRELOAD_AHEAD = 3;
 
 const DEFAULT_FILM_PROJECT = {
   id: 'film',
   title: 'Film Diary',
   year: '2026',
-  description: 'A digital photo timeline, featuring scenes from sundays in la.',
+  description: (<>A digital photo timeline, featuring scenes from <a href="https://sundays.rsvp" target="_blank" rel="noopener noreferrer" className="text-gray-600 font-medium hover:text-gray-900 transition-colors">sundays in la</a>.</>),
   imageSrc: 'https://image.mux.com/RiCfoo00W9xVF5jrY11sXY3DVU7GE5P02q1KDHnbiNyiE/thumbnail.png',
   videoSrc: 'https://stream.mux.com/RiCfoo00W9xVF5jrY11sXY3DVU7GE5P02q1KDHnbiNyiE.m3u8',
   tryItOutHref: '/film',
@@ -837,6 +843,24 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     }
   }, [photos.length]);
 
+  useEffect(() => {
+    if (photos.length === 0) return;
+    const lo = activeIndex + IMG_RENDER_WINDOW + 1;
+    const hi = Math.min(photos.length - 1, activeIndex + IMG_RENDER_WINDOW + IMG_PRELOAD_AHEAD);
+    for (let i = lo; i <= hi; i++) {
+      const src = filmOptimizedSrc(photos[i].src);
+      const img = new Image();
+      img.src = src;
+    }
+    const loBack = Math.max(0, activeIndex - IMG_RENDER_WINDOW - IMG_PRELOAD_AHEAD);
+    const hiBack = activeIndex - IMG_RENDER_WINDOW - 1;
+    for (let i = loBack; i <= hiBack; i++) {
+      const src = filmOptimizedSrc(photos[i].src);
+      const img = new Image();
+      img.src = src;
+    }
+  }, [activeIndex, photos]);
+
   const syncPhotoAspectRatio = useCallback(
     (photoId: string, naturalWidth: number, naturalHeight: number) => {
       if (naturalWidth <= 0 || naturalHeight <= 0) return;
@@ -935,13 +959,15 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     let sy = window.scrollY;
     sy = Math.max(0, Math.min(maxScroll, sy));
     const rawIdx = sy / step;
+    const baseIdx = Math.floor(rawIdx);
+    const frac = rawIdx - baseIdx;
     const dir = scrollSnapDirectionRef.current;
     const targetIdx =
       dir > 0
-        ? Math.ceil(rawIdx)
+        ? (frac >= FILM_SNAP_ADVANCE_THRESHOLD ? baseIdx + 1 : baseIdx)
         : dir < 0
-          ? Math.floor(rawIdx)
-          : Math.round(rawIdx);
+          ? (frac <= (1 - FILM_SNAP_ADVANCE_THRESHOLD) ? baseIdx : baseIdx + 1)
+          : (frac >= 0.5 ? baseIdx + 1 : baseIdx);
     const clampedIdx = Math.max(0, Math.min(n - 1, targetIdx));
     const targetSy = clampedIdx * step;
     if (Math.abs(sy - targetSy) <= 1) return;
@@ -1322,6 +1348,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
   useEffect(() => {
     const onWheelCapture = (e: WheelEvent) => {
+      if (document.querySelector('[data-info-modal]')) return;
       const n = photosRef.current.length;
       if (n <= 1) return;
 
@@ -1613,6 +1640,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (document.querySelector('[data-info-modal]')) return;
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       const el = e.target as HTMLElement | null;
       if (
@@ -1672,7 +1700,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         style={{
           opacity: 0,
           background:
-            'linear-gradient(to top, rgb(250,250,250) 0%, rgb(250,250,250) 35%, rgba(250,250,250,0.97) 45%, rgba(250,250,250,0.9) 55%, rgba(250,250,250,0.7) 65%, rgba(250,250,250,0.4) 76%, rgba(250,250,250,0.15) 88%, transparent 100%)',
+            'linear-gradient(to top, rgb(250,250,250) 0%, rgb(250,250,250) 38%, rgba(250,250,250,0.98) 48%, rgba(250,250,250,0.94) 56%, rgba(250,250,250,0.85) 64%, rgba(250,250,250,0.7) 72%, rgba(250,250,250,0.45) 82%, rgba(250,250,250,0.2) 90%, transparent 100%)',
         }}
         aria-hidden
       />
@@ -1685,7 +1713,10 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
           pointerEvents: filmLayoutReady ? 'auto' : 'none',
         }}
       >
-        {photos.map((photo, i) => (
+        {photos.map((photo, i) => {
+          const dist = Math.abs(i - activeIndex);
+          const shouldRenderImg = dist <= IMG_RENDER_WINDOW;
+          return (
           <button
             key={photo.id}
             type="button"
@@ -1699,14 +1730,15 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
             aria-current={activeIndex === i ? true : undefined}
             onClick={() => scrollToIndex(i)}
           >
+            {shouldRenderImg ? (
             <img
               src={filmOptimizedSrc(photo.src)}
               alt=""
               className="pointer-events-none h-full w-full object-cover"
               draggable={false}
-              loading={Math.abs(i - activeIndex) <= 3 ? 'eager' : 'lazy'}
+              loading={dist <= 3 ? 'eager' : 'lazy'}
               fetchPriority={i === activeIndex ? 'high' : undefined}
-              decoding={Math.abs(i - activeIndex) <= 1 ? 'sync' : 'async'}
+              decoding={dist <= 1 ? 'sync' : 'async'}
               onLoad={(e) => {
                 syncPhotoAspectRatio(
                   photo.id,
@@ -1719,8 +1751,12 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
                 }
               }}
             />
+            ) : (
+            <div className="h-full w-full bg-zinc-200/50" />
+            )}
           </button>
-        ))}
+          );
+        })}
       </div>
 
       <div
