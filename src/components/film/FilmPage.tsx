@@ -812,8 +812,6 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
   const galleryTweenRef = useRef<AnimationPlaybackControls | null>(null);
   /** Last known `window.scrollY` (ignore near-duplicate events after programmatic scroll). */
   const scrolledToScrollYRef = useRef(0);
-  /** Cumulative scroll displacement since last snap — sign determines snap direction. */
-  const scrollCumulativeDeltaRef = useRef(0);
   const scrollSnapDirectionRef = useRef(0);
   /** Debounce wheel/trackpad settle → snap scroll to nearest photo. */
   const scrollIdleSnapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1130,7 +1128,6 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       galleryX.set(startOff - targetSy * (layoutStep / scrollStep));
       layoutSmoothPrevRef.current = null;
       scrollSnapDirectionRef.current = 0;
-      scrollCumulativeDeltaRef.current = 0;
       return;
     }
 
@@ -1161,7 +1158,6 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         isGalleryTweeningRef.current = false;
         galleryTweenRef.current = null;
         scrollSnapDirectionRef.current = 0;
-        scrollCumulativeDeltaRef.current = 0;
       },
     });
   }, [galleryX]);
@@ -1470,10 +1466,8 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         galleryTweenRef.current = null;
         isGalleryTweeningRef.current = false;
       }
-      scrollCumulativeDeltaRef.current += delta;
-      if (Math.abs(scrollCumulativeDeltaRef.current) >= 2) {
-        scrollSnapDirectionRef.current =
-          scrollCumulativeDeltaRef.current > 0 ? 1 : -1;
+      if (Math.abs(delta) >= 2) {
+        scrollSnapDirectionRef.current = delta > 0 ? 1 : -1;
       }
       if (!filmAutoplayPlayingRef.current && !filmAutoplayApplyingScrollRef.current) {
         showManualScrollFade();
@@ -1538,7 +1532,6 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       const delta = wheelDeltaPixels(e, vw) * FILM_WHEEL_SCROLL_FACTOR;
       if (Math.abs(delta) >= 0.5) {
         scrollSnapDirectionRef.current = delta > 0 ? 1 : -1;
-        scrollCumulativeDeltaRef.current = delta;
         showManualScrollFade();
       }
       const next = Math.max(0, Math.min(maxScroll, window.scrollY + delta));
@@ -1619,7 +1612,6 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
           setFilmAutoplayPlaying(false);
         }
         scrollSnapDirectionRef.current = dx < 0 ? 1 : -1;
-        scrollCumulativeDeltaRef.current = dx < 0 ? 1 : -1;
         showManualScrollFade();
         e.preventDefault();
         galleryX.set(
@@ -1638,19 +1630,6 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       const t = e.target as HTMLElement | null;
       if (t?.closest('button[aria-label="Go back to home"]')) return;
       if (t?.closest('[role="tablist"]')) return;
-
-      if (galleryTweenRef.current) {
-        galleryTweenRef.current.stop();
-        galleryTweenRef.current = null;
-        isGalleryTweeningRef.current = false;
-      }
-      if (scrollIdleSnapTimerRef.current !== null) {
-        clearTimeout(scrollIdleSnapTimerRef.current);
-        scrollIdleSnapTimerRef.current = null;
-      }
-      scrollCumulativeDeltaRef.current = 0;
-      scrollSnapDirectionRef.current = 0;
-      scrolledToScrollYRef.current = window.scrollY;
 
       drag.pointerId = e.pointerId;
       drag.startX = e.clientX;
