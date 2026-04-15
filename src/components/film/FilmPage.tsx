@@ -848,22 +848,34 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       };
     }
 
+    let didInitialLoad = false;
+
     async function pull() {
       try {
-        const first = await fetchBatch(FIRST_BATCH);
-        if (cancelled) return;
-        if (Array.isArray(first.photos) && first.photos.length > 0) {
-          setPhotos(first.photos);
-          setLoadError(null);
-          if (first.hasMore) {
-            const full = await fetchBatch();
-            if (cancelled) return;
-            if (Array.isArray(full.photos) && full.photos.length > 0) {
-              setPhotos(full.photos);
+        if (!didInitialLoad) {
+          const first = await fetchBatch(FIRST_BATCH);
+          if (cancelled) return;
+          if (Array.isArray(first.photos) && first.photos.length > 0) {
+            setPhotos(first.photos);
+            setLoadError(null);
+            if (first.hasMore) {
+              const full = await fetchBatch();
+              if (cancelled) return;
+              if (Array.isArray(full.photos) && full.photos.length > 0) {
+                setPhotos(full.photos);
+              }
             }
+          } else {
+            setLoadError(first.error ?? 'Could not load film photos');
           }
+          didInitialLoad = true;
         } else {
-          setLoadError(first.error ?? 'Could not load film photos');
+          const full = await fetchBatch();
+          if (cancelled) return;
+          if (Array.isArray(full.photos) && full.photos.length > 0) {
+            setPhotos(full.photos);
+            setLoadError(null);
+          }
         }
       } catch {
         if (!cancelled) {
@@ -964,17 +976,35 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     };
   }, [activeIndex]);
 
+  const prevPhotoCountRef = useRef(0);
   useEffect(() => {
     if (photos.length === 0) return;
+    const prevCount = prevPhotoCountRef.current;
+    prevPhotoCountRef.current = photos.length;
+
     filmLayoutReadyRef.current = false;
     setFilmLayoutReady(false);
     const w = typeof window !== 'undefined' ? window.innerWidth : 1440;
     vwRef.current = w;
-    const { startOff } = getLayoutInfo(w, photos.length);
-    posRef.current = startOff;
-    galleryX.set(startOff);
-    scrolledToScrollYRef.current = 0;
-    document.documentElement.scrollTop = 0;
+
+    if (prevCount === 0) {
+      const { startOff } = getLayoutInfo(w, photos.length);
+      posRef.current = startOff;
+      galleryX.set(startOff);
+      scrolledToScrollYRef.current = 0;
+      document.documentElement.scrollTop = 0;
+    } else {
+      const idx = getFilmClosestPhotoIndex(galleryX.get(), w, prevCount);
+      const { bw, startOff } = getLayoutInfo(w, photos.length);
+      const layoutStep = bw + GAP;
+      const scrollStep = filmScrollStepPx(w, photos.length);
+      const targetSy = idx * scrollStep;
+      const targetX = startOff - targetSy * (layoutStep / scrollStep);
+      posRef.current = targetX;
+      galleryX.set(targetX);
+      scrolledToScrollYRef.current = targetSy;
+      document.documentElement.scrollTop = targetSy;
+    }
   }, [photos.length, galleryX]);
 
   const cancelScrollSnap = useCallback(() => {
@@ -1081,8 +1111,14 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     vwRef.current = w;
     const n0 = photosRef.current.length;
     const { startOff } = getLayoutInfo(w, n0);
-    posRef.current = startOff;
-    galleryX.set(startOff);
+    const currentX = galleryX.get();
+    const isAtDefault =
+      n0 === 0 || Math.abs(currentX - startOff) < 1;
+    if (isAtDefault) {
+      posRef.current = startOff;
+      galleryX.set(startOff);
+    }
+    const initialPos = isAtDefault ? startOff : currentX;
 
     const applyFrame = (scrollPos: number, vw: number) => {
       const list = photosRef.current;
@@ -1309,7 +1345,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       }
     };
 
-    applyFrame(startOff, w);
+    applyFrame(initialPos, w);
 
     const tick = () => {
       const vw = window.innerWidth;
