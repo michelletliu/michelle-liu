@@ -167,12 +167,26 @@ function lerp(a: number, b: number, t: number): number {
 /**
  * Spring for timeline / strip taps when no override is passed.
  * Larger index gap → lower stiffness (slower crossing) and a touch more damping (less bounce).
+ * On narrow viewports, softer + more damping so scrubbing feels smoother (less jarring snap).
  */
-function filmGallerySpringForSlotDistance(delta: number): {
+function filmGallerySpringForSlotDistance(
+  delta: number,
+  mobile: boolean,
+): {
   stiffness: number;
   damping: number;
 } {
   const d = Math.max(0, Math.abs(delta));
+  if (mobile) {
+    if (d <= 0) {
+      return { stiffness: 230, damping: 40 };
+    }
+    const t = Math.min(1, (d - 1) / 5);
+    return {
+      stiffness: Math.round(lerp(250, 88, t)),
+      damping: Math.round(lerp(40, 48, t)),
+    };
+  }
   if (d <= 0) {
     return { stiffness: 360, damping: 33 };
   }
@@ -1525,10 +1539,13 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       }
       setNoteStableIndex(idx);
       cancelScrollSnap();
+      const vw = window.innerWidth;
       const spring =
         springOverride ??
-        filmGallerySpringForSlotDistance(idx - activeIndexRef.current);
-      const vw = window.innerWidth;
+        filmGallerySpringForSlotDistance(
+          idx - activeIndexRef.current,
+          vw < 640,
+        );
       vwRef.current = vw;
       const { bw, vpCenter } = getLayoutInfo(vw, n);
       const step = bw + GAP;
