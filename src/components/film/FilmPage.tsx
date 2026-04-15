@@ -123,9 +123,9 @@ const FILM_SCROLL_IDLE_SNAP_MS = 40;
 /** After touch scroll settles — keep short so mobile doesn’t feel like it’s waiting. */
 const FILM_SCROLL_IDLE_SNAP_TOUCH_MS = 22;
 /** Fraction of a photo slot that must be crossed before snapping to the next photo. */
-const FILM_SNAP_ADVANCE_THRESHOLD = 0.6;
-/** Easier threshold leaving the first photo — 60% feels like a lot of travel on a narrow mobile slot. */
-const FILM_SNAP_FIRST_SLOT_FORWARD_THRESHOLD = 0.42;
+const FILM_SNAP_ADVANCE_THRESHOLD = 0.45;
+/** Easier threshold leaving the first photo. */
+const FILM_SNAP_FIRST_SLOT_FORWARD_THRESHOLD = 0.32;
 /** After autoplay advances, hold before moving to the next photo. */
 const FILM_AUTOPLAY_HOLD_MS = 900;
 /** Total dwell per photo while autoplay is on (hold + transition breathing room). */
