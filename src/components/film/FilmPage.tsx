@@ -119,7 +119,7 @@ const FILM_IDLE_SNAP_SPRING = { stiffness: 160, damping: 30 };
 /** After wheel / trackpad scroll settles, snap to the nearest photo (grid-aligned scroll). */
 const FILM_SCROLL_IDLE_SNAP_MS = 40;
 /** Longer settle time for touch scroll (mobile momentum needs more room). */
-const FILM_SCROLL_IDLE_SNAP_TOUCH_MS = 220;
+const FILM_SCROLL_IDLE_SNAP_TOUCH_MS = 80;
 /** Fraction of a photo slot that must be crossed before snapping to the next photo. */
 const FILM_SNAP_ADVANCE_THRESHOLD = 0.6;
 /** After autoplay advances, hold before moving to the next photo. */
