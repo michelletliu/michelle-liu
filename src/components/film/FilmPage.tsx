@@ -1457,15 +1457,10 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
     const onScroll = () => {
       if (isTouchDraggingRef.current) return;
+      if (isGalleryTweeningRef.current) return;
       const sy = window.scrollY;
       if (Math.abs(scrolledToScrollYRef.current - sy) < 1) return;
       const delta = sy - scrolledToScrollYRef.current;
-      if (isGalleryTweeningRef.current) {
-        if (Math.abs(delta) < 3) return;
-        galleryTweenRef.current?.stop();
-        galleryTweenRef.current = null;
-        isGalleryTweeningRef.current = false;
-      }
       if (Math.abs(delta) >= 2) {
         scrollSnapDirectionRef.current = delta > 0 ? 1 : -1;
       }
@@ -1521,6 +1516,13 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       }
       if (filmAutoplayPlayingRef.current) {
         setFilmAutoplayPlaying(false);
+      }
+
+      if (isGalleryTweeningRef.current) {
+        galleryTweenRef.current?.stop();
+        galleryTweenRef.current = null;
+        isGalleryTweeningRef.current = false;
+        scrolledToScrollYRef.current = window.scrollY;
       }
 
       const vw = window.innerWidth;
@@ -1630,6 +1632,24 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       const t = e.target as HTMLElement | null;
       if (t?.closest('button[aria-label="Go back to home"]')) return;
       if (t?.closest('[role="tablist"]')) return;
+
+      if (isGalleryTweeningRef.current) {
+        galleryTweenRef.current?.stop();
+        galleryTweenRef.current = null;
+        isGalleryTweeningRef.current = false;
+        const vw = window.innerWidth;
+        const n = photosRef.current.length;
+        if (n > 0) {
+          const { bw, startOff } = getLayoutInfo(vw, n);
+          const layoutStep = bw + GAP;
+          const scrollStep = filmScrollStepPx(vw, n);
+          const maxScroll = filmEffectiveMaxScrollPx(n);
+          const currentX = galleryX.get();
+          const sy = Math.max(0, Math.min(maxScroll, (startOff - currentX) * (scrollStep / layoutStep)));
+          document.documentElement.scrollTop = sy;
+          scrolledToScrollYRef.current = sy;
+        }
+      }
 
       drag.pointerId = e.pointerId;
       drag.startX = e.clientX;
