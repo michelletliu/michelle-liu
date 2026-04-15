@@ -122,6 +122,8 @@ const FILM_SCROLL_IDLE_SNAP_MS = 40;
 const FILM_SCROLL_IDLE_SNAP_TOUCH_MS = 80;
 /** Fraction of a photo slot that must be crossed before snapping to the next photo. */
 const FILM_SNAP_ADVANCE_THRESHOLD = 0.6;
+/** Easier threshold leaving the first photo — 60% feels like a lot of travel on a narrow mobile slot. */
+const FILM_SNAP_FIRST_SLOT_FORWARD_THRESHOLD = 0.42;
 /** After autoplay advances, hold before moving to the next photo. */
 const FILM_AUTOPLAY_HOLD_MS = 900;
 /** Total dwell per photo while autoplay is on (hold + transition breathing room). */
@@ -962,9 +964,13 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     const baseIdx = Math.floor(rawIdx);
     const frac = rawIdx - baseIdx;
     const dir = scrollSnapDirectionRef.current;
+    const forwardTh =
+      baseIdx === 0
+        ? FILM_SNAP_FIRST_SLOT_FORWARD_THRESHOLD
+        : FILM_SNAP_ADVANCE_THRESHOLD;
     const targetIdx =
       dir > 0
-        ? (frac >= FILM_SNAP_ADVANCE_THRESHOLD ? baseIdx + 1 : baseIdx)
+        ? (frac >= forwardTh ? baseIdx + 1 : baseIdx)
         : dir < 0
           ? (frac <= (1 - FILM_SNAP_ADVANCE_THRESHOLD) ? baseIdx : baseIdx + 1)
           : (frac >= 0.5 ? baseIdx + 1 : baseIdx);
