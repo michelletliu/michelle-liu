@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import MediaCard, { type MediaCardData } from "./MediaCard";
 import { ArrowUpRight } from "../ArrowUpRight";
@@ -36,6 +36,8 @@ type ShelfSectionProps = {
   onItemClick?: (item: MediaCardData) => void;
 };
 
+const SHELF_FEATURED_FILTER_ID = "__featured";
+
 export default function ShelfSection({
   className,
   title,
@@ -69,6 +71,56 @@ export default function ShelfSection({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const rafRef = useRef<number | null>(null);
+  const desktopTagsRef = useRef<HTMLDivElement | null>(null);
+  const desktopTagRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const indicatorReadyRef = useRef(false);
+  const activeTagId = activeYear || SHELF_FEATURED_FILTER_ID;
+  const [indicatorReady, setIndicatorReady] = useState(false);
+  const [indicatorStyle, setIndicatorStyle] = useState({
+    left: 0,
+    width: 0,
+    height: 0,
+    top: 0,
+    opacity: 0,
+  });
+
+  const updateIndicator = useCallback(() => {
+    const container = desktopTagsRef.current;
+    const activeButton = desktopTagRefs.current[activeTagId];
+
+    if (!container || !activeButton) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const activeRect = activeButton.getBoundingClientRect();
+    const nextStyle = {
+      left: activeRect.left - containerRect.left,
+      width: activeRect.width,
+      height: activeRect.height,
+      top: activeRect.top - containerRect.top,
+      opacity: 1,
+    };
+
+    setIndicatorStyle((currentStyle) => {
+      if (
+        currentStyle.left === nextStyle.left &&
+        currentStyle.width === nextStyle.width &&
+        currentStyle.height === nextStyle.height &&
+        currentStyle.top === nextStyle.top &&
+        currentStyle.opacity === nextStyle.opacity
+      ) {
+        return currentStyle;
+      }
+
+      return nextStyle;
+    });
+
+    if (!indicatorReadyRef.current) {
+      requestAnimationFrame(() => {
+        indicatorReadyRef.current = true;
+        setIndicatorReady(true);
+      });
+    }
+  }, [activeTagId]);
   
   // Function to calculate dropdown position - optimized with RAF
   const updateDropdownPosition = () => {
@@ -156,6 +208,22 @@ export default function ShelfSection({
     setAnimationKey(prev => prev + 1);
   }, [currentView]);
 
+  useLayoutEffect(() => {
+    updateIndicator();
+
+    if (typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver(updateIndicator);
+
+    if (desktopTagsRef.current) observer.observe(desktopTagsRef.current);
+    [SHELF_FEATURED_FILTER_ID, ...yearFilters.map((filter) => filter.year)].forEach((id) => {
+      const element = desktopTagRefs.current[id];
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, [updateIndicator, yearFilters]);
+
   // Get display text for mobile dropdown
   const getActiveFilterDisplay = () => {
     if (!activeYear) {
@@ -214,7 +282,7 @@ export default function ShelfSection({
                   </span>
                   <svg
                     className={clsx(
-                      "w-3 h-3 text-gray-400 transition-transform duration-200",
+                      "size-4 text-gray-400 transition-transform duration-200",
                       isDropdownOpen && "rotate-180"
                     )}
                     fill="none"
@@ -322,18 +390,31 @@ export default function ShelfSection({
             <div className="flex-1 lg:hidden" />
 
             {/* Desktop: Title and year filters in overflow container */}
-            <div className="hidden lg:flex items-center gap-1 min-w-0 overflow-hidden flex-1">
+            <div ref={desktopTagsRef} className="hidden lg:flex items-center gap-1 min-w-0 overflow-hidden flex-1 relative">
+              <div
+                aria-hidden="true"
+                className={clsx(
+                  "absolute left-0 top-0 z-0 rounded-full bg-gray-500/10 motion-reduce:transition-none",
+                  indicatorReady && "transition-[transform,width,opacity] duration-300 ease-out"
+                )}
+                style={{
+                  opacity: indicatorStyle.opacity,
+                  transform: `translate3d(${indicatorStyle.left}px, ${indicatorStyle.top}px, 0)`,
+                  width: indicatorStyle.width,
+                  height: indicatorStyle.height,
+                }}
+              />
               {/* Desktop: Title tag - clickable to show favorites */}
               <button
+                ref={(element) => {
+                  desktopTagRefs.current[SHELF_FEATURED_FILTER_ID] = element;
+                }}
                 onClick={() => onYearChange?.("")}
-                className={clsx(
-                  "flex shrink-0 items-center justify-center rounded-full px-3 py-1 transition-colors cursor-pointer",
-                  !activeYear ? "bg-gray-500/10" : "hover:bg-gray-500/5"
-                )}
+                className="group relative z-10 flex shrink-0 cursor-pointer items-center justify-center rounded-full px-3 py-1"
               >
                 <span className={clsx(
-                  "font-['Michelle',sans-serif] font-medium text-base tracking-wide whitespace-nowrap",
-                  !activeYear ? "text-gray-500" : "text-gray-400"
+                  "font-['Michelle',sans-serif] font-medium text-base tracking-wide whitespace-nowrap transition-colors duration-200 ease-out",
+                  !activeYear ? "text-gray-500" : "text-gray-400 group-hover:text-gray-500"
                 )}>
                   {title}
                   {count !== undefined && (
@@ -347,17 +428,19 @@ export default function ShelfSection({
                 const isActive = activeYear === filter.year;
                 return (
                   <button
+                    ref={(element) => {
+                      desktopTagRefs.current[filter.year] = element;
+                    }}
                     key={filter.year}
                     onClick={() => onYearChange?.(filter.year)}
                     className={clsx(
-                      "flex shrink-0 cursor-pointer items-center justify-center rounded-full px-3 py-1 transition-colors",
-                      isActive ? "bg-gray-500/10" : "hover:bg-gray-500/5"
+                      "group relative z-10 flex shrink-0 cursor-pointer items-center justify-center rounded-full px-3 py-1"
                     )}
                   >
                     <span
                       className={clsx(
-                        "font-['Michelle',sans-serif] text-base font-medium tracking-wide whitespace-nowrap",
-                        isActive ? "text-gray-600" : "text-gray-400"
+                        "font-['Michelle',sans-serif] text-base font-medium tracking-wide whitespace-nowrap transition-colors duration-200 ease-out",
+                        isActive ? "text-gray-600" : "text-gray-400 group-hover:text-gray-500"
                       )}
                     >
                       {filter.year}
@@ -382,7 +465,7 @@ export default function ShelfSection({
                 className="cursor-pointer transition-colors bg-white"
               >
                 <span className="font-['Michelle',sans-serif] text-sm md:text-base font-normal tracking-wide text-gray-400 hover:text-blue-500 transition-colors whitespace-nowrap">
-                  {externalLink.label} <ArrowUpRight />
+                  {externalLink.label} <ArrowUpRight className="ml-1" />
                 </span>
               </a>
             </div>

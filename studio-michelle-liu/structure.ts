@@ -2,7 +2,7 @@ import {StructureBuilder} from 'sanity/structure'
 import {BookIcon, DocumentsIcon} from '@sanity/icons'
 
 // Years to show in the shelf structure
-const SHELF_YEARS = ['2025', '2024', '2023', '2022', '2021', '2020']
+const SHELF_YEARS = ['2026', '2025', '2024', '2023', '2022', '2021', '2020']
 
 // Helper to create year-filtered list for a media type
 const createYearList = (S: StructureBuilder, mediaType: string, year: string) =>

@@ -373,13 +373,13 @@ export default function LibraryPage({
                   </span>
                   <svg
                     className={clsx(
-                      "w-3 h-3 text-gray-400 transition-transform duration-200",
+                      "size-4 text-gray-400 transition-transform duration-200",
                       showFilterDropdown && "rotate-180"
                     )}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    strokeWidth={3}
+                    strokeWidth={2}
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>

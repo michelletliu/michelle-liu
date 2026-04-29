@@ -18,6 +18,7 @@ export function BookCard({ book, onClick }: BookCardProps) {
         <ShimmerImage
           alt={`${book.title} by ${book.author}`}
           className="absolute inset-0 max-w-none object-cover pointer-events-none size-full shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] md:group-hover:shadow-none transition-shadow duration-[400ms] ease-out"
+          detectWhiteBorder
           rounded="rounded-sm"
           wrapperClassName="absolute inset-0 size-full"
           src={book.coverImage}

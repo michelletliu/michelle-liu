@@ -74,8 +74,8 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
               <span className="md:hidden text-gray-400 font-normal text-base leading-tight">{data.date}</span>
             )}
           </div>
-          {/* Arrow - always visible on mobile, hover on desktop */}
-          <span className="text-gray-700 text-sm opacity-100 md:opacity-0 transition-opacity duration-200 ease-out md:group-hover:opacity-100">
+          {/* Arrow - hidden on mobile, hover on desktop */}
+          <span className="hidden text-gray-700 text-sm opacity-0 transition-opacity duration-200 ease-out md:inline md:group-hover:opacity-100">
             <ArrowUpRight />
           </span>
         </div>

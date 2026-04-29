@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { detectWhiteImageBorder } from "../../lib/detectWhiteImageBorder";
 
 export type MediaCardData = {
   id: string;
@@ -215,6 +216,8 @@ export default function MediaCard({
     return img.complete && img.naturalWidth > 0;
   });
   const [imageError, setImageError] = useState(false);
+  const [hasDetectedWhiteBorder, setHasDetectedWhiteBorder] = useState(false);
+  const shouldDetectWhiteBorder = hasImage;
   
   // Reset image loading state when imageSrc changes
   useEffect(() => {
@@ -232,7 +235,26 @@ export default function MediaCard({
       setImageLoaded(false);
     }
     setImageError(false);
+    setHasDetectedWhiteBorder(false);
   }, [data?.imageSrc]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setHasDetectedWhiteBorder(false);
+
+    if (!shouldDetectWhiteBorder || !data?.imageSrc) return;
+
+    detectWhiteImageBorder(data.imageSrc).then((hasWhiteBorder) => {
+      if (!cancelled) {
+        setHasDetectedWhiteBorder(hasWhiteBorder);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [data?.imageSrc, shouldDetectWhiteBorder]);
 
   const handleImageLoad = useCallback(() => {
     setImageLoaded(true);
@@ -255,6 +277,11 @@ export default function MediaCard({
     variant === "expanded" && "rounded-lg md:rounded-md",
     // Placeholder background when no image
     !hasImage && "bg-gray-300",
+    // Put the shadow on the card itself so overflow-hidden does not clip it.
+    shouldDetectWhiteBorder &&
+      (hasDetectedWhiteBorder
+        ? "shadow-[0_3px_8px_rgba(0,0,0,0.1)]"
+        : "shadow-[0_3px_8px_rgba(0,0,0,0.05)]"),
     // Cursor style - pointer if has link
     externalUrl ? "cursor-pointer" : "",
     className
@@ -279,6 +306,9 @@ export default function MediaCard({
           onLoad={handleImageLoad}
           onError={handleImageError}
         />
+      )}
+      {hasDetectedWhiteBorder && (
+        <div className="pointer-events-none absolute inset-0 z-[2] rounded-[inherit] border border-gray-50" />
       )}
     </>
   );
