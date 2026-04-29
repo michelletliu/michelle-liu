@@ -120,11 +120,11 @@ const FILM_FRAME_WIDEN_SLOT_RANGE = 2.12;
 /** Softer spring for arrow keys so each step feels less abrupt. */
 const FILM_KEYBOARD_SNAP_SPRING = { stiffness: 175, damping: 36 };
 /** Release snap should glide a bit more softly than keyboard stepping. */
-const FILM_IDLE_SNAP_SPRING = { stiffness: 160, damping: 30 };
+const FILM_IDLE_SNAP_SPRING = { stiffness: 120, damping: 26 };
 /** Tighter spring after touch / narrow viewports so the snap finishes sooner. */
-const FILM_TOUCH_IDLE_SNAP_SPRING = { stiffness: 300, damping: 36 };
+const FILM_TOUCH_IDLE_SNAP_SPRING = { stiffness: 200, damping: 28 };
 /** After wheel / trackpad scroll settles, snap to the nearest photo (grid-aligned scroll). */
-const FILM_SCROLL_IDLE_SNAP_MS = 40;
+const FILM_SCROLL_IDLE_SNAP_MS = 80;
 /** After touch scroll settles — keep short so mobile doesn’t feel like it’s waiting. */
 const FILM_SCROLL_IDLE_SNAP_TOUCH_MS = 22;
 /** Fraction of a photo slot that must be crossed before snapping to the next photo. */
@@ -1574,13 +1574,6 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         setFilmAutoplayPlaying(false);
       }
 
-      if (isGalleryTweeningRef.current) {
-        galleryTweenRef.current?.stop();
-        galleryTweenRef.current = null;
-        isGalleryTweeningRef.current = false;
-        scrolledToScrollYRef.current = window.scrollY;
-      }
-
       const vw = window.innerWidth;
       vwRef.current = vw;
       const { bw } = getLayoutInfo(vw, n);
@@ -1588,6 +1581,16 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       const maxScroll = filmEffectiveMaxScrollPx(n);
       lastInputWasTouchRef.current = false;
       const delta = wheelDeltaPixels(e, vw) * FILM_WHEEL_SCROLL_FACTOR;
+
+      if (Math.abs(delta) < 1.5 && isGalleryTweeningRef.current) return;
+
+      if (isGalleryTweeningRef.current) {
+        galleryTweenRef.current?.stop();
+        galleryTweenRef.current = null;
+        isGalleryTweeningRef.current = false;
+        scrolledToScrollYRef.current = window.scrollY;
+      }
+
       if (Math.abs(delta) >= 0.5) {
         scrollSnapDirectionRef.current = delta > 0 ? 1 : -1;
         showManualScrollFade();
