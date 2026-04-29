@@ -3,15 +3,17 @@ import Providers from "@/components/Providers";
 import "@/index.css";
 import "@/styles/globals.css";
 
+const siteDescription = "Previously at Apple, Roblox, & NASA.";
+
 export const metadata: Metadata = {
   title: "michelle liu",
-  description: "Product Designer. Previously Apple, Roblox, and NASA.",
+  description: siteDescription,
   keywords:
     "Michelle Liu, Product Designer, UX Designer, UI Designer, Apple Designer, Roblox Designer, NASA Designer, Design Portfolio",
   authors: [{ name: "Michelle Liu" }],
   openGraph: {
     title: "michelle liu",
-    description: "Product Designer. Previously Apple, Roblox, and NASA.",
+    description: siteDescription,
     type: "website",
     url: "https://www.liumichelle.com",
     images: [
@@ -27,7 +29,7 @@ export const metadata: Metadata = {
     site: "@michelletliu",
     creator: "@michelletliu",
     title: "michelle liu",
-    description: "Product Designer. Previously Apple, Roblox, and NASA.",
+    description: siteDescription,
     images: ["https://www.liumichelle.com/og-image.png?v=5"],
   },
   icons: {
