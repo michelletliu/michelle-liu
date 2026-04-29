@@ -76,6 +76,7 @@ export default function ShelfSection({
   const indicatorReadyRef = useRef(false);
   const activeTagId = activeYear || SHELF_FEATURED_FILTER_ID;
   const [indicatorReady, setIndicatorReady] = useState(false);
+  const [desktopTagsOverflowing, setDesktopTagsOverflowing] = useState(false);
   const [indicatorStyle, setIndicatorStyle] = useState({
     left: 0,
     width: 0,
@@ -89,6 +90,8 @@ export default function ShelfSection({
     const activeButton = desktopTagRefs.current[activeTagId];
 
     if (!container || !activeButton) return;
+
+    setDesktopTagsOverflowing(container.scrollWidth > container.clientWidth + 1);
 
     const containerRect = container.getBoundingClientRect();
     const activeRect = activeButton.getBoundingClientRect();
@@ -453,6 +456,9 @@ export default function ShelfSection({
                   </button>
                 );
               })}
+              {desktopTagsOverflowing && (
+                <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-12 bg-gradient-to-r from-transparent to-white" />
+              )}
             </div>
 
           {/* External link - right aligned with gradient fade for readability */}
