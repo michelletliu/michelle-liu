@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from "react";
+import React from "react";
 import { useNavigate } from "@/lib/navigation";
 import clsx from "clsx";
 import { motion } from "framer-motion";
@@ -29,20 +29,11 @@ function FinalSealLogoBackgroundImage({ additionalClassNames = "" }: { additiona
 
 export default function PageHeader({
   variant,
-  heroAnimationPlayed = false,
   children,
   nameAddon,
 }: PageHeaderProps) {
   const navigate = useNavigate();
   const isHomePage = variant === "work";
-
-  const [skipAnim, setSkipAnim] = useState(false);
-
-  useLayoutEffect(() => {
-    if (sessionStorage.getItem("heroAnimationPlayed") === "true") {
-      setSkipAnim(true);
-    }
-  }, []);
 
   return (
     <div
@@ -67,22 +58,14 @@ export default function PageHeader({
             <div className="content-stretch flex items-start justify-between relative shrink-0 w-full">
               {isHomePage ? (
                 <motion.div 
-                  key={skipAnim ? "logo-skip" : "logo-anim"}
                   className="relative shrink-0 size-8 md:size-11"
-                  initial={skipAnim ? false : { opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: skipAnim ? 0 : 0.5, ease: "easeOut" }}
                 >
                   <FinalSealLogoBackgroundImage additionalClassNames="size-full" />
                 </motion.div>
               ) : (
                 <motion.button
-                  key={skipAnim ? "logo-skip" : "logo-anim"}
                   onClick={() => navigate("/")}
                   className="relative shrink-0 size-8 md:size-11 cursor-pointer"
-                  initial={skipAnim ? false : { opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: skipAnim ? 0 : 0.5, ease: "easeOut" }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -97,9 +80,9 @@ export default function PageHeader({
       {/* Hero Text */}
       <div className="relative shrink-0 w-full" style={{ zIndex: 2 }}>
         <div className="size-full">
-          <div className="content-stretch flex flex-col gap-4 items-start pb-6 pt-14 px-16 max-md:px-6 max-md:pt-20 max-md:pb-2 relative w-full max-md:min-h-[210px] md:h-[176px]">
+          <div className="content-stretch flex flex-col gap-4 items-start pb-6 pt-14 px-16 max-md:px-6 max-md:pt-20 max-md:pb-2 relative w-full max-md:h-[210px] md:h-[176px]">
             <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
-              <ScrollReveal variant="fade" rootMargin="0px" disabled={skipAnim || heroAnimationPlayed}>
+              <ScrollReveal variant="fade" rootMargin="0px" disabled>
                 {nameAddon ? (
                   <div className="flex gap-3 items-baseline w-full">
                     <p className="font-['Michelle',sans-serif] tracking-[0.0125em] font-medium leading-normal text-[#374151] text-4xl max-md:text-4xl">
@@ -115,10 +98,11 @@ export default function PageHeader({
               </ScrollReveal>
               {children && (
                 <motion.div
+                  key={variant}
                   className="font-['Michelle',sans-serif] font-normal tracking-wide leading-6 max-md:leading-5.5 text-[#9ca3af] text-lg max-md:text-base w-full max-md:max-w-86 whitespace-pre-wrap mt-1 max-md:mt-1"
-                  initial={{ opacity: 0, y: 4, filter: "blur(0px)" }}
+                  initial={{ opacity: 0.55, y: 2, filter: "blur(0px)" }}
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  transition={{ duration: 0.15, delay: 0, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  transition={{ duration: 0.18, delay: 0, ease: [0.25, 0.46, 0.45, 0.94] }}
                 >
                   {children}
                 </motion.div>

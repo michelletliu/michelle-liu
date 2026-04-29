@@ -194,6 +194,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
             <ShimmerImage
               alt={`${book.title} by ${book.author}`}
               className={`w-full h-full object-cover shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] ${book.goodreadsUrl ? "transition-transform duration-300 group-hover:rotate-[2.5deg]" : ""}`}
+              detectWhiteBorder
               rounded="rounded-md"
               wrapperClassName="h-full w-full"
               src={book.coverImage}
@@ -309,6 +310,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
             <ShimmerImage
               alt={`${book.title} by ${book.author}`}
               className={`w-full h-full object-cover shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] ${book.goodreadsUrl ? "transition-transform duration-300 group-hover:rotate-[2.5deg]" : ""}`}
+              detectWhiteBorder
               rounded="rounded-md"
               wrapperClassName="h-full w-full"
               src={book.coverImage}

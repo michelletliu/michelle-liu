@@ -26,7 +26,12 @@ export const ART_PIECES_QUERY = `
     _id,
     title,
     artType,
-    image,
+    image {
+      asset,
+      hotspot,
+      crop,
+      "dimensions": asset->metadata.dimensions
+    },
     medium,
     size,
     year,
@@ -40,7 +45,12 @@ export const ART_PIECES_BY_TYPE_QUERY = `
     _id,
     title,
     artType,
-    image,
+    image {
+      asset,
+      hotspot,
+      crop,
+      "dimensions": asset->metadata.dimensions
+    },
     medium,
     size,
     year,

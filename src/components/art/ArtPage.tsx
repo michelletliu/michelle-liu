@@ -33,6 +33,7 @@ function transformArtPieces(sanityData: ArtPiece[]): ArtCardData[] {
     return {
       id: piece._id,
       imageSrc: piece.image ? urlFor(piece.image).width(800).url() : "",
+      aspectRatio: piece.image?.dimensions?.aspectRatio,
       title: piece.title,
       metadata: metadata || undefined,
     };

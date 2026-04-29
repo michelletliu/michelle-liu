@@ -6,6 +6,11 @@ export interface SanityImage {
     _ref: string;
     _type: "reference";
   };
+  dimensions?: {
+    width: number;
+    height: number;
+    aspectRatio?: number;
+  };
   hotspot?: {
     x: number;
     y: number;

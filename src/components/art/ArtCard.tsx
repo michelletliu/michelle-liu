@@ -5,6 +5,7 @@ export type ArtCardData = {
   id: string;
   imageSrc: string;
   title: string;
+  aspectRatio?: number;
   /** Medium, Size, Date info */
   metadata?: string;
 };
@@ -27,7 +28,10 @@ export default function ArtCard({ className, data, onClick }: ArtCardProps) {
       )}
     >
       {/* Image container with shimmer placeholder */}
-      <div className="relative w-full rounded-2xl overflow-hidden">
+      <div
+        className="relative w-full rounded-2xl overflow-hidden bg-gray-100"
+        style={{ aspectRatio: data.aspectRatio ?? 0.8 }}
+      >
         {/* Shimmer placeholder - visible while image is loading */}
         <div 
           className={clsx(
@@ -40,7 +44,7 @@ export default function ArtCard({ className, data, onClick }: ArtCardProps) {
           src={data.imageSrc}
           alt={data.title}
           className={clsx(
-            "w-full h-auto rounded-2xl object-contain transition-opacity duration-500 ease-out",
+            "absolute inset-0 size-full rounded-2xl object-cover transition-opacity duration-500 ease-out",
             imageLoaded ? "opacity-100" : "opacity-0"
           )}
           onLoad={() => setImageLoaded(true)}
