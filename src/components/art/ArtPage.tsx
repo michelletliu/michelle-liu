@@ -406,7 +406,7 @@ export default function ArtPage() {
                   <HeaderBreakpoint text="Painting" />
                 </ScrollReveal>
                 {artPiecesByType.painting.length > 0 ? (
-                  <ScrollReveal delay={120}>
+                  <ScrollReveal delay={120} className="w-full">
                     <ArtGallery 
                       items={artPiecesByType.painting} 
                       onItemClick={handleArtItemClick}
@@ -424,7 +424,7 @@ export default function ArtPage() {
                   <HeaderBreakpoint text="Conceptual" />
                 </ScrollReveal>
                 {artPiecesByType.conceptual.length > 0 ? (
-                  <ScrollReveal delay={120}>
+                  <ScrollReveal delay={120} className="w-full">
                     <ArtGallery 
                       items={artPiecesByType.conceptual} 
                       onItemClick={handleArtItemClick}
@@ -442,7 +442,7 @@ export default function ArtPage() {
                   <HeaderBreakpoint text="Graphite" />
                 </ScrollReveal>
                 {artPiecesByType.graphite.length > 0 ? (
-                  <ScrollReveal delay={120}>
+                  <ScrollReveal delay={120} className="w-full">
                     <ArtGallery 
                       items={artPiecesByType.graphite} 
                       onItemClick={handleArtItemClick}
@@ -464,8 +464,9 @@ export default function ArtPage() {
                       <ScrollReveal
                         key={sketchbook.id}
                         delay={index * 120}
+                        className="w-full"
                       >
-                        <div ref={(el) => { sketchbookRefs.current[index] = el; }}>
+                        <div className="w-full" ref={(el) => { sketchbookRefs.current[index] = el; }}>
                           <SketchbookGallery data={sketchbook} />
                         </div>
                       </ScrollReveal>
@@ -487,8 +488,9 @@ export default function ArtPage() {
                       <ScrollReveal
                         key={mural.id}
                         delay={index * 120}
+                        className="w-full"
                       >
-                        <div ref={(el) => { muralRefs.current[index] = el; }}>
+                        <div className="w-full" ref={(el) => { muralRefs.current[index] = el; }}>
                           <MuralGallery data={mural} />
                         </div>
                       </ScrollReveal>
