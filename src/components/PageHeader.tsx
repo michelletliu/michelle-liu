@@ -66,7 +66,7 @@ export default function PageHeader({
                 <motion.button
                   onClick={() => navigate("/")}
                   className="relative shrink-0 size-8 md:size-11 cursor-pointer"
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <FinalSealLogoBackgroundImage additionalClassNames="size-full" />
