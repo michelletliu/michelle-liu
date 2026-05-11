@@ -68,6 +68,8 @@ const ShimmerImage = forwardRef<HTMLImageElement, ShimmerImageProps>(
         />
         <img
           ref={ref}
+          loading="lazy"
+          decoding="async"
           className={clsx(className, rounded)}
           onLoad={handleLoad}
           {...props}
