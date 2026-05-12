@@ -1345,7 +1345,7 @@ function UploadInstructions({
           }
         `}</style>
         <div className="top-0 bg-white flex items-center justify-center pt-6 w-full rounded-t-[20px]">
-          <h2 className="text-lg text-black">Upload Your Screen Time Data</h2>
+          <h2 className="text-lg text-black text-balance max-w-[250px]">Upload Your Screen Time Data</h2>
         </div>
         
         <div className="px-8 py-5 space-y-5 text-[15px]">
@@ -1390,7 +1390,7 @@ function UploadInstructions({
           )}
 
           <label className="flex items-center justify-center">
-            <div className={`${isProcessing ? 'bg-gray-400' : 'bg-gray-900 hover:bg-gray-800'} transition-colors flex items-center justify-center px-5 pt-3.5 pb-3.4 rounded-full cursor-pointer`}>
+            <div className={`${isProcessing ? 'bg-gray-400' : 'bg-gray-900 hover:bg-gray-800'} transition-colors flex items-center justify-center px-5 pt-3.5 pb-[13.5px] rounded-full cursor-pointer`}>
               <p className="text-[15px] leading-none text-center text-white tracking-[0.75px]">
                 {isProcessing ? 'PROCESSING...' : 'UPLOAD SCREENSHOT'}
               </p>
