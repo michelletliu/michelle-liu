@@ -1345,12 +1345,12 @@ function UploadInstructions({
           }
         `}</style>
         <div className="top-0 bg-white flex items-center justify-center pt-6 w-full rounded-t-[20px]">
-          <h2 className="text-lg text-black text-center text-balance max-w-[250px]">Upload Your Screen Time Data</h2>
+          <h2 className="text-lg text-black text-center text-balance max-w-[250px] font-semibold">Upload Your Screen Time Data</h2>
         </div>
         
         <div className="px-8 py-5 space-y-5 text-[15px]">
           <div className="space-y-3.5">
-            <h3 className="text-base text-black font-semibold">iPhone</h3>
+            <h3 className="text-base text-black">iPhone</h3>
             <div className="border-t border-zinc-100" />
             <ol className="space-y-1 pl-10 list-decimal text-gray-500 leading-normal">
               <li>Open <strong>Settings</strong></li>
@@ -1361,7 +1361,7 @@ function UploadInstructions({
           </div>
 
           <div className="space-y-3.5">
-            <h3 className="text-base text-black font-semibold">Android</h3>
+            <h3 className="text-base text-black">Android</h3>
             <div className="border-t border-zinc-100" />
             <ol className="space-y-1 pl-10 list-decimal text-gray-500 leading-normal">
               <li>Open <strong>Settings</strong></li>
