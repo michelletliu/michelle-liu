@@ -1389,7 +1389,7 @@ function UploadInstructions({
           )}
 
           <label className="flex items-center justify-center">
-            <div className={`${isProcessing ? 'bg-gray-400' : 'bg-gray-900 hover:bg-gray-800'} transition-colors flex items-center justify-center px-6 py-3 rounded-full cursor-pointer`}>
+            <div className={`${isProcessing ? 'bg-gray-400' : 'bg-gray-900 hover:bg-gray-800'} transition-colors flex items-center justify-center px-5 pt-3 pb-2.5 rounded-full cursor-pointer`}>
               <p className="text-[15px] leading-none text-center text-white tracking-[0.75px]">
                 {isProcessing ? 'PROCESSING...' : 'UPLOAD SCREENSHOT'}
               </p>
