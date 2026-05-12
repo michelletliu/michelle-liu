@@ -1348,7 +1348,7 @@ function UploadInstructions({
           <h2 className="text-lg text-black text-center text-balance max-w-[250px] font-semibold">Upload Your Screen Time Data</h2>
         </div>
         
-        <div className="px-8 pt-7 pb-5 space-y-7 text-[15px]">
+        <div className="px-8 pt-6 pb-5 space-y-7 text-[15px]">
           <div className="space-y-3.5">
             <h3 className="text-base text-black">iPhone</h3>
             <div className="border-t border-zinc-100" />
