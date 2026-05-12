@@ -54,12 +54,12 @@ export default function Tooltip({
       setIsVisible(true);
       setTooltipWarmup(true);
     } else {
-      // Show tooltip after 800ms delay
+      // Show tooltip after 400ms delay
       setIsInstant(false);
       hoverTimeoutRef.current = setTimeout(() => {
         setIsVisible(true);
         setTooltipWarmup(true);
-      }, 800);
+      }, 400);
     }
   };
 
