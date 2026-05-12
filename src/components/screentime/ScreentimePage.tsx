@@ -1345,13 +1345,13 @@ function UploadInstructions({
           }
         `}</style>
         <div className="top-0 bg-white flex items-center justify-center pt-6 w-full rounded-t-[20px]">
-          <h2 className="text-lg text-black font-semibold">Upload Your Screen Time Data</h2>
+          <h2 className="text-lg text-black text-center text-balance max-w-[250px] font-semibold">Upload Your Screen Time Data</h2>
         </div>
         
-        <div className="px-8 py-5 space-y-5 text-[15px]">
-        <div className="border-t border-zinc-100" />
-          <div className="space-y-3">
-            <h3 className="text-base text-black font-semibold">iPhone</h3>
+        <div className="px-8 pt-6 pb-5 space-y-7 text-[15px]">
+          <div className="space-y-3.5">
+            <h3 className="text-base text-black">iPhone</h3>
+            <div className="border-t border-zinc-100" />
             <ol className="space-y-1 pl-10 list-decimal text-gray-500 leading-normal">
               <li>Open <strong>Settings</strong></li>
               <li>Scroll down and tap <strong>Screen Time</strong></li>
@@ -1360,8 +1360,9 @@ function UploadInstructions({
             </ol>
           </div>
 
-          <div className="border-t border-zinc-100 pt-5 space-y-3">
-            <h3 className="text-base text-black font-semibold">Android</h3>
+          <div className="space-y-3.5">
+            <h3 className="text-base text-black">Android</h3>
+            <div className="border-t border-zinc-100" />
             <ol className="space-y-1 pl-10 list-decimal text-gray-500 leading-normal">
               <li>Open <strong>Settings</strong></li>
               <li>Tap <strong>Digital Wellbeing & parental controls</strong></li>
@@ -1389,8 +1390,8 @@ function UploadInstructions({
           )}
 
           <label className="flex items-center justify-center">
-            <div className={`${isProcessing ? 'bg-gray-400' : 'bg-gray-900 hover:bg-gray-800'} transition-colors flex items-center justify-center px-6 py-3 rounded-full cursor-pointer`}>
-              <p className="text-[15px] text-center text-white tracking-[0.75px]">
+            <div className={`${isProcessing ? 'bg-gray-400' : 'bg-gray-900 hover:bg-gray-800'} transition-colors flex items-center justify-center px-5 pt-3.5 pb-[13.5px] rounded-full cursor-pointer`}>
+              <p className="text-[15px] leading-none text-center text-white tracking-[0.75px]">
                 {isProcessing ? 'PROCESSING...' : 'UPLOAD SCREENSHOT'}
               </p>
             </div>
