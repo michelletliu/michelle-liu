@@ -155,7 +155,7 @@ function ExpandTooltip({ children }: { children: React.ReactNode }) {
     setIsEnding(false);
     hoverTimeoutRef.current = setTimeout(() => {
       setIsVisible(true);
-    }, 800);
+    }, 400);
   };
 
   const handleMouseLeave = () => {
