@@ -1350,8 +1350,9 @@ function UploadInstructions({
         
         <div className="px-8 py-5 space-y-5 text-[15px]">
         <div className="border-t border-zinc-100" />
-          <div className="space-y-3">
+          <div className="space-y-2">
             <h3 className="text-base text-black font-semibold">iPhone</h3>
+            <div className="border-t border-zinc-100" />
             <ol className="space-y-1 pl-10 list-decimal text-gray-500 leading-normal">
               <li>Open <strong>Settings</strong></li>
               <li>Scroll down and tap <strong>Screen Time</strong></li>
@@ -1360,8 +1361,9 @@ function UploadInstructions({
             </ol>
           </div>
 
-          <div className="border-t border-zinc-100 pt-5 space-y-3">
+          <div className="border-t border-zinc-100 pt-5 space-y-2">
             <h3 className="text-base text-black font-semibold">Android</h3>
+            <div className="border-t border-zinc-100" />
             <ol className="space-y-1 pl-10 list-decimal text-gray-500 leading-normal">
               <li>Open <strong>Settings</strong></li>
               <li>Tap <strong>Digital Wellbeing & parental controls</strong></li>
