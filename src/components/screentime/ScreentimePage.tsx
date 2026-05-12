@@ -1329,7 +1329,7 @@ function UploadInstructions({
       
       {/* Modal Content */}
       <div 
-        className={`upload-modal-content relative bg-white rounded-3xl py-2 pb-4 w-full max-w-[440px] max-h-[90vh] overflow-y-auto shadow-[0px_10px_60px_rgba(0,0,0,0.06)] transition-all duration-300 ease-out ${
+        className={`upload-modal-content relative bg-white rounded-3xl py-2 pb-4 w-full max-w-[440px] max-h-[90vh] overflow-y-auto shadow-[0px_10px_60px_rgba(0,0,0,0.03)] transition-all duration-300 ease-out ${
           isVisible 
             ? 'opacity-100 translate-y-0' 
             : isClosing 
