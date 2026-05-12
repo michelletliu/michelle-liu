@@ -1345,7 +1345,7 @@ function UploadInstructions({
           }
         `}</style>
         <div className="top-0 bg-white flex items-center justify-center pt-6 w-full rounded-t-[20px]">
-          <h2 className="text-lg text-black font-semibold">Upload Your Screen Time Data</h2>
+          <h2 className="text-lg text-black">Upload Your Screen Time Data</h2>
         </div>
         
         <div className="px-8 py-5 space-y-5 text-[15px]">
