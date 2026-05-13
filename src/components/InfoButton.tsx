@@ -205,7 +205,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   View on X button (desktop only) as a sibling div top-aligned to the right */}
               <div className="w-full flex items-start justify-between gap-3">
                 {/* Left column: title row and description stacked */}
-                <div className="flex flex-col min-w-0 gap-1">
+                <div className="flex flex-col min-w-0 gap-0.5">
                   {/* Title row */}
                   <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
                     <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
