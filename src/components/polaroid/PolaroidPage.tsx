@@ -487,12 +487,12 @@ export default function PolaroidPage() {
         {/* Polaroid Frame */}
         <div 
           ref={polaroidRef}
-          className={`content-stretch flex items-center justify-center relative rounded-[4px] md:rounded-[5.5px] shadow-[0px_2px_12px_0px_rgba(0,0,0,0.08)] md:shadow-[0px_2.5px_16px_0px_rgba(0,0,0,0.08)] shrink-0 transition-transform duration-300 ease-out hover:rotate-2 ${
+          className={`content-stretch flex items-center justify-center relative rounded-[2.5px] md:rounded-[5.5px] shadow-[0px_2px_12px_0px_rgba(0,0,0,0.08)] md:shadow-[0px_2.5px_16px_0px_rgba(0,0,0,0.08)] shrink-0 transition-transform duration-300 ease-out hover:rotate-2 ${
             isPopupMode 
               ? 'h-[224px] md:h-[275px] w-[192px] md:w-[236px]' 
               : 'h-[320px] md:h-[393.22px] w-[274px] md:w-[337.288px]'
           }`}>
-          <div className={`relative rounded-[4px] md:rounded-[5.5px] shrink-0 ${
+          <div className={`relative rounded-[2.5px] md:rounded-[5.5px] shrink-0 ${
             isPopupMode 
               ? 'h-[224px] md:h-[275px] w-[192px] md:w-[236px]' 
               : 'h-[320px] md:h-[393.22px] w-[274px] md:w-[337.288px]'
@@ -500,14 +500,14 @@ export default function PolaroidPage() {
             <div className="absolute contents left-0 top-0">
               <div className="absolute contents left-0 top-0">
                 <div 
-                  className="absolute blur-[0.25px] filter h-full left-0 rounded-[5.5px] md:rounded-[6.78px] top-0 w-full"
+                  className="absolute blur-[0.25px] filter h-full left-0 rounded-[3.5px] md:rounded-[6.78px] top-0 w-full"
                   style={{ 
                     backgroundColor: selectedColor ? selectedColor.tint : 'white',
                   }}
                 >
                   <div 
                     aria-hidden="true" 
-                    className="absolute border border-gray-200/80 border-solid inset-[-1px] pointer-events-none rounded-[6.88px] md:rounded-[8.475px]"
+                    className="absolute border border-gray-200/80 border-solid inset-[-1px] pointer-events-none rounded-[4.5px] md:rounded-[8.475px]"
                     style={{
                       borderColor: selectedColor ? selectedColor.border : undefined
                     }}
@@ -515,7 +515,7 @@ export default function PolaroidPage() {
                 </div>
               </div>
               <div 
-                className={`absolute content-stretch flex items-center left-0 rounded-[5.5px] md:rounded-[6.78px] top-0 ${
+                className={`absolute content-stretch flex items-center left-0 rounded-[3.5px] md:rounded-[6.78px] top-0 ${
                   isPopupMode 
                     ? 'pb-[40px] md:pb-[50px] pt-[14px] md:pt-[16px] px-[12px] md:px-[14px]' 
                     : 'pb-[62px] md:pb-[76.271px] pt-[16.5px] md:pt-[20.339px] px-[16.5px] md:px-[20.339px]'
@@ -525,7 +525,7 @@ export default function PolaroidPage() {
                 }}
               >
                 <div 
-                  className={`relative rounded-[2.75px] md:rounded-[3.39px] shrink-0 ${
+                  className={`relative rounded-[1.75px] md:rounded-[3.39px] shrink-0 ${
                     isPopupMode 
                       ? 'w-[168px] h-[168px] md:w-[208px] md:h-[208px]' 
                       : 'w-[241px] h-[241px] md:w-[296.61px] md:h-[296.61px]'
@@ -536,7 +536,7 @@ export default function PolaroidPage() {
                   <div className="overflow-clip relative rounded-[inherit] size-full">
                     {uploadedImage ? (
                       /* Uploaded image - preserve aspect ratio and center */
-                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[4.7px] md:rounded-[5.773px]">
+                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[3px] md:rounded-[5.773px]">
                         <img 
                           alt="Polaroid photo" 
                           className="max-w-full max-h-full w-auto h-auto object-contain" 
@@ -552,7 +552,7 @@ export default function PolaroidPage() {
                           setIsFileDialogOpen(true);
                           fileInputRef.current?.click();
                         }}
-                        className="absolute inset-0 rounded-[4.7px] md:rounded-[5.773px] flex items-center justify-center cursor-pointer transition-colors duration-200"
+                        className="absolute inset-0 rounded-[3px] md:rounded-[5.773px] flex items-center justify-center cursor-pointer transition-colors duration-200"
                         style={{ backgroundColor: isImageHovered ? '#e5e7eb' : '#f3f4f6' }}
                       >
                         <div 
