@@ -16,6 +16,22 @@ type ShimmerImageProps = ImgHTMLAttributes<HTMLImageElement> & {
 const hasPositionClass = (cls?: string) =>
   !!cls && /\b(absolute|fixed|sticky)\b/.test(cls);
 
+/**
+ * Sanity image URLs encode the source dimensions in the asset filename
+ * (e.g. `<hash>-1920x1080.webp`). Extract them so we can set `width` /
+ * `height` on the underlying `<img>` and have the browser reserve aspect-ratio
+ * space before bytes arrive — without this, lazy-loaded images render with
+ * zero intrinsic height and the shimmer wrapper collapses to 0px.
+ */
+const extractSanityDimensions = (
+  src: unknown,
+): { width?: number; height?: number } => {
+  if (typeof src !== "string") return {};
+  const match = src.match(/-(\d+)x(\d+)\.[a-z]+(?:\?|$)/i);
+  if (!match) return {};
+  return { width: Number(match[1]), height: Number(match[2]) };
+};
+
 const ShimmerImage = forwardRef<HTMLImageElement, ShimmerImageProps>(
   function ShimmerImage({ wrapperClassName, rounded, className, onLoad, detectWhiteBorder, ...props }, ref) {
     const [loaded, setLoaded] = useState(false);
@@ -69,10 +85,30 @@ const ShimmerImage = forwardRef<HTMLImageElement, ShimmerImageProps>(
       [onLoad],
     );
 
+    const dims = extractSanityDimensions(props.src);
+    // The shimmer overlay is `absolute inset-0`, so it's only visible while
+    // the image is loading if the wrapper already has a definite size. For
+    // the common gallery / featureSection shape where the image is
+    // `w-full h-auto`, give the wrapper the same width and reserve
+    // aspect-ratio height inline so the shimmer shows before the lazy-loaded
+    // bytes arrive. Other shapes (`w-auto`, `h-full`, fixed `size-*`) are
+    // sized by their container or intrinsic dimensions and don't need this.
+    const imgFillsWidth =
+      !!className && /\bw-full\b/.test(className) && /\bh-auto\b/.test(className);
+    const reserveAspectRatio =
+      !wrapperClassName &&
+      imgFillsWidth &&
+      dims.width !== undefined &&
+      dims.height !== undefined;
+    const wrapperStyle = reserveAspectRatio
+      ? { aspectRatio: `${dims.width} / ${dims.height}` }
+      : undefined;
+
     return (
       <div
         className={clsx(
           !hasPositionClass(wrapperClassName) && "relative",
+          reserveAspectRatio && "w-full",
           detectWhiteBorder &&
             (hasDetectedWhiteBorder
               ? "shadow-[0_3px_8px_rgba(0,0,0,0.1)]"
@@ -80,6 +116,7 @@ const ShimmerImage = forwardRef<HTMLImageElement, ShimmerImageProps>(
           rounded,
           wrapperClassName,
         )}
+        style={wrapperStyle}
       >
         <div
           className={clsx(
@@ -90,6 +127,11 @@ const ShimmerImage = forwardRef<HTMLImageElement, ShimmerImageProps>(
         />
         <img
           ref={setImgRef}
+          ref={ref}
+          loading="lazy"
+          decoding="async"
+          width={dims.width}
+          height={dims.height}
           className={clsx(className, rounded)}
           decoding="async"
           onLoad={handleLoad}

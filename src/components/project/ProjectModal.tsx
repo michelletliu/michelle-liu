@@ -1353,6 +1353,8 @@ export default function ProjectModal({
                             className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
                             wrapperClassName="absolute inset-0"
                             alt=""
+                            loading="eager"
+                            fetchPriority="high"
                             src={urlFor(project.heroImage).width(1200).url()}
                           />
                         )}
@@ -1379,6 +1381,8 @@ export default function ProjectModal({
                           wrapperClassName="absolute inset-0"
                           rounded="rounded-[26px]"
                           alt=""
+                          loading="eager"
+                          fetchPriority="high"
                           src={urlFor(project.heroImage).width(1200).url()}
                         />
                       </div>
@@ -1959,7 +1963,7 @@ function ContentBlock({
       const featureImageSrc = section.externalImageUrl
         ? section.externalImageUrl
         : section.image
-          ? urlFor(section.image).width(3200).quality(90).url()
+          ? urlFor(section.image).width(1600).quality(85).url()
           : null;
 
       const hasVideo = section.mediaType === 'video' && section.muxPlaybackId;
@@ -2191,7 +2195,7 @@ function ContentBlock({
                   <ShimmerImage
                     className="block w-full h-auto object-contain"
                     alt={image.alt || ""}
-                    src={urlFor(image).width(2000).quality(90).url()}
+                    src={urlFor(image).width(1200).quality(85).url()}
                   />
                   {image.caption && (
                     <p className="w-full px-4 py-3 text-sm text-gray-600 text-center">
@@ -2237,7 +2241,7 @@ function ContentBlock({
                   <ShimmerImage
                     className="w-full h-auto object-contain"
                     alt={image.alt || ""}
-                    src={urlFor(image).width(1600).quality(90).url()}
+                    src={urlFor(image).width(1200).quality(85).url()}
                   />
                 </div>
               );
@@ -2364,7 +2368,7 @@ function ContentBlock({
       const imageSrc = section.externalImageUrl 
         ? section.externalImageUrl 
         : section.image 
-          ? urlFor(section.image).width(2400).url()
+          ? urlFor(section.image).width(1600).url()
           : null;
       
       if (!imageSrc) return null;
@@ -2408,7 +2412,7 @@ function ContentBlock({
       const baseImageSrc = section.externalBaseImageUrl 
         ? section.externalBaseImageUrl 
         : section.baseImage 
-          ? urlFor(section.baseImage).width(2400).url()
+          ? urlFor(section.baseImage).width(1600).url()
           : null;
       
       const overlayImageSrc = section.externalOverlayImageUrl 
@@ -2805,7 +2809,7 @@ function ContentBlock({
         const textImageSrc = section.imageUrl 
           ? section.imageUrl 
           : section.image 
-            ? urlFor(section.image).width(2400).url()
+            ? urlFor(section.image).width(1200).url()
             : null;
 
         return (
