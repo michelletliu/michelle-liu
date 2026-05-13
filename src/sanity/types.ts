@@ -92,7 +92,7 @@ export interface ProtectedSection {
   contactEmail?: string;
   showPasswordProtection?: boolean;
   unlockTargetSectionId?: string;
-  // Password is verified server-side only - client receives hasPassword boolean
+  // Derived from showPasswordProtection in GROQ — password itself is env-var-only
   hasPassword?: boolean;
 }
 

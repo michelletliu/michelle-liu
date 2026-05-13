@@ -6,8 +6,8 @@ This is Michelle Liu's personal portfolio website built with React, Vite, and Sa
 ## API Keys & Credentials
 
 ### TMDb (The Movie Database) API
-- **API Key**: bcc72ac7b1d156541c8eab9e0b596bc2
-- **Read Access Token**: eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiY2M3MmFjN2IxZDE1NjU0MWM4ZWFiOWUwYjU5NmJjMiIsIm5iZiI6MTc2NzY2MzY2NC4yODQsInN1YiI6IjY5NWM2ODMwZGM0OTFkM2Y2NTE3OGQ3NiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.1bZQO4mj9dwPhnsT2O3YCUn_4LpQJqbTf1otSqMKmAs
+- **API Key**: stored in `TMDB_API_KEY` env var (do NOT commit to repo)
+- **Read Access Token**: stored in `TMDB_READ_ACCESS_TOKEN` env var (do NOT commit to repo)
 - **Usage**: Used to fetch movie poster images for the Shelf section on the About page
 - **Script**: `scripts/update-movie-posters.js` - Run to update broken/missing movie posters
 

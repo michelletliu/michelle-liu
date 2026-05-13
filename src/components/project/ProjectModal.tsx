@@ -623,12 +623,15 @@ function PasswordInput({
     try {
       const response = await fetch('/api/password', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-password': passwordValue,
-        },
-        body: JSON.stringify({ project: projectId }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project: projectId, password: passwordValue }),
       });
+
+      if (response.status === 429) {
+        setError(true);
+        setIsLoading(false);
+        return;
+      }
 
       const data = await response.json();
 
@@ -1076,15 +1079,37 @@ export default function ProjectModal({
     };
   }, [isUnlocked, isFullscreen, project]);
 
-  // Sync unlock state from sessionStorage when transitioning to fullscreen
+  // Sync unlock state from sessionStorage when transitioning to fullscreen.
+  // Also try to fetch protected content from server (cookie-based auth).
   useEffect(() => {
     if (isFullscreen && !isUnlocked && isProjectUnlocked(projectId)) {
       setIsUnlocked(true);
+      // Attempt to hydrate protected sections from server
+      fetch(`/api/protected-content?project=${encodeURIComponent(projectId)}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (!data?.protectedContent?.length) return;
+          setProject((prev) => {
+            if (!prev) return prev;
+            const byKey = new Map<string, ContentSection>(
+              data.protectedContent.map((s: ContentSection) => [s._key, s] as const),
+            );
+            const merged: ContentSection[] = (prev.content || []).map((sec) =>
+              sec.visibility === "unlocked" && byKey.has(sec._key)
+                ? byKey.get(sec._key)!
+                : sec,
+            );
+            return { ...prev, content: merged };
+          });
+        })
+        .catch(() => {});
     }
   }, [isFullscreen, isUnlocked, projectId]);
 
-  // Handle unlocking a password-protected project
-  const handleUnlock = (targetSectionId?: string) => {
+  // Handle unlocking a password-protected project.
+  // After /api/password sets the signed cookie, fetch the protected content
+  // from /api/protected-content and merge it into the project state.
+  const handleUnlock = async (targetSectionId?: string) => {
     const normalizedTarget = targetSectionId?.trim();
     pendingUnlockTargetRef.current = normalizedTarget || null;
 
@@ -1094,8 +1119,28 @@ export default function ProjectModal({
 
     markProjectUnlocked(projectId);
 
+    // Fetch protected (unlocked-visibility) sections from the server
+    try {
+      const res = await fetch(`/api/protected-content?project=${encodeURIComponent(projectId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        const protectedSections: ContentSection[] = data.protectedContent ?? [];
+        if (protectedSections.length > 0 && project) {
+          const protectedByKey = new Map(protectedSections.map((s) => [s._key, s]));
+          const merged = (project.content || []).map((section) => {
+            if (section.visibility === "unlocked" && protectedByKey.has(section._key)) {
+              return protectedByKey.get(section._key)!;
+            }
+            return section;
+          });
+          setProject({ ...project, content: merged });
+        }
+      }
+    } catch {
+      // Protected content fetch failed; unlock still proceeds (UI shows stubs)
+    }
+
     if (!isFullscreen && onExpandToFullscreen) {
-      // Navigate to fullscreen first; unlocked state syncs via the effect above
       onExpandToFullscreen();
     } else {
       setIsUnlocked(true);

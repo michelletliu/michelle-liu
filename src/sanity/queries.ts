@@ -103,7 +103,9 @@ export const MURALS_QUERY = `
 `;
 
 // Query for a single project by slug (with all content)
-// Note: password field is explicitly excluded for security - verification happens server-side
+// Security: password field excluded from protectedSection; unlocked-only sections
+// are replaced with stubs (key + type + visibility only) — full content is served
+// by /api/protected-content after cookie-based auth.
 export const PROJECT_BY_SLUG_QUERY = `
   *[_type == "project" && slug.current == $slug][0] {
     _id,
@@ -124,7 +126,7 @@ export const PROJECT_BY_SLUG_QUERY = `
     content[] {
       _key,
       _type,
-      // Exclude password from protectedSection - verified server-side via API
+      // protectedSection: exclude password, include metadata
       _type == "protectedSection" => {
         _key,
         _type,
@@ -133,10 +135,17 @@ export const PROJECT_BY_SLUG_QUERY = `
         contactEmail,
         showPasswordProtection,
         unlockTargetSectionId,
-        "hasPassword": defined(password) && password != "",
+        "hasPassword": showPasswordProtection == true,
         visibility
       },
-      _type != "protectedSection" => @
+      // Unlocked-only sections: return stub only (content served via /api/protected-content)
+      _type != "protectedSection" && visibility == "unlocked" => {
+        _key,
+        _type,
+        visibility
+      },
+      // Everything else (both/locked/unset): return full content
+      _type != "protectedSection" && visibility != "unlocked" => @
     },
     relatedProjects[]-> {
       _id,
@@ -151,7 +160,7 @@ export const PROJECT_BY_SLUG_QUERY = `
 `;
 
 // Query for a single project by company (e.g., "apple", "roblox")
-// Note: password field is explicitly excluded for security - verification happens server-side
+// Security: same gating as PROJECT_BY_SLUG_QUERY above.
 export const PROJECT_BY_COMPANY_QUERY = `
   *[_type == "project" && company == $company][0] {
     _id,
@@ -172,7 +181,6 @@ export const PROJECT_BY_COMPANY_QUERY = `
     content[] {
       _key,
       _type,
-      // Exclude password from protectedSection - verified server-side via API
       _type == "protectedSection" => {
         _key,
         _type,
@@ -181,10 +189,15 @@ export const PROJECT_BY_COMPANY_QUERY = `
         contactEmail,
         showPasswordProtection,
         unlockTargetSectionId,
-        "hasPassword": defined(password) && password != "",
+        "hasPassword": showPasswordProtection == true,
         visibility
       },
-      _type != "protectedSection" => @
+      _type != "protectedSection" && visibility == "unlocked" => {
+        _key,
+        _type,
+        visibility
+      },
+      _type != "protectedSection" && visibility != "unlocked" => @
     },
     relatedProjects[]-> {
       _id,

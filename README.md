@@ -13,7 +13,11 @@
 
 ### Protected sections security
 
-Protected project-section passwords are verified server-side by `api/password.ts`
+Protected project-section passwords are verified server-side by `app/api/password/route.ts`.
 
-- Passwords are stored as individual environment variables
+- Passwords are stored **exclusively** as environment variables (`PASSWORD_<COMPANY>`). They are **not** stored in Sanity.
+- On successful verification, a signed `HttpOnly` cookie is set. Protected content is then served by `/api/protected-content` which validates the cookie before returning any data.
+- The GROQ queries sent to the public Sanity CDN never include `visibility: "unlocked"` section bodies — only stubs with `_key`, `_type`, and `visibility`.
+- Rate limiting, constant-time comparison, and a project allowlist are enforced on `/api/password`.
+- `PASSWORD_SIGNING_SECRET` env var (≥ 32 chars) is required for cookie signing.
 

@@ -1,6 +1,10 @@
 const { createClient } = require("@sanity/client");
 
-const TMDB_API_KEY = "bcc72ac7b1d156541c8eab9e0b596bc2";
+const TMDB_API_KEY = process.env.TMDB_API_KEY;
+if (!TMDB_API_KEY) {
+  console.error("TMDB_API_KEY environment variable is not set. Add it to .env.local");
+  process.exit(1);
+}
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
 

@@ -44,16 +44,16 @@ export const protectedSection = defineType({
     defineField({
       name: 'showPasswordProtection',
       title: 'Enable Password Protection',
-      description: 'If enabled, content below this section will require a password',
+      description:
+        'If enabled, content below this section will require a password. ' +
+        'The actual password is stored as an environment variable (PASSWORD_<COMPANY>) — not in Sanity.',
       type: 'boolean',
       initialValue: false,
     }),
-    defineField({
-      name: 'password',
-      title: 'Password',
-      type: 'string',
-      hidden: ({parent}) => !parent?.showPasswordProtection,
-    }),
+    // NOTE: The `password` field has been removed. Passwords are now stored
+    // exclusively as environment variables (PASSWORD_<COMPANY>) and verified
+    // server-side via /api/password. This prevents leaking credentials through
+    // the publicly-readable Sanity dataset.
     defineField({
       name: 'unlockTargetSectionId',
       title: 'Section To Expand To After Unlock',
