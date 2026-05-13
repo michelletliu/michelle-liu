@@ -1178,7 +1178,7 @@ export default function ProjectModal({
               <Tooltip label="Expand">
                 <button
                   onClick={handleExpandToFullscreen}
-                  className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-lg hover:bg-gray-200 transition-colors duration-200 ease-out text-[#4b5563]"
+                  className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-lg hover:bg-gray-200 transition-colors duration-200 ease-out text-[#9ca3af]"
                 >
                   <div className="relative shrink-0 size-[18px]">
                     <BackArrowIcon />
@@ -1358,7 +1358,8 @@ export default function ProjectModal({
                             src={urlFor(project.heroImage).width(1200).url()}
                           />
                         )}
-                        {/* Hero video */}
+                        {/* Hero video — when we already have a fallback image, suppress the
+                            redundant shimmer so the cover image shows through during video load */}
                         <ShimmerVideo
                           src={`https://stream.mux.com/${project.heroVideo}.m3u8`}
                           className="absolute inset-0 max-w-none object-cover size-full"
@@ -1367,6 +1368,7 @@ export default function ProjectModal({
                           muted
                           loop
                           controls={false}
+                          disableShimmer={!!project.heroImage}
                           poster={project.heroImage ? urlFor(project.heroImage).width(1200).url() : undefined}
                         />
                       </div>
