@@ -489,12 +489,12 @@ export default function PolaroidPage() {
           ref={polaroidRef}
           className={`content-stretch flex items-center justify-center relative rounded-[2.5px] md:rounded-[5.5px] shadow-[0px_2px_12px_0px_rgba(0,0,0,0.08)] md:shadow-[0px_2.5px_16px_0px_rgba(0,0,0,0.08)] shrink-0 transition-transform duration-300 ease-out hover:rotate-2 ${
             isPopupMode 
-              ? 'h-[224px] md:h-[275px] w-[192px] md:w-[236px]' 
+              ? 'h-[222px] md:h-[274px] w-[192px] md:w-[236px]' 
               : 'h-[320px] md:h-[393.22px] w-[274px] md:w-[337.288px]'
           }`}>
           <div className={`relative rounded-[2.5px] md:rounded-[5.5px] shrink-0 ${
             isPopupMode 
-              ? 'h-[224px] md:h-[275px] w-[192px] md:w-[236px]' 
+              ? 'h-[222px] md:h-[274px] w-[192px] md:w-[236px]' 
               : 'h-[320px] md:h-[393.22px] w-[274px] md:w-[337.288px]'
           }`}>
             <div className="absolute contents left-0 top-0">
@@ -535,8 +535,11 @@ export default function PolaroidPage() {
                 >
                   <div className="overflow-clip relative rounded-[inherit] size-full">
                     {uploadedImage ? (
-                      /* Uploaded image - preserve aspect ratio and center */
-                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[3px] md:rounded-[5.773px]">
+                      /* Uploaded image - preserve aspect ratio and center.
+                         A 20% white overlay softens the polaroid tint that
+                         would otherwise show through letterbox bars on
+                         non-square photos. */
+                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[3px] md:rounded-[5.773px] bg-white/20">
                         <img 
                           alt="Polaroid photo" 
                           className="max-w-full max-h-full w-auto h-auto object-contain" 
