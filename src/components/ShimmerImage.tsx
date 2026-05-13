@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, type ImgHTMLAttributes, forwardRef } from "react";
+import { useState, useCallback, useEffect, useRef, type ImgHTMLAttributes, forwardRef } from "react";
 import clsx from "clsx";
 import { detectWhiteImageBorder } from "../lib/detectWhiteImageBorder";
 
@@ -36,6 +36,28 @@ const ShimmerImage = forwardRef<HTMLImageElement, ShimmerImageProps>(
   function ShimmerImage({ wrapperClassName, rounded, className, onLoad, detectWhiteBorder, ...props }, ref) {
     const [loaded, setLoaded] = useState(false);
     const [hasDetectedWhiteBorder, setHasDetectedWhiteBorder] = useState(false);
+    const internalImgRef = useRef<HTMLImageElement | null>(null);
+
+    const setImgRef = useCallback(
+      (node: HTMLImageElement | null) => {
+        internalImgRef.current = node;
+        if (typeof ref === "function") ref(node);
+        else if (ref) (ref as React.MutableRefObject<HTMLImageElement | null>).current = node;
+      },
+      [ref],
+    );
+
+    useEffect(() => {
+      setLoaded(false);
+    }, [props.src]);
+
+    // Catch images already cached by the browser, where onLoad fires before listener attaches
+    useEffect(() => {
+      const img = internalImgRef.current;
+      if (img?.complete && img.naturalWidth > 0) {
+        setLoaded(true);
+      }
+    }, [props.src]);
 
     useEffect(() => {
       let cancelled = false;
@@ -98,13 +120,13 @@ const ShimmerImage = forwardRef<HTMLImageElement, ShimmerImageProps>(
       >
         <div
           className={clsx(
-            "absolute inset-0 animate-shimmer transition-opacity duration-500 ease-out pointer-events-none z-[1]",
+            "absolute inset-0 animate-shimmer transition-opacity duration-700 ease-out pointer-events-none z-[1]",
             loaded ? "opacity-0" : "opacity-100",
             rounded,
           )}
         />
         <img
-          ref={ref}
+          ref={setImgRef}
           loading="lazy"
           decoding="async"
           width={dims.width}

@@ -253,15 +253,19 @@ video {
 
 .animate-shimmer {
   background: linear-gradient(
-    110deg,
-    #e5e7eb 0%,
-    #e5e7eb 40%,
-    #f3f4f6 60%,
-    #e5e7eb 80%,
-    #e5e7eb 100%
+    105deg,
+    #f3f4f6 0%,
+    #e5e7eb 25%,
+    #f9fafb 50%,
+    #e5e7eb 75%,
+    #f3f4f6 100%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+  animation: shimmer 2s ease-in-out infinite;
+  /* Optimize for better performance */
+  will-change: background-position;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* Shelf item fade up animation */

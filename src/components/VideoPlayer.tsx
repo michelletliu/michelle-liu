@@ -29,7 +29,7 @@ type VideoPlayerProps = {
   /** Whether to show video controls */
   controls?: boolean;
   /** Callback when video is fully loaded and ready to play */
-  onLoaded?: () => void;
+  onLoaded?: (videoElement?: HTMLVideoElement) => void;
 };
 
 export default function VideoPlayer({
@@ -90,7 +90,7 @@ export default function VideoPlayer({
     const handleReady = () => {
       if (onLoadedRef.current && !hasCalledOnLoaded.current) {
         hasCalledOnLoaded.current = true;
-        onLoadedRef.current();
+        onLoadedRef.current(video);
       }
       if (autoPlayRef.current) {
         attemptPlay();
@@ -115,6 +115,9 @@ export default function VideoPlayer({
     video.addEventListener('loadeddata', handleReady);
     video.addEventListener('canplay', handleReady);
     video.addEventListener('canplaythrough', handleReady);
+    
+    // Listen for progress events to track buffering
+    video.addEventListener('progress', handleReady);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     document.addEventListener('touchstart', handleUserInteraction, { passive: true });
     document.addEventListener('click', handleUserInteraction, { passive: true });
@@ -236,6 +239,7 @@ export default function VideoPlayer({
       video.removeEventListener('loadeddata', handleReady);
       video.removeEventListener('canplay', handleReady);
       video.removeEventListener('canplaythrough', handleReady);
+      video.removeEventListener('progress', handleReady);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener('touchstart', handleUserInteraction);
       document.removeEventListener('click', handleUserInteraction);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, type ComponentProps } from "react";
+import { useState, useCallback, useRef, useEffect, type ComponentProps } from "react";
 import clsx from "clsx";
 import VideoPlayer from "./VideoPlayer";
 
@@ -21,22 +21,49 @@ export default function ShimmerVideo({
   ...props
 }: ShimmerVideoProps) {
   const [loaded, setLoaded] = useState(false);
+  const checkTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const hasCalledOnLoaded = useRef(false);
 
   const handleLoaded = useCallback(() => {
-    setLoaded(true);
-    onLoaded?.();
+    // Only mark as loaded if we haven't already called onLoaded
+    if (!hasCalledOnLoaded.current) {
+      hasCalledOnLoaded.current = true;
+      setLoaded(true);
+      onLoaded?.();
+    }
   }, [onLoaded]);
+
+  const handleVideoReady = useCallback((videoElement?: HTMLVideoElement) => {
+    // Simple approach: remove shimmer when video can play
+    if (videoElement && videoElement.readyState >= 3) {
+      handleLoaded();
+    } else {
+      // Wait a bit and check again
+      checkTimeoutRef.current = setTimeout(() => {
+        handleLoaded();
+      }, 1000);
+    }
+  }, [handleLoaded]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (checkTimeoutRef.current) {
+        clearTimeout(checkTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className={clsx(!hasPositionClass(wrapperClassName) && "relative", wrapperClassName)}>
       <div
         className={clsx(
-          "absolute inset-0 animate-shimmer transition-opacity duration-500 ease-out pointer-events-none z-[1]",
+          "absolute inset-0 animate-shimmer transition-opacity duration-700 ease-out pointer-events-none z-[1]",
           loaded ? "opacity-0" : "opacity-100",
           rounded,
         )}
       />
-      <VideoPlayer {...props} onLoaded={handleLoaded} />
+      <VideoPlayer {...props} onLoaded={handleVideoReady} />
       {/* Transparent overlay to block iOS native video controls from showing */}
       <div className="absolute inset-0 z-[2] pointer-events-none" />
     </div>
