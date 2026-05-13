@@ -9,7 +9,6 @@ import ShimmerImage from "./ShimmerImage";
 import ShimmerVideo from "./ShimmerVideo";
 import Footer from "./Footer";
 import { ProjectModal as SanityProjectModal } from "./project";
-import { ScrollReveal } from "./ScrollReveal";
 import { TryItOutButton } from "./TryItOutButton";
 import { preloadLikelyPages } from "../sanity/preload";
 import PageHeader from "./PageHeader";
@@ -156,20 +155,47 @@ type ProjectMediaProps = {
 
 const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: ProjectMediaProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  // Reset image-loaded state when src changes (e.g. when Sanity data swaps in a new URL)
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [imageSrc]);
+
+  // Catch images already cached by the browser, where onLoad may fire before the listener is attached
+  useEffect(() => {
+    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
+      setImageLoaded(true);
+    }
+  }, [imageSrc]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+
+    let readyTimeout: ReturnType<typeof setTimeout> | null = null;
+    let idleHandle: number | null = null;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setIsVisible(true);
-            setTimeout(() => setVideoReady(true), 100);
+            // Defer video mount to idle time so multiple cards don't all spin up
+            // Mux/HLS players simultaneously and block main-thread input.
+            const markReady = () => setVideoReady(true);
+            const ric = (window as Window & {
+              requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+            }).requestIdleCallback;
+            if (typeof ric === "function") {
+              idleHandle = ric(markReady, { timeout: 1500 });
+            } else {
+              readyTimeout = setTimeout(markReady, 600);
+            }
             observer.disconnect();
           }
         });
@@ -178,27 +204,39 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
     );
 
     observer.observe(container);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (readyTimeout) clearTimeout(readyTimeout);
+      if (idleHandle !== null) {
+        const cic = (window as Window & {
+          cancelIdleCallback?: (handle: number) => void;
+        }).cancelIdleCallback;
+        if (typeof cic === "function") cic(idleHandle);
+      }
+    };
   }, []);
 
   if (videoSrc) {
     return (
       <div
         ref={containerRef}
-        className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full overflow-hidden bg-[#e5e7eb]"
+        className="aspect-[678/367.625] relative isolate rounded-[26px] shrink-0 w-full overflow-hidden bg-[#e5e7eb]"
       >
-        {/* High-res thumbnail shown immediately, fades out once video is ready */}
+        {/* High-res thumbnail shown once fully loaded, fades out when video is ready */}
         {imageSrc && (
           <img
+            ref={imgRef}
             src={imageSrc}
             alt=""
+            decoding="async"
+            onLoad={() => setImageLoaded(true)}
             className={clsx(
               "absolute max-w-none object-cover size-full rounded-[26px] transition-opacity duration-500 ease-out pointer-events-none z-10",
               videoLoaded ? "opacity-0" : "opacity-100"
             )}
           />
         )}
-        {isVisible && videoReady && (
+        {isVisible && videoReady && imageLoaded && (
           <>
             <VideoPlayer
               src={videoSrc}
@@ -213,15 +251,13 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
             <div className="absolute inset-0 z-[2] rounded-[26px] pointer-events-none" />
           </>
         )}
-        {/* Shimmer only shown if no thumbnail available */}
-        {!imageSrc && (
-          <div
-            className={clsx(
-              "absolute inset-0 rounded-[26px] transition-opacity duration-500 ease-out bg-[#e5e7eb] z-10 pointer-events-none",
-              videoLoaded ? "opacity-0" : "opacity-100 animate-shimmer"
-            )}
-          />
-        )}
+        {/* Shimmer overlay covers progressive decode until the thumbnail (or video, if no thumbnail) is fully ready */}
+        <div
+          className={clsx(
+            "absolute inset-0 rounded-[26px] bg-[#e5e7eb] animate-shimmer transition-opacity duration-500 ease-out pointer-events-none z-20",
+            (imageSrc ? imageLoaded : videoLoaded) ? "opacity-0" : "opacity-100"
+          )}
+        />
       </div>
     );
   }
@@ -230,7 +266,7 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
     return (
       <div 
         ref={containerRef}
-        className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full overflow-hidden bg-[#e5e7eb]"
+        className="aspect-[678/367.625] relative isolate rounded-[26px] shrink-0 w-full overflow-hidden bg-[#e5e7eb]"
       >
         <div className="absolute inset-0 rounded-[26px] bg-[#e5e7eb] animate-shimmer" />
       </div>
@@ -238,7 +274,7 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
   }
 
   return (
-    <div ref={containerRef} className="aspect-[678/367.625] relative rounded-[26px] shrink-0 w-full overflow-hidden">
+    <div ref={containerRef} className="aspect-[678/367.625] relative isolate rounded-[26px] shrink-0 w-full overflow-hidden">
       <ShimmerImage
         alt=""
         className="absolute max-w-none object-cover size-full"
@@ -257,9 +293,11 @@ type ProjectCardProps = {
   project: Project;
   onProjectClick: (projectId: string) => void;
   featured?: boolean;
+  /** Order index used to stagger the entrance animation */
+  index?: number;
 };
 
-const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, featured = false }: ProjectCardProps) {
+const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, featured = false, index = 0 }: ProjectCardProps) {
   const hasTryItOut = project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime' || project.id === 'sketchbook';
   
   const handleClick = () => {
@@ -272,10 +310,13 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
     }
   };
 
+  const enterStyle = { animationDelay: `${Math.min(index * 60, 300)}ms` };
+
   if (featured) {
     return (
       <button
         onClick={handleClick}
+        style={enterStyle}
         className="content-stretch flex flex-col gap-3 items-start relative shrink-0 w-full cursor-pointer group project-card"
       >
         <div 
@@ -337,6 +378,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
   return (
     <button
       onClick={handleClick}
+      style={enterStyle}
       className="content-stretch flex flex-col gap-3 items-start relative shrink-0 w-full cursor-pointer group project-card"
     >
       <div 
@@ -891,18 +933,13 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
 
       <div className="hidden md:grid gap-6 grid-cols-2 px-16 max-md:px-8 pt-2.5 pb-2 relative shrink-0 w-full">
           {projects.map((project, index) => (
-            <ScrollReveal 
-              key={project.id} 
-              delay={Math.min(Math.floor(index / 2) * 80, 320)} 
-              className="w-full"
-              rootMargin="0px 0px -100px 0px"
-            >
-              <ProjectCard 
-                project={project} 
-                onProjectClick={handleProjectClick} 
-                featured={index < 4}
-              />
-            </ScrollReveal>
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onProjectClick={handleProjectClick}
+              featured={index < 4}
+              index={Math.floor(index / 2)}
+            />
           ))}
         </div>
 
@@ -915,17 +952,13 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
               return a.originalIndex - b.originalIndex;
             })
             .map(({ project }, index) => (
-            <ScrollReveal 
-              key={project.id} 
-              delay={Math.min(index * 60, 300)}
-              rootMargin="0px 0px -50px 0px"
-            >
-              <ProjectCard 
-                project={project} 
-                onProjectClick={handleProjectClick} 
-                featured={index < 4}
-              />
-            </ScrollReveal>
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onProjectClick={handleProjectClick}
+              featured={index < 4}
+              index={index}
+            />
           ))}
         </div>
 

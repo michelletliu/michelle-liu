@@ -1,4 +1,5 @@
-import { forwardRef, useCallback, useLayoutEffect, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useNavigate } from "@/lib/navigation";
 import clsx from "clsx";
 import { ScrollReveal } from "./ScrollReveal";
@@ -14,6 +15,7 @@ type TagBackgroundImageAndTextProps = {
   text: string;
   active?: boolean;
   onClick?: () => void;
+  onPrefetch?: () => void;
 };
 
 type NavigationTabItem = {
@@ -28,16 +30,15 @@ const NAVIGATION_TABS: NavigationTabItem[] = [
   { id: "about", text: "About", href: "/about" },
 ];
 
-function isNavigationTab(value: string | null): value is NavigationTab {
-  return NAVIGATION_TABS.some((tab) => tab.id === value);
-}
-
 const TagBackgroundImageAndText = forwardRef<HTMLButtonElement, TagBackgroundImageAndTextProps>(
-  function TagBackgroundImageAndText({ text, active = false, onClick }, ref) {
+  function TagBackgroundImageAndText({ text, active = false, onClick, onPrefetch }, ref) {
     return (
       <button
         ref={ref}
         onClick={onClick}
+        onMouseEnter={onPrefetch}
+        onFocus={onPrefetch}
+        onTouchStart={onPrefetch}
         className={clsx(
           "content-stretch group z-10 flex items-center justify-center px-3.5 pt-[5px] pb-[4px] relative rounded-full shrink-0 cursor-pointer border border-transparent",
         )}
@@ -61,6 +62,28 @@ const TagBackgroundImageAndText = forwardRef<HTMLButtonElement, TagBackgroundIma
  */
 export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
   const navigate = useNavigate();
+  const router = useRouter();
+  const prefetchedRef = useRef<Set<string>>(new Set());
+
+  const prefetchTab = useCallback(
+    (href: string) => {
+      if (prefetchedRef.current.has(href)) return;
+      prefetchedRef.current.add(href);
+      router.prefetch(href);
+    },
+    [router],
+  );
+
+  // Warm up the other two tab routes shortly after mount so the first click is instant
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      NAVIGATION_TABS.forEach((tab) => {
+        if (tab.id !== activeTab) prefetchTab(tab.href);
+      });
+    }, 800);
+    return () => clearTimeout(timeout);
+  }, [activeTab, prefetchTab]);
+
   const [displayedActiveTab, setDisplayedActiveTab] = useState(activeTab);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef<Record<NavigationTab, HTMLButtonElement | null>>({
@@ -79,19 +102,7 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
   const [indicatorReady, setIndicatorReady] = useState(false);
 
   useLayoutEffect(() => {
-    const previousTab = sessionStorage.getItem("navigationPreviousTab");
-
-    if (isNavigationTab(previousTab) && previousTab !== activeTab) {
-      setDisplayedActiveTab(previousTab);
-
-      const frame = requestAnimationFrame(() => {
-        setDisplayedActiveTab(activeTab);
-        sessionStorage.removeItem("navigationPreviousTab");
-      });
-
-      return () => cancelAnimationFrame(frame);
-    }
-
+    sessionStorage.removeItem("navigationPreviousTab");
     setDisplayedActiveTab(activeTab);
   }, [activeTab]);
 
@@ -152,7 +163,9 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
   const handleTabClick = (tab: NavigationTabItem) => {
     if (tab.id === displayedActiveTab) return;
 
-    sessionStorage.setItem("navigationPreviousTab", displayedActiveTab);
+    // Optimistically move the indicator so the click feels instant,
+    // even if the new route takes a moment to render.
+    setDisplayedActiveTab(tab.id);
     navigate(tab.href);
   };
 
@@ -185,6 +198,7 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
                   text={tab.text}
                   active={displayedActiveTab === tab.id}
                   onClick={() => handleTabClick(tab)}
+                  onPrefetch={() => prefetchTab(tab.href)}
                 />
               ))}
             </div>

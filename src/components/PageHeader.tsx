@@ -97,15 +97,15 @@ export default function PageHeader({
                 )}
               </ScrollReveal>
               {children && (
-                <motion.div
+                <div
                   key={variant}
                   className="font-['Michelle',sans-serif] font-normal tracking-wide leading-6 max-md:leading-5.5 text-[#9ca3af] text-lg max-md:text-base w-full max-md:max-w-86 whitespace-pre-wrap mt-1 max-md:mt-1"
-                  initial={{ opacity: 0.55, y: 2, filter: "blur(0px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  transition={{ duration: 0.18, delay: 0, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  style={{
+                    animation: "projectCardEnter 360ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
+                  }}
                 >
                   {children}
-                </motion.div>
+                </div>
               )}
             </div>
           </div>
