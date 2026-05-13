@@ -17,11 +17,13 @@ function InfoIcon() {
 // X logo path
 const xLogoPath = "M10.6862 7.6055L17.3844 0H15.8002L9.97941 6.60311L5.36277 0H0.178833L7.19548 9.9737L0.178833 17.9454H1.76308L7.90171 10.9761L12.7696 17.9454H17.9536L10.6858 7.6055H10.6862ZM8.7057 10.0639L7.99222 9.06869L2.33673 1.16544H4.60063L9.33802 7.5516L10.0515 8.54678L15.8011 16.8348H13.5372L8.7057 10.0643V10.0639Z";
 
-// Horizontal divider line for popup modal
+// Horizontal divider line for popup modal.
+// On mobile, extends to the modal edges by cancelling the parent's `px-6` padding,
+// and darkens one Tailwind step (zinc-100 -> zinc-200).
 function PopupLine() {
   return (
-    <div className="h-px relative shrink-0 w-full">
-      <div className="absolute bg-zinc-100 inset-0" />
+    <div className="h-px relative shrink-0 w-full max-md:-mx-6 max-md:w-[calc(100%+3rem)]">
+      <div className="absolute inset-0 bg-zinc-100 max-md:bg-zinc-200" />
     </div>
   );
 }
@@ -199,35 +201,43 @@ export default function InfoButton({ project }: InfoButtonProps) {
             {/* Content area with padding */}
             {/* Content area with padding */}
             <div className="content-stretch flex flex-col max-md:gap-3 gap-4 items-start px-8 max-md:px-6 pt-6 pb-8 max-md:py-5 relative shrink-0 w-full">
-              {/* Title row with View on X link (desktop only) */}
-              <div className="w-full flex flex-col gap-1">
-              <div className="flex items-center justify-between w-full">
-                {/* Title */}
-                <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
-                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-lg text-black">
-                    {project.title}
-                  </p>
-                  <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
-                    •
-                  </p>
-                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-lg">
-                    {project.year}
+              {/* Header: title+description grouped in one div on the left,
+                  View on X button (desktop only) as a sibling div top-aligned to the right */}
+              <div className="w-full flex items-start justify-between gap-3">
+                {/* Left column: title row and description stacked */}
+                <div className="flex flex-col min-w-0 gap-1">
+                  {/* Title row */}
+                  <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
+                    <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
+                      {project.title}
+                    </p>
+                    <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
+                      •
+                    </p>
+                    <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-base">
+                      {project.year}
+                    </p>
+                  </div>
+
+                  {/* Description */}
+                  <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] max-md:text-sm md:text-base">
+                    {project.description}
                   </p>
                 </div>
 
-                {/* View on X button - top right (hidden on mobile) */}
+                {/* View on X button - desktop only, top-aligned with title row */}
                 {project.xLink && (
                   <a
                     href={project.xLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hidden md:flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out mt-1"
+                    className="hidden md:flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
                   >
                     <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
                       View on
                     </span>
-                    <svg 
-                      className="block w-[12px] h-[12px] fill-white" 
+                    <svg
+                      className="block w-[12px] h-[12px] fill-white"
                       viewBox="0 0 19 18"
                     >
                       <path d={xLogoPath} />
@@ -239,21 +249,13 @@ export default function InfoButton({ project }: InfoButtonProps) {
                 )}
               </div>
 
-              {/* Description */}
-              <div className="content-stretch flex gap-2 items-start relative w-full mb-1">
-                <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base">
-                  {project.description}
-                </p>
-              </div>
-              </div>
-
-              {/* View on X button - under description (mobile only) */}
+              {/* View on X button - under description (mobile only), right-aligned */}
               {project.xLink && (
                 <a
                   href={project.xLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="md:hidden mb-2 bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 -mt-1 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+                  className="md:hidden self-end mb-2 bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 -mt-1 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
                 >
                   <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
                     View on

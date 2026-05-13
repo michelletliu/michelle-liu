@@ -5,7 +5,7 @@
  */
 
 import profilePic from "../assets/Website Profile Pic.png";
-import { client } from "./client";
+import { client, urlFor } from "./client";
 import {
   PROJECT_BY_COMPANY_QUERY,
   ART_PIECES_QUERY,
@@ -57,11 +57,51 @@ function setCachedData(key: string, data: unknown): void {
 }
 
 /**
- * Preload project data for a specific company
+ * Warm the browser cache for an image URL by issuing an Image() request.
+ * No-op outside the browser.
+ */
+function warmImage(src: string | undefined): void {
+  if (!src || typeof window === "undefined") return;
+  const img = new Image();
+  // High priority hint where supported, falls back gracefully otherwise.
+  (img as HTMLImageElement & { fetchPriority?: string }).fetchPriority = "high";
+  img.decoding = "async";
+  img.src = src;
+}
+
+/**
+ * Warm the browser cache for a Mux HLS playlist by fetching the .m3u8 manifest.
+ * The manifest is small (~1KB) but its DNS / TLS / first-byte cost is what
+ * makes the modal's video element take a moment to start; pre-fetching here
+ * cuts that out so the popup opens with the video ready to render.
+ */
+function warmMuxManifest(playbackId: string | undefined): void {
+  if (!playbackId || typeof window === "undefined") return;
+  fetch(`https://stream.mux.com/${playbackId}.m3u8`, {
+    method: "GET",
+    mode: "cors",
+    credentials: "omit",
+    cache: "force-cache",
+  }).catch(() => {
+    /* ignore — best-effort warmup */
+  });
+}
+
+/**
+ * Preload project data for a specific company. Also warms the browser cache
+ * for the hero image and Mux video manifest so the popup opens without
+ * showing the gray shimmer.
  */
 async function preloadProject(company: string): Promise<void> {
   const cacheKey = `project:${company}`;
-  if (getCachedData(cacheKey)) return;
+  const existing = getCachedData<Project>(cacheKey);
+  if (existing) {
+    // Sanity data already cached — still warm the media URLs in case this is
+    // a fresh page load where the browser cache was discarded.
+    if (existing.heroImage) warmImage(urlFor(existing.heroImage).width(1200).url());
+    warmMuxManifest(existing.heroVideo);
+    return;
+  }
 
   try {
     const data = await client.fetch<Project>(PROJECT_BY_COMPANY_QUERY, {
@@ -69,6 +109,8 @@ async function preloadProject(company: string): Promise<void> {
     });
     if (data) {
       setCachedData(cacheKey, data);
+      if (data.heroImage) warmImage(urlFor(data.heroImage).width(1200).url());
+      warmMuxManifest(data.heroVideo);
     }
   } catch (err) {
     console.warn(`Failed to preload project ${company}:`, err);

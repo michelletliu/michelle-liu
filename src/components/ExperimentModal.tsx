@@ -20,12 +20,14 @@ const LibraryPage = lazy(() => libraryPagePromise);
 const ScreentimePage = lazy(() => screentimePagePromise);
 const SketchbookPage = lazy(() => sketchbookPagePromise);
 
-// Expand icon SVG - same as used in main project modals (Expand.svg)
+// Expand icon SVG - matches src/assets/Expand.svg (used by main project modals)
 function ExpandIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M3.75 10.5C4.16421 10.5 4.5 10.1642 4.5 9.75V5.56066L9.96967 11.0303C10.2626 11.3232 10.7374 11.3232 11.0303 11.0303C11.3232 10.7374 11.3232 10.2626 11.0303 9.96967L5.56066 4.5H9.75C10.1642 4.5 10.5 4.16421 10.5 3.75C10.5 3.33579 10.1642 3 9.75 3H3.75C3.33579 3 3 3.33579 3 3.75V9.75C3 10.1642 3.33579 10.5 3.75 10.5Z" fill="currentColor"/>
-      <path d="M20.25 13.5C19.8358 13.5 19.5 13.8358 19.5 14.25V18.4393L14.0303 12.9697C13.7374 12.6768 13.2626 12.6768 12.9697 12.9697C12.6768 13.2626 12.6768 13.7374 12.9697 14.0303L18.4393 19.5H14.25C13.8358 19.5 13.5 19.8358 13.5 20.25C13.5 20.6642 13.8358 21 14.25 21H20.25C20.6642 21 21 20.6642 21 20.25V14.25C21 13.8358 20.6642 13.5 20.25 13.5Z" fill="currentColor"/>
+      <path d="M10 4H4V10" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M4 4L10 10" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M14 20H20V14" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M20 20L14 14" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
@@ -462,7 +464,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
               <ExpandTooltip>
                 <button
                   onClick={handleExpand}
-                  className="cursor-pointer transition-colors duration-200 hover:bg-gray-100 text-[#4b5563] rounded-sm p-1"
+                  className="cursor-pointer transition-colors duration-200 hover:bg-gray-100 text-[#9ca3af] rounded-sm p-1"
                   aria-label="Expand to full page"
                 >
                   <ExpandIcon />
@@ -590,53 +592,52 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
         "content-stretch flex flex-col items-start relative shrink-0 w-full",
         isFullscreen ? "gap-4 px-8 pt-6 pb-8" : "gap-3 px-5 pt-4 pb-5"
       )}>
-        {/* Title row with View on X link */}
-        <div className="w-full flex flex-col gap-1">
-          <div className="flex items-center justify-between w-full">
-            {/* Title */}
+        {/* Left: title + description stacked (desktop has gap-4 between them).
+            Right: View on X button in its own div, top-aligned with the title row. */}
+        <div className="flex items-start justify-between w-full">
+          {/* Left column: title and description stacked vertically */}
+          <div className="flex flex-col min-w-0 gap-0">
             <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
-              <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-lg text-black">
-                {project.title}
+              <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
+x                {project.title}
               </p>
               <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
                 •
               </p>
-              <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-lg">
+              <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-base">
                 {project.year}
               </p>
             </div>
 
-            {/* View on X button */}
-            {project.xLink && (
-              <a
-                href={project.xLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
-              >
-                <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
-                  View on
-                </span>
-                <svg 
-                  className="block w-[12px] h-[12px] fill-white" 
-                  viewBox="0 0 19 18"
-                >
-                  <path d={xLogoPath} />
-                </svg>
-                <span className="text-white text-sm">
-                  <ArrowUpRight />
-                </span>
-              </a>
-            )}
-          </div>
-
-          {/* Description - hidden in popup mode, shown in fullscreen */}
-          {isFullscreen && (
-            <div className="content-stretch flex gap-2 items-start relative w-full">
+            {/* Description - hidden in popup mode, shown in fullscreen */}
+            {isFullscreen && (
               <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base">
                 {project.description}
               </p>
-            </div>
+            )}
+          </div>
+
+          {/* View on X button - top-right aligned */}
+          {project.xLink && (
+            <a
+              href={project.xLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+            >
+              <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
+                View on
+              </span>
+              <svg
+                className="block w-[12px] h-[12px] fill-white"
+                viewBox="0 0 19 18"
+              >
+                <path d={xLogoPath} />
+              </svg>
+              <span className="text-white text-sm">
+                <ArrowUpRight />
+              </span>
+            </a>
           )}
         </div>
 

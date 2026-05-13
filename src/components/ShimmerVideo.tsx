@@ -9,6 +9,8 @@ type ShimmerVideoProps = ComponentProps<typeof VideoPlayer> & {
   wrapperClassName?: string;
   /** Border radius class applied to the shimmer overlay */
   rounded?: string;
+  /** Suppress the gray shimmer overlay (e.g. when a poster / fallback image already covers the loading state). */
+  disableShimmer?: boolean;
 };
 
 const hasPositionClass = (cls?: string) =>
@@ -18,6 +20,7 @@ export default function ShimmerVideo({
   wrapperClassName,
   rounded,
   onLoaded,
+  disableShimmer,
   ...props
 }: ShimmerVideoProps) {
   const [loaded, setLoaded] = useState(false);
@@ -56,13 +59,15 @@ export default function ShimmerVideo({
 
   return (
     <div className={clsx(!hasPositionClass(wrapperClassName) && "relative", wrapperClassName)}>
-      <div
-        className={clsx(
-          "absolute inset-0 animate-shimmer transition-opacity duration-700 ease-out pointer-events-none z-[1]",
-          loaded ? "opacity-0" : "opacity-100",
-          rounded,
-        )}
-      />
+      {!disableShimmer && (
+        <div
+          className={clsx(
+            "absolute inset-0 animate-shimmer transition-opacity duration-700 ease-out pointer-events-none z-[1]",
+            loaded ? "opacity-0" : "opacity-100",
+            rounded,
+          )}
+        />
+      )}
       <VideoPlayer {...props} onLoaded={handleVideoReady} />
       {/* Transparent overlay to block iOS native video controls from showing */}
       <div className="absolute inset-0 z-[2] pointer-events-none" />
