@@ -22,7 +22,11 @@ const sanityClient = createClient({
 });
 
 // Spotify API credentials (using client credentials flow - no user auth needed)
-const SPOTIFY_CLIENT_ID = 'bcc72ac7b1d156541c8eab9e0b596bc2';
+const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
+if (!SPOTIFY_CLIENT_ID) {
+  console.error("SPOTIFY_CLIENT_ID is not set. Add it to your .env.local or pass it as an environment variable.");
+  process.exit(1);
+}
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 
 // Get Spotify access token using client credentials flow

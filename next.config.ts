@@ -53,6 +53,18 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ['frightful-ozella-colonially.ngrok-free.dev'],
   devIndicators: false,
   outputFileTracingRoot: path.resolve(__dirname),
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       { source: "/home", destination: "/", permanent: true },
@@ -69,7 +81,7 @@ const nextConfig: NextConfig = {
       { hostname: "cdn.sanity.io" },
       { hostname: "stream.mux.com" },
       { hostname: "prod-files-secure.s3.us-west-2.amazonaws.com" },
-      { hostname: "**.amazonaws.com" },
+      { hostname: "s3.us-west-2.amazonaws.com" },
     ],
   },
 
