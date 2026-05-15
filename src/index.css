@@ -30,6 +30,8 @@
   .rounded-\[24px\]          { border-radius: 41px; }
   .rounded-\[26px\]          { border-radius: 44px; }
   .rounded-\[28px\]          { border-radius: 48px; }
+
+  .tooltip                   { border-radius: 14px; }   /* 8px */
 }
 
 /* Michelle font (Figtree variable font, self-hosted) */
