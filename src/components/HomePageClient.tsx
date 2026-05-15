@@ -146,6 +146,24 @@ const staticProjects: Project[] = [
       { label: 'AI', tools: ['Figma Make', 'Cursor'] },
     ],
   },
+  {
+    id: "film",
+    title: "Film Diary",
+    year: "2025",
+    description: "A scroll-driven photo strip of life moments.",
+    imageSrc: "https://image.mux.com/2WjCswzoDw5eO4Tq6RM3326vQP300QeMT8H3d5bRTr024/thumbnail.png?width=1920",
+    videoSrc: "https://stream.mux.com/2WjCswzoDw5eO4Tq6RM3326vQP300QeMT8H3d5bRTr024.m3u8",
+    backgroundColor: "#ffffff",
+  },
+  {
+    id: "sundays",
+    title: "Sundays",
+    year: "2025",
+    description: "A short film about Sundays.",
+    imageSrc: "https://image.mux.com/3gMGihXUjGEMBxK1003Hz6qaNz9jamuaDfXsYxMJQzKA/thumbnail.png?width=1920",
+    videoSrc: "https://stream.mux.com/3gMGihXUjGEMBxK1003Hz6qaNz9jamuaDfXsYxMJQzKA.m3u8",
+    backgroundColor: "#ffffff",
+  },
 ];
 
 type ProjectMediaProps = {
@@ -646,7 +664,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
   );
 }
 
-const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library"];
+const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library", "film", "sundays"];
 const MAIN_PROJECT_IDS = ["apple", "roblox", "adobe", "nasa"];
 
 type SanityProject = {
@@ -968,7 +986,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
         SIDE_PROJECT_IDS.includes(selectedProject.id) ? (
           <ExperimentModal 
             key={selectedProject.id}
-            projectId={selectedProject.id as 'polaroid' | 'library' | 'screentime' | 'sketchbook'}
+            projectId={selectedProject.id as 'polaroid' | 'library' | 'screentime' | 'sketchbook' | 'film' | 'sundays'}
             project={selectedProject} 
             onClose={handleModalClose}
             onExpandToFullscreen={handleExpandExperimentToFullscreen}

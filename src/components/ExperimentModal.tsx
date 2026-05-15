@@ -15,11 +15,13 @@ const polaroidPagePromise = import('./polaroid/PolaroidPage');
 const libraryPagePromise = import('./library/LibraryPage');
 const screentimePagePromise = import('./screentime/ScreentimePage');
 const sketchbookPagePromise = import('./sketchbook/SketchbookPage');
+const filmPagePromise = import('./film/FilmPage');
 
 const PolaroidPage = lazy(() => polaroidPagePromise);
 const LibraryPage = lazy(() => libraryPagePromise);
 const ScreentimePage = lazy(() => screentimePagePromise);
 const SketchbookPage = lazy(() => sketchbookPagePromise);
+const FilmPage = lazy(() => filmPagePromise);
 
 // Expand icon SVG - matches src/assets/Expand.svg (used by main project modals)
 function ExpandIcon() {
@@ -212,6 +214,71 @@ function GenericExperimentEmbed({ project }: { project: ExperimentProject }) {
   );
 }
 
+function SundaysEmbed({ project }: { project: ExperimentProject }) {
+  const [videoReady, setVideoReady] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVideoReady(true), 350);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div className="font-['Michelle',sans-serif] min-h-full w-full box-border flex flex-col gap-6 px-6 py-16 md:px-16 md:py-20 text-[#111827]">
+      <header className="flex flex-col gap-2 max-w-2xl">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <h1 className="text-2xl md:text-3xl font-normal">{project.title}</h1>
+          <span className="text-[#9ca3af] text-xl">•</span>
+          <span className="text-[#9ca3af] text-xl">{project.year}</span>
+        </div>
+        <p className="text-base leading-relaxed text-[#6b7280]">
+          {project.description}
+        </p>
+        <a
+          href="https://sundays.rsvp"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1.5 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out w-fit mt-1"
+        >
+          <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-base text-white whitespace-nowrap">
+            Visit sundays.rsvp
+          </span>
+          <span className="text-white">
+            <ArrowUpRight />
+          </span>
+        </a>
+      </header>
+      <div className="relative w-full max-w-4xl aspect-video overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 shrink-0">
+        {project.imageSrc?.trim() ? (
+          <ShimmerImage
+            alt=""
+            className="absolute object-cover size-full"
+            wrapperClassName="absolute inset-0"
+            rounded="rounded-2xl"
+            src={project.imageSrc}
+          />
+        ) : null}
+        {project.videoSrc && videoReady ? (
+          <ShimmerVideo
+            key={project.id}
+            src={project.videoSrc}
+            className="absolute object-cover size-full rounded-2xl"
+            wrapperClassName="absolute inset-0"
+            rounded="rounded-2xl"
+            autoPlay
+            muted
+            loop
+            controls={false}
+            muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+          />
+        ) : null}
+      </div>
+      {project.toolCategories && project.toolCategories.length > 0 ? (
+        <ToolsSection categories={project.toolCategories} />
+      ) : null}
+    </div>
+  );
+}
+
 export default function ExperimentModal({ projectId, project, onClose, onExpandToFullscreen, onCollapseFromFullscreen, onBookSlugChange, bookSlug, initialFullscreen = false }: ExperimentModalProps) {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
@@ -368,6 +435,10 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
         return <ScreentimePage />;
       case 'sketchbook':
         return <SketchbookPage />;
+      case 'film':
+        return <FilmPage />;
+      case 'sundays':
+        return <SundaysEmbed project={project} />;
       default:
         return <GenericExperimentEmbed project={project} />;
     }
