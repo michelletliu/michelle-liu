@@ -74,6 +74,7 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
   const navigate = useNavigate();
   const router = useRouter();
   const prefetchedRef = useRef<Set<string>>(new Set());
+  const navigateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const prefetchTab = useCallback(
     (href: string) => {
@@ -172,15 +173,22 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
     return () => observer.disconnect();
   }, [updateIndicator]);
 
+  useEffect(() => {
+    return () => {
+      if (navigateTimerRef.current) clearTimeout(navigateTimerRef.current);
+    };
+  }, []);
+
   const handleTabClick = (tab: NavigationTabItem) => {
     if (tab.id === displayedActiveTab) return;
 
     // Kick off the slide locally on this (still-mounted) instance so the
-    // animation starts on the same frame as the click. The new route's
-    // NavigationTabs will mount with the indicator already at the active
-    // tab, so it doesn't replay the animation.
+    // animation starts on the same frame as the click. Delay navigation
+    // by the transition duration so the slide completes before this page
+    // unmounts and the new page's NavigationTabs mounts in place.
+    if (navigateTimerRef.current) clearTimeout(navigateTimerRef.current);
     setDisplayedActiveTab(tab.id);
-    navigate(tab.href);
+    navigateTimerRef.current = setTimeout(() => navigate(tab.href), 300);
   };
 
   return (
