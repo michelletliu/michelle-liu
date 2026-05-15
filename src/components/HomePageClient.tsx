@@ -84,14 +84,13 @@ const staticProjects: Project[] = [
     videoSrc: "",
   },
   {
-    id: "polaroid",
-    title: "Polaroid Studio",
+    id: "sketchbook",
+    title: "Digital Sketchbook",
     year: "2025",
-    description: "A digital way to customize your own polaroid.",
-    imageSrc: "https://image.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w/thumbnail.png?width=1920",
-    videoSrc: "https://stream.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w.m3u8",
-    xLink: "https://x.com/michelletliu/status/1991201412072734777",
-    backgroundColor: "#f0f9ff",
+    description: "A digital home for sketches and visual journaling.",
+    imageSrc: "https://image.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg/thumbnail.png?width=1920",
+    videoSrc: "https://stream.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg.m3u8",
+    backgroundColor: "#ffffff",
     toolCategories: [
       { label: 'Design', tools: ['Figma'] },
       { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -116,19 +115,38 @@ const staticProjects: Project[] = [
     ],
   },
   {
-    id: "sketchbook",
-    title: "Digital Sketchbook",
+    id: "polaroid",
+    title: "Polaroid Studio",
     year: "2025",
-    description: "A digital home for sketches and visual journaling.",
-    imageSrc: "https://image.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg/thumbnail.png?width=1920",
-    videoSrc: "https://stream.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg.m3u8",
-    backgroundColor: "#ffffff",
+    description: "A digital way to customize your own polaroid.",
+    imageSrc: "https://image.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w/thumbnail.png?width=1920",
+    videoSrc: "https://stream.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w.m3u8",
+    xLink: "https://x.com/michelletliu/status/1991201412072734777",
+    backgroundColor: "#f0f9ff",
     toolCategories: [
       { label: 'Design', tools: ['Figma'] },
       { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
       { label: 'Styling', tools: ['Tailwind CSS'] },
       { label: 'AI', tools: ['Figma Make', 'Cursor'] },
     ],
+  },
+  {
+    id: "sundays",
+    title: "Sundays",
+    year: "2025",
+    description: "A short film about Sundays.",
+    imageSrc: "https://image.mux.com/RmmMHG2l02e02I3powzzRYb6qWuW00HwxAAcB7wo41FGo00/thumbnail.png?width=1920",
+    videoSrc: "https://stream.mux.com/RmmMHG2l02e02I3powzzRYb6qWuW00HwxAAcB7wo41FGo00.m3u8",
+    backgroundColor: "#ffffff",
+  },
+  {
+    id: "film",
+    title: "Film Diary",
+    year: "2025",
+    description: "A scroll-driven photo strip of life moments.",
+    imageSrc: "https://image.mux.com/2WjCswzoDw5eO4Tq6RM3326vQP300QeMT8H3d5bRTr024/thumbnail.png?width=1920",
+    videoSrc: "https://stream.mux.com/2WjCswzoDw5eO4Tq6RM3326vQP300QeMT8H3d5bRTr024.m3u8",
+    backgroundColor: "#ffffff",
   },
   {
     id: "library",
@@ -145,24 +163,6 @@ const staticProjects: Project[] = [
       { label: 'Styling', tools: ['Tailwind CSS'] },
       { label: 'AI', tools: ['Figma Make', 'Cursor'] },
     ],
-  },
-  {
-    id: "film",
-    title: "Film Diary",
-    year: "2025",
-    description: "A scroll-driven photo strip of life moments.",
-    imageSrc: "https://image.mux.com/2WjCswzoDw5eO4Tq6RM3326vQP300QeMT8H3d5bRTr024/thumbnail.png?width=1920",
-    videoSrc: "https://stream.mux.com/2WjCswzoDw5eO4Tq6RM3326vQP300QeMT8H3d5bRTr024.m3u8",
-    backgroundColor: "#ffffff",
-  },
-  {
-    id: "sundays",
-    title: "Sundays",
-    year: "2025",
-    description: "A short film about Sundays.",
-    imageSrc: "https://image.mux.com/3gMGihXUjGEMBxK1003Hz6qaNz9jamuaDfXsYxMJQzKA/thumbnail.png?width=1920",
-    videoSrc: "https://stream.mux.com/3gMGihXUjGEMBxK1003Hz6qaNz9jamuaDfXsYxMJQzKA.m3u8",
-    backgroundColor: "#ffffff",
   },
 ];
 
@@ -307,6 +307,18 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
 
 // SocialLinksBackgroundImage and LinksBackgroundImageAndText are now in src/components/SocialLinks.tsx
 
+function getExperimentLink(projectId: string): { href: string; label: string; external: boolean } | null {
+  switch (projectId) {
+    case 'polaroid': return { href: '/polaroid', label: 'Try It Out!', external: false };
+    case 'screentime': return { href: '/screentime', label: 'Try It Out!', external: false };
+    case 'sketchbook': return { href: '/sketchbook', label: 'Try It Out!', external: false };
+    case 'library': return { href: '/library', label: 'Try It Out!', external: false };
+    case 'film': return { href: '/film', label: 'Try It Out!', external: false };
+    case 'sundays': return { href: 'https://sundays.rsvp', label: 'Visit Site', external: true };
+    default: return null;
+  }
+}
+
 type ProjectCardProps = {
   project: Project;
   onProjectClick: (projectId: string) => void;
@@ -316,13 +328,14 @@ type ProjectCardProps = {
 };
 
 const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, featured = false, index = 0 }: ProjectCardProps) {
-  const hasTryItOut = project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime' || project.id === 'sketchbook';
+  const experimentLink = getExperimentLink(project.id);
+  const hasTryItOut = experimentLink !== null;
   
   const handleClick = () => {
     const isDesktop = window.innerWidth >= 768;
     
-    if (hasTryItOut && !isDesktop) {
-      window.location.href = project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library';
+    if (experimentLink && !experimentLink.external && !isDesktop) {
+      window.location.href = experimentLink.href;
     } else {
       onProjectClick(project.id);
     }
@@ -353,11 +366,12 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                   <>
                     <span className="text-[#9ca3af] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
                     <a 
-                      href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
+                      href={experimentLink!.href}
                       onClick={(e) => e.stopPropagation()}
                       className="text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                      {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     >
-                      Try It Out!
+                      {experimentLink!.label}
                     </a>
                   </>
                 )}
@@ -378,11 +392,12 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
               <>
                 <span className="text-[#9ca3af]"> • </span>
                 <a 
-                  href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
+                  href={experimentLink!.href}
                   onClick={(e) => e.stopPropagation()}
                   className="text-blue-400 hover:text-blue-300"
+                  {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 >
-                  Try It Out!
+                  {experimentLink!.label}
                 </a>
               </>
             )}
@@ -416,22 +431,24 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
               <span className="text-[#9ca3af] md:hidden"> • {project.year}</span>
               <span className="text-[#9ca3af] hidden md:inline md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
               <a 
-                href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
+                href={experimentLink!.href}
                 onClick={(e) => e.stopPropagation()}
                 className="hidden md:inline text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
-                Try It Out!
+                {experimentLink!.label}
               </a>
             </>
           )}
         </p>
         {hasTryItOut && (
           <a 
-            href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
+            href={experimentLink!.href}
             onClick={(e) => e.stopPropagation()}
             className="md:hidden text-blue-400 hover:text-blue-300 ml-auto shrink-0 text-base"
+            {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
           >
-            Try It Out!
+            {experimentLink!.label}
           </a>
         )}
       </div>
