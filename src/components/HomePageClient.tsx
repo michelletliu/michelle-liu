@@ -137,6 +137,7 @@ const staticProjects: Project[] = [
     description: "A short film about Sundays.",
     imageSrc: "https://image.mux.com/RmmMHG2l02e02I3powzzRYb6qWuW00HwxAAcB7wo41FGo00/thumbnail.png?width=1920",
     videoSrc: "https://stream.mux.com/RmmMHG2l02e02I3powzzRYb6qWuW00HwxAAcB7wo41FGo00.m3u8",
+    xLink: "https://x.com/michelletliu/status/2044470508641784033",
     backgroundColor: "#ffffff",
   },
   {

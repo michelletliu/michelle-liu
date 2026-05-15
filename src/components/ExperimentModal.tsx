@@ -214,67 +214,113 @@ function GenericExperimentEmbed({ project }: { project: ExperimentProject }) {
   );
 }
 
-function SundaysEmbed({ project }: { project: ExperimentProject }) {
+function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: ExperimentProject; isFullscreen?: boolean; onCollapse?: () => void }) {
   const [videoReady, setVideoReady] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const t = setTimeout(() => setVideoReady(true), 350);
     return () => clearTimeout(t);
   }, []);
 
+  const handleLogoClick = () => {
+    if (onCollapse) {
+      onCollapse();
+    } else {
+      navigate('/', { replace: true });
+    }
+  };
+
   return (
-    <div className="font-['Michelle',sans-serif] min-h-full w-full box-border flex flex-col gap-6 px-6 py-16 md:px-16 md:py-20 text-[#111827]">
-      <header className="flex flex-col gap-2 max-w-2xl">
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <h1 className="text-2xl md:text-3xl font-normal">{project.title}</h1>
-          <span className="text-[#9ca3af] text-xl">•</span>
-          <span className="text-[#9ca3af] text-xl">{project.year}</span>
-        </div>
-        <p className="text-base leading-relaxed text-[#6b7280]">
-          {project.description}
-        </p>
-        <a
-          href="https://sundays.rsvp"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1.5 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out w-fit mt-1"
+    <div className={clsx(
+      "font-['Michelle',sans-serif] w-full box-border flex flex-col text-[#111827]",
+      isFullscreen ? 'min-h-screen items-center px-6 py-16 md:px-16 md:py-20' : 'min-h-full px-6 py-16 md:px-16 md:py-20'
+    )}>
+      {isFullscreen && (
+        <button
+          onClick={handleLogoClick}
+          className="fixed top-8 left-6 md:left-16 z-40 cursor-pointer transition-opacity duration-200 hover:opacity-80"
+          aria-label="Go back"
         >
-          <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-base text-white whitespace-nowrap">
-            Visit sundays.rsvp
-          </span>
-          <span className="text-white">
-            <ArrowUpRight />
-          </span>
-        </a>
-      </header>
-      <div className="relative w-full max-w-4xl aspect-video overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 shrink-0">
-        {project.imageSrc?.trim() ? (
-          <ShimmerImage
-            alt=""
-            className="absolute object-cover size-full"
-            wrapperClassName="absolute inset-0"
-            rounded="rounded-2xl"
-            src={project.imageSrc}
-          />
+          <img src="/logo.png" alt="Michelle Liu Logo" className="w-8 h-8 md:w-[44px] md:h-[44px] object-contain" />
+        </button>
+      )}
+      <div className={clsx(
+        "flex flex-col gap-6 w-full",
+        isFullscreen && 'max-w-4xl'
+      )}>
+        <header className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <h1 className="text-2xl md:text-3xl font-normal">{project.title}</h1>
+            <span className="text-[#9ca3af] text-xl">•</span>
+            <span className="text-[#9ca3af] text-xl">{project.year}</span>
+          </div>
+          <p className="text-base leading-relaxed text-[#6b7280]">
+            {project.description}
+          </p>
+          <div className="flex flex-wrap gap-2 mt-1">
+            <a
+              href="https://sundays.rsvp"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1.5 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+            >
+              <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-base text-white whitespace-nowrap">
+                Visit sundays.rsvp
+              </span>
+              <span className="text-white">
+                <ArrowUpRight />
+              </span>
+            </a>
+            {project.xLink && (
+              <a
+                href={project.xLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+              >
+                <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-base text-white whitespace-nowrap">
+                  View on
+                </span>
+                <svg className="block w-[14px] h-[14px] fill-white" viewBox="0 0 19 18">
+                  <path d={xLogoPath} />
+                </svg>
+                <span className="text-white">
+                  <ArrowUpRight />
+                </span>
+              </a>
+            )}
+          </div>
+        </header>
+        {project.toolCategories && project.toolCategories.length > 0 ? (
+          <ToolsSection categories={project.toolCategories} />
         ) : null}
-        {project.videoSrc && videoReady ? (
-          <ShimmerVideo
-            key={project.id}
-            src={project.videoSrc}
-            className="absolute object-cover size-full rounded-2xl"
-            wrapperClassName="absolute inset-0"
-            rounded="rounded-2xl"
-            autoPlay
-            muted
-            loop
-            controls={false}
-            muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
-          />
-        ) : null}
+        <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 shrink-0">
+          {project.imageSrc?.trim() ? (
+            <ShimmerImage
+              alt=""
+              className="absolute object-cover size-full"
+              wrapperClassName="absolute inset-0"
+              rounded="rounded-2xl"
+              src={project.imageSrc}
+            />
+          ) : null}
+          {project.videoSrc && videoReady ? (
+            <ShimmerVideo
+              key={project.id}
+              src={project.videoSrc}
+              className="absolute object-cover size-full rounded-2xl"
+              wrapperClassName="absolute inset-0"
+              rounded="rounded-2xl"
+              autoPlay
+              muted
+              loop
+              controls={false}
+              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+            />
+          ) : null}
+        </div>
       </div>
-      {project.toolCategories && project.toolCategories.length > 0 ? (
-        <ToolsSection categories={project.toolCategories} />
-      ) : null}
     </div>
   );
 }
@@ -438,7 +484,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
       case 'film':
         return <FilmPage />;
       case 'sundays':
-        return <SundaysEmbed project={project} />;
+        return <SundaysEmbed project={project} isFullscreen={isFullscreen} onCollapse={handleCollapse} />;
       default:
         return <GenericExperimentEmbed project={project} />;
     }
@@ -498,8 +544,8 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
           </div>
         )}
 
-        {/* Info button fixed top right - only in popup mode (fullscreen uses embedded page's InfoButton) */}
-        {!isFullscreen && (
+        {/* Info button fixed top right - only in popup mode, hidden for sundays (content already visible) */}
+        {!isFullscreen && projectId !== 'sundays' && (
           <div className={clsx(
             "absolute top-0 right-0 z-[60] pointer-events-none pr-7 pt-6"
           )}>
