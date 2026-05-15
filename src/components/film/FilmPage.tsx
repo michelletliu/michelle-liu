@@ -147,6 +147,12 @@ const FILM_EDGE_GRADIENT_LEFT =
   'linear-gradient(to right, rgb(250,250,250) 0%, rgba(250,250,250,0.97) 8%, rgba(250,250,250,0.9) 16%, rgba(250,250,250,0.8) 25%, rgba(250,250,250,0.65) 34%, rgba(250,250,250,0.5) 45%, rgba(250,250,250,0.35) 55%, rgba(250,250,250,0.2) 70%, rgba(250,250,250,0.08) 85%, transparent 100%)';
 const FILM_EDGE_GRADIENT_RIGHT =
   'linear-gradient(to left, rgb(250,250,250) 0%, rgba(250,250,250,0.97) 8%, rgba(250,250,250,0.9) 16%, rgba(250,250,250,0.8) 25%, rgba(250,250,250,0.65) 34%, rgba(250,250,250,0.5) 45%, rgba(250,250,250,0.35) 55%, rgba(250,250,250,0.2) 70%, rgba(250,250,250,0.08) 85%, transparent 100%)';
+const FILM_EDGE_GRADIENT_LEFT_WHITE =
+  'linear-gradient(to right, rgb(255,255,255) 0%, rgba(255,255,255,0.97) 8%, rgba(255,255,255,0.9) 16%, rgba(255,255,255,0.8) 25%, rgba(255,255,255,0.65) 34%, rgba(255,255,255,0.5) 45%, rgba(255,255,255,0.35) 55%, rgba(255,255,255,0.2) 70%, rgba(255,255,255,0.08) 85%, transparent 100%)';
+const FILM_EDGE_GRADIENT_RIGHT_WHITE =
+  'linear-gradient(to left, rgb(255,255,255) 0%, rgba(255,255,255,0.97) 8%, rgba(255,255,255,0.9) 16%, rgba(255,255,255,0.8) 25%, rgba(255,255,255,0.65) 34%, rgba(255,255,255,0.5) 45%, rgba(255,255,255,0.35) 55%, rgba(255,255,255,0.2) 70%, rgba(255,255,255,0.08) 85%, transparent 100%)';
+const FILM_BOTTOM_GRADIENT_WHITE =
+  'linear-gradient(to top, rgb(255,255,255) 0%, rgb(255,255,255) 38%, rgba(255,255,255,0.98) 48%, rgba(255,255,255,0.94) 56%, rgba(255,255,255,0.85) 64%, rgba(255,255,255,0.7) 72%, rgba(255,255,255,0.45) 82%, rgba(255,255,255,0.2) 90%, transparent 100%)';
 /** Multiplier on wheel delta → `scrollTop` (lower = slower travel per scroll). */
 const FILM_WHEEL_SCROLL_FACTOR = 0.68;
 /** On mobile, each photo needs less physical scroll — this shrinks the scroll spacer per step. */
@@ -900,6 +906,55 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
   /** True while a touch drag is actively moving the gallery — scroll handler must not fight. */
   const isTouchDraggingRef = useRef(false);
 
+  // Popup mode detection — when embedded inside ExperimentModal
+  const [isPopupMode, setIsPopupMode] = useState(false);
+  const isPopupModeRef = useRef(false);
+  const scrollContainerElRef = useRef<HTMLElement | null>(null);
+
+  const getVw = (): number => {
+    if (isPopupModeRef.current && scrollContainerElRef.current) {
+      return scrollContainerElRef.current.clientWidth;
+    }
+    return typeof window !== 'undefined' ? window.innerWidth : 1440;
+  };
+
+  const getVh = (): number => {
+    if (isPopupModeRef.current && scrollContainerElRef.current) {
+      return scrollContainerElRef.current.clientHeight;
+    }
+    return typeof window !== 'undefined' ? window.innerHeight : 900;
+  };
+
+  const getScrollY = (): number => {
+    if (isPopupModeRef.current && scrollContainerElRef.current) {
+      return scrollContainerElRef.current.scrollTop;
+    }
+    return window.scrollY;
+  };
+
+  const doScrollTo = (top: number, behavior: ScrollBehavior = 'instant') => {
+    if (isPopupModeRef.current && scrollContainerElRef.current) {
+      scrollContainerElRef.current.scrollTo({ top, behavior });
+    } else {
+      window.scrollTo({ top, behavior });
+    }
+  };
+
+  const setScrollTop = (value: number) => {
+    if (isPopupModeRef.current && scrollContainerElRef.current) {
+      scrollContainerElRef.current.scrollTop = value;
+    } else {
+      document.documentElement.scrollTop = value;
+    }
+  };
+
+  const getScrollTarget = (): HTMLElement | Window => {
+    if (isPopupModeRef.current && scrollContainerElRef.current) {
+      return scrollContainerElRef.current;
+    }
+    return window;
+  };
+
   const galleryX = useMotionValue(0);
 
   /** Always start {0,0} so SSR and hydration match; real size is set in `useEffect`. */
@@ -917,18 +972,29 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     return (photos.length - 1) * step + h;
   }, [photos.length, viewport.w, viewport.h]);
   useLayoutEffect(() => {
+    if (pageRef.current) {
+      const embed = pageRef.current.closest('.experiment-modal-embed:not(.fullscreen)');
+      if (embed) {
+        isPopupModeRef.current = true;
+        scrollContainerElRef.current = embed as HTMLElement;
+        vwRef.current = embed.clientWidth;
+        setIsPopupMode(true);
+        return;
+      }
+    }
     vwRef.current = window.innerWidth;
   }, []);
   useEffect(() => {
-    const sync = () =>
-      setViewport({ w: window.innerWidth, h: window.innerHeight });
+    const sync = () => {
+      setViewport({ w: getVw(), h: getVh() });
+    };
     sync();
     window.addEventListener('resize', sync);
     return () => window.removeEventListener('resize', sync);
-  }, []);
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (viewport.w === 0 || viewport.w >= 640) return;
-    window.scrollTo(0, 0);
+    doScrollTo(0);
   }, [viewport.w]);
 
   useEffect(() => {
@@ -1059,7 +1125,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
     filmLayoutReadyRef.current = false;
     setFilmLayoutReady(false);
-    const w = typeof window !== 'undefined' ? window.innerWidth : 1440;
+    const w = getVw();
     vwRef.current = w;
 
     if (prevCount === 0) {
@@ -1068,7 +1134,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       galleryX.set(startOff);
       if (w >= 640) {
         scrolledToScrollYRef.current = 0;
-        document.documentElement.scrollTop = 0;
+        setScrollTop(0);
       }
     } else {
       const idx = getFilmClosestPhotoIndex(galleryX.get(), w, prevCount);
@@ -1085,10 +1151,10 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         posRef.current = targetX;
         galleryX.set(targetX);
         scrolledToScrollYRef.current = targetSy;
-        document.documentElement.scrollTop = targetSy;
+        setScrollTop(targetSy);
       }
     }
-  }, [photos.length, galleryX]);
+  }, [photos.length, galleryX]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const cancelScrollSnap = useCallback(() => {
     galleryTweenRef.current?.stop();
@@ -1118,7 +1184,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     if (isGalleryTweeningRef.current) return;
     const n = photosRef.current.length;
     if (n <= 1) return;
-    const vw = window.innerWidth;
+    const vw = getVw();
     vwRef.current = vw;
     const mobile = vw < 640;
     const { bw, startOff, vpCenter } = getLayoutInfo(vw, n);
@@ -1163,7 +1229,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         const scrollStep = filmScrollStepPx(vw, n);
         const targetSy = clampedIdx * scrollStep;
         scrolledToScrollYRef.current = targetSy;
-        document.documentElement.scrollTop = targetSy;
+        setScrollTop(targetSy);
       }
       return;
     }
@@ -1199,7 +1265,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
             Math.min(maxScroll, (startOff - Number(latest)) * (scrollStep / layoutStep)),
           );
           scrolledToScrollYRef.current = nextSy;
-          document.documentElement.scrollTop = nextSy;
+          setScrollTop(nextSy);
         },
         onComplete: () => {
           isGalleryTweeningRef.current = false;
@@ -1212,7 +1278,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
   useEffect(() => {
     layoutSmoothPrevRef.current = null;
-    const w = window.innerWidth;
+    const w = getVw();
     vwRef.current = w;
 
     const applyFrame = (scrollPos: number, vw: number) => {
@@ -1326,7 +1392,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         return;
       }
 
-      const vh = window.innerHeight;
+      const vh = isPopupModeRef.current && scrollContainerElRef.current ? scrollContainerElRef.current.clientHeight : window.innerHeight;
       const mdUp = vw >= 640;
       const midY =
         mdUp
@@ -1443,7 +1509,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     applyFrame(galleryX.get(), w);
 
     const tick = () => {
-      const vw = window.innerWidth;
+      const vw = getVw();
       vwRef.current = vw;
       const n = photosRef.current.length;
       if (n === 0) {
@@ -1460,7 +1526,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
   useEffect(() => {
     const onResize = () => {
-      const w = window.innerWidth;
+      const w = getVw();
       vwRef.current = w;
       const n = photosRef.current.length;
       if (n === 0) return;
@@ -1474,8 +1540,8 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       } else {
         const scrollStep = filmScrollStepPx(w, n);
         const maxScroll = Math.max(0, filmEffectiveMaxScrollPx(n));
-        const sy = Math.min(maxScroll, Math.max(0, window.scrollY));
-        document.documentElement.scrollTop = sy;
+        const sy = Math.min(maxScroll, Math.max(0, getScrollY()));
+        setScrollTop(sy);
         scrolledToScrollYRef.current = sy;
         posRef.current = clampPos(startOff - sy * (layoutStep / scrollStep), w, n);
         galleryX.set(posRef.current);
@@ -1494,7 +1560,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       if (n === 0) return;
       const closestIdx = getFilmClosestPhotoIndex(
         x,
-        typeof window !== 'undefined' ? window.innerWidth : vwRef.current,
+        getVw(),
         n,
       );
       setActiveIndex((p) => (p !== closestIdx ? closestIdx : p));
@@ -1511,10 +1577,10 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     };
 
     const onScroll = () => {
-      if (window.innerWidth < 640) return;
+      if (getVw() < 640) return;
       if (isTouchDraggingRef.current) return;
       if (isGalleryTweeningRef.current) return;
-      const sy = window.scrollY;
+      const sy = getScrollY();
       if (Math.abs(scrolledToScrollYRef.current - sy) < 1) return;
       const delta = sy - scrolledToScrollYRef.current;
       if (Math.abs(delta) >= 2) {
@@ -1525,7 +1591,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       }
       const n = photosRef.current.length;
       if (n === 0) return;
-      const vw = window.innerWidth;
+      const vw = getVw();
       vwRef.current = vw;
       const { bw, startOff } = getLayoutInfo(vw, n);
       const layoutStep = bw + GAP;
@@ -1548,12 +1614,13 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       }
     };
 
-    window.addEventListener('scroll', onScroll, { passive: true });
+    const scrollTarget = getScrollTarget();
+    scrollTarget.addEventListener('scroll', onScroll, { passive: true } as AddEventListenerOptions);
     return () => {
-      window.removeEventListener('scroll', onScroll);
+      scrollTarget.removeEventListener('scroll', onScroll);
       clearIdleSnapTimer();
     };
-  }, [galleryX, runIdleScrollSnap, showManualScrollFade]);
+  }, [galleryX, runIdleScrollSnap, showManualScrollFade]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const onWheelCapture = (e: WheelEvent) => {
@@ -1574,7 +1641,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         setFilmAutoplayPlaying(false);
       }
 
-      const vw = window.innerWidth;
+      const vw = getVw();
       vwRef.current = vw;
       const { bw } = getLayoutInfo(vw, n);
       const step = bw + GAP;
@@ -1588,15 +1655,15 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         galleryTweenRef.current?.stop();
         galleryTweenRef.current = null;
         isGalleryTweeningRef.current = false;
-        scrolledToScrollYRef.current = window.scrollY;
+        scrolledToScrollYRef.current = getScrollY();
       }
 
       if (Math.abs(delta) >= 0.5) {
         scrollSnapDirectionRef.current = delta > 0 ? 1 : -1;
         showManualScrollFade();
       }
-      const next = Math.max(0, Math.min(maxScroll, window.scrollY + delta));
-      window.scrollTo({ top: next, behavior: 'instant' });
+      const next = Math.max(0, Math.min(maxScroll, getScrollY() + delta));
+      doScrollTo(next);
     };
 
     window.addEventListener('wheel', onWheelCapture, {
@@ -1611,7 +1678,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
   useEffect(() => {
     const root = pageRef.current;
     if (!root) return;
-    const mobile = window.innerWidth < 640;
+    const mobile = getVw() < 640;
 
     const drag = {
       active: false,
@@ -1664,7 +1731,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         galleryX.set(
           clampPos(
             drag.startGallery + dx,
-            window.innerWidth,
+            getVw(),
             photosRef.current.length,
           ),
         );
@@ -1679,7 +1746,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       isTouchDraggingRef.current = false;
       const n = photosRef.current.length;
       if (n > 1 && drag.moved && drag.axis === 'h') {
-        const vw = window.innerWidth;
+        const vw = getVw();
         vwRef.current = vw;
         if (vw < 640) {
           runIdleScrollSnap();
@@ -1696,7 +1763,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
             clearTimeout(scrollIdleSnapTimerRef.current);
             scrollIdleSnapTimerRef.current = null;
           }
-          document.documentElement.scrollTop = impliedSy;
+          setScrollTop(impliedSy);
           scrolledToScrollYRef.current = impliedSy;
           galleryX.set(startOff - impliedSy * (layoutStep / scrollStep));
           layoutSmoothPrevRef.current = null;
@@ -1800,7 +1867,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       }
       setNoteStableIndex(idx);
       cancelScrollSnap();
-      const vw = window.innerWidth;
+      const vw = getVw();
       const spring =
         springOverride ??
         filmGallerySpringForSlotDistance(
@@ -1820,7 +1887,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
           filmAutoplayApplyingScrollRef.current = true;
         }
         try {
-          document.documentElement.scrollTop = centerScroll;
+          setScrollTop(centerScroll);
         } finally {
           filmAutoplayApplyingScrollRef.current = false;
         }
@@ -1904,12 +1971,12 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     const reduceMotion =
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const vw = window.innerWidth;
+    const vw = getVw();
     vwRef.current = vw;
     const { startOff } = getLayoutInfo(vw, n);
     if (reduceMotion) {
       if (vw >= 640) {
-        document.documentElement.scrollTop = 0;
+        setScrollTop(0);
         scrolledToScrollYRef.current = 0;
       }
       galleryX.set(startOff);
@@ -1931,22 +1998,23 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         },
       });
     } else {
-      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+      doScrollTo(0, 'smooth');
       let rewindFallbackId = 0;
+      const scrollTarget = getScrollTarget();
       const onRewindScroll = () => {
-        if (window.scrollY <= 1) {
-          window.removeEventListener('scroll', onRewindScroll);
+        if (getScrollY() <= 1) {
+          scrollTarget.removeEventListener('scroll', onRewindScroll);
           window.clearTimeout(rewindFallbackId);
           setFilmRewindingToStart(false);
         }
       };
-      window.addEventListener('scroll', onRewindScroll, { passive: true });
+      scrollTarget.addEventListener('scroll', onRewindScroll, { passive: true } as AddEventListenerOptions);
       rewindFallbackId = window.setTimeout(() => {
-        window.removeEventListener('scroll', onRewindScroll);
+        scrollTarget.removeEventListener('scroll', onRewindScroll);
         setFilmRewindingToStart(false);
       }, 8000);
     }
-  }, [cancelScrollSnap, galleryX]);
+  }, [cancelScrollSnap, galleryX]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -1983,7 +2051,11 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     <motion.div
       ref={pageRef}
       data-film-page
-      className="fixed inset-0 z-[50] isolate overflow-hidden overscroll-none bg-[#fafafa]"
+      className={isPopupMode
+        ? "sticky top-0 z-[50] isolate overflow-hidden overscroll-none bg-white"
+        : "fixed inset-0 z-[50] isolate overflow-hidden overscroll-none bg-[#fafafa]"
+      }
+      style={isPopupMode ? { width: '100%', height: getVh() } : undefined}
     >
       <div
         className={`absolute inset-0 z-[5] flex flex-col items-center justify-center gap-2 px-8 text-center transition-opacity duration-700 ease-out ${
@@ -2002,18 +2074,19 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       {/* Play/pause bar hidden — ref kept for layout calculations */}
       <div
         ref={playBarRef}
-        className="pointer-events-none fixed inset-x-0 top-0 z-[90] flex justify-center px-4 min-[640px]:px-8"
+        className={`pointer-events-none ${isPopupMode ? 'absolute' : 'fixed'} inset-x-0 top-0 z-[90] flex justify-center px-4 min-[640px]:px-8`}
         style={{ opacity: 0 }}
         aria-hidden
       />
 
       <div
         ref={bottomGradientRef}
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-[16] h-[72vh]"
+        className={`pointer-events-none ${isPopupMode ? 'absolute' : 'fixed'} inset-x-0 bottom-0 z-[16] ${isPopupMode ? 'h-[72%]' : 'h-[72vh]'}`}
         style={{
           opacity: 0,
-          background:
-            'linear-gradient(to top, rgb(250,250,250) 0%, rgb(250,250,250) 38%, rgba(250,250,250,0.98) 48%, rgba(250,250,250,0.94) 56%, rgba(250,250,250,0.85) 64%, rgba(250,250,250,0.7) 72%, rgba(250,250,250,0.45) 82%, rgba(250,250,250,0.2) 90%, transparent 100%)',
+          background: isPopupMode
+            ? FILM_BOTTOM_GRADIENT_WHITE
+            : 'linear-gradient(to top, rgb(250,250,250) 0%, rgb(250,250,250) 38%, rgba(250,250,250,0.98) 48%, rgba(250,250,250,0.94) 56%, rgba(250,250,250,0.85) 64%, rgba(250,250,250,0.7) 72%, rgba(250,250,250,0.45) 82%, rgba(250,250,250,0.2) 90%, transparent 100%)',
         }}
         aria-hidden
       />
@@ -2073,18 +2146,18 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       </div>
 
       <div
-        className="pointer-events-none fixed bottom-0 left-0 z-[15] w-20 md:w-[24vw]"
+        className={`pointer-events-none ${isPopupMode ? 'absolute' : 'fixed'} bottom-0 left-0 z-[15] w-20 md:w-[24vw]`}
         style={{
           top:
             'calc(env(safe-area-inset-top, 0px) + clamp(5.25rem, 4.25rem + 6.5vh, 10.5rem))',
-          background: FILM_EDGE_GRADIENT_LEFT,
+          background: isPopupMode ? FILM_EDGE_GRADIENT_LEFT_WHITE : FILM_EDGE_GRADIENT_LEFT,
         }}
         aria-hidden
       />
       <div
-        className="pointer-events-none fixed top-0 right-0 bottom-0 z-[15] w-20 md:w-[24vw]"
+        className={`pointer-events-none ${isPopupMode ? 'absolute' : 'fixed'} top-0 right-0 bottom-0 z-[15] w-20 md:w-[24vw]`}
         style={{
-          background: FILM_EDGE_GRADIENT_RIGHT,
+          background: isPopupMode ? FILM_EDGE_GRADIENT_RIGHT_WHITE : FILM_EDGE_GRADIENT_RIGHT,
         }}
         aria-hidden
       />
@@ -2104,7 +2177,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       <button
         type="button"
         onClick={() => navigate('/')}
-        className="fixed top-8 left-6 z-[100] cursor-pointer hover:opacity-80 md:left-16"
+        className={`${isPopupMode ? 'absolute' : 'fixed'} top-8 left-6 z-[100] cursor-pointer hover:opacity-80 md:left-16`}
         aria-label="Go back to home"
       >
         <img
@@ -2118,7 +2191,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     </motion.div>
     <div
       data-film-page
-      className="w-full bg-[#fafafa]"
+      className={`w-full ${isPopupMode ? 'bg-white' : 'bg-[#fafafa]'}`}
       style={{ height: scrollDriverHeightPx }}
       aria-hidden
     />

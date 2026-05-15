@@ -580,7 +580,8 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
             <div 
               className={clsx(
                 "w-full h-full experiment-modal-embed modal-scroll-container relative transition-all duration-500 ease-out overflow-auto",
-                isFullscreen && "fullscreen"
+                isFullscreen && "fullscreen",
+                !isFullscreen && projectId === 'film' && "overflow-x-hidden"
               )}
               style={{ 
                 '--scrollbar-track-color': getBackgroundColor(project),
@@ -591,7 +592,10 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
               {/* Content wrapper with scaling and smooth transitions */}
               <div 
                 ref={contentRef}
-                className="h-full transition-all duration-500 ease-out"
+                className={clsx(
+                  "transition-all duration-500 ease-out",
+                  (!isFullscreen && projectId === 'film') ? 'min-h-full' : 'h-full'
+                )}
                 style={{ 
                   transformOrigin: 'top left',
                   transform: !isFullscreen && contentScale < 1 ? `scale(${contentScale})` : undefined,
