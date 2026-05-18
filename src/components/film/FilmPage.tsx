@@ -2175,7 +2175,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse }: { initialPh
         aria-hidden
       />
 
-      <div className="absolute bottom-[clamp(0.5rem,0.25rem+2vh,1.75rem)] left-0 right-0 z-20 flex justify-center px-2 min-[640px]:bottom-[clamp(0.75rem,0.375rem+2.5vh,3.25rem)] min-[640px]:left-1/2 min-[640px]:right-auto min-[640px]:w-auto min-[640px]:-translate-x-1/2 min-[640px]:px-0">
+      <div className={`absolute bottom-[clamp(0.5rem,0.25rem+2vh,1.75rem)] left-0 right-0 z-20 flex justify-center px-2 ${isPopupMode ? '' : 'min-[640px]:bottom-[clamp(0.75rem,0.375rem+2.5vh,3.25rem)] min-[640px]:left-1/2 min-[640px]:right-auto min-[640px]:w-auto min-[640px]:-translate-x-1/2 min-[640px]:px-0'}`}>
         {photos.length > 0 ? (
         <FilmPhotoHashmarks
           photos={photos}
