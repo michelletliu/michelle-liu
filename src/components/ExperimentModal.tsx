@@ -229,12 +229,54 @@ function GenericExperimentEmbed({ project }: { project: ExperimentProject }) {
 
 function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: ExperimentProject; isFullscreen?: boolean; onCollapse?: () => void }) {
   const [videoReady, setVideoReady] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const t = setTimeout(() => setVideoReady(true), 350);
     return () => clearTimeout(t);
   }, []);
+
+  // Detect scroll to shrink logo (matching /apple/full pattern)
+  useEffect(() => {
+    if (!isFullscreen) return;
+
+    const findScrollParent = (el: HTMLElement | null): HTMLElement | null => {
+      while (el) {
+        const style = getComputedStyle(el);
+        if (el.scrollHeight > el.clientHeight && style.overflowY !== 'visible' && style.overflowY !== 'hidden') {
+          return el;
+        }
+        el = el.parentElement;
+      }
+      return null;
+    };
+
+    const timer = setTimeout(() => {
+      const scrollParent = findScrollParent(containerRef.current);
+      if (!scrollParent) return;
+
+      const handleScroll = () => {
+        setIsScrolled(scrollParent.scrollTop > 20);
+      };
+
+      scrollParent.addEventListener('scroll', handleScroll);
+      handleScroll();
+
+      // Store cleanup ref
+      (containerRef as any)._scrollCleanup = () => {
+        scrollParent.removeEventListener('scroll', handleScroll);
+      };
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      if ((containerRef as any)._scrollCleanup) {
+        (containerRef as any)._scrollCleanup();
+      }
+    };
+  }, [isFullscreen]);
 
   const handleLogoClick = () => {
     if (onCollapse) {
@@ -246,17 +288,20 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
 
   return (
     <>
-    <div className={clsx(
+    <div ref={containerRef} className={clsx(
       "font-['Michelle',sans-serif] w-full box-border flex flex-col text-[#111827]",
       isFullscreen ? 'min-h-screen items-center px-6 py-24 md:px-16 md:py-32' : 'min-h-full px-6 pt-6 pb-8 md:px-[8%] md:py-32 xl:px-[175px]'
     )}>
       {isFullscreen && (
         <button
           onClick={handleLogoClick}
-          className="fixed top-8 left-6 md:left-16 z-40 cursor-pointer transition-opacity duration-200 hover:opacity-80"
+          className={clsx(
+            "fixed top-8 left-6 md:left-16 z-40 cursor-pointer hover:opacity-80 transition-all duration-300 ease-out p-0 border-0 bg-transparent",
+            isScrolled ? "size-7" : "size-8 md:size-[44px]"
+          )}
           aria-label="Go back"
         >
-          <img src="/logo.png" alt="Michelle Liu Logo" className="w-8 h-8 md:w-[44px] md:h-[44px] object-contain" />
+          <img src="/logo.png" alt="Michelle Liu Logo" className="size-full object-contain" />
         </button>
       )}
       <div className={clsx(
