@@ -2075,7 +2075,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
       style={{
         ...(isPopupMode ? { width: '100%', height: getVh() } : undefined),
         opacity: isExiting ? 0 : 1,
-        transition: 'opacity 400ms ease-out',
+        transition: 'opacity 200ms ease-out',
       }}
     >
       <div
@@ -2201,7 +2201,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
         onClick={() => {
           if (isExiting) return;
           setIsExiting(true);
-          setTimeout(() => navigate('/'), 400);
+          setTimeout(() => navigate('/'), 200);
         }}
         className={`${isPopupMode ? 'absolute' : 'fixed'} top-8 left-6 z-[100] cursor-pointer hover:opacity-80 md:left-16`}
         aria-label="Go back to home"
