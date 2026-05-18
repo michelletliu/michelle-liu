@@ -234,7 +234,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
   return (
     <div className={clsx(
       "font-['Michelle',sans-serif] w-full box-border flex flex-col text-[#111827]",
-      isFullscreen ? 'min-h-screen items-center px-6 py-16 md:px-16 md:py-20' : 'min-h-full max-md:px-6 max-md:pt-6 max-md:pb-8 px-8 py-32 md:px-[8%] xl:px-[175px]'
+      isFullscreen ? 'min-h-screen items-center px-6 py-16 md:px-16 md:py-20' : 'min-h-full px-6 pt-6 pb-8 md:px-[8%] md:py-32 xl:px-[175px]'
     )}>
       {isFullscreen && (
         <button
@@ -246,7 +246,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
         </button>
       )}
       <div className={clsx(
-        "flex flex-col gap-4 w-full",
+        "flex flex-col gap-3 md:gap-4 w-full",
         isFullscreen && 'max-w-4xl'
       )}>
         <header className="flex flex-col">
