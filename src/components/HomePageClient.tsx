@@ -843,12 +843,12 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
       setLocalSlug(projectId);
       setLocalFullscreen(true);
       setLocalBookSlug(undefined);
-      navigate(`/project/${projectId}/full`);
+      navigate(projectId === 'film' ? '/film' : `/project/${projectId}/full`);
     } else {
       setLocalSlug(projectId);
       setLocalFullscreen(false);
       setLocalBookSlug(undefined);
-      navigate(`/project/${projectId}`);
+      navigate(projectId === 'film' ? '/film/popup' : `/project/${projectId}`);
     }
   }, [navigate]);
 
@@ -863,7 +863,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     if (localSlug) {
       setLocalFullscreen(true);
       setLocalBookSlug(undefined);
-      navigate(`/project/${localSlug}/full`);
+      navigate(localSlug === 'film' ? '/film' : `/project/${localSlug}/full`);
     }
   };
 
@@ -874,7 +874,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
       navigate(
         bookSlug
           ? `/project/${localSlug}/full/${encodeURIComponent(bookSlug)}`
-          : `/project/${localSlug}/full`
+          : (localSlug === 'film' ? '/film' : `/project/${localSlug}/full`)
       );
     }
   };
@@ -883,7 +883,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     if (localSlug) {
       setLocalFullscreen(false);
       setLocalBookSlug(undefined);
-      navigate(`/project/${localSlug}`);
+      navigate(localSlug === 'film' ? '/film/popup' : `/project/${localSlug}`);
     }
   };
 
@@ -891,8 +891,8 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     if (!localSlug) return;
 
     const basePath = localFullscreen
-      ? `/project/${localSlug}/full`
-      : `/project/${localSlug}`;
+      ? (localSlug === 'film' ? '/film' : `/project/${localSlug}/full`)
+      : (localSlug === 'film' ? '/film/popup' : `/project/${localSlug}`);
     const nextPath = nextBookSlug
       ? `${basePath}/${encodeURIComponent(nextBookSlug)}`
       : basePath;
@@ -905,8 +905,8 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     setLocalSlug(projectId);
     setLocalBookSlug(undefined);
     const newPath = isFullscreenFromUrl
-      ? `/project/${projectId}/full`
-      : `/project/${projectId}`;
+      ? (projectId === 'film' ? '/film' : `/project/${projectId}/full`)
+      : (projectId === 'film' ? '/film/popup' : `/project/${projectId}`);
     navigate(newPath);
   };
 
