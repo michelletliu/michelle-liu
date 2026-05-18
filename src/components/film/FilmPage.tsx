@@ -327,15 +327,16 @@ function filmScrollStepPx(vw: number, photoCount: number): number {
   return vw < 640 ? Math.round(step * FILM_MOBILE_SCROLL_STEP_RATIO) : step;
 }
 
-function filmEffectiveMaxScrollPx(photoCount: number): number {
+function filmEffectiveMaxScrollPx(photoCount: number, container?: HTMLElement | null): number {
   if (photoCount <= 1) return 0;
   const vw =
     typeof window !== 'undefined' ? window.innerWidth : 1200;
   const scrollStep = filmScrollStepPx(vw, photoCount);
   const layoutMax = (photoCount - 1) * scrollStep;
   if (typeof document === 'undefined') return layoutMax;
-  const domRange =
-    document.documentElement.scrollHeight - window.innerHeight;
+  const domRange = container
+    ? container.scrollHeight - container.clientHeight
+    : document.documentElement.scrollHeight - window.innerHeight;
   if (!Number.isFinite(domRange) || domRange < 1) return layoutMax;
   return Math.min(layoutMax, domRange);
 }
@@ -940,14 +941,14 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
   };
 
   const getScrollY = (): number => {
-    if (isPopupModeRef.current && scrollContainerElRef.current) {
+    if (scrollContainerElRef.current) {
       return scrollContainerElRef.current.scrollTop;
     }
     return window.scrollY;
   };
 
   const doScrollTo = (top: number, behavior: ScrollBehavior = 'instant') => {
-    if (isPopupModeRef.current && scrollContainerElRef.current) {
+    if (scrollContainerElRef.current) {
       scrollContainerElRef.current.scrollTo({ top, behavior });
     } else {
       window.scrollTo({ top, behavior });
@@ -955,7 +956,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
   };
 
   const setScrollTop = (value: number) => {
-    if (isPopupModeRef.current && scrollContainerElRef.current) {
+    if (scrollContainerElRef.current) {
       scrollContainerElRef.current.scrollTop = value;
     } else {
       document.documentElement.scrollTop = value;
@@ -963,7 +964,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
   };
 
   const getScrollTarget = (): HTMLElement | Window => {
-    if (isPopupModeRef.current && scrollContainerElRef.current) {
+    if (scrollContainerElRef.current) {
       return scrollContainerElRef.current;
     }
     return window;
@@ -987,12 +988,20 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
   }, [photos.length, viewport.w, viewport.h]);
   useLayoutEffect(() => {
     if (pageRef.current) {
-      const embed = pageRef.current.closest('.experiment-modal-embed:not(.fullscreen)');
-      if (embed) {
+      const popupEmbed = pageRef.current.closest('.experiment-modal-embed:not(.fullscreen)');
+      if (popupEmbed) {
         isPopupModeRef.current = true;
-        scrollContainerElRef.current = embed as HTMLElement;
-        vwRef.current = embed.clientWidth;
+        scrollContainerElRef.current = popupEmbed as HTMLElement;
+        vwRef.current = popupEmbed.clientWidth;
         setIsPopupMode(true);
+        return;
+      }
+      const fullscreenEmbed = pageRef.current.closest('.experiment-modal-embed.fullscreen');
+      if (fullscreenEmbed) {
+        scrollContainerElRef.current = fullscreenEmbed as HTMLElement;
+        isPopupModeRef.current = false;
+        setIsPopupMode(false);
+        vwRef.current = window.innerWidth;
         return;
       }
     }
@@ -1271,7 +1280,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
       });
     } else {
       const scrollStep = filmScrollStepPx(vw, n);
-      const maxScroll = filmEffectiveMaxScrollPx(n);
+      const maxScroll = filmEffectiveMaxScrollPx(n, scrollContainerElRef.current);
       galleryTweenRef.current = animate(galleryX, targetX, {
         type: 'spring',
         stiffness: snapSpring.stiffness,
@@ -1556,7 +1565,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
         galleryX.set(target);
       } else {
         const scrollStep = filmScrollStepPx(w, n);
-        const maxScroll = Math.max(0, filmEffectiveMaxScrollPx(n));
+        const maxScroll = Math.max(0, filmEffectiveMaxScrollPx(n, scrollContainerElRef.current));
         const sy = Math.min(maxScroll, Math.max(0, getScrollY()));
         setScrollTop(sy);
         scrolledToScrollYRef.current = sy;
@@ -1662,7 +1671,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
       vwRef.current = vw;
       const { bw } = getLayoutInfo(vw, n);
       const step = bw + GAP;
-      const maxScroll = filmEffectiveMaxScrollPx(n);
+      const maxScroll = filmEffectiveMaxScrollPx(n, scrollContainerElRef.current);
       lastInputWasTouchRef.current = false;
       const delta = wheelDeltaPixels(e, vw) * FILM_WHEEL_SCROLL_FACTOR;
 
@@ -1771,7 +1780,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
           const { bw, startOff } = getLayoutInfo(vw, n);
           const layoutStep = bw + GAP;
           const scrollStep = filmScrollStepPx(vw, n);
-          const maxScroll = filmEffectiveMaxScrollPx(n);
+          const maxScroll = filmEffectiveMaxScrollPx(n, scrollContainerElRef.current);
           const impliedSy = Math.max(
             0,
             Math.min(maxScroll, (startOff - galleryX.get()) * (scrollStep / layoutStep)),
@@ -1896,7 +1905,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
       const layoutStep = bw + GAP;
       if (vw >= 640) {
         const scrollStep = filmScrollStepPx(vw, n);
-        const centerScroll = Math.min(idx * scrollStep, filmEffectiveMaxScrollPx(n));
+        const centerScroll = Math.min(idx * scrollStep, filmEffectiveMaxScrollPx(n, scrollContainerElRef.current));
         scrolledToScrollYRef.current = centerScroll;
         if (preserveAutoplay) {
           filmAutoplayWheelGraceUntilRef.current =
