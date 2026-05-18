@@ -267,8 +267,8 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
             <div className="flex flex-col min-w-0 md:gap-2">
               <div className="flex flex-wrap items-baseline gap-x-[6px] gap-y-1">
                 <h1 className="text-xl font-medium">{project.title}</h1>
-                <span className="text-[#9ca3af] text-xl font-medium">•</span>
-                <span className="text-[#9ca3af] text-xl font-medium">{project.year}</span>
+                <span className="text-[#9ca3af] text-xl font-normal">•</span>
+                <span className="text-[#9ca3af] text-xl font-normal">{project.year}</span>
               </div>
               <p className="text-base leading-5 text-[#6b7280] md:text-gray-700">
                 {project.description}
