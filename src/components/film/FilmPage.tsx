@@ -71,9 +71,9 @@ function filmTimelineBottomInsetPx(vh: number, mdUp: boolean): number {
   );
 }
 
-function filmDesktopBottomReservePx(vh: number): number {
+function filmDesktopBottomReservePx(vh: number, isPopup = false): number {
   return (
-    filmTimelineBottomInsetPx(vh, true) + FILM_DESKTOP_TIMELINE_CHROME_ABOVE_BOTTOM_PX
+    filmTimelineBottomInsetPx(vh, true) + (isPopup ? 130 : FILM_DESKTOP_TIMELINE_CHROME_ABOVE_BOTTOM_PX)
   );
 }
 
@@ -147,6 +147,12 @@ const FILM_EDGE_GRADIENT_LEFT =
   'linear-gradient(to right, rgb(250,250,250) 0%, rgba(250,250,250,0.97) 8%, rgba(250,250,250,0.9) 16%, rgba(250,250,250,0.8) 25%, rgba(250,250,250,0.65) 34%, rgba(250,250,250,0.5) 45%, rgba(250,250,250,0.35) 55%, rgba(250,250,250,0.2) 70%, rgba(250,250,250,0.08) 85%, transparent 100%)';
 const FILM_EDGE_GRADIENT_RIGHT =
   'linear-gradient(to left, rgb(250,250,250) 0%, rgba(250,250,250,0.97) 8%, rgba(250,250,250,0.9) 16%, rgba(250,250,250,0.8) 25%, rgba(250,250,250,0.65) 34%, rgba(250,250,250,0.5) 45%, rgba(250,250,250,0.35) 55%, rgba(250,250,250,0.2) 70%, rgba(250,250,250,0.08) 85%, transparent 100%)';
+const FILM_EDGE_GRADIENT_LEFT_WHITE =
+  'linear-gradient(to right, rgb(255,255,255) 0%, rgba(255,255,255,0.97) 8%, rgba(255,255,255,0.9) 16%, rgba(255,255,255,0.8) 25%, rgba(255,255,255,0.65) 34%, rgba(255,255,255,0.5) 45%, rgba(255,255,255,0.35) 55%, rgba(255,255,255,0.2) 70%, rgba(255,255,255,0.08) 85%, transparent 100%)';
+const FILM_EDGE_GRADIENT_RIGHT_WHITE =
+  'linear-gradient(to left, rgb(255,255,255) 0%, rgba(255,255,255,0.97) 8%, rgba(255,255,255,0.9) 16%, rgba(255,255,255,0.8) 25%, rgba(255,255,255,0.65) 34%, rgba(255,255,255,0.5) 45%, rgba(255,255,255,0.35) 55%, rgba(255,255,255,0.2) 70%, rgba(255,255,255,0.08) 85%, transparent 100%)';
+const FILM_BOTTOM_GRADIENT_WHITE =
+  'linear-gradient(to top, rgb(255,255,255) 0%, rgb(255,255,255) 38%, rgba(255,255,255,0.98) 48%, rgba(255,255,255,0.94) 56%, rgba(255,255,255,0.85) 64%, rgba(255,255,255,0.7) 72%, rgba(255,255,255,0.45) 82%, rgba(255,255,255,0.2) 90%, transparent 100%)';
 /** Multiplier on wheel delta → `scrollTop` (lower = slower travel per scroll). */
 const FILM_WHEEL_SCROLL_FACTOR = 0.68;
 /** On mobile, each photo needs less physical scroll — this shrinks the scroll spacer per step. */
@@ -219,12 +225,17 @@ function landscapeCenterMaxPx(vw: number): number {
  * Width multiplier (`× bw`) and opacity from fractional scroll slot — smooth handoff between neighbors
  * (like easing clip inset) without any clip-path or second transform scale.
  */
+/** Popup-mode caps: scale images down so they don't overlap with the timeline text. */
+const POPUP_FRAME_W_EXPANDED = 320;
+const POPUP_CENTER_SCALE = 1.6;
+
 function frameScaleAndOpacity(
   index: number,
   focalSlot: number,
   vw: number,
   aspectRatio: number,
   bw: number,
+  isPopup = false,
 ): { scale: number; opacity: number } {
   const distSlots = Math.abs(focalSlot - index);
   const u = Math.min(1, distSlots / FILM_FRAME_WIDEN_SLOT_RANGE);
@@ -232,11 +243,13 @@ function frameScaleAndOpacity(
 
   const wCollapsed = Math.min(FILM_FRAME_W_COLLAPSED, bw);
   const isLandscape = aspectRatio > 1;
+  const maxExpanded = isPopup ? POPUP_FRAME_W_EXPANDED : FILM_FRAME_W_EXPANDED;
+  const centerScale = isPopup ? POPUP_CENTER_SCALE : CENTER_SCALE;
   const wExpanded = Math.min(
-    FILM_FRAME_W_EXPANDED,
+    maxExpanded,
     isLandscape
-      ? landscapeCenterMaxPx(vw)
-      : bw * (vw < 640 ? MOBILE_PORTRAIT_CENTER_SCALE : CENTER_SCALE),
+      ? landscapeCenterMaxPx(vw) * (isPopup ? 0.67 : 1)
+      : bw * (vw < 640 ? MOBILE_PORTRAIT_CENTER_SCALE : centerScale),
   );
   const wPx = lerp(wCollapsed, wExpanded, widenT);
   const scale = wPx / bw;
@@ -425,6 +438,7 @@ function FilmPhotoHashmarks({
   noteStableIndex,
   onSelect,
   galleryX,
+  isPopup = false,
 }: {
   photos: readonly FilmPhoto[];
   currentIndex: number;
@@ -432,9 +446,14 @@ function FilmPhotoHashmarks({
   noteStableIndex: number;
   onSelect: (index: number) => void;
   galleryX: MotionValue<number>;
+  isPopup?: boolean;
 }) {
   const total = photos.length;
   const rowW = filmHashRowWidthPx(total);
+  const linemarkMin = isPopup ? 18 : LINEMARK_MIN_PX;
+  const tablistMinH = isPopup
+    ? Math.ceil((linemarkMin + LINEMARK_INTENSITY_PX) * LINEMARK_SELECTED_HEIGHT_MULT + LINEMARK_HOVER_BONUS_PX + 14)
+    : HASH_TABLIST_MIN_H_PX;
   const cur = photos[currentIndex];
   const notePhoto = photos[noteStableIndex];
   const currentIndexRef = useRef(currentIndex);
@@ -575,7 +594,7 @@ function FilmPhotoHashmarks({
       if (linemarkHeightRef.current.length !== total) {
         linemarkHeightRef.current = Array.from(
           { length: total },
-          () => LINEMARK_MIN_PX,
+          () => linemarkMin,
         );
       }
 
@@ -584,7 +603,7 @@ function FilmPhotoHashmarks({
         let targetScale = transformScale(
           dist,
           LINEMARK_CEILING,
-          LINEMARK_MIN_PX,
+          linemarkMin,
           LINEMARK_INTENSITY_PX,
         );
         if (i === currentIndexRef.current) {
@@ -625,7 +644,7 @@ function FilmPhotoHashmarks({
         <div className="pointer-events-none absolute top-0 left-1/2 z-20 flex w-max max-w-[min(92vw,720px)] -translate-x-1/2 flex-col items-center px-2 text-center">
           <motion.p
             key={notePhoto.note}
-            className="line-clamp-2 max-w-full text-pretty text-[15px] font-medium leading-snug text-black"
+            className={`line-clamp-2 max-w-full text-pretty ${isPopup ? 'text-[13px]' : 'text-[15px]'} font-medium leading-snug text-black`}
             initial={{ opacity: 0, filter: 'blur(4px)' }}
             animate={{ opacity: 1, filter: 'blur(0px)' }}
             transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
@@ -660,7 +679,7 @@ function FilmPhotoHashmarks({
           <div
             ref={tablistRef}
             className="-mt-2 flex shrink-0 items-end pb-2 pt-3 sm:pt-0 sm:pb-0"
-            style={{ width: rowW, gap: HASH_GAP, minHeight: HASH_TABLIST_MIN_H_PX, touchAction: 'none' }}
+            style={{ width: rowW, gap: HASH_GAP, minHeight: tablistMinH, touchAction: 'none' }}
             role="tablist"
           >
             {photos.map((photo, i) => {
@@ -693,7 +712,7 @@ function FilmPhotoHashmarks({
                     className="block rounded-full"
                     style={{
                       width: 1.5,
-                      height: LINEMARK_MIN_PX,
+                      height: linemarkMin,
                       backgroundColor: LINEMARK_COLOR_IDLE,
                     }}
                   />
@@ -703,7 +722,7 @@ function FilmPhotoHashmarks({
           </div>
 
           <div
-            className="relative mt-4 min-h-10 shrink-0"
+            className={`relative ${isPopup ? 'mt-2 min-h-8' : 'mt-4 min-h-10'} shrink-0`}
             style={{ width: rowW }}
           >
             <AnimatePresence>
@@ -788,7 +807,7 @@ const DEFAULT_FILM_PROJECT = {
   id: 'film',
   title: 'Film Diary',
   year: '2026',
-  description: (<>A digital photo timeline, featuring scenes from <a href="https://sundays.rsvp" target="_blank" rel="noopener noreferrer" className="text-gray-600 font-medium hover:text-gray-900 transition-colors">sundays in la</a>.</>),
+  description: (<>A digital photo timeline, featuring scenes from <a href="https://sundays.rsvp" target="_blank" rel="noopener noreferrer" className="font-medium hover:text-gray-900 transition-colors">sundays in la</a>.</>),
   imageSrc: 'https://image.mux.com/cUHD6AJLNxSi5VnldLaSehN70266tHEAfdiMQCCsQ4pA/thumbnail.png',
   videoSrc: 'https://stream.mux.com/cUHD6AJLNxSi5VnldLaSehN70266tHEAfdiMQCCsQ4pA.m3u8',
   tryItOutHref: '/film',
@@ -804,7 +823,7 @@ const FILM_LOADING_PHRASES = [
   'film reel loading',
   'developing photos',
   'rolling the negatives',
-  'dust off the enlarger',
+  'dusting off the enlarger',
   'mixing the chemicals',
   'checking the light meter',
   'hanging prints to dry',
@@ -819,8 +838,8 @@ function FilmLoadingText() {
       setTimeout(() => {
         setIdx((i) => (i + 1) % FILM_LOADING_PHRASES.length);
         setFade(true);
-      }, 300);
-    }, 2800);
+      }, 200);
+    }, 1400);
     return () => clearInterval(id);
   }, []);
   return (
@@ -838,8 +857,9 @@ function FilmLoadingText() {
   );
 }
 
-export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmPhoto[] }) {
+export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen }: { initialPhotos?: FilmPhoto[]; onCollapse?: () => void; isFullscreen?: boolean }) {
   const navigate = useNavigate();
+  const [isExiting, setIsExiting] = useState(false);
   const projectInfo = useExperimentProject('film', DEFAULT_FILM_PROJECT);
   const pageRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -900,6 +920,55 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
   /** True while a touch drag is actively moving the gallery — scroll handler must not fight. */
   const isTouchDraggingRef = useRef(false);
 
+  // Popup mode detection — when embedded inside ExperimentModal
+  const [isPopupMode, setIsPopupMode] = useState(false);
+  const isPopupModeRef = useRef(false);
+  const scrollContainerElRef = useRef<HTMLElement | null>(null);
+
+  const getVw = (): number => {
+    if (isPopupModeRef.current && scrollContainerElRef.current) {
+      return scrollContainerElRef.current.clientWidth;
+    }
+    return typeof window !== 'undefined' ? window.innerWidth : 1440;
+  };
+
+  const getVh = (): number => {
+    if (isPopupModeRef.current && scrollContainerElRef.current) {
+      return scrollContainerElRef.current.clientHeight;
+    }
+    return typeof window !== 'undefined' ? window.innerHeight : 900;
+  };
+
+  const getScrollY = (): number => {
+    if (isPopupModeRef.current && scrollContainerElRef.current) {
+      return scrollContainerElRef.current.scrollTop;
+    }
+    return window.scrollY;
+  };
+
+  const doScrollTo = (top: number, behavior: ScrollBehavior = 'instant') => {
+    if (isPopupModeRef.current && scrollContainerElRef.current) {
+      scrollContainerElRef.current.scrollTo({ top, behavior });
+    } else {
+      window.scrollTo({ top, behavior });
+    }
+  };
+
+  const setScrollTop = (value: number) => {
+    if (isPopupModeRef.current && scrollContainerElRef.current) {
+      scrollContainerElRef.current.scrollTop = value;
+    } else {
+      document.documentElement.scrollTop = value;
+    }
+  };
+
+  const getScrollTarget = (): HTMLElement | Window => {
+    if (isPopupModeRef.current && scrollContainerElRef.current) {
+      return scrollContainerElRef.current;
+    }
+    return window;
+  };
+
   const galleryX = useMotionValue(0);
 
   /** Always start {0,0} so SSR and hydration match; real size is set in `useEffect`. */
@@ -917,18 +986,32 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     return (photos.length - 1) * step + h;
   }, [photos.length, viewport.w, viewport.h]);
   useLayoutEffect(() => {
+    if (pageRef.current) {
+      const embed = pageRef.current.closest('.experiment-modal-embed:not(.fullscreen)');
+      if (embed) {
+        isPopupModeRef.current = true;
+        scrollContainerElRef.current = embed as HTMLElement;
+        vwRef.current = embed.clientWidth;
+        setIsPopupMode(true);
+        return;
+      }
+    }
+    isPopupModeRef.current = false;
+    scrollContainerElRef.current = null;
+    setIsPopupMode(false);
     vwRef.current = window.innerWidth;
-  }, []);
+  }, [isFullscreen]);
   useEffect(() => {
-    const sync = () =>
-      setViewport({ w: window.innerWidth, h: window.innerHeight });
+    const sync = () => {
+      setViewport({ w: getVw(), h: getVh() });
+    };
     sync();
     window.addEventListener('resize', sync);
     return () => window.removeEventListener('resize', sync);
-  }, []);
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (viewport.w === 0 || viewport.w >= 640) return;
-    window.scrollTo(0, 0);
+    doScrollTo(0);
   }, [viewport.w]);
 
   useEffect(() => {
@@ -1059,7 +1142,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
     filmLayoutReadyRef.current = false;
     setFilmLayoutReady(false);
-    const w = typeof window !== 'undefined' ? window.innerWidth : 1440;
+    const w = getVw();
     vwRef.current = w;
 
     if (prevCount === 0) {
@@ -1068,7 +1151,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       galleryX.set(startOff);
       if (w >= 640) {
         scrolledToScrollYRef.current = 0;
-        document.documentElement.scrollTop = 0;
+        setScrollTop(0);
       }
     } else {
       const idx = getFilmClosestPhotoIndex(galleryX.get(), w, prevCount);
@@ -1085,10 +1168,10 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         posRef.current = targetX;
         galleryX.set(targetX);
         scrolledToScrollYRef.current = targetSy;
-        document.documentElement.scrollTop = targetSy;
+        setScrollTop(targetSy);
       }
     }
-  }, [photos.length, galleryX]);
+  }, [photos.length, galleryX]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const cancelScrollSnap = useCallback(() => {
     galleryTweenRef.current?.stop();
@@ -1118,7 +1201,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     if (isGalleryTweeningRef.current) return;
     const n = photosRef.current.length;
     if (n <= 1) return;
-    const vw = window.innerWidth;
+    const vw = getVw();
     vwRef.current = vw;
     const mobile = vw < 640;
     const { bw, startOff, vpCenter } = getLayoutInfo(vw, n);
@@ -1163,7 +1246,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         const scrollStep = filmScrollStepPx(vw, n);
         const targetSy = clampedIdx * scrollStep;
         scrolledToScrollYRef.current = targetSy;
-        document.documentElement.scrollTop = targetSy;
+        setScrollTop(targetSy);
       }
       return;
     }
@@ -1199,7 +1282,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
             Math.min(maxScroll, (startOff - Number(latest)) * (scrollStep / layoutStep)),
           );
           scrolledToScrollYRef.current = nextSy;
-          document.documentElement.scrollTop = nextSy;
+          setScrollTop(nextSy);
         },
         onComplete: () => {
           isGalleryTweeningRef.current = false;
@@ -1212,7 +1295,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
   useEffect(() => {
     layoutSmoothPrevRef.current = null;
-    const w = window.innerWidth;
+    const w = getVw();
     vwRef.current = w;
 
     const applyFrame = (scrollPos: number, vw: number) => {
@@ -1229,7 +1312,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       const opacities: number[] = [];
       for (let i = 0; i < n; i++) {
         const ar = filmSafeAspectRatio(list[i].aspectRatio);
-        const o = frameScaleAndOpacity(i, focalSlot, vw, ar, bw);
+        const o = frameScaleAndOpacity(i, focalSlot, vw, ar, bw, isPopupModeRef.current);
         scales[i] = o.scale;
         opacities[i] = o.opacity;
       }
@@ -1326,12 +1409,12 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         return;
       }
 
-      const vh = window.innerHeight;
+      const vh = isPopupModeRef.current && scrollContainerElRef.current ? scrollContainerElRef.current.clientHeight : window.innerHeight;
       const mdUp = vw >= 640;
       const midY =
         mdUp
           ? (filmPlayBandBottomPx(vw, vh) +
-              (vh - filmDesktopBottomReservePx(vh))) /
+              (vh - filmDesktopBottomReservePx(vh, isPopupModeRef.current))) /
             2
           : n > 1
             ? (filmPlayBandBottomPx(vw, vh) +
@@ -1393,7 +1476,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       const imageBottom = midY + centerH / 2;
       const playBandBottom = filmPlayBandBottomPx(vw, vh);
       const bottomReserve = mdUp
-        ? filmDesktopBottomReservePx(vh)
+        ? filmDesktopBottomReservePx(vh, isPopupModeRef.current)
         : filmMobileBottomReservePx(vh);
       const timelineTop = vh - bottomReserve;
 
@@ -1443,7 +1526,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     applyFrame(galleryX.get(), w);
 
     const tick = () => {
-      const vw = window.innerWidth;
+      const vw = getVw();
       vwRef.current = vw;
       const n = photosRef.current.length;
       if (n === 0) {
@@ -1460,7 +1543,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
   useEffect(() => {
     const onResize = () => {
-      const w = window.innerWidth;
+      const w = getVw();
       vwRef.current = w;
       const n = photosRef.current.length;
       if (n === 0) return;
@@ -1474,8 +1557,8 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       } else {
         const scrollStep = filmScrollStepPx(w, n);
         const maxScroll = Math.max(0, filmEffectiveMaxScrollPx(n));
-        const sy = Math.min(maxScroll, Math.max(0, window.scrollY));
-        document.documentElement.scrollTop = sy;
+        const sy = Math.min(maxScroll, Math.max(0, getScrollY()));
+        setScrollTop(sy);
         scrolledToScrollYRef.current = sy;
         posRef.current = clampPos(startOff - sy * (layoutStep / scrollStep), w, n);
         galleryX.set(posRef.current);
@@ -1494,7 +1577,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       if (n === 0) return;
       const closestIdx = getFilmClosestPhotoIndex(
         x,
-        typeof window !== 'undefined' ? window.innerWidth : vwRef.current,
+        getVw(),
         n,
       );
       setActiveIndex((p) => (p !== closestIdx ? closestIdx : p));
@@ -1511,10 +1594,10 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     };
 
     const onScroll = () => {
-      if (window.innerWidth < 640) return;
+      if (getVw() < 640) return;
       if (isTouchDraggingRef.current) return;
       if (isGalleryTweeningRef.current) return;
-      const sy = window.scrollY;
+      const sy = getScrollY();
       if (Math.abs(scrolledToScrollYRef.current - sy) < 1) return;
       const delta = sy - scrolledToScrollYRef.current;
       if (Math.abs(delta) >= 2) {
@@ -1525,7 +1608,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       }
       const n = photosRef.current.length;
       if (n === 0) return;
-      const vw = window.innerWidth;
+      const vw = getVw();
       vwRef.current = vw;
       const { bw, startOff } = getLayoutInfo(vw, n);
       const layoutStep = bw + GAP;
@@ -1548,12 +1631,13 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       }
     };
 
-    window.addEventListener('scroll', onScroll, { passive: true });
+    const scrollTarget = getScrollTarget();
+    scrollTarget.addEventListener('scroll', onScroll, { passive: true } as AddEventListenerOptions);
     return () => {
-      window.removeEventListener('scroll', onScroll);
+      scrollTarget.removeEventListener('scroll', onScroll);
       clearIdleSnapTimer();
     };
-  }, [galleryX, runIdleScrollSnap, showManualScrollFade]);
+  }, [galleryX, runIdleScrollSnap, showManualScrollFade]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const onWheelCapture = (e: WheelEvent) => {
@@ -1574,7 +1658,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         setFilmAutoplayPlaying(false);
       }
 
-      const vw = window.innerWidth;
+      const vw = getVw();
       vwRef.current = vw;
       const { bw } = getLayoutInfo(vw, n);
       const step = bw + GAP;
@@ -1588,15 +1672,15 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         galleryTweenRef.current?.stop();
         galleryTweenRef.current = null;
         isGalleryTweeningRef.current = false;
-        scrolledToScrollYRef.current = window.scrollY;
+        scrolledToScrollYRef.current = getScrollY();
       }
 
       if (Math.abs(delta) >= 0.5) {
         scrollSnapDirectionRef.current = delta > 0 ? 1 : -1;
         showManualScrollFade();
       }
-      const next = Math.max(0, Math.min(maxScroll, window.scrollY + delta));
-      window.scrollTo({ top: next, behavior: 'instant' });
+      const next = Math.max(0, Math.min(maxScroll, getScrollY() + delta));
+      doScrollTo(next);
     };
 
     window.addEventListener('wheel', onWheelCapture, {
@@ -1611,7 +1695,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
   useEffect(() => {
     const root = pageRef.current;
     if (!root) return;
-    const mobile = window.innerWidth < 640;
+    const mobile = getVw() < 640;
 
     const drag = {
       active: false,
@@ -1664,7 +1748,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         galleryX.set(
           clampPos(
             drag.startGallery + dx,
-            window.innerWidth,
+            getVw(),
             photosRef.current.length,
           ),
         );
@@ -1679,7 +1763,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       isTouchDraggingRef.current = false;
       const n = photosRef.current.length;
       if (n > 1 && drag.moved && drag.axis === 'h') {
-        const vw = window.innerWidth;
+        const vw = getVw();
         vwRef.current = vw;
         if (vw < 640) {
           runIdleScrollSnap();
@@ -1696,7 +1780,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
             clearTimeout(scrollIdleSnapTimerRef.current);
             scrollIdleSnapTimerRef.current = null;
           }
-          document.documentElement.scrollTop = impliedSy;
+          setScrollTop(impliedSy);
           scrolledToScrollYRef.current = impliedSy;
           galleryX.set(startOff - impliedSy * (layoutStep / scrollStep));
           layoutSmoothPrevRef.current = null;
@@ -1800,7 +1884,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       }
       setNoteStableIndex(idx);
       cancelScrollSnap();
-      const vw = window.innerWidth;
+      const vw = getVw();
       const spring =
         springOverride ??
         filmGallerySpringForSlotDistance(
@@ -1820,7 +1904,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
           filmAutoplayApplyingScrollRef.current = true;
         }
         try {
-          document.documentElement.scrollTop = centerScroll;
+          setScrollTop(centerScroll);
         } finally {
           filmAutoplayApplyingScrollRef.current = false;
         }
@@ -1904,12 +1988,12 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     const reduceMotion =
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const vw = window.innerWidth;
+    const vw = getVw();
     vwRef.current = vw;
     const { startOff } = getLayoutInfo(vw, n);
     if (reduceMotion) {
       if (vw >= 640) {
-        document.documentElement.scrollTop = 0;
+        setScrollTop(0);
         scrolledToScrollYRef.current = 0;
       }
       galleryX.set(startOff);
@@ -1931,22 +2015,23 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
         },
       });
     } else {
-      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+      doScrollTo(0, 'smooth');
       let rewindFallbackId = 0;
+      const scrollTarget = getScrollTarget();
       const onRewindScroll = () => {
-        if (window.scrollY <= 1) {
-          window.removeEventListener('scroll', onRewindScroll);
+        if (getScrollY() <= 1) {
+          scrollTarget.removeEventListener('scroll', onRewindScroll);
           window.clearTimeout(rewindFallbackId);
           setFilmRewindingToStart(false);
         }
       };
-      window.addEventListener('scroll', onRewindScroll, { passive: true });
+      scrollTarget.addEventListener('scroll', onRewindScroll, { passive: true } as AddEventListenerOptions);
       rewindFallbackId = window.setTimeout(() => {
-        window.removeEventListener('scroll', onRewindScroll);
+        scrollTarget.removeEventListener('scroll', onRewindScroll);
         setFilmRewindingToStart(false);
       }, 8000);
     }
-  }, [cancelScrollSnap, galleryX]);
+  }, [cancelScrollSnap, galleryX]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -1983,7 +2068,15 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     <motion.div
       ref={pageRef}
       data-film-page
-      className="fixed inset-0 z-[50] isolate overflow-hidden overscroll-none bg-[#fafafa]"
+      className={isPopupMode
+        ? "sticky top-0 z-[50] isolate overflow-hidden overscroll-none bg-white"
+        : "fixed inset-0 z-[50] isolate overflow-hidden overscroll-none bg-[#fafafa]"
+      }
+      style={{
+        ...(isPopupMode ? { width: '100%', height: getVh() } : undefined),
+        opacity: isExiting ? 0 : 1,
+        transition: 'opacity 400ms ease-out',
+      }}
     >
       <div
         className={`absolute inset-0 z-[5] flex flex-col items-center justify-center gap-2 px-8 text-center transition-opacity duration-700 ease-out ${
@@ -2002,18 +2095,19 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       {/* Play/pause bar hidden — ref kept for layout calculations */}
       <div
         ref={playBarRef}
-        className="pointer-events-none fixed inset-x-0 top-0 z-[90] flex justify-center px-4 min-[640px]:px-8"
+        className={`pointer-events-none ${isPopupMode ? 'absolute' : 'fixed'} inset-x-0 top-0 z-[90] flex justify-center px-4 min-[640px]:px-8`}
         style={{ opacity: 0 }}
         aria-hidden
       />
 
       <div
         ref={bottomGradientRef}
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-[16] h-[72vh]"
+        className={`pointer-events-none ${isPopupMode ? 'absolute' : 'fixed'} inset-x-0 bottom-0 z-[16] ${isPopupMode ? 'h-[72%]' : 'h-[72vh]'}`}
         style={{
           opacity: 0,
-          background:
-            'linear-gradient(to top, rgb(250,250,250) 0%, rgb(250,250,250) 38%, rgba(250,250,250,0.98) 48%, rgba(250,250,250,0.94) 56%, rgba(250,250,250,0.85) 64%, rgba(250,250,250,0.7) 72%, rgba(250,250,250,0.45) 82%, rgba(250,250,250,0.2) 90%, transparent 100%)',
+          background: isPopupMode
+            ? FILM_BOTTOM_GRADIENT_WHITE
+            : 'linear-gradient(to top, rgb(250,250,250) 0%, rgb(250,250,250) 38%, rgba(250,250,250,0.98) 48%, rgba(250,250,250,0.94) 56%, rgba(250,250,250,0.85) 64%, rgba(250,250,250,0.7) 72%, rgba(250,250,250,0.45) 82%, rgba(250,250,250,0.2) 90%, transparent 100%)',
         }}
         aria-hidden
       />
@@ -2073,23 +2167,23 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       </div>
 
       <div
-        className="pointer-events-none fixed bottom-0 left-0 z-[15] w-20 md:w-[24vw]"
+        className={`pointer-events-none ${isPopupMode ? 'absolute' : 'fixed'} bottom-0 left-0 z-[15] w-20 md:w-[24vw]`}
         style={{
           top:
             'calc(env(safe-area-inset-top, 0px) + clamp(5.25rem, 4.25rem + 6.5vh, 10.5rem))',
-          background: FILM_EDGE_GRADIENT_LEFT,
+          background: isPopupMode ? FILM_EDGE_GRADIENT_LEFT_WHITE : FILM_EDGE_GRADIENT_LEFT,
         }}
         aria-hidden
       />
       <div
-        className="pointer-events-none fixed top-0 right-0 bottom-0 z-[15] w-20 md:w-[24vw]"
+        className={`pointer-events-none ${isPopupMode ? 'absolute' : 'fixed'} top-0 right-0 bottom-0 z-[15] w-20 md:w-[24vw]`}
         style={{
-          background: FILM_EDGE_GRADIENT_RIGHT,
+          background: isPopupMode ? FILM_EDGE_GRADIENT_RIGHT_WHITE : FILM_EDGE_GRADIENT_RIGHT,
         }}
         aria-hidden
       />
 
-      <div className="absolute bottom-[clamp(0.5rem,0.25rem+2vh,1.75rem)] left-0 right-0 z-20 flex justify-center px-2 min-[640px]:bottom-[clamp(0.75rem,0.375rem+2.5vh,3.25rem)] min-[640px]:left-1/2 min-[640px]:right-auto min-[640px]:w-auto min-[640px]:-translate-x-1/2 min-[640px]:px-0">
+      <div className={`absolute bottom-[clamp(0.5rem,0.25rem+2vh,1.75rem)] z-20 flex justify-center ${isPopupMode ? 'left-1/2 right-auto w-auto -translate-x-1/2 px-0' : 'left-0 right-0 px-2 min-[640px]:bottom-[clamp(0.75rem,0.375rem+2.5vh,3.25rem)] min-[640px]:left-1/2 min-[640px]:right-auto min-[640px]:w-auto min-[640px]:-translate-x-1/2 min-[640px]:px-0'}`}>
         {photos.length > 0 ? (
         <FilmPhotoHashmarks
           photos={photos}
@@ -2097,14 +2191,19 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
           noteStableIndex={noteStableIndex}
           onSelect={scrollToIndex}
           galleryX={galleryX}
+          isPopup={isPopupMode}
         />
         ) : null}
       </div>
 
       <button
         type="button"
-        onClick={() => navigate('/')}
-        className="fixed top-8 left-6 z-[100] cursor-pointer hover:opacity-80 md:left-16"
+        onClick={() => {
+          if (isExiting) return;
+          setIsExiting(true);
+          setTimeout(() => navigate('/'), 400);
+        }}
+        className={`${isPopupMode ? 'absolute' : 'fixed'} top-8 left-6 z-[100] cursor-pointer hover:opacity-80 md:left-16`}
         aria-label="Go back to home"
       >
         <img
@@ -2118,7 +2217,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
     </motion.div>
     <div
       data-film-page
-      className="w-full bg-[#fafafa]"
+      className={`w-full ${isPopupMode ? 'bg-white' : 'bg-[#fafafa]'}`}
       style={{ height: scrollDriverHeightPx }}
       aria-hidden
     />
