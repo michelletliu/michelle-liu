@@ -270,7 +270,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
                 <span className="text-[#9ca3af] text-lg font-medium">•</span>
                 <span className="text-[#9ca3af] text-lg font-medium">{project.year}</span>
               </div>
-              <p className="text-base leading-5 text-[#6b7280]">
+              <p className="text-base leading-5 text-[#6b7280] md:text-gray-700">
                 {project.description}
               </p>
             </div>
