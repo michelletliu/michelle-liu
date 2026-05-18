@@ -59,7 +59,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
             <p className="leading-5 text-sm relative shrink-0 text-[#9ca3af]">
               {category.label}
             </p>
-            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-gray-700">
+            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#6b7280]">
               {category.tools.map((tool, toolIdx) => (
                 <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
                   <p className="leading-[21px] whitespace-nowrap">{tool}</p>
@@ -75,7 +75,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
             <p className="leading-5 shrink-0 text-[#9ca3af] w-[72px]">
               {category.label}
             </p>
-            <p className="leading-5 text-gray-700 tracking-[-0.31px]">
+            <p className="leading-5 text-[#6b7280] tracking-[-0.31px]">
               {category.tools.join(', ')}
             </p>
           </div>
