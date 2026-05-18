@@ -265,7 +265,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
               href="https://sundays.rsvp"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex gap-1.5 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:text-gray-700 transition-colors duration-200 ease-out"
+              className="inline-flex gap-1 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:text-gray-700 transition-colors duration-200 ease-out"
             >
               <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-sm text-gray-500 whitespace-nowrap">
                 Visit sundays.rsvp
