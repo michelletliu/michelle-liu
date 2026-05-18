@@ -251,7 +251,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
       )}>
         <header className="flex flex-col">
           {/* Desktop: title + buttons side by side */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col min-w-0">
               <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                 <h1 className="text-lg font-normal">{project.title}</h1>
