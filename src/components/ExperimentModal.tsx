@@ -296,21 +296,8 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
               )}
             </div>
           </div>
-          {/* Mobile: buttons below description */}
+          {/* Mobile: buttons below description — blue first, then ghost */}
           <div className="flex md:hidden flex-wrap gap-0.5 mt-2">
-            <a
-              href="https://sundays.rsvp"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex gap-1 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:text-gray-700 transition-colors duration-200 ease-out"
-            >
-              <span className="font-['Manrope',sans-serif] font-medium leading-normal text-base text-gray-500 whitespace-nowrap">
-                sundays.rsvp
-              </span>
-              <span className="text-gray-500 inline-flex items-center">
-                <ArrowUpRight size="12px" strokeWidth={1.3} />
-              </span>
-            </a>
             {project.xLink && (
               <a
                 href={project.xLink}
@@ -329,6 +316,19 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
                 </span>
               </a>
             )}
+            <a
+              href="https://sundays.rsvp"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex gap-1 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:text-gray-700 transition-colors duration-200 ease-out"
+            >
+              <span className="font-['Manrope',sans-serif] font-medium leading-normal text-base text-gray-500 whitespace-nowrap">
+                sundays.rsvp
+              </span>
+              <span className="text-gray-500 inline-flex items-center">
+                <ArrowUpRight size="12px" strokeWidth={1.3} />
+              </span>
+            </a>
           </div>
         </header>
         {project.toolCategories && project.toolCategories.length > 0 ? (
@@ -583,8 +583,12 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
         )}
 
         {/* Header - expand button only in popup mode (fullscreen uses embedded page's logo) */}
+        {/* Hidden on mobile for sundays (no fullscreen on mobile) */}
         {!isFullscreen && (
-          <div className="absolute top-0 left-0 z-[60] pointer-events-none pl-6 pt-6">
+          <div className={clsx(
+            "absolute top-0 left-0 z-[60] pointer-events-none pl-6 pt-6",
+            projectId === 'sundays' && 'max-md:hidden'
+          )}>
             <div className="pointer-events-auto">
               <Tooltip label="Expand" position="bottom">
                 <button
@@ -636,7 +640,8 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
               className={clsx(
                 "w-full h-full experiment-modal-embed modal-scroll-container relative transition-all duration-500 ease-out overflow-auto",
                 isFullscreen && "fullscreen",
-                !isFullscreen && projectId === 'film' && "overflow-x-hidden"
+                !isFullscreen && projectId === 'film' && "overflow-x-hidden",
+                !isFullscreen && projectId === 'sundays' && "max-md:overflow-hidden"
               )}
               style={{ 
                 '--scrollbar-track-color': getBackgroundColor(project),
