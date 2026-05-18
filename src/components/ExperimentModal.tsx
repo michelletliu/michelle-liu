@@ -274,7 +274,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
                 {project.description}
               </p>
             </div>
-            <div className="hidden md:flex flex-wrap gap-0.5 shrink-0 items-center">
+            <div className="hidden md:flex flex-wrap gap-2 shrink-0 items-center">
               <Tooltip label="sundays.rsvp" position="bottom">
                 <a
                   href="https://sundays.rsvp"
