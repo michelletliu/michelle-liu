@@ -807,7 +807,7 @@ const DEFAULT_FILM_PROJECT = {
   id: 'film',
   title: 'Film Diary',
   year: '2026',
-  description: (<>A digital photo timeline, featuring scenes from <a href="https://sundays.rsvp" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900 transition-colors">sundays in la</a>.</>),
+  description: (<>A digital photo timeline, featuring scenes from <a href="https://sundays.rsvp" target="_blank" rel="noopener noreferrer" className="font-semibold hover:text-gray-900 transition-colors">sundays in la</a>.</>),
   imageSrc: 'https://image.mux.com/cUHD6AJLNxSi5VnldLaSehN70266tHEAfdiMQCCsQ4pA/thumbnail.png',
   videoSrc: 'https://stream.mux.com/cUHD6AJLNxSi5VnldLaSehN70266tHEAfdiMQCCsQ4pA.m3u8',
   tryItOutHref: '/film',
