@@ -2178,7 +2178,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
         aria-hidden
       />
 
-      <div className={`absolute bottom-[clamp(0.5rem,0.25rem+2vh,1.75rem)] left-0 right-0 z-20 flex justify-center px-2 ${isPopupMode ? '' : 'min-[640px]:bottom-[clamp(0.75rem,0.375rem+2.5vh,3.25rem)] min-[640px]:left-1/2 min-[640px]:right-auto min-[640px]:w-auto min-[640px]:-translate-x-1/2 min-[640px]:px-0'}`}>
+      <div className={`absolute bottom-[clamp(0.5rem,0.25rem+2vh,1.75rem)] z-20 flex justify-center ${isPopupMode ? 'left-1/2 right-auto w-auto -translate-x-1/2 px-0' : 'left-0 right-0 px-2 min-[640px]:bottom-[clamp(0.75rem,0.375rem+2.5vh,3.25rem)] min-[640px]:left-1/2 min-[640px]:right-auto min-[640px]:w-auto min-[640px]:-translate-x-1/2 min-[640px]:px-0'}`}>
         {photos.length > 0 ? (
         <FilmPhotoHashmarks
           photos={photos}
