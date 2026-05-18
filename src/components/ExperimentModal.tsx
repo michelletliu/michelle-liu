@@ -386,6 +386,22 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
       return () => window.removeEventListener('resize', checkMobile);
     }
   }, [projectId, initialFullscreen, navigate]);
+
+  // Sundays should never go fullscreen on mobile — redirect back to popup
+  useEffect(() => {
+    if (projectId === 'sundays' && initialFullscreen) {
+      const checkMobile = () => {
+        const isMobile = window.innerWidth < 768;
+        if (isMobile) {
+          navigate(`/project/${projectId}`, { replace: true });
+        }
+      };
+      
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      return () => window.removeEventListener('resize', checkMobile);
+    }
+  }, [projectId, initialFullscreen, navigate]);
   const [contentScale, setContentScale] = useState(1);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
