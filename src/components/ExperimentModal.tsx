@@ -249,27 +249,29 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
         "flex flex-col gap-6 w-full",
         isFullscreen && 'max-w-4xl'
       )}>
-        <header className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            <h1 className="text-2xl md:text-3xl font-normal">{project.title}</h1>
-            <span className="text-[#9ca3af] text-xl">•</span>
-            <span className="text-[#9ca3af] text-xl">{project.year}</span>
+        <header className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <h1 className="text-lg font-normal">{project.title}</h1>
+              <span className="text-[#9ca3af] text-lg">•</span>
+              <span className="text-[#9ca3af] text-lg">{project.year}</span>
+            </div>
+            <p className="text-base leading-relaxed text-[#6b7280]">
+              {project.description}
+            </p>
           </div>
-          <p className="text-base leading-relaxed text-[#6b7280]">
-            {project.description}
-          </p>
-          <div className="flex flex-wrap gap-2 mt-1">
+          <div className="flex flex-wrap gap-2 shrink-0">
             <a
               href="https://sundays.rsvp"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1.5 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+              className="inline-flex gap-1.5 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:text-gray-700 transition-colors duration-200 ease-out"
             >
-              <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-base text-white whitespace-nowrap">
+              <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-sm text-gray-500 whitespace-nowrap">
                 Visit sundays.rsvp
               </span>
-              <span className="text-white inline-flex items-center">
-                <ArrowUpRight size="14px" strokeWidth={1.4} />
+              <span className="text-gray-500 inline-flex items-center">
+                <ArrowUpRight size="12px" strokeWidth={1.3} />
               </span>
             </a>
             {project.xLink && (
@@ -279,14 +281,14 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
                 rel="noopener noreferrer"
                 className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
               >
-                <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-base text-white whitespace-nowrap">
+                <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-sm text-white whitespace-nowrap">
                   View on
                 </span>
-                <svg className="block w-[14px] h-[14px] fill-white" viewBox="0 0 19 18">
+                <svg className="block w-[12px] h-[12px] fill-white" viewBox="0 0 19 18">
                   <path d={xLogoPath} />
                 </svg>
                 <span className="text-white inline-flex items-center">
-                  <ArrowUpRight size="14px" strokeWidth={1.4} />
+                  <ArrowUpRight size="12px" strokeWidth={1.3} />
                 </span>
               </a>
             )}
