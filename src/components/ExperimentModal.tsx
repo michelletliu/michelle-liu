@@ -260,7 +260,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
               {project.description}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2 shrink-0">
+          <div className="flex flex-wrap gap-1 shrink-0">
             <a
               href="https://sundays.rsvp"
               target="_blank"
