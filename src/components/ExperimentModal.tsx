@@ -59,8 +59,8 @@ const xLogoPath = "M10.6862 7.6055L17.3844 0H15.8002L9.97941 6.60311L5.36277 0H0
 // Horizontal divider line
 function PopupLine() {
   return (
-    <div className="h-px relative shrink-0 w-full">
-      <div className="absolute bg-zinc-100 inset-0" />
+    <div className="h-px relative shrink-0 w-full max-md:-mx-6 max-md:w-[calc(100%+3rem)]">
+      <div className="absolute inset-0 bg-zinc-100 max-md:bg-zinc-200" />
     </div>
   );
 }
@@ -234,7 +234,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
   return (
     <div className={clsx(
       "font-['Michelle',sans-serif] w-full box-border flex flex-col text-[#111827]",
-      isFullscreen ? 'min-h-screen items-center px-6 py-16 md:px-16 md:py-20' : 'min-h-full max-md:px-6 max-md:py-6 px-8 py-32 md:px-[8%] xl:px-[175px]'
+      isFullscreen ? 'min-h-screen items-center px-6 py-16 md:px-16 md:py-20' : 'min-h-full max-md:px-6 max-md:pt-6 max-md:pb-8 px-8 py-32 md:px-[8%] xl:px-[175px]'
     )}>
       {isFullscreen && (
         <button
