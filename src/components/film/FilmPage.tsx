@@ -838,8 +838,8 @@ function FilmLoadingText() {
       setTimeout(() => {
         setIdx((i) => (i + 1) % FILM_LOADING_PHRASES.length);
         setFade(true);
-      }, 300);
-    }, 2800);
+      }, 200);
+    }, 1400);
     return () => clearInterval(id);
   }, []);
   return (
