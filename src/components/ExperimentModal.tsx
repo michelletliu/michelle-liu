@@ -267,12 +267,12 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
                 href="https://sundays.rsvp"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex gap-1 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:text-gray-700 transition-colors duration-200 ease-out"
+                className="group inline-flex gap-1 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
               >
-                <span className="font-['Manrope',sans-serif] font-medium leading-normal text-base text-gray-500 whitespace-nowrap">
+                <span className="font-['Manrope',sans-serif] font-medium leading-normal text-base text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
                   sundays.rsvp
                 </span>
-                <span className="text-gray-500 inline-flex items-center">
+                <span className="text-gray-500 group-hover:text-blue-500 inline-flex items-center">
                   <ArrowUpRight size="12px" strokeWidth={1.3} />
                 </span>
               </a>
@@ -320,12 +320,12 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
               href="https://sundays.rsvp"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex gap-1 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:text-gray-700 transition-colors duration-200 ease-out"
+              className="group inline-flex gap-1 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
             >
-              <span className="font-['Manrope',sans-serif] font-medium leading-normal text-base text-gray-500 whitespace-nowrap">
+              <span className="font-['Manrope',sans-serif] font-medium leading-normal text-base text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
                 sundays.rsvp
               </span>
-              <span className="text-gray-500 inline-flex items-center">
+              <span className="text-gray-500 group-hover:text-blue-500 inline-flex items-center">
                 <ArrowUpRight size="12px" strokeWidth={1.3} />
               </span>
             </a>
@@ -417,12 +417,12 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
           href="https://sundays.rsvp"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer hover:text-gray-700 transition-colors duration-200 ease-out"
+          className="group inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
         >
-          <span className="font-['Manrope',sans-serif] font-medium leading-normal text-sm text-gray-500 whitespace-nowrap">
+          <span className="font-['Manrope',sans-serif] font-medium leading-normal text-sm text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
             sundays.rsvp
           </span>
-          <span className="text-gray-500 inline-flex items-center">
+          <span className="text-gray-500 group-hover:text-blue-500 inline-flex items-center">
             <ArrowUpRight size="12px" strokeWidth={1.3} />
           </span>
         </a>
