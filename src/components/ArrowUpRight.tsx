@@ -1,4 +1,4 @@
-export function ArrowUpRight({ className = "", size }: { className?: string; size?: string }) {
+export function ArrowUpRight({ className = "", size, strokeWidth }: { className?: string; size?: string; strokeWidth?: number }) {
   return (
     <svg
       width={size ?? "0.6em"}
@@ -6,13 +6,13 @@ export function ArrowUpRight({ className = "", size }: { className?: string; siz
       viewBox="0 0 12 12"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={`inline-block align-baseline ${className}`}
-      style={{ verticalAlign: '0.05em' }}
+      className={`inline-block ${className}`}
+      style={{ verticalAlign: 'middle' }}
     >
       <path
         d="M2.5 9.5L9.5 2.5M9.5 2.5H4M9.5 2.5V8"
         stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth={strokeWidth ?? 1.8}
         strokeLinecap="round"
         strokeLinejoin="round"
       />

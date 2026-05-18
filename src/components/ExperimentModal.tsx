@@ -269,7 +269,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
                 Visit sundays.rsvp
               </span>
               <span className="text-white">
-                <ArrowUpRight size="14px" />
+                <ArrowUpRight size="14px" strokeWidth={1.4} />
               </span>
             </a>
             {project.xLink && (
@@ -286,7 +286,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
                   <path d={xLogoPath} />
                 </svg>
                 <span className="text-white">
-                  <ArrowUpRight size="14px" />
+                  <ArrowUpRight size="14px" strokeWidth={1.4} />
                 </span>
               </a>
             )}
@@ -711,7 +711,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
                 <path d={xLogoPath} />
               </svg>
               <span className="text-white text-sm">
-                <ArrowUpRight size="12px" />
+                <ArrowUpRight size="12px" strokeWidth={1.3} />
               </span>
             </a>
           )}
