@@ -859,6 +859,7 @@ function FilmLoadingText() {
 
 export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen }: { initialPhotos?: FilmPhoto[]; onCollapse?: () => void; isFullscreen?: boolean }) {
   const navigate = useNavigate();
+  const [isExiting, setIsExiting] = useState(false);
   const projectInfo = useExperimentProject('film', DEFAULT_FILM_PROJECT);
   const pageRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -2071,7 +2072,11 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
         ? "sticky top-0 z-[50] isolate overflow-hidden overscroll-none bg-white"
         : "fixed inset-0 z-[50] isolate overflow-hidden overscroll-none bg-[#fafafa]"
       }
-      style={isPopupMode ? { width: '100%', height: getVh() } : undefined}
+      style={{
+        ...(isPopupMode ? { width: '100%', height: getVh() } : undefined),
+        opacity: isExiting ? 0 : 1,
+        transition: 'opacity 400ms ease-out',
+      }}
     >
       <div
         className={`absolute inset-0 z-[5] flex flex-col items-center justify-center gap-2 px-8 text-center transition-opacity duration-700 ease-out ${
@@ -2193,7 +2198,11 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
 
       <button
         type="button"
-        onClick={() => navigate('/')}
+        onClick={() => {
+          if (isExiting) return;
+          setIsExiting(true);
+          setTimeout(() => navigate('/'), 400);
+        }}
         className={`${isPopupMode ? 'absolute' : 'fixed'} top-8 left-6 z-[100] cursor-pointer hover:opacity-80 md:left-16`}
         aria-label="Go back to home"
       >
