@@ -364,12 +364,119 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
   );
 }
 
+// Mobile-only Sundays content matching the standard InfoButton modal layout
+function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
+  const [videoReady, setVideoReady] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVideoReady(true), 350);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div className="content-stretch flex flex-col gap-3 items-start px-6 py-6 relative shrink-0 w-full">
+      {/* Title row */}
+      <div className="flex flex-col min-w-0 gap-0.5">
+        <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
+          <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
+            {project.title}
+          </p>
+          <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
+            •
+          </p>
+          <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-base">
+            {project.year}
+          </p>
+        </div>
+        <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] text-sm">
+          {project.description}
+        </p>
+      </div>
+
+      {/* Buttons: View on X then sundays.rsvp */}
+      <div className="flex flex-wrap gap-1 items-center">
+        {project.xLink && (
+          <a
+            href={project.xLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="self-start bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+          >
+            <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
+              View on
+            </span>
+            <svg className="block w-[12px] h-[12px] fill-white" viewBox="0 0 19 18">
+              <path d={xLogoPath} />
+            </svg>
+            <span className="text-white inline-flex items-center">
+              <ArrowUpRight size="12px" strokeWidth={1.3} />
+            </span>
+          </a>
+        )}
+        <a
+          href="https://sundays.rsvp"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer hover:text-gray-700 transition-colors duration-200 ease-out"
+        >
+          <span className="font-['Manrope',sans-serif] font-medium leading-normal text-sm text-gray-500 whitespace-nowrap">
+            sundays.rsvp
+          </span>
+          <span className="text-gray-500 inline-flex items-center">
+            <ArrowUpRight size="12px" strokeWidth={1.3} />
+          </span>
+        </a>
+      </div>
+
+      {/* Tools Section */}
+      {project.toolCategories && project.toolCategories.length > 0 && (
+        <ToolsSection categories={project.toolCategories} />
+      )}
+
+      {/* Video/Image content area */}
+      {project.imageSrc && (
+        <div className="relative rounded-[16px] border border-gray-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 mt-3">
+          <ShimmerImage
+            alt=""
+            className="absolute object-cover size-full"
+            wrapperClassName="absolute inset-0"
+            rounded="rounded-[16px]"
+            src={project.imageSrc}
+          />
+          {project.videoSrc && videoReady && (
+            <ShimmerVideo
+              key={project.id}
+              src={project.videoSrc}
+              className="absolute object-cover size-full rounded-[16px]"
+              wrapperClassName="absolute inset-0"
+              rounded="rounded-[16px]"
+              autoPlay
+              muted
+              loop
+              controls={false}
+              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ExperimentModal({ projectId, project, onClose, onExpandToFullscreen, onCollapseFromFullscreen, onBookSlugChange, bookSlug, initialFullscreen = false }: ExperimentModalProps) {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const isFullscreen = initialFullscreen;
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   // Auto-redirect to fullscreen on mobile for library
   useEffect(() => {
@@ -539,6 +646,9 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
       case 'film':
         return <FilmPage onCollapse={handleCollapse} isFullscreen={isFullscreen} />;
       case 'sundays':
+        if (isMobile && !isFullscreen) {
+          return <SundaysMobileEmbed project={project} />;
+        }
         return <SundaysEmbed project={project} isFullscreen={isFullscreen} onCollapse={handleCollapse} />;
       default:
         return <GenericExperimentEmbed project={project} />;
@@ -566,7 +676,10 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
           "relative flex flex-col overflow-hidden transition-all duration-500 ease-out",
           isFullscreen 
             ? "w-full h-full rounded-none"
-            : "rounded-[26px] w-[calc(100%*10/12)] max-md:w-full h-[90vh]",
+            : clsx(
+              "rounded-[26px] w-[calc(100%*10/12)] max-md:w-full",
+              isMobile && projectId === 'sundays' ? "max-h-[90vh]" : "h-[90vh]"
+            ),
           isVisible 
             ? 'opacity-100 translate-y-0' 
             : isClosing 
@@ -658,8 +771,8 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
                 )}
                 style={{ 
                   transformOrigin: 'top left',
-                  transform: !isFullscreen && contentScale < 1 ? `scale(${contentScale})` : undefined,
-                  width: !isFullscreen && contentScale < 1 ? `${100 / contentScale}%` : undefined,
+                  transform: !isFullscreen && contentScale < 1 && !(isMobile && projectId === 'sundays') ? `scale(${contentScale})` : undefined,
+                  width: !isFullscreen && contentScale < 1 && !(isMobile && projectId === 'sundays') ? `${100 / contentScale}%` : undefined,
                 }}
               >
                 {renderExperiment()}
