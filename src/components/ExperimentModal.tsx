@@ -386,7 +386,7 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
   }, []);
 
   return (
-    <div className="content-stretch flex flex-col gap-3 items-start px-6 py-6 relative shrink-0 w-full">
+    <div className="content-stretch flex flex-col gap-3 px-6 py-6 relative shrink-0 w-full">
       {/* Title row */}
       <div className="flex flex-col min-w-0 gap-0.5">
         <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
