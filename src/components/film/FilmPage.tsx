@@ -2193,7 +2193,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
 
       <button
         type="button"
-        onClick={() => onCollapse ? onCollapse() : navigate('/')}
+        onClick={() => navigate('/')}
         className={`${isPopupMode ? 'absolute' : 'fixed'} top-8 left-6 z-[100] cursor-pointer hover:opacity-80 md:left-16`}
         aria-label="Go back to home"
       >
