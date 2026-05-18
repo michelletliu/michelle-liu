@@ -253,12 +253,12 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
           {/* Desktop: title + buttons side by side */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col min-w-0">
-              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <h1 className="text-lg font-normal">{project.title}</h1>
-                <span className="text-[#9ca3af] text-lg">•</span>
-                <span className="text-[#9ca3af] text-lg">{project.year}</span>
+              <div className="flex flex-wrap items-baseline gap-x-[6px] gap-y-1">
+                <h1 className="text-base font-normal">{project.title}</h1>
+                <span className="text-[#9ca3af] text-base font-medium">•</span>
+                <span className="text-[#9ca3af] text-base">{project.year}</span>
               </div>
-              <p className="text-base leading-relaxed text-[#6b7280]">
+              <p className="text-base leading-5 text-[#6b7280]">
                 {project.description}
               </p>
             </div>
@@ -267,9 +267,9 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
                 href="https://sundays.rsvp"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex gap-1 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
+                className="group inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
               >
-                <span className="font-['Manrope',sans-serif] font-medium leading-normal text-base text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
+                <span className="font-['Manrope',sans-serif] font-medium leading-normal text-sm text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
                   sundays.rsvp
                 </span>
                 <span className="text-gray-500 group-hover:text-blue-500 inline-flex items-center">
@@ -320,9 +320,9 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
               href="https://sundays.rsvp"
               target="_blank"
               rel="noopener noreferrer"
-              className="group inline-flex gap-1 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
+              className="group inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
             >
-              <span className="font-['Manrope',sans-serif] font-medium leading-normal text-base text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
+              <span className="font-['Manrope',sans-serif] font-medium leading-normal text-sm text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
                 sundays.rsvp
               </span>
               <span className="text-gray-500 group-hover:text-blue-500 inline-flex items-center">
