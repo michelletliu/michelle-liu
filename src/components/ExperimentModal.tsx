@@ -249,7 +249,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
         "flex flex-col gap-4 w-full",
         isFullscreen && 'max-w-4xl'
       )}>
-        <header className="flex flex-col gap-0.5">
+        <header className="flex flex-col">
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
               <h1 className="text-lg font-normal">{project.title}</h1>
