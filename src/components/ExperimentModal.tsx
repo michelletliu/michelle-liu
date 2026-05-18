@@ -297,7 +297,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
         {project.toolCategories && project.toolCategories.length > 0 ? (
           <ToolsSection categories={project.toolCategories} />
         ) : null}
-        <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 shrink-0">
+        <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 shrink-0 mt-2">
           {project.imageSrc?.trim() ? (
             <ShimmerImage
               alt=""
