@@ -482,7 +482,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
       case 'sketchbook':
         return <SketchbookPage />;
       case 'film':
-        return <FilmPage onCollapse={handleCollapse} />;
+        return <FilmPage onCollapse={handleCollapse} isFullscreen={isFullscreen} />;
       case 'sundays':
         return <SundaysEmbed project={project} isFullscreen={isFullscreen} onCollapse={handleCollapse} />;
       default:

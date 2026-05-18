@@ -857,7 +857,7 @@ function FilmLoadingText() {
   );
 }
 
-export default function FilmPage({ initialPhotos = [], onCollapse }: { initialPhotos?: FilmPhoto[]; onCollapse?: () => void }) {
+export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen }: { initialPhotos?: FilmPhoto[]; onCollapse?: () => void; isFullscreen?: boolean }) {
   const navigate = useNavigate();
   const projectInfo = useExperimentProject('film', DEFAULT_FILM_PROJECT);
   const pageRef = useRef<HTMLDivElement>(null);
@@ -995,8 +995,11 @@ export default function FilmPage({ initialPhotos = [], onCollapse }: { initialPh
         return;
       }
     }
+    isPopupModeRef.current = false;
+    scrollContainerElRef.current = null;
+    setIsPopupMode(false);
     vwRef.current = window.innerWidth;
-  }, []);
+  }, [isFullscreen]);
   useEffect(() => {
     const sync = () => {
       setViewport({ w: getVw(), h: getVh() });
