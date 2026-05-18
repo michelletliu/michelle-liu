@@ -372,7 +372,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                       className="text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
                       {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     >
-                      {experimentLink!.label}
+                      {experimentLink!.label}{experimentLink!.external && <span className="ml-1"><ArrowUpRight /></span>}
                     </a>
                   </>
                 )}
@@ -398,7 +398,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                   className="text-blue-400 hover:text-blue-300"
                   {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 >
-                  {experimentLink!.label}
+                  {experimentLink!.label}{experimentLink!.external && <span className="ml-1"><ArrowUpRight /></span>}
                 </a>
               </>
             )}
@@ -437,7 +437,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                 className="hidden md:inline text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
                 {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
-                {experimentLink!.label}
+                {experimentLink!.label}{experimentLink!.external && <span className="ml-1"><ArrowUpRight /></span>}
               </a>
             </>
           )}
@@ -449,7 +449,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
             className="md:hidden text-blue-400 hover:text-blue-300 ml-auto shrink-0 text-base"
             {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
           >
-            {experimentLink!.label}
+            {experimentLink!.label}{experimentLink!.external && <span className="ml-1"><ArrowUpRight /></span>}
           </a>
         )}
       </div>
