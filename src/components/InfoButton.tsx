@@ -203,7 +203,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
             <div className="content-stretch flex flex-col max-md:gap-3 gap-4 items-start px-8 max-md:px-6 pt-6 pb-8 max-md:py-6 relative shrink-0 w-full">
               {/* Header: title+description grouped in one div on the left,
                   View on X button (desktop only) as a sibling div top-aligned to the right */}
-              <div className="w-full flex items-center justify-between gap-3">
+              <div className="w-full flex items-start justify-between gap-3">
                 {/* Left column: title row and description stacked */}
                 <div className="flex flex-col min-w-0 gap-0.5">
                   {/* Title row */}
