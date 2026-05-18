@@ -279,7 +279,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
                 href={project.xLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+                className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
               >
                 <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-sm text-white whitespace-nowrap">
                   View on
