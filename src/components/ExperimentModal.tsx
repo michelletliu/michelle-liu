@@ -242,31 +242,19 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
   useEffect(() => {
     if (!isFullscreen) return;
 
-    const findScrollParent = (el: HTMLElement | null): HTMLElement | null => {
-      while (el) {
-        const style = getComputedStyle(el);
-        if (el.scrollHeight > el.clientHeight && style.overflowY !== 'visible' && style.overflowY !== 'hidden') {
-          return el;
-        }
-        el = el.parentElement;
-      }
-      return null;
-    };
-
     const timer = setTimeout(() => {
-      const scrollParent = findScrollParent(containerRef.current);
-      if (!scrollParent) return;
+      const scrollContainer = containerRef.current?.closest('.modal-scroll-container') as HTMLElement | null;
+      if (!scrollContainer) return;
 
       const handleScroll = () => {
-        setIsScrolled(scrollParent.scrollTop > 20);
+        setIsScrolled(scrollContainer.scrollTop > 20);
       };
 
-      scrollParent.addEventListener('scroll', handleScroll);
+      scrollContainer.addEventListener('scroll', handleScroll);
       handleScroll();
 
-      // Store cleanup ref
       (containerRef as any)._scrollCleanup = () => {
-        scrollParent.removeEventListener('scroll', handleScroll);
+        scrollContainer.removeEventListener('scroll', handleScroll);
       };
     }, 100);
 
