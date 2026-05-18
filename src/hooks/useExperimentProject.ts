@@ -67,7 +67,7 @@ export function useExperimentProject(
             id: data.projectId,
             title: data.title,
             year: data.year,
-            description: data.description,
+            description: typeof defaultProject.description !== 'string' ? defaultProject.description : data.description,
             imageSrc: muxUrls.imageSrc,
             videoSrc: muxUrls.videoSrc,
             xLink: data.xLink || defaultProject.xLink,
