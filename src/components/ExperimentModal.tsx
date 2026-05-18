@@ -66,13 +66,13 @@ function PopupLine() {
 }
 
 // Tools Section component
-function ToolsSection({ categories }: { categories: ToolCategory[] }) {
+function ToolsSection({ categories, large = false }: { categories: ToolCategory[]; large?: boolean }) {
   if (!categories || categories.length === 0) return null;
   
   return (
     <>
       <PopupLine />
-      <div className="font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 text-[15px] w-full mt-2 hidden md:grid">
+      <div className={clsx("font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 w-full mt-2 hidden md:grid", large ? "text-base" : "text-[15px]")}>
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
             <p className="leading-5 text-sm relative shrink-0 text-[#9ca3af]">
@@ -332,7 +332,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
           </div>
         </header>
         {project.toolCategories && project.toolCategories.length > 0 ? (
-          <ToolsSection categories={project.toolCategories} />
+          <ToolsSection categories={project.toolCategories} large />
         ) : null}
         <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 shrink-0 mt-2">
           {project.imageSrc?.trim() ? (
