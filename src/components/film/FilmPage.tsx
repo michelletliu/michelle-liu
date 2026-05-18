@@ -857,7 +857,7 @@ function FilmLoadingText() {
   );
 }
 
-export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmPhoto[] }) {
+export default function FilmPage({ initialPhotos = [], onCollapse }: { initialPhotos?: FilmPhoto[]; onCollapse?: () => void }) {
   const navigate = useNavigate();
   const projectInfo = useExperimentProject('film', DEFAULT_FILM_PROJECT);
   const pageRef = useRef<HTMLDivElement>(null);
@@ -2190,7 +2190,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
 
       <button
         type="button"
-        onClick={() => navigate('/')}
+        onClick={() => onCollapse ? onCollapse() : navigate('/')}
         className={`${isPopupMode ? 'absolute' : 'fixed'} top-8 left-6 z-[100] cursor-pointer hover:opacity-80 md:left-16`}
         aria-label="Go back to home"
       >
