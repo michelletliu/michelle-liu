@@ -268,7 +268,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
               <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-base text-white whitespace-nowrap">
                 Visit sundays.rsvp
               </span>
-              <span className="text-white">
+              <span className="text-white inline-flex items-center">
                 <ArrowUpRight size="14px" strokeWidth={1.4} />
               </span>
             </a>
@@ -285,7 +285,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
                 <svg className="block w-[14px] h-[14px] fill-white" viewBox="0 0 19 18">
                   <path d={xLogoPath} />
                 </svg>
-                <span className="text-white">
+                <span className="text-white inline-flex items-center">
                   <ArrowUpRight size="14px" strokeWidth={1.4} />
                 </span>
               </a>
@@ -710,7 +710,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
               >
                 <path d={xLogoPath} />
               </svg>
-              <span className="text-white text-sm">
+              <span className="text-white text-sm inline-flex items-center">
                 <ArrowUpRight size="12px" strokeWidth={1.3} />
               </span>
             </a>

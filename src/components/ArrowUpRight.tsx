@@ -7,7 +7,7 @@ export function ArrowUpRight({ className = "", size, strokeWidth }: { className?
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={`inline-block ${className}`}
-      style={{ verticalAlign: 'middle' }}
+      style={{ verticalAlign: '0.05em' }}
     >
       <path
         d="M2.5 9.5L9.5 2.5M9.5 2.5H4M9.5 2.5V8"

@@ -648,7 +648,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
               >
                 <path d={svgPaths.p16308a80} />
               </svg>
-              <span className="text-white">
+              <span className="text-white inline-flex items-center">
                 <ArrowUpRight size="14px" strokeWidth={1.4} />
               </span>
             </a>
