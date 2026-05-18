@@ -122,7 +122,14 @@ const staticProjects: Project[] = [
     description: "A scroll-driven photo strip of life moments.",
     imageSrc: "https://image.mux.com/p66bkVMzjdu5wUtVpCZX41TwUzNOwWEfbSdtVefW9Vw/thumbnail.png?width=1920",
     videoSrc: "https://stream.mux.com/p66bkVMzjdu5wUtVpCZX41TwUzNOwWEfbSdtVefW9Vw.m3u8",
+    xLink: "https://x.com/michelletliu/status/1925775994930327773",
     backgroundColor: "#ffffff",
+    toolCategories: [
+      { label: 'Design', tools: ['Figma'] },
+      { label: 'Frontend', tools: ['TypeScript', 'React', 'Framer Motion', 'Tailwind CSS'] },
+      { label: 'Data', tools: ['Notion API'] },
+      { label: 'AI', tools: ['Cursor', 'Opus 4.6'] },
+    ],
   },
   {
     id: "library",
@@ -372,7 +379,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                       className="text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
                       {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     >
-                      {experimentLink!.label}{experimentLink!.external && <span className="ml-1"><ArrowUpRight /></span>}
+                      {experimentLink!.label}{experimentLink!.external && <span className="ml-1.5 inline-flex items-center" style={{ verticalAlign: 'middle' }}><ArrowUpRight className="!align-middle" /></span>}
                     </a>
                   </>
                 )}
@@ -398,7 +405,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                   className="text-blue-400 hover:text-blue-300"
                   {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 >
-                  {experimentLink!.label}{experimentLink!.external && <span className="ml-1"><ArrowUpRight /></span>}
+                  {experimentLink!.label}{experimentLink!.external && <span className="ml-1.5 inline-flex items-center" style={{ verticalAlign: 'middle' }}><ArrowUpRight className="!align-middle" /></span>}
                 </a>
               </>
             )}
@@ -437,7 +444,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                 className="hidden md:inline text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
                 {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
-                {experimentLink!.label}{experimentLink!.external && <span className="ml-1"><ArrowUpRight /></span>}
+                {experimentLink!.label}{experimentLink!.external && <span className="ml-1.5 inline-flex items-center" style={{ verticalAlign: 'middle' }}><ArrowUpRight className="!align-middle" /></span>}
               </a>
             </>
           )}
@@ -449,7 +456,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
             className="md:hidden text-blue-400 hover:text-blue-300 ml-auto shrink-0 text-base"
             {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
           >
-            {experimentLink!.label}{experimentLink!.external && <span className="ml-1"><ArrowUpRight /></span>}
+            {experimentLink!.label}{experimentLink!.external && <span className="ml-1.5 inline-flex items-center" style={{ verticalAlign: 'middle' }}><ArrowUpRight className="!align-middle" /></span>}
           </a>
         )}
       </div>

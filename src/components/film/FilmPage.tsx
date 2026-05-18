@@ -71,9 +71,9 @@ function filmTimelineBottomInsetPx(vh: number, mdUp: boolean): number {
   );
 }
 
-function filmDesktopBottomReservePx(vh: number): number {
+function filmDesktopBottomReservePx(vh: number, isPopup = false): number {
   return (
-    filmTimelineBottomInsetPx(vh, true) + FILM_DESKTOP_TIMELINE_CHROME_ABOVE_BOTTOM_PX
+    filmTimelineBottomInsetPx(vh, true) + (isPopup ? 130 : FILM_DESKTOP_TIMELINE_CHROME_ABOVE_BOTTOM_PX)
   );
 }
 
@@ -225,12 +225,17 @@ function landscapeCenterMaxPx(vw: number): number {
  * Width multiplier (`× bw`) and opacity from fractional scroll slot — smooth handoff between neighbors
  * (like easing clip inset) without any clip-path or second transform scale.
  */
+/** Popup-mode caps: scale images down so they don't overlap with the timeline text. */
+const POPUP_FRAME_W_EXPANDED = 320;
+const POPUP_CENTER_SCALE = 1.6;
+
 function frameScaleAndOpacity(
   index: number,
   focalSlot: number,
   vw: number,
   aspectRatio: number,
   bw: number,
+  isPopup = false,
 ): { scale: number; opacity: number } {
   const distSlots = Math.abs(focalSlot - index);
   const u = Math.min(1, distSlots / FILM_FRAME_WIDEN_SLOT_RANGE);
@@ -238,11 +243,13 @@ function frameScaleAndOpacity(
 
   const wCollapsed = Math.min(FILM_FRAME_W_COLLAPSED, bw);
   const isLandscape = aspectRatio > 1;
+  const maxExpanded = isPopup ? POPUP_FRAME_W_EXPANDED : FILM_FRAME_W_EXPANDED;
+  const centerScale = isPopup ? POPUP_CENTER_SCALE : CENTER_SCALE;
   const wExpanded = Math.min(
-    FILM_FRAME_W_EXPANDED,
+    maxExpanded,
     isLandscape
-      ? landscapeCenterMaxPx(vw)
-      : bw * (vw < 640 ? MOBILE_PORTRAIT_CENTER_SCALE : CENTER_SCALE),
+      ? landscapeCenterMaxPx(vw) * (isPopup ? 0.67 : 1)
+      : bw * (vw < 640 ? MOBILE_PORTRAIT_CENTER_SCALE : centerScale),
   );
   const wPx = lerp(wCollapsed, wExpanded, widenT);
   const scale = wPx / bw;
@@ -431,6 +438,7 @@ function FilmPhotoHashmarks({
   noteStableIndex,
   onSelect,
   galleryX,
+  isPopup = false,
 }: {
   photos: readonly FilmPhoto[];
   currentIndex: number;
@@ -438,9 +446,14 @@ function FilmPhotoHashmarks({
   noteStableIndex: number;
   onSelect: (index: number) => void;
   galleryX: MotionValue<number>;
+  isPopup?: boolean;
 }) {
   const total = photos.length;
   const rowW = filmHashRowWidthPx(total);
+  const linemarkMin = isPopup ? 18 : LINEMARK_MIN_PX;
+  const tablistMinH = isPopup
+    ? Math.ceil((linemarkMin + LINEMARK_INTENSITY_PX) * LINEMARK_SELECTED_HEIGHT_MULT + LINEMARK_HOVER_BONUS_PX + 14)
+    : HASH_TABLIST_MIN_H_PX;
   const cur = photos[currentIndex];
   const notePhoto = photos[noteStableIndex];
   const currentIndexRef = useRef(currentIndex);
@@ -581,7 +594,7 @@ function FilmPhotoHashmarks({
       if (linemarkHeightRef.current.length !== total) {
         linemarkHeightRef.current = Array.from(
           { length: total },
-          () => LINEMARK_MIN_PX,
+          () => linemarkMin,
         );
       }
 
@@ -590,7 +603,7 @@ function FilmPhotoHashmarks({
         let targetScale = transformScale(
           dist,
           LINEMARK_CEILING,
-          LINEMARK_MIN_PX,
+          linemarkMin,
           LINEMARK_INTENSITY_PX,
         );
         if (i === currentIndexRef.current) {
@@ -631,7 +644,7 @@ function FilmPhotoHashmarks({
         <div className="pointer-events-none absolute top-0 left-1/2 z-20 flex w-max max-w-[min(92vw,720px)] -translate-x-1/2 flex-col items-center px-2 text-center">
           <motion.p
             key={notePhoto.note}
-            className="line-clamp-2 max-w-full text-pretty text-[15px] font-medium leading-snug text-black"
+            className={`line-clamp-2 max-w-full text-pretty ${isPopup ? 'text-[13px]' : 'text-[15px]'} font-medium leading-snug text-black`}
             initial={{ opacity: 0, filter: 'blur(4px)' }}
             animate={{ opacity: 1, filter: 'blur(0px)' }}
             transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
@@ -666,7 +679,7 @@ function FilmPhotoHashmarks({
           <div
             ref={tablistRef}
             className="-mt-2 flex shrink-0 items-end pb-2 pt-3 sm:pt-0 sm:pb-0"
-            style={{ width: rowW, gap: HASH_GAP, minHeight: HASH_TABLIST_MIN_H_PX, touchAction: 'none' }}
+            style={{ width: rowW, gap: HASH_GAP, minHeight: tablistMinH, touchAction: 'none' }}
             role="tablist"
           >
             {photos.map((photo, i) => {
@@ -699,7 +712,7 @@ function FilmPhotoHashmarks({
                     className="block rounded-full"
                     style={{
                       width: 1.5,
-                      height: LINEMARK_MIN_PX,
+                      height: linemarkMin,
                       backgroundColor: LINEMARK_COLOR_IDLE,
                     }}
                   />
@@ -709,7 +722,7 @@ function FilmPhotoHashmarks({
           </div>
 
           <div
-            className="relative mt-4 min-h-10 shrink-0"
+            className={`relative ${isPopup ? 'mt-2 min-h-8' : 'mt-4 min-h-10'} shrink-0`}
             style={{ width: rowW }}
           >
             <AnimatePresence>
@@ -1295,7 +1308,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       const opacities: number[] = [];
       for (let i = 0; i < n; i++) {
         const ar = filmSafeAspectRatio(list[i].aspectRatio);
-        const o = frameScaleAndOpacity(i, focalSlot, vw, ar, bw);
+        const o = frameScaleAndOpacity(i, focalSlot, vw, ar, bw, isPopupModeRef.current);
         scales[i] = o.scale;
         opacities[i] = o.opacity;
       }
@@ -1397,7 +1410,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       const midY =
         mdUp
           ? (filmPlayBandBottomPx(vw, vh) +
-              (vh - filmDesktopBottomReservePx(vh))) /
+              (vh - filmDesktopBottomReservePx(vh, isPopupModeRef.current))) /
             2
           : n > 1
             ? (filmPlayBandBottomPx(vw, vh) +
@@ -1459,7 +1472,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
       const imageBottom = midY + centerH / 2;
       const playBandBottom = filmPlayBandBottomPx(vw, vh);
       const bottomReserve = mdUp
-        ? filmDesktopBottomReservePx(vh)
+        ? filmDesktopBottomReservePx(vh, isPopupModeRef.current)
         : filmMobileBottomReservePx(vh);
       const timelineTop = vh - bottomReserve;
 
@@ -2170,6 +2183,7 @@ export default function FilmPage({ initialPhotos = [] }: { initialPhotos?: FilmP
           noteStableIndex={noteStableIndex}
           onSelect={scrollToIndex}
           galleryX={galleryX}
+          isPopup={isPopupMode}
         />
         ) : null}
       </div>
