@@ -405,7 +405,7 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
       </div>
 
       {/* Buttons: View on X then sundays.rsvp */}
-      <div className="flex flex-wrap gap-1 items-center mb-2">
+      <div className="flex flex-wrap gap-0.5 items-center mb-2">
         {project.xLink && (
           <a
             href={project.xLink}
