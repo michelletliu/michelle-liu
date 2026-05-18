@@ -250,13 +250,19 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
         isFullscreen && 'max-w-4xl'
       )}>
         <header className="flex flex-col">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-              <h1 className="text-lg font-normal">{project.title}</h1>
-              <span className="text-[#9ca3af] text-lg">•</span>
-              <span className="text-[#9ca3af] text-lg">{project.year}</span>
+          {/* Desktop: title + buttons side by side */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col min-w-0">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <h1 className="text-lg font-normal">{project.title}</h1>
+                <span className="text-[#9ca3af] text-lg">•</span>
+                <span className="text-[#9ca3af] text-lg">{project.year}</span>
+              </div>
+              <p className="text-base leading-relaxed text-[#6b7280]">
+                {project.description}
+              </p>
             </div>
-            <div className="flex flex-wrap gap-0.5 shrink-0">
+            <div className="hidden md:flex flex-wrap gap-0.5 shrink-0">
               <a
                 href="https://sundays.rsvp"
                 target="_blank"
@@ -290,9 +296,40 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
               )}
             </div>
           </div>
-          <p className="text-base leading-relaxed text-[#6b7280]">
-            {project.description}
-          </p>
+          {/* Mobile: buttons below description */}
+          <div className="flex md:hidden flex-wrap gap-0.5 mt-2">
+            <a
+              href="https://sundays.rsvp"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex gap-1 items-center justify-center px-4 py-1.5 rounded-full shrink-0 cursor-pointer hover:text-gray-700 transition-colors duration-200 ease-out"
+            >
+              <span className="font-['Manrope',sans-serif] font-medium leading-normal text-base text-gray-500 whitespace-nowrap">
+                sundays.rsvp
+              </span>
+              <span className="text-gray-500 inline-flex items-center">
+                <ArrowUpRight size="12px" strokeWidth={1.3} />
+              </span>
+            </a>
+            {project.xLink && (
+              <a
+                href={project.xLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+              >
+                <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-sm text-white whitespace-nowrap">
+                  View on
+                </span>
+                <svg className="block w-[12px] h-[12px] fill-white" viewBox="0 0 19 18">
+                  <path d={xLogoPath} />
+                </svg>
+                <span className="text-white inline-flex items-center">
+                  <ArrowUpRight size="12px" strokeWidth={1.3} />
+                </span>
+              </a>
+            )}
+          </div>
         </header>
         {project.toolCategories && project.toolCategories.length > 0 ? (
           <ToolsSection categories={project.toolCategories} />
