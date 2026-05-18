@@ -72,16 +72,28 @@ function ToolsSection({ categories, large = false }: { categories: ToolCategory[
   return (
     <>
       <PopupLine />
-      <div className={clsx("font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 w-full mt-2 hidden md:grid", large ? "text-base" : "text-[15px]")}>
+      <div className={clsx(
+        "font-['Michelle',sans-serif] font-normal relative shrink-0 w-full mt-2 hidden md:grid",
+        large ? "flex gap-5 text-base grid-cols-4" : "gap-3 grid-cols-4 text-[15px]"
+      )}>
         {categories.map((category, idx) => (
-          <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
-            <p className="leading-5 text-sm relative shrink-0 text-[#9ca3af]">
+          <div key={idx} className={clsx(
+            "content-stretch flex flex-col items-start justify-start relative shrink-0",
+            large ? "flex-[1_0_0] min-h-px min-w-px gap-3 leading-5" : "gap-2"
+          )}>
+            <p className={clsx(
+              "relative shrink-0 text-[#9ca3af]",
+              large ? "font-medium text-base" : "leading-5 text-sm"
+            )}>
               {category.label}
             </p>
-            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#6b7280]">
+            <div className={clsx(
+              "content-stretch flex flex-col items-start relative shrink-0",
+              large ? "text-gray-700 leading-5" : "leading-[0] text-[#6b7280]"
+            )}>
               {category.tools.map((tool, toolIdx) => (
                 <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
-                  <p className="leading-[21px] whitespace-nowrap">{tool}</p>
+                  <p className={clsx("whitespace-nowrap", large ? "leading-5" : "leading-[21px]")}>{tool}</p>
                 </div>
               ))}
             </div>
