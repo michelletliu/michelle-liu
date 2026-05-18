@@ -1,8 +1,8 @@
-export function ArrowUpRight({ className = "" }: { className?: string }) {
+export function ArrowUpRight({ className = "", size }: { className?: string; size?: string }) {
   return (
     <svg
-      width="0.6em"
-      height="0.6em"
+      width={size ?? "0.6em"}
+      height={size ?? "0.6em"}
       viewBox="0 0 12 12"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

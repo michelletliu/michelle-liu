@@ -243,7 +243,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                       <path d={xLogoPath} />
                     </svg>
                     <span className="text-white">
-                      <ArrowUpRight />
+                      <ArrowUpRight size="12px" />
                     </span>
                   </a>
                 )}
@@ -267,7 +267,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                     <path d={xLogoPath} />
                   </svg>
                   <span className="text-white">
-                    <ArrowUpRight />
+                    <ArrowUpRight size="12px" />
                   </span>
                 </a>
               )}

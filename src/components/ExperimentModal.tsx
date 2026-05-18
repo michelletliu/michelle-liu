@@ -269,7 +269,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
                 Visit sundays.rsvp
               </span>
               <span className="text-white">
-                <ArrowUpRight />
+                <ArrowUpRight size="14px" />
               </span>
             </a>
             {project.xLink && (
@@ -286,7 +286,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
                   <path d={xLogoPath} />
                 </svg>
                 <span className="text-white">
-                  <ArrowUpRight />
+                  <ArrowUpRight size="14px" />
                 </span>
               </a>
             )}
@@ -675,7 +675,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
           <div className="flex flex-col min-w-0 gap-0">
             <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
               <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
-x                {project.title}
+                {project.title}
               </p>
               <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
                 •
@@ -711,7 +711,7 @@ x                {project.title}
                 <path d={xLogoPath} />
               </svg>
               <span className="text-white text-sm">
-                <ArrowUpRight />
+                <ArrowUpRight size="12px" />
               </span>
             </a>
           )}
