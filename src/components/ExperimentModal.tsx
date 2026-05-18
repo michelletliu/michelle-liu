@@ -258,7 +258,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
         </button>
       )}
       <div className={clsx(
-        "flex flex-col gap-3 md:gap-6 w-full",
+        "flex flex-col gap-3 md:gap-7 w-full",
         isFullscreen && 'max-w-4xl'
       )}>
         <header className="flex flex-col">
