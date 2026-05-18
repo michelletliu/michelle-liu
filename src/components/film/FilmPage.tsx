@@ -823,7 +823,7 @@ const FILM_LOADING_PHRASES = [
   'film reel loading',
   'developing photos',
   'rolling the negatives',
-  'dust off the enlarger',
+  'dusting off the enlarger',
   'mixing the chemicals',
   'checking the light meter',
   'hanging prints to dry',
