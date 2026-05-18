@@ -12,8 +12,9 @@ import { ProjectModal as SanityProjectModal } from "./project";
 import { TryItOutButton } from "./TryItOutButton";
 import { preloadLikelyPages } from "../sanity/preload";
 import PageHeader from "./PageHeader";
-import { client } from "../sanity/client";
+import { client, urlFor } from "../sanity/client";
 import { PROJECTS_QUERY, EXPERIMENT_PROJECTS_QUERY } from "../sanity/queries";
+import type { SanityImage } from "../sanity/types";
 import { ArrowUpRight } from "./ArrowUpRight";
 import { useScrollLock } from "../utils/useScrollLock";
 import ContactBadge from "./ContactBadge";
@@ -711,6 +712,7 @@ type SanityExperimentProject = {
   description: string;
   muxPlaybackIdClip?: string;
   muxPlaybackId?: string;
+  fallbackThumbnail?: SanityImage;
   xLink?: string;
   tryItOutHref?: string;
   backgroundColor?: string;
@@ -773,12 +775,15 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
               const muxUrls = clipPlaybackId 
                 ? getMuxUrls(clipPlaybackId)
                 : { imageSrc: project.imageSrc, videoSrc: project.videoSrc };
+              const fallbackUrl = experimentData.fallbackThumbnail
+                ? urlFor(experimentData.fallbackThumbnail).width(1920).url()
+                : undefined;
               return {
                 ...project,
                 title: experimentData.title,
                 year: experimentData.year,
                 description: experimentData.description,
-                imageSrc: muxUrls.imageSrc,
+                imageSrc: fallbackUrl || muxUrls.imageSrc,
                 videoSrc: muxUrls.videoSrc,
                 xLink: experimentData.xLink || project.xLink,
                 backgroundColor: experimentData.backgroundColor || project.backgroundColor,
