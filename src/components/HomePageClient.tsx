@@ -830,7 +830,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
 
   const handleProjectClick = useCallback((projectId: string) => {
     const isMobile = window.innerWidth < 768;
-    const shouldGoFullscreen = isMobile && projectId !== 'sketchbook';
+    const shouldGoFullscreen = isMobile && projectId !== 'sketchbook' && projectId !== 'sundays';
 
     if (posthogEnabled) {
       posthog.capture("project_opened", {
