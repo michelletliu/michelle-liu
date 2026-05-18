@@ -9,6 +9,7 @@ import { ArrowUpRight } from './ArrowUpRight';
 import type { ToolCategory } from './InfoButton';
 import { TryItOutButton } from './TryItOutButton';
 import Tooltip from './Tooltip';
+import Footer from './Footer';
 
 // Kick off chunk fetches immediately when this module loads (not when modal opens)
 const polaroidPagePromise = import('./polaroid/PolaroidPage');
@@ -371,6 +372,7 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
           ) : null}
         </div>
       </div>
+      {isFullscreen && <Footer />}
     </div>
   );
 }
