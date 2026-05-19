@@ -16,6 +16,7 @@ import { client, urlFor } from "../sanity/client";
 import { PROJECTS_QUERY, EXPERIMENT_PROJECTS_QUERY } from "../sanity/queries";
 import type { SanityImage } from "../sanity/types";
 import { ArrowUpRight } from "./ArrowUpRight";
+import { TouchIcon } from "./TouchIcon";
 import { useScrollLock } from "../utils/useScrollLock";
 import ContactBadge from "./ContactBadge";
 import NavigationTabs from "./NavigationTabs";
@@ -380,13 +381,13 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                 {hasTryItOut && (
                   <>
                     <span className="text-[#9ca3af] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
-                    <a 
+                    <a
                       href={experimentLink!.href}
                       onClick={(e) => e.stopPropagation()}
-                      className="text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                      className="inline-flex items-baseline gap-1.5 align-baseline text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
                       {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     >
-                      {experimentLink!.label}{experimentLink!.external && <span className="ml-1.5 inline-flex items-center" style={{ verticalAlign: 'middle' }}><ArrowUpRight className="!align-middle" /></span>}
+                      {experimentLink!.label}{experimentLink!.external && <ArrowUpRight />}
                     </a>
                   </>
                 )}
@@ -398,25 +399,38 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
           <p className="font-['Michelle',sans-serif] font-normal leading-[1.4] text-[#9ca3af] text-base tracking-[0.005em] text-left project-hover-text">{project.description}</p>
         </div>
         <div className="md:hidden content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.01em] gap-1">
-          <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
-            <span>{project.title}</span>
-            {!hasTryItOut && (
-              <span className="text-[#9ca3af]"> • {project.year}</span>
+          <div className="flex items-center w-full">
+            <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
+              <span>{project.title}</span>
+              {!hasTryItOut && (
+                <span className="text-[#9ca3af]"> • {project.year}</span>
+              )}
+              {hasTryItOut && experimentLink!.external && (
+                <>
+                  <span className="text-[#9ca3af]"> • </span>
+                  <a
+                    href={experimentLink!.href}
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-baseline gap-1.5 align-baseline text-blue-400 hover:text-blue-300"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {experimentLink!.label}<ArrowUpRight />
+                  </a>
+                </>
+              )}
+            </p>
+            {hasTryItOut && !experimentLink!.external && (
+              <a
+                href={experimentLink!.href}
+                onClick={(e) => e.stopPropagation()}
+                className="ml-auto inline-flex items-center shrink-0 text-gray-400 hover:text-gray-500"
+                aria-label={experimentLink!.label}
+              >
+                <TouchIcon />
+              </a>
             )}
-            {hasTryItOut && (
-              <>
-                <span className="text-[#9ca3af]"> • </span>
-                <a 
-                  href={experimentLink!.href}
-                  onClick={(e) => e.stopPropagation()}
-                  className="text-blue-400 hover:text-blue-300"
-                  {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                >
-                  {experimentLink!.label}{experimentLink!.external && <span className="ml-1.5 inline-flex items-center" style={{ verticalAlign: 'middle' }}><ArrowUpRight className="!align-middle" /></span>}
-                </a>
-              </>
-            )}
-          </p>
+          </div>
           <p className="relative shrink-0 text-[#9ca3af] w-full text-left font-normal leading-[1.3]">{project.description}</p>
         </div>
       </button>
@@ -445,25 +459,35 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
             <>
               <span className="text-[#9ca3af] md:hidden"> • {project.year}</span>
               <span className="text-[#9ca3af] hidden md:inline md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
-              <a 
+              <a
                 href={experimentLink!.href}
                 onClick={(e) => e.stopPropagation()}
-                className="hidden md:inline text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                className="hidden md:inline-flex items-baseline gap-1.5 align-baseline text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
                 {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
-                {experimentLink!.label}{experimentLink!.external && <span className="ml-1.5 inline-flex items-center" style={{ verticalAlign: 'middle' }}><ArrowUpRight className="!align-middle" /></span>}
+                {experimentLink!.label}{experimentLink!.external && <ArrowUpRight />}
               </a>
             </>
           )}
         </p>
         {hasTryItOut && (
-          <a 
+          <a
             href={experimentLink!.href}
             onClick={(e) => e.stopPropagation()}
-            className="md:hidden text-blue-400 hover:text-blue-300 ml-auto shrink-0 text-base"
+            className={clsx(
+              "md:hidden inline-flex items-baseline gap-1.5 ml-auto shrink-0 text-base",
+              experimentLink!.external
+                ? "text-blue-400 hover:text-blue-300"
+                : "text-gray-400 hover:text-gray-500"
+            )}
             {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+            aria-label={experimentLink!.label}
           >
-            {experimentLink!.label}{experimentLink!.external && <span className="ml-1.5 inline-flex items-center" style={{ verticalAlign: 'middle' }}><ArrowUpRight className="!align-middle" /></span>}
+            {experimentLink!.external ? (
+              <>{experimentLink!.label}<ArrowUpRight /></>
+            ) : (
+              <TouchIcon />
+            )}
           </a>
         )}
       </div>
