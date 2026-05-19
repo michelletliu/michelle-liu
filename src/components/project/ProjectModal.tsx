@@ -737,6 +737,9 @@ const LogoIcon = () => (
     src="/logo.png"
     alt="Michelle Liu"
     className="size-[44px] object-cover"
+    loading="eager"
+    fetchPriority="high"
+    decoding="async"
   />
 );
 
@@ -1234,6 +1237,9 @@ export default function ProjectModal({
                     src="/logo.png"
                     alt="Michelle Liu"
                     className="size-full object-cover"
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
                   />
                 </button>
                 
