@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import HomePageClient from "@/components/HomePageClient";
 
 export default function HomeLayout({
@@ -9,7 +9,12 @@ export default function HomeLayout({
   children: React.ReactNode;
 }) {
   const params = useParams();
-  const slug = params.slug as string | undefined;
+  const pathname = usePathname();
+
+  // /film/popup is a special route that opens the film popup on the homepage
+  const isFilmPopup = pathname === "/film/popup";
+
+  const slug = isFilmPopup ? "film" : (params.slug as string | undefined);
   const mode = params.mode as string | undefined;
   const bookSlug = params.bookSlug as string | undefined;
 

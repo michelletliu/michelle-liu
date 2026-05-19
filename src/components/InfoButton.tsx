@@ -59,7 +59,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
             <p className="leading-5 text-sm relative shrink-0 text-[#9ca3af]">
               {category.label}
             </p>
-            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-gray-700">
+            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#6b7280]">
               {category.tools.map((tool, toolIdx) => (
                 <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
                   <p className="leading-[21px] whitespace-nowrap">{tool}</p>
@@ -75,7 +75,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
             <p className="leading-5 shrink-0 text-[#9ca3af] w-[72px]">
               {category.label}
             </p>
-            <p className="leading-5 text-gray-700 tracking-[-0.31px]">
+            <p className="leading-5 text-[#6b7280] tracking-[-0.31px]">
               {category.tools.join(', ')}
             </p>
           </div>
@@ -205,7 +205,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   View on X button (desktop only) as a sibling div top-aligned to the right */}
               <div className="w-full flex items-start justify-between gap-3">
                 {/* Left column: title row and description stacked */}
-                <div className="flex flex-col min-w-0 gap-0.5">
+                <div className="flex flex-col min-w-0 gap-1">
                   {/* Title row */}
                   <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
                     <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
@@ -242,8 +242,8 @@ export default function InfoButton({ project }: InfoButtonProps) {
                     >
                       <path d={xLogoPath} />
                     </svg>
-                    <span className="text-white">
-                      <ArrowUpRight />
+                    <span className="text-white inline-flex items-center">
+                      <ArrowUpRight size="12px" strokeWidth={1.3} />
                     </span>
                   </a>
                 )}
@@ -266,8 +266,8 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   >
                     <path d={xLogoPath} />
                   </svg>
-                  <span className="text-white">
-                    <ArrowUpRight />
+                  <span className="text-white inline-flex items-center">
+                    <ArrowUpRight size="12px" strokeWidth={1.3} />
                   </span>
                 </a>
               )}

@@ -12,8 +12,9 @@ import { ProjectModal as SanityProjectModal } from "./project";
 import { TryItOutButton } from "./TryItOutButton";
 import { preloadLikelyPages } from "../sanity/preload";
 import PageHeader from "./PageHeader";
-import { client } from "../sanity/client";
+import { client, urlFor } from "../sanity/client";
 import { PROJECTS_QUERY, EXPERIMENT_PROJECTS_QUERY } from "../sanity/queries";
+import type { SanityImage } from "../sanity/types";
 import { ArrowUpRight } from "./ArrowUpRight";
 import { useScrollLock } from "../utils/useScrollLock";
 import ContactBadge from "./ContactBadge";
@@ -116,18 +117,19 @@ const staticProjects: Project[] = [
     ],
   },
   {
-    id: "sketchbook",
-    title: "Digital Sketchbook",
+    id: "film",
+    title: "Film Diary",
     year: "2025",
-    description: "A digital home for sketches and visual journaling.",
-    imageSrc: "https://image.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg/thumbnail.png?width=1920",
-    videoSrc: "https://stream.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg.m3u8",
+    description: "A scroll-driven photo strip of life moments.",
+    imageSrc: "https://image.mux.com/p66bkVMzjdu5wUtVpCZX41TwUzNOwWEfbSdtVefW9Vw/thumbnail.png?width=1920",
+    videoSrc: "https://stream.mux.com/p66bkVMzjdu5wUtVpCZX41TwUzNOwWEfbSdtVefW9Vw.m3u8",
+    xLink: "https://x.com/michelletliu/status/1925775994930327773",
     backgroundColor: "#ffffff",
     toolCategories: [
       { label: 'Design', tools: ['Figma'] },
-      { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
-      { label: 'Styling', tools: ['Tailwind CSS'] },
-      { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+      { label: 'Frontend', tools: ['TypeScript', 'React', 'Framer Motion', 'Tailwind CSS'] },
+      { label: 'Data', tools: ['Notion API'] },
+      { label: 'AI', tools: ['Cursor', 'Opus 4.6'] },
     ],
   },
   {
@@ -144,6 +146,37 @@ const staticProjects: Project[] = [
       { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
       { label: 'Styling', tools: ['Tailwind CSS'] },
       { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+    ],
+  },
+  {
+    id: "sketchbook",
+    title: "Digital Sketchbook",
+    year: "2025",
+    description: "A digital home for sketches and visual journaling.",
+    imageSrc: "https://image.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg/thumbnail.png?width=1920",
+    videoSrc: "https://stream.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg.m3u8",
+    backgroundColor: "#ffffff",
+    toolCategories: [
+      { label: 'Design', tools: ['Figma'] },
+      { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
+      { label: 'Styling', tools: ['Tailwind CSS'] },
+      { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+    ],
+  },
+  {
+    id: "sundays",
+    title: "Sundays",
+    year: "2026",
+    description: "A new site for Sundays, a weekly coworking session I help host for creatives in LA.",
+    imageSrc: "https://image.mux.com/RmmMHG2l02e02I3powzzRYb6qWuW00HwxAAcB7wo41FGo00/thumbnail.png?width=1920",
+    videoSrc: "https://stream.mux.com/RmmMHG2l02e02I3powzzRYb6qWuW00HwxAAcB7wo41FGo00.m3u8",
+    xLink: "https://x.com/michelletliu/status/2044470508641784033",
+    backgroundColor: "#ffffff",
+    toolCategories: [
+      { label: 'UI & Motion', tools: ['Tailwind CSS', 'Framer Motion'] },
+      { label: 'Frontend', tools: ['Next.js', 'React', 'TypeScript'] },
+      { label: '3D', tools: ['Three.js', 'React Three Fiber'] },
+      { label: 'Content & Infra', tools: ['Notion API', 'Vercel'] },
     ],
   },
 ];
@@ -289,6 +322,18 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
 
 // SocialLinksBackgroundImage and LinksBackgroundImageAndText are now in src/components/SocialLinks.tsx
 
+function getExperimentLink(projectId: string): { href: string; label: string; external: boolean } | null {
+  switch (projectId) {
+    case 'polaroid': return { href: '/polaroid', label: 'Try It Out!', external: false };
+    case 'screentime': return { href: '/screentime', label: 'Try It Out!', external: false };
+    case 'sketchbook': return { href: '/sketchbook', label: 'Try It Out!', external: false };
+    case 'library': return { href: '/library', label: 'Try It Out!', external: false };
+    case 'film': return { href: '/film', label: 'Try It Out!', external: false };
+    case 'sundays': return { href: 'https://sundays.rsvp', label: 'Visit Site', external: true };
+    default: return null;
+  }
+}
+
 type ProjectCardProps = {
   project: Project;
   onProjectClick: (projectId: string) => void;
@@ -298,13 +343,14 @@ type ProjectCardProps = {
 };
 
 const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, featured = false, index = 0 }: ProjectCardProps) {
-  const hasTryItOut = project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime' || project.id === 'sketchbook';
+  const experimentLink = getExperimentLink(project.id);
+  const hasTryItOut = experimentLink !== null;
   
   const handleClick = () => {
     const isDesktop = window.innerWidth >= 768;
     
-    if (hasTryItOut && !isDesktop) {
-      window.location.href = project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library';
+    if (experimentLink && !experimentLink.external && !isDesktop) {
+      window.location.href = experimentLink.href;
     } else {
       onProjectClick(project.id);
     }
@@ -335,11 +381,12 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                   <>
                     <span className="text-[#9ca3af] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
                     <a 
-                      href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
+                      href={experimentLink!.href}
                       onClick={(e) => e.stopPropagation()}
                       className="text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                      {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     >
-                      Try It Out!
+                      {experimentLink!.label}{experimentLink!.external && <span className="ml-1.5 inline-flex items-center" style={{ verticalAlign: 'middle' }}><ArrowUpRight className="!align-middle" /></span>}
                     </a>
                   </>
                 )}
@@ -360,11 +407,12 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
               <>
                 <span className="text-[#9ca3af]"> • </span>
                 <a 
-                  href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
+                  href={experimentLink!.href}
                   onClick={(e) => e.stopPropagation()}
                   className="text-blue-400 hover:text-blue-300"
+                  {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 >
-                  Try It Out!
+                  {experimentLink!.label}{experimentLink!.external && <span className="ml-1.5 inline-flex items-center" style={{ verticalAlign: 'middle' }}><ArrowUpRight className="!align-middle" /></span>}
                 </a>
               </>
             )}
@@ -398,22 +446,24 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
               <span className="text-[#9ca3af] md:hidden"> • {project.year}</span>
               <span className="text-[#9ca3af] hidden md:inline md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
               <a 
-                href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
+                href={experimentLink!.href}
                 onClick={(e) => e.stopPropagation()}
                 className="hidden md:inline text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
-                Try It Out!
+                {experimentLink!.label}{experimentLink!.external && <span className="ml-1.5 inline-flex items-center" style={{ verticalAlign: 'middle' }}><ArrowUpRight className="!align-middle" /></span>}
               </a>
             </>
           )}
         </p>
         {hasTryItOut && (
           <a 
-            href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
+            href={experimentLink!.href}
             onClick={(e) => e.stopPropagation()}
             className="md:hidden text-blue-400 hover:text-blue-300 ml-auto shrink-0 text-base"
+            {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
           >
-            Try It Out!
+            {experimentLink!.label}{experimentLink!.external && <span className="ml-1.5 inline-flex items-center" style={{ verticalAlign: 'middle' }}><ArrowUpRight className="!align-middle" /></span>}
           </a>
         )}
       </div>
@@ -605,8 +655,8 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
               >
                 <path d={svgPaths.p16308a80} />
               </svg>
-              <span className="text-white">
-                <ArrowUpRight />
+              <span className="text-white inline-flex items-center">
+                <ArrowUpRight size="14px" strokeWidth={1.4} />
               </span>
             </a>
           )}
@@ -646,7 +696,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
   );
 }
 
-const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library"];
+const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library", "film", "sundays"];
 const MAIN_PROJECT_IDS = ["apple", "roblox", "adobe", "nasa"];
 
 type SanityProject = {
@@ -662,6 +712,7 @@ type SanityExperimentProject = {
   description: string;
   muxPlaybackIdClip?: string;
   muxPlaybackId?: string;
+  fallbackThumbnail?: SanityImage;
   xLink?: string;
   tryItOutHref?: string;
   backgroundColor?: string;
@@ -724,12 +775,15 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
               const muxUrls = clipPlaybackId 
                 ? getMuxUrls(clipPlaybackId)
                 : { imageSrc: project.imageSrc, videoSrc: project.videoSrc };
+              const fallbackUrl = experimentData.fallbackThumbnail
+                ? urlFor(experimentData.fallbackThumbnail).width(1920).url()
+                : undefined;
               return {
                 ...project,
                 title: experimentData.title,
                 year: experimentData.year,
                 description: experimentData.description,
-                imageSrc: muxUrls.imageSrc,
+                imageSrc: fallbackUrl || muxUrls.imageSrc,
                 videoSrc: muxUrls.videoSrc,
                 xLink: experimentData.xLink || project.xLink,
                 backgroundColor: experimentData.backgroundColor || project.backgroundColor,
@@ -781,7 +835,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
 
   const handleProjectClick = useCallback((projectId: string) => {
     const isMobile = window.innerWidth < 768;
-    const shouldGoFullscreen = isMobile && projectId !== 'sketchbook';
+    const shouldGoFullscreen = projectId === 'film' || (isMobile && projectId !== 'sketchbook' && projectId !== 'sundays');
 
     if (posthogEnabled) {
       posthog.capture("project_opened", {
@@ -794,12 +848,12 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
       setLocalSlug(projectId);
       setLocalFullscreen(true);
       setLocalBookSlug(undefined);
-      navigate(`/project/${projectId}/full`);
+      navigate(projectId === 'film' ? '/film' : `/project/${projectId}/full`);
     } else {
       setLocalSlug(projectId);
       setLocalFullscreen(false);
       setLocalBookSlug(undefined);
-      navigate(`/project/${projectId}`);
+      navigate(projectId === 'film' ? '/film/popup' : `/project/${projectId}`);
     }
   }, [navigate]);
 
@@ -814,7 +868,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     if (localSlug) {
       setLocalFullscreen(true);
       setLocalBookSlug(undefined);
-      navigate(`/project/${localSlug}/full`);
+      navigate(localSlug === 'film' ? '/film' : `/project/${localSlug}/full`);
     }
   };
 
@@ -825,7 +879,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
       navigate(
         bookSlug
           ? `/project/${localSlug}/full/${encodeURIComponent(bookSlug)}`
-          : `/project/${localSlug}/full`
+          : (localSlug === 'film' ? '/film' : `/project/${localSlug}/full`)
       );
     }
   };
@@ -834,7 +888,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     if (localSlug) {
       setLocalFullscreen(false);
       setLocalBookSlug(undefined);
-      navigate(`/project/${localSlug}`);
+      navigate(localSlug === 'film' ? '/film/popup' : `/project/${localSlug}`);
     }
   };
 
@@ -842,8 +896,8 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     if (!localSlug) return;
 
     const basePath = localFullscreen
-      ? `/project/${localSlug}/full`
-      : `/project/${localSlug}`;
+      ? (localSlug === 'film' ? '/film' : `/project/${localSlug}/full`)
+      : (localSlug === 'film' ? '/film/popup' : `/project/${localSlug}`);
     const nextPath = nextBookSlug
       ? `${basePath}/${encodeURIComponent(nextBookSlug)}`
       : basePath;
@@ -856,8 +910,8 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     setLocalSlug(projectId);
     setLocalBookSlug(undefined);
     const newPath = isFullscreenFromUrl
-      ? `/project/${projectId}/full`
-      : `/project/${projectId}`;
+      ? (projectId === 'film' ? '/film' : `/project/${projectId}/full`)
+      : (projectId === 'film' ? '/film/popup' : `/project/${projectId}`);
     navigate(newPath);
   };
 
@@ -968,7 +1022,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
         SIDE_PROJECT_IDS.includes(selectedProject.id) ? (
           <ExperimentModal 
             key={selectedProject.id}
-            projectId={selectedProject.id as 'polaroid' | 'library' | 'screentime' | 'sketchbook'}
+            projectId={selectedProject.id as 'polaroid' | 'library' | 'screentime' | 'sketchbook' | 'film' | 'sundays'}
             project={selectedProject} 
             onClose={handleModalClose}
             onExpandToFullscreen={handleExpandExperimentToFullscreen}

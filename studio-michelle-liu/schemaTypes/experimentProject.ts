@@ -46,6 +46,15 @@ export const experimentProject = defineType({
       type: 'string',
     }),
     defineField({
+      name: 'fallbackThumbnail',
+      title: 'Fallback Thumbnail',
+      description: 'Optional JPG/PNG image shown while the video is loading',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+    }),
+    defineField({
       name: 'xLink',
       title: 'X (Twitter) Link',
       description: 'Optional link to the X/Twitter post',

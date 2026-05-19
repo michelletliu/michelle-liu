@@ -383,6 +383,11 @@ export const EXPERIMENT_PROJECTS_QUERY = `
     description,
     muxPlaybackIdClip,
     muxPlaybackId,
+    fallbackThumbnail {
+      asset,
+      hotspot,
+      crop
+    },
     xLink,
     tryItOutHref,
     backgroundColor,
@@ -403,6 +408,11 @@ export const EXPERIMENT_PROJECT_BY_ID_QUERY = `
     description,
     muxPlaybackIdClip,
     muxPlaybackId,
+    fallbackThumbnail {
+      asset,
+      hotspot,
+      crop
+    },
     xLink,
     tryItOutHref,
     backgroundColor,

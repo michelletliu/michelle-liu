@@ -27,6 +27,9 @@ export default function LogoBackButton({
         src={imgLogo}
         alt="Michelle Liu Logo"
         className="w-8 h-8 md:w-[44px] md:h-[44px] object-contain"
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
       />
     </button>
   );

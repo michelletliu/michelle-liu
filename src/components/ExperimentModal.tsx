@@ -9,17 +9,20 @@ import { ArrowUpRight } from './ArrowUpRight';
 import type { ToolCategory } from './InfoButton';
 import { TryItOutButton } from './TryItOutButton';
 import Tooltip from './Tooltip';
+import Footer from './Footer';
 
 // Kick off chunk fetches immediately when this module loads (not when modal opens)
 const polaroidPagePromise = import('./polaroid/PolaroidPage');
 const libraryPagePromise = import('./library/LibraryPage');
 const screentimePagePromise = import('./screentime/ScreentimePage');
 const sketchbookPagePromise = import('./sketchbook/SketchbookPage');
+const filmPagePromise = import('./film/FilmPage');
 
 const PolaroidPage = lazy(() => polaroidPagePromise);
 const LibraryPage = lazy(() => libraryPagePromise);
 const ScreentimePage = lazy(() => screentimePagePromise);
 const SketchbookPage = lazy(() => sketchbookPagePromise);
+const FilmPage = lazy(() => filmPagePromise);
 
 // Expand icon SVG - matches src/assets/Expand.svg (used by main project modals)
 function ExpandIcon() {
@@ -51,35 +54,97 @@ function LoadingSpinner() {
   );
 }
 
+const ChevronRightIcon = () => (
+  <svg className="block size-full" viewBox="0 0 16 16" fill="none">
+    <path
+      d="M6 12L10 8L6 4"
+      stroke="#9CA3AF"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+type BreadcrumbProps = {
+  projectName: string;
+  onWorkClick?: () => void;
+  isScrolled?: boolean;
+  isPastHero?: boolean;
+};
+
+function Breadcrumb({ projectName, onWorkClick, isScrolled = false, isPastHero = false }: BreadcrumbProps) {
+  return (
+    <div className={clsx(
+      "flex items-center transition-all duration-300 ease-out",
+      isPastHero ? "opacity-0 pointer-events-none" : "opacity-100"
+    )}>
+      <button
+        onClick={onWorkClick}
+        className={clsx(
+          "flex items-center justify-center py-0.5 rounded-md transition-all duration-300 ease-out hover:bg-[#f3f4f6]",
+          isScrolled ? "opacity-0 pointer-events-none w-0 px-0 overflow-hidden" : "opacity-100 px-1.5 ml-2"
+        )}
+      >
+        <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#4b5563] whitespace-nowrap">
+          Work
+        </span>
+      </button>
+
+      <div className="shrink-0 size-4">
+        <ChevronRightIcon />
+      </div>
+
+      <div className="flex items-center justify-center px-1 py-0.5">
+        <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#1f2937]">
+          {projectName}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // X logo path for View on X button
 const xLogoPath = "M10.6862 7.6055L17.3844 0H15.8002L9.97941 6.60311L5.36277 0H0.178833L7.19548 9.9737L0.178833 17.9454H1.76308L7.90171 10.9761L12.7696 17.9454H17.9536L10.6858 7.6055H10.6862ZM8.7057 10.0639L7.99222 9.06869L2.33673 1.16544H4.60063L9.33802 7.5516L10.0515 8.54678L15.8011 16.8348H13.5372L8.7057 10.0643V10.0639Z";
 
 // Horizontal divider line
 function PopupLine() {
   return (
-    <div className="h-px relative shrink-0 w-full">
-      <div className="absolute bg-zinc-100 inset-0" />
+    <div className="h-px relative shrink-0 w-full mt-2 max-md:-mx-6 max-md:w-[calc(100%+3rem)]">
+      <div className="absolute inset-0 bg-zinc-100 max-md:bg-zinc-200" />
     </div>
   );
 }
 
 // Tools Section component
-function ToolsSection({ categories }: { categories: ToolCategory[] }) {
+function ToolsSection({ categories, large = false, noLine = false }: { categories: ToolCategory[]; large?: boolean; noLine?: boolean }) {
   if (!categories || categories.length === 0) return null;
   
   return (
     <>
-      <PopupLine />
-      <div className="font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 text-[15px] w-full mt-2 hidden md:grid">
+      {!noLine && <PopupLine />}
+      <div className={clsx(
+        "font-['Michelle',sans-serif] font-normal relative shrink-0 w-full mt-2 hidden md:grid",
+        large ? "flex gap-5 text-base grid-cols-4" : "gap-3 grid-cols-4 text-[15px]"
+      )}>
         {categories.map((category, idx) => (
-          <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
-            <p className="leading-5 text-sm relative shrink-0 text-[#9ca3af]">
+          <div key={idx} className={clsx(
+            "content-stretch flex flex-col items-start justify-start relative shrink-0",
+            large ? "flex-[1_0_0] min-h-px min-w-px gap-3 leading-5" : "gap-2"
+          )}>
+            <p className={clsx(
+              "relative shrink-0 text-[#9ca3af]",
+              large ? "font-medium text-base" : "leading-5 text-sm"
+            )}>
               {category.label}
             </p>
-            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-gray-700">
+            <div className={clsx(
+              "content-stretch flex flex-col items-start relative shrink-0",
+              large ? "text-gray-700 leading-5" : "leading-[0] text-[#6b7280]"
+            )}>
               {category.tools.map((tool, toolIdx) => (
                 <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
-                  <p className="leading-[21px] whitespace-nowrap">{tool}</p>
+                  <p className={clsx("whitespace-nowrap", large ? "leading-5" : "leading-[21px]")}>{tool}</p>
                 </div>
               ))}
             </div>
@@ -92,7 +157,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
             <p className="leading-5 shrink-0 text-[#9ca3af] w-[72px]">
               {category.label}
             </p>
-            <p className="leading-5 text-gray-700 tracking-[-0.31px]">
+            <p className="leading-5 text-[#6b7280] tracking-[-0.31px]">
               {category.tools.join(', ')}
             </p>
           </div>
@@ -128,10 +193,13 @@ function Logo({ onClick }: { onClick: () => void }) {
       className="cursor-pointer transition-opacity duration-200 hover:opacity-80"
       aria-label="Collapse to modal"
     >
-      <img 
-        src="/logo.png" 
-        alt="Michelle Liu Logo" 
+      <img
+        src="/logo.png"
+        alt="Michelle Liu Logo"
         className="w-8 h-8 md:w-[44px] md:h-[44px] object-contain"
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
       />
     </button>
   );
@@ -212,12 +280,300 @@ function GenericExperimentEmbed({ project }: { project: ExperimentProject }) {
   );
 }
 
+function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPastHero = false, onCollapse }: { project: ExperimentProject; isFullscreen?: boolean; isScrolled?: boolean; isPastHero?: boolean; onCollapse?: () => void }) {
+  const [videoReady, setVideoReady] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const t = setTimeout(() => setVideoReady(true), 350);
+    return () => clearTimeout(t);
+  }, []);
+
+  const handleLogoClick = () => {
+    if (onCollapse) {
+      onCollapse();
+    } else {
+      navigate('/', { replace: true });
+    }
+  };
+
+  const handleWorkClick = () => {
+    navigate('/');
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <>
+    <div className={clsx(
+      "font-['Michelle',sans-serif] w-full box-border flex flex-col text-[#111827]",
+      isFullscreen ? 'min-h-screen' : 'min-h-full px-6 pt-6 pb-8 md:px-[8%] md:py-32 xl:px-[175px]'
+    )}>
+      {isFullscreen && (
+        <div
+          className={clsx(
+            "flex items-center w-full px-6 md:px-16 md:sticky md:top-0 z-30 transition-all duration-300 ease-out gap-1.5",
+            isScrolled ? "py-4" : "py-8"
+          )}
+        >
+          <button
+            onClick={handleLogoClick}
+            className={clsx(
+              "overflow-clip relative shrink-0 cursor-pointer hover:opacity-80 transition-all duration-300 ease-out p-0 border-0 bg-transparent",
+              isScrolled ? "size-7" : "size-8 md:size-[44px]"
+            )}
+            aria-label="Go back"
+          >
+            <img src="/logo.png" alt="Michelle Liu Logo" className="size-full object-contain" loading="eager" fetchPriority="high" decoding="async" />
+          </button>
+
+          <Breadcrumb
+            projectName="Sundays"
+            onWorkClick={handleWorkClick}
+            isScrolled={isScrolled}
+            isPastHero={isPastHero}
+          />
+        </div>
+      )}
+      <div className={clsx(
+        "flex flex-col gap-3 md:gap-7 w-full",
+        isFullscreen && 'max-w-4xl self-center pt-12 md:pt-16 pb-24 md:pb-32 px-6 md:px-16'
+      )}>
+        <header className="flex flex-col">
+          {/* Desktop: title + buttons side by side */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col min-w-0 md:gap-2">
+              <div className="flex flex-wrap items-baseline gap-x-[6px] gap-y-1">
+                <h1 className={clsx("font-medium", isFullscreen ? "text-xl" : "text-xl md:text-2xl")}>{project.title}</h1>
+                <span className={clsx("text-[#9ca3af] font-normal", isFullscreen ? "text-xl" : "text-xl md:text-2xl")}>•</span>
+                <span className={clsx("text-[#9ca3af] font-normal", isFullscreen ? "text-xl" : "text-xl md:text-2xl")}>{project.year}</span>
+              </div>
+              <p className="text-base leading-5 text-[#6b7280] md:text-gray-700">
+                {project.description}
+              </p>
+            </div>
+            <div className="hidden md:flex flex-wrap gap-2 shrink-0 items-center">
+              <Tooltip label="sundays.rsvp" position="bottom">
+                <a
+                  href="https://sundays.rsvp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center justify-center p-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
+                >
+                  <svg className="w-[18px] h-[18px] text-gray-500 group-hover:text-blue-500 transition-colors duration-200" viewBox="0 0 311 312" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M157.178 95.3252C166.553 96.9853 174.365 99.4267 180.615 102.649C186.865 105.774 192.285 109.681 196.875 114.368C208.789 126.185 216.699 139.222 220.605 153.479C224.512 167.64 224.463 181.8 220.459 195.96C216.553 210.12 208.74 223.06 197.021 234.778L146.924 285.022C135.303 296.644 122.412 304.407 108.252 308.313C94.0918 312.317 79.8828 312.366 65.625 308.46C51.4648 304.554 38.4277 296.644 26.5137 284.729C14.6973 272.913 6.83594 259.925 2.92969 245.765C-0.976562 231.507 -0.976562 217.298 2.92969 203.138C6.93359 188.978 14.7461 176.038 26.3672 164.319L69.4336 121.399C68.6523 126.185 68.5059 131.214 68.9941 136.487C69.5801 141.663 70.8984 146.546 72.9492 151.136L44.2383 179.847C35.7422 188.343 30.0781 197.718 27.2461 207.972C24.4141 218.226 24.4141 228.528 27.2461 238.88C30.0781 249.134 35.7422 258.558 44.2383 267.151C52.7344 275.647 62.1094 281.263 72.3633 283.997C82.7148 286.829 93.0176 286.829 103.271 283.997C113.525 281.165 122.9 275.501 131.396 267.005L179.297 219.251C187.793 210.755 193.408 201.38 196.143 191.126C198.975 180.872 198.975 170.618 196.143 160.364C193.311 150.013 187.646 140.54 179.15 131.946C174.365 127.161 168.652 123.353 162.012 120.52C155.469 117.688 147.363 115.882 137.695 115.101L157.178 95.3252ZM153.516 216.028C144.141 214.368 136.328 211.976 130.078 208.851C123.828 205.628 118.408 201.673 113.818 196.985C101.904 185.169 93.9941 172.181 90.0879 158.02C86.1816 143.763 86.1816 129.554 90.0879 115.394C94.0918 101.233 101.953 88.2939 113.672 76.5752L163.623 26.4775C175.342 14.7588 188.281 6.94625 202.441 3.04C216.602 -0.963903 230.762 -1.01273 244.922 2.89352C259.18 6.79977 272.266 14.7099 284.18 26.624C295.996 38.4404 303.857 51.4775 307.764 65.7353C311.67 79.8955 311.621 94.0556 307.617 108.216C303.711 122.376 295.947 135.315 284.326 147.034L241.26 189.954C242.041 185.169 242.139 180.188 241.553 175.013C241.064 169.837 239.795 164.905 237.744 160.218L266.455 131.507C274.951 123.011 280.615 113.636 283.447 103.382C286.279 93.1279 286.279 82.8252 283.447 72.4736C280.615 62.2197 274.951 52.8447 266.455 44.3486C257.959 35.7549 248.584 30.0908 238.33 27.2588C228.076 24.4268 217.773 24.4268 207.422 27.2588C197.168 30.0908 187.793 35.7549 179.297 44.251L131.396 92.1025C122.9 100.599 117.236 109.974 114.404 120.228C111.572 130.482 111.572 140.784 114.404 151.136C117.236 161.39 122.9 170.813 131.396 179.407C136.182 184.192 141.943 188.001 148.682 190.833C155.42 193.665 160.547 195.374 164.062 195.96L153.516 216.028Z" />
+                  </svg>
+                </a>
+              </Tooltip>
+              {project.xLink && (
+                <a
+                  href={project.xLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+                >
+                  <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-sm text-white whitespace-nowrap">
+                    View on
+                  </span>
+                  <svg className="block w-[12px] h-[12px] fill-white" viewBox="0 0 19 18">
+                    <path d={xLogoPath} />
+                  </svg>
+                  <span className="text-white inline-flex items-center">
+                    <ArrowUpRight size="12px" strokeWidth={1.3} />
+                  </span>
+                </a>
+              )}
+            </div>
+          </div>
+          {/* Mobile: buttons below description — blue first, then ghost */}
+          <div className="flex md:hidden flex-wrap gap-0.5 mt-2">
+            {project.xLink && (
+              <a
+                href={project.xLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+              >
+                <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-sm text-white whitespace-nowrap">
+                  View on
+                </span>
+                <svg className="block w-[12px] h-[12px] fill-white" viewBox="0 0 19 18">
+                  <path d={xLogoPath} />
+                </svg>
+                <span className="text-white inline-flex items-center">
+                  <ArrowUpRight size="12px" strokeWidth={1.3} />
+                </span>
+              </a>
+            )}
+            <a
+              href="https://sundays.rsvp"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
+            >
+              <span className="font-['Manrope',sans-serif] font-medium leading-normal text-sm text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
+                sundays.rsvp
+              </span>
+              <span className="text-gray-500 group-hover:text-blue-500 inline-flex items-center">
+                <ArrowUpRight size="12px" strokeWidth={1.3} />
+              </span>
+            </a>
+          </div>
+        </header>
+        {project.toolCategories && project.toolCategories.length > 0 ? (
+          <ToolsSection categories={project.toolCategories} large />
+        ) : null}
+        <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 shrink-0 mt-2">
+          {project.imageSrc?.trim() ? (
+            <ShimmerImage
+              alt=""
+              className="absolute object-cover size-full"
+              wrapperClassName="absolute inset-0"
+              rounded="rounded-2xl"
+              src={project.imageSrc}
+            />
+          ) : null}
+          {project.videoSrc && videoReady ? (
+            <ShimmerVideo
+              key={project.id}
+              src={project.videoSrc}
+              className="absolute object-cover size-full rounded-2xl"
+              wrapperClassName="absolute inset-0"
+              rounded="rounded-2xl"
+              autoPlay
+              muted
+              loop
+              controls={false}
+              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+            />
+          ) : null}
+        </div>
+      </div>
+    </div>
+    {isFullscreen && <Footer />}
+    </>
+  );
+}
+
+// Mobile-only Sundays content matching the standard InfoButton modal layout
+function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
+  const [videoReady, setVideoReady] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVideoReady(true), 350);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div className="content-stretch flex flex-col gap-3 py-6 relative shrink-0 w-full">
+      {/* Title row */}
+      <div className="flex flex-col min-w-0 gap-0.5 px-6">
+        <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
+          <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
+            {project.title}
+          </p>
+          <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
+            •
+          </p>
+          <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-base">
+            {project.year}
+          </p>
+        </div>
+        <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] text-sm">
+          {project.description}
+        </p>
+      </div>
+
+      {/* Buttons: View on X then sundays.rsvp */}
+      <div className="flex flex-wrap gap-0.5 items-center mb-2 px-6">
+        {project.xLink && (
+          <a
+            href={project.xLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="self-start bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+          >
+            <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
+              View on
+            </span>
+            <svg className="block w-[12px] h-[12px] fill-white" viewBox="0 0 19 18">
+              <path d={xLogoPath} />
+            </svg>
+            <span className="text-white inline-flex items-center">
+              <ArrowUpRight size="12px" strokeWidth={1.3} />
+            </span>
+          </a>
+        )}
+        <a
+          href="https://sundays.rsvp"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
+        >
+          <span className="font-['Manrope',sans-serif] font-medium leading-normal text-sm text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
+            sundays.rsvp
+          </span>
+          <span className="text-gray-500 group-hover:text-blue-500 inline-flex items-center">
+            <ArrowUpRight size="12px" strokeWidth={1.3} />
+          </span>
+        </a>
+      </div>
+
+      {/* Tools Section */}
+      {project.toolCategories && project.toolCategories.length > 0 && (
+        <>
+          <div className="h-px bg-zinc-200 shrink-0 w-full" />
+          <div className="px-6">
+            <ToolsSection categories={project.toolCategories} noLine />
+          </div>
+        </>
+      )}
+
+      {/* Video/Image content area */}
+      {project.imageSrc && (
+        <div className="relative rounded-[16px] border border-gray-100 border-solid w-[calc(100%-3rem)] aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 mt-3 mx-6">
+          <ShimmerImage
+            alt=""
+            className="absolute object-cover size-full"
+            wrapperClassName="absolute inset-0"
+            rounded="rounded-[16px]"
+            src={project.imageSrc}
+          />
+          {project.videoSrc && videoReady && (
+            <ShimmerVideo
+              key={project.id}
+              src={project.videoSrc}
+              className="absolute object-cover size-full rounded-[16px]"
+              wrapperClassName="absolute inset-0"
+              rounded="rounded-[16px]"
+              autoPlay
+              muted
+              loop
+              controls={false}
+              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ExperimentModal({ projectId, project, onClose, onExpandToFullscreen, onCollapseFromFullscreen, onBookSlugChange, bookSlug, initialFullscreen = false }: ExperimentModalProps) {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const isFullscreen = initialFullscreen;
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   // Auto-redirect to fullscreen on mobile for library
   useEffect(() => {
@@ -234,7 +590,25 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
       return () => window.removeEventListener('resize', checkMobile);
     }
   }, [projectId, initialFullscreen, navigate]);
+
+  // Sundays should never go fullscreen on mobile — redirect back to popup
+  useEffect(() => {
+    if (projectId === 'sundays' && initialFullscreen) {
+      const checkMobile = () => {
+        const isMobile = window.innerWidth < 768;
+        if (isMobile) {
+          navigate(`/project/${projectId}`, { replace: true });
+        }
+      };
+      
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      return () => window.removeEventListener('resize', checkMobile);
+    }
+  }, [projectId, initialFullscreen, navigate]);
   const [contentScale, setContentScale] = useState(1);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isPastHero, setIsPastHero] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -300,30 +674,34 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [showInfoModal]);
 
-  // Show scrollbar only when actively scrolling
+  // Show scrollbar only when actively scrolling, and track scroll for fullscreen logo shrink (matches /apple/full pattern)
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
-    
-    const scrollContainer = container.querySelector('.modal-scroll-container');
+
+    const scrollContainer = container.querySelector('.modal-scroll-container') as HTMLElement | null;
     if (!scrollContainer) return;
-    
+
     let scrollTimeout: ReturnType<typeof setTimeout>;
-    
+
     const handleScroll = () => {
       scrollContainer.classList.add('is-scrolling');
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
         scrollContainer.classList.remove('is-scrolling');
       }, 1000);
+      const top = scrollContainer.scrollTop;
+      setIsScrolled(top > 20);
+      setIsPastHero(top > 200);
     };
-    
+
     scrollContainer.addEventListener('scroll', handleScroll);
+    handleScroll();
     return () => {
       scrollContainer.removeEventListener('scroll', handleScroll);
       clearTimeout(scrollTimeout);
     };
-  }, []);
+  }, [projectId, isFullscreen]);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -368,6 +746,13 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
         return <ScreentimePage />;
       case 'sketchbook':
         return <SketchbookPage />;
+      case 'film':
+        return <FilmPage onCollapse={handleCollapse} isFullscreen={isFullscreen} />;
+      case 'sundays':
+        if (isMobile && !isFullscreen) {
+          return <SundaysMobileEmbed project={project} />;
+        }
+        return <SundaysEmbed project={project} isFullscreen={isFullscreen} isScrolled={isScrolled} isPastHero={isPastHero} onCollapse={handleCollapse} />;
       default:
         return <GenericExperimentEmbed project={project} />;
     }
@@ -394,7 +779,10 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
           "relative flex flex-col overflow-hidden transition-all duration-500 ease-out",
           isFullscreen 
             ? "w-full h-full rounded-none"
-            : "rounded-[26px] w-[calc(100%*10/12)] max-md:w-full h-[90vh]",
+            : clsx(
+              "rounded-[26px] w-[calc(100%*10/12)] max-md:w-full",
+              isMobile && projectId === 'sundays' ? "max-h-[90vh]" : "h-[90vh]"
+            ),
           isVisible 
             ? 'opacity-100 translate-y-0' 
             : isClosing 
@@ -411,8 +799,12 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
         )}
 
         {/* Header - expand button only in popup mode (fullscreen uses embedded page's logo) */}
+        {/* Hidden on mobile for sundays (no fullscreen on mobile) */}
         {!isFullscreen && (
-          <div className="absolute top-0 left-0 z-[60] pointer-events-none pl-6 pt-6">
+          <div className={clsx(
+            "absolute top-0 left-0 z-[60] pointer-events-none pl-6 pt-6",
+            projectId === 'sundays' && 'max-md:hidden'
+          )}>
             <div className="pointer-events-auto">
               <Tooltip label="Expand" position="bottom">
                 <button
@@ -427,8 +819,8 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
           </div>
         )}
 
-        {/* Info button fixed top right - only in popup mode (fullscreen uses embedded page's InfoButton) */}
-        {!isFullscreen && (
+        {/* Info button fixed top right - only in popup mode, hidden for sundays (content already visible) */}
+        {!isFullscreen && projectId !== 'sundays' && (
           <div className={clsx(
             "absolute top-0 right-0 z-[60] pointer-events-none pr-7 pt-6"
           )}>
@@ -463,7 +855,9 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
             <div 
               className={clsx(
                 "w-full h-full experiment-modal-embed modal-scroll-container relative transition-all duration-500 ease-out overflow-auto",
-                isFullscreen && "fullscreen"
+                isFullscreen && "fullscreen",
+                !isFullscreen && projectId === 'film' && "overflow-x-hidden",
+                !isFullscreen && projectId === 'sundays' && "max-md:overflow-hidden"
               )}
               style={{ 
                 '--scrollbar-track-color': getBackgroundColor(project),
@@ -474,11 +868,14 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
               {/* Content wrapper with scaling and smooth transitions */}
               <div 
                 ref={contentRef}
-                className="h-full transition-all duration-500 ease-out"
+                className={clsx(
+                  "transition-all duration-500 ease-out",
+                  (!isFullscreen && projectId === 'film') ? 'min-h-full' : 'h-full'
+                )}
                 style={{ 
                   transformOrigin: 'top left',
-                  transform: !isFullscreen && contentScale < 1 ? `scale(${contentScale})` : undefined,
-                  width: !isFullscreen && contentScale < 1 ? `${100 / contentScale}%` : undefined,
+                  transform: !isFullscreen && contentScale < 1 && !(isMobile && projectId === 'sundays') ? `scale(${contentScale})` : undefined,
+                  width: !isFullscreen && contentScale < 1 && !(isMobile && projectId === 'sundays') ? `${100 / contentScale}%` : undefined,
                 }}
               >
                 {renderExperiment()}
@@ -554,7 +951,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
           <div className="flex flex-col min-w-0 gap-0">
             <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
               <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
-x                {project.title}
+                {project.title}
               </p>
               <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
                 •
@@ -589,8 +986,8 @@ x                {project.title}
               >
                 <path d={xLogoPath} />
               </svg>
-              <span className="text-white text-sm">
-                <ArrowUpRight />
+              <span className="text-white text-sm inline-flex items-center">
+                <ArrowUpRight size="12px" strokeWidth={1.3} />
               </span>
             </a>
           )}
@@ -650,7 +1047,7 @@ function ToolsSectionCompact({ categories, isFullscreen = false }: { categories:
               {category.label}
             </p>
             <div className={clsx(
-              "content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-gray-700",
+              "content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#6b7280]",
               isFullscreen ? "gap-1" : "gap-0.5"
             )}>
               {category.tools.map((tool, toolIdx) => (
