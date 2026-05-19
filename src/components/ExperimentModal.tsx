@@ -9,6 +9,7 @@ import { ArrowUpRight } from './ArrowUpRight';
 import type { ToolCategory } from './InfoButton';
 import { TryItOutButton } from './TryItOutButton';
 import Tooltip from './Tooltip';
+import Footer from './Footer';
 
 // Kick off chunk fetches immediately when this module loads (not when modal opens)
 const polaroidPagePromise = import('./polaroid/PolaroidPage');
@@ -53,25 +54,75 @@ function LoadingSpinner() {
   );
 }
 
+const ChevronRightIcon = () => (
+  <svg className="block size-full" viewBox="0 0 16 16" fill="none">
+    <path
+      d="M6 12L10 8L6 4"
+      stroke="#9CA3AF"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+type BreadcrumbProps = {
+  projectName: string;
+  onWorkClick?: () => void;
+  isScrolled?: boolean;
+  isPastHero?: boolean;
+};
+
+function Breadcrumb({ projectName, onWorkClick, isScrolled = false, isPastHero = false }: BreadcrumbProps) {
+  return (
+    <div className={clsx(
+      "flex items-center transition-all duration-300 ease-out",
+      isPastHero ? "opacity-0 pointer-events-none" : "opacity-100"
+    )}>
+      <button
+        onClick={onWorkClick}
+        className={clsx(
+          "flex items-center justify-center py-0.5 rounded-md transition-all duration-300 ease-out hover:bg-[#f3f4f6]",
+          isScrolled ? "opacity-0 pointer-events-none w-0 px-0 overflow-hidden" : "opacity-100 px-1.5 ml-2"
+        )}
+      >
+        <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#4b5563] whitespace-nowrap">
+          Work
+        </span>
+      </button>
+
+      <div className="shrink-0 size-4">
+        <ChevronRightIcon />
+      </div>
+
+      <div className="flex items-center justify-center px-1 py-0.5">
+        <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#1f2937]">
+          {projectName}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // X logo path for View on X button
 const xLogoPath = "M10.6862 7.6055L17.3844 0H15.8002L9.97941 6.60311L5.36277 0H0.178833L7.19548 9.9737L0.178833 17.9454H1.76308L7.90171 10.9761L12.7696 17.9454H17.9536L10.6858 7.6055H10.6862ZM8.7057 10.0639L7.99222 9.06869L2.33673 1.16544H4.60063L9.33802 7.5516L10.0515 8.54678L15.8011 16.8348H13.5372L8.7057 10.0643V10.0639Z";
 
 // Horizontal divider line
 function PopupLine() {
   return (
-    <div className="h-px relative shrink-0 w-full max-md:-mx-6 max-md:w-[calc(100%+3rem)]">
+    <div className="h-px relative shrink-0 w-full mt-2 max-md:-mx-6 max-md:w-[calc(100%+3rem)]">
       <div className="absolute inset-0 bg-zinc-100 max-md:bg-zinc-200" />
     </div>
   );
 }
 
 // Tools Section component
-function ToolsSection({ categories, large = false }: { categories: ToolCategory[]; large?: boolean }) {
+function ToolsSection({ categories, large = false, noLine = false }: { categories: ToolCategory[]; large?: boolean; noLine?: boolean }) {
   if (!categories || categories.length === 0) return null;
   
   return (
     <>
-      <PopupLine />
+      {!noLine && <PopupLine />}
       <div className={clsx(
         "font-['Michelle',sans-serif] font-normal relative shrink-0 w-full mt-2 hidden md:grid",
         large ? "flex gap-5 text-base grid-cols-4" : "gap-3 grid-cols-4 text-[15px]"
@@ -142,10 +193,13 @@ function Logo({ onClick }: { onClick: () => void }) {
       className="cursor-pointer transition-opacity duration-200 hover:opacity-80"
       aria-label="Collapse to modal"
     >
-      <img 
-        src="/logo.png" 
-        alt="Michelle Liu Logo" 
+      <img
+        src="/logo.png"
+        alt="Michelle Liu Logo"
         className="w-8 h-8 md:w-[44px] md:h-[44px] object-contain"
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
       />
     </button>
   );
@@ -226,7 +280,7 @@ function GenericExperimentEmbed({ project }: { project: ExperimentProject }) {
   );
 }
 
-function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: ExperimentProject; isFullscreen?: boolean; onCollapse?: () => void }) {
+function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPastHero = false, onCollapse }: { project: ExperimentProject; isFullscreen?: boolean; isScrolled?: boolean; isPastHero?: boolean; onCollapse?: () => void }) {
   const [videoReady, setVideoReady] = useState(false);
   const navigate = useNavigate();
 
@@ -243,32 +297,57 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
     }
   };
 
+  const handleWorkClick = () => {
+    navigate('/');
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
+    <>
     <div className={clsx(
       "font-['Michelle',sans-serif] w-full box-border flex flex-col text-[#111827]",
-      isFullscreen ? 'min-h-screen items-center px-6 py-24 md:px-16 md:py-32' : 'min-h-full px-6 pt-6 pb-8 md:px-[8%] md:py-32 xl:px-[175px]'
+      isFullscreen ? 'min-h-screen' : 'min-h-full px-6 pt-6 pb-8 md:px-[8%] md:py-32 xl:px-[175px]'
     )}>
       {isFullscreen && (
-        <button
-          onClick={handleLogoClick}
-          className="fixed top-8 left-6 md:left-16 z-40 cursor-pointer transition-opacity duration-200 hover:opacity-80"
-          aria-label="Go back"
+        <div
+          className={clsx(
+            "flex items-center w-full px-6 md:px-16 md:sticky md:top-0 z-30 transition-all duration-300 ease-out gap-1.5",
+            isScrolled ? "py-4" : "py-8"
+          )}
         >
-          <img src="/logo.png" alt="Michelle Liu Logo" className="w-8 h-8 md:w-[44px] md:h-[44px] object-contain" />
-        </button>
+          <button
+            onClick={handleLogoClick}
+            className={clsx(
+              "overflow-clip relative shrink-0 cursor-pointer hover:opacity-80 transition-all duration-300 ease-out p-0 border-0 bg-transparent",
+              isScrolled ? "size-7" : "size-8 md:size-[44px]"
+            )}
+            aria-label="Go back"
+          >
+            <img src="/logo.png" alt="Michelle Liu Logo" className="size-full object-contain" loading="eager" fetchPriority="high" decoding="async" />
+          </button>
+
+          <Breadcrumb
+            projectName="Sundays"
+            onWorkClick={handleWorkClick}
+            isScrolled={isScrolled}
+            isPastHero={isPastHero}
+          />
+        </div>
       )}
       <div className={clsx(
         "flex flex-col gap-3 md:gap-7 w-full",
-        isFullscreen && 'max-w-4xl'
+        isFullscreen && 'max-w-4xl self-center pt-12 md:pt-16 pb-24 md:pb-32 px-6 md:px-16'
       )}>
         <header className="flex flex-col">
           {/* Desktop: title + buttons side by side */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col min-w-0 md:gap-2">
               <div className="flex flex-wrap items-baseline gap-x-[6px] gap-y-1">
-                <h1 className="text-lg font-medium">{project.title}</h1>
-                <span className="text-[#9ca3af] text-lg font-medium">•</span>
-                <span className="text-[#9ca3af] text-lg font-medium">{project.year}</span>
+                <h1 className={clsx("font-medium", isFullscreen ? "text-xl" : "text-xl md:text-2xl")}>{project.title}</h1>
+                <span className={clsx("text-[#9ca3af] font-normal", isFullscreen ? "text-xl" : "text-xl md:text-2xl")}>•</span>
+                <span className={clsx("text-[#9ca3af] font-normal", isFullscreen ? "text-xl" : "text-xl md:text-2xl")}>{project.year}</span>
               </div>
               <p className="text-base leading-5 text-[#6b7280] md:text-gray-700">
                 {project.description}
@@ -372,6 +451,8 @@ function SundaysEmbed({ project, isFullscreen = false, onCollapse }: { project: 
         </div>
       </div>
     </div>
+    {isFullscreen && <Footer />}
+    </>
   );
 }
 
@@ -385,9 +466,9 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
   }, []);
 
   return (
-    <div className="content-stretch flex flex-col gap-3 px-6 py-6 relative shrink-0 w-full">
+    <div className="content-stretch flex flex-col gap-3 py-6 relative shrink-0 w-full">
       {/* Title row */}
-      <div className="flex flex-col min-w-0 gap-0.5">
+      <div className="flex flex-col min-w-0 gap-0.5 px-6">
         <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
           <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
             {project.title}
@@ -405,7 +486,7 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
       </div>
 
       {/* Buttons: View on X then sundays.rsvp */}
-      <div className="flex flex-wrap gap-0.5 items-center mb-2">
+      <div className="flex flex-wrap gap-0.5 items-center mb-2 px-6">
         {project.xLink && (
           <a
             href={project.xLink}
@@ -441,12 +522,17 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
 
       {/* Tools Section */}
       {project.toolCategories && project.toolCategories.length > 0 && (
-        <ToolsSection categories={project.toolCategories} />
+        <>
+          <div className="h-px bg-zinc-200 shrink-0 w-full" />
+          <div className="px-6">
+            <ToolsSection categories={project.toolCategories} noLine />
+          </div>
+        </>
       )}
 
       {/* Video/Image content area */}
       {project.imageSrc && (
-        <div className="relative rounded-[16px] border border-gray-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 mt-3">
+        <div className="relative rounded-[16px] border border-gray-100 border-solid w-[calc(100%-3rem)] aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 mt-3 mx-6">
           <ShimmerImage
             alt=""
             className="absolute object-cover size-full"
@@ -521,6 +607,8 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
     }
   }, [projectId, initialFullscreen, navigate]);
   const [contentScale, setContentScale] = useState(1);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isPastHero, setIsPastHero] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -586,30 +674,34 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [showInfoModal]);
 
-  // Show scrollbar only when actively scrolling
+  // Show scrollbar only when actively scrolling, and track scroll for fullscreen logo shrink (matches /apple/full pattern)
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
-    
-    const scrollContainer = container.querySelector('.modal-scroll-container');
+
+    const scrollContainer = container.querySelector('.modal-scroll-container') as HTMLElement | null;
     if (!scrollContainer) return;
-    
+
     let scrollTimeout: ReturnType<typeof setTimeout>;
-    
+
     const handleScroll = () => {
       scrollContainer.classList.add('is-scrolling');
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
         scrollContainer.classList.remove('is-scrolling');
       }, 1000);
+      const top = scrollContainer.scrollTop;
+      setIsScrolled(top > 20);
+      setIsPastHero(top > 200);
     };
-    
+
     scrollContainer.addEventListener('scroll', handleScroll);
+    handleScroll();
     return () => {
       scrollContainer.removeEventListener('scroll', handleScroll);
       clearTimeout(scrollTimeout);
     };
-  }, []);
+  }, [projectId, isFullscreen]);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -660,7 +752,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
         if (isMobile && !isFullscreen) {
           return <SundaysMobileEmbed project={project} />;
         }
-        return <SundaysEmbed project={project} isFullscreen={isFullscreen} onCollapse={handleCollapse} />;
+        return <SundaysEmbed project={project} isFullscreen={isFullscreen} isScrolled={isScrolled} isPastHero={isPastHero} onCollapse={handleCollapse} />;
       default:
         return <GenericExperimentEmbed project={project} />;
     }
