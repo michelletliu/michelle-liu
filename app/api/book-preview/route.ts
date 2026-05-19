@@ -61,6 +61,7 @@ function renderPreviewHtml({
   const u = escapeHtml(canonicalUrl);
   const i = escapeHtml(imageUrl);
   const r = escapeHtml(redirectUrl);
+  const rJs = JSON.stringify(redirectUrl);
 
   return `<!doctype html>
 <html lang="en">
@@ -78,9 +79,10 @@ function renderPreviewHtml({
     <meta name="twitter:title" content="${t}" />
     <meta name="twitter:description" content="${d}" />
     <meta name="twitter:image" content="${i}" />
+    <meta http-equiv="refresh" content="0;url=${r}" />
     <script>
       if (typeof window !== "undefined") {
-        window.location.replace("${r}");
+        window.location.replace(${rJs});
       }
     </script>
   </head>

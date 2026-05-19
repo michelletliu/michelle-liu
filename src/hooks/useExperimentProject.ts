@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { client, urlFor } from '../sanity/client';
 import { EXPERIMENT_PROJECT_BY_ID_QUERY } from '../sanity/queries';
 import type { ToolCategory } from '../components/InfoButton';
@@ -51,9 +51,12 @@ export function useExperimentProject(
   defaultProject: ProjectInfo
 ): ProjectInfo {
   const [project, setProject] = useState<ProjectInfo>(defaultProject);
+  const defaultRef = useRef(defaultProject);
+  defaultRef.current = defaultProject;
 
   useEffect(() => {
     async function fetchProject() {
+      const dp = defaultRef.current;
       try {
         const data = await client.fetch<ExperimentProjectData>(
           EXPERIMENT_PROJECT_BY_ID_QUERY,
@@ -63,7 +66,7 @@ export function useExperimentProject(
         if (data) {
           const muxUrls = data.muxPlaybackId
             ? getMuxUrls(data.muxPlaybackId)
-            : { imageSrc: defaultProject.imageSrc, videoSrc: defaultProject.videoSrc };
+            : { imageSrc: dp.imageSrc, videoSrc: dp.videoSrc };
 
           const fallbackUrl = data.fallbackThumbnail
             ? urlFor(data.fallbackThumbnail).width(1920).url()
@@ -73,13 +76,13 @@ export function useExperimentProject(
             id: data.projectId,
             title: data.title,
             year: data.year,
-            description: typeof defaultProject.description !== 'string' ? defaultProject.description : data.description,
+            description: typeof dp.description !== 'string' ? dp.description : data.description,
             imageSrc: fallbackUrl || muxUrls.imageSrc,
             videoSrc: muxUrls.videoSrc,
-            xLink: data.xLink || defaultProject.xLink,
-            tryItOutHref: data.tryItOutHref || defaultProject.tryItOutHref,
-            backgroundColor: data.backgroundColor || defaultProject.backgroundColor,
-            toolCategories: data.toolCategories || defaultProject.toolCategories,
+            xLink: data.xLink || dp.xLink,
+            tryItOutHref: data.tryItOutHref || dp.tryItOutHref,
+            backgroundColor: data.backgroundColor || dp.backgroundColor,
+            toolCategories: data.toolCategories || dp.toolCategories,
           });
         }
       } catch {
@@ -88,7 +91,7 @@ export function useExperimentProject(
     }
 
     fetchProject();
-  }, [projectId, defaultProject]);
+  }, [projectId]);
 
   return project;
 }

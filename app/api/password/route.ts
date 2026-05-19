@@ -1,4 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
+
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) {
+    // Compare against self to keep constant time regardless of length mismatch
+    timingSafeEqual(bufA, bufA);
+    return false;
+  }
+  return timingSafeEqual(bufA, bufB);
+}
 
 export async function POST(req: NextRequest) {
   const password = req.headers.get("x-password");
@@ -16,5 +28,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false });
   }
 
-  return NextResponse.json({ success: password === expected });
+  return NextResponse.json({ success: safeEqual(password, expected) });
 }

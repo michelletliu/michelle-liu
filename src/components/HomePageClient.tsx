@@ -21,6 +21,7 @@ import ContactBadge from "./ContactBadge";
 import NavigationTabs from "./NavigationTabs";
 import ExperimentModal from "./ExperimentModal";
 import { posthog, posthogEnabled } from "../lib/posthog";
+import { MUX_ENV_KEY } from "../lib/mux";
 import { useHeroAnimation } from "../hooks/useHeroAnimation";
 import { fadeUpStyles } from "../styles/animations";
 
@@ -278,7 +279,7 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
               muted
               loop
               controls={false}
-              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+              muxEnvKey={MUX_ENV_KEY}
               onLoaded={() => setVideoLoaded(true)}
             />
             <div className="absolute inset-0 z-[2] rounded-[26px] pointer-events-none" />
@@ -539,6 +540,14 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
     return () => clearTimeout(timer);
   }, []);
 
+  const handleClose = useCallback(() => {
+    setIsClosing(true);
+    setIsVisible(false);
+    setTimeout(() => {
+      onClose();
+    }, 300);
+  }, [onClose]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -548,15 +557,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const handleClose = () => {
-    setIsClosing(true);
-    setIsVisible(false);
-    setTimeout(() => {
-      onClose();
-    }, 300);
-  };
+  }, [handleClose]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-8">
@@ -684,7 +685,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
                 muted
                 loop
                 controls={false}
-                muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+                muxEnvKey={MUX_ENV_KEY}
               />
             )}
           </div>

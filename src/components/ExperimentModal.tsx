@@ -10,6 +10,7 @@ import type { ToolCategory } from './InfoButton';
 import { TryItOutButton } from './TryItOutButton';
 import Tooltip from './Tooltip';
 import Footer from './Footer';
+import { MUX_ENV_KEY } from '../lib/mux';
 
 // Kick off chunk fetches immediately when this module loads (not when modal opens)
 const polaroidPagePromise = import('./polaroid/PolaroidPage');
@@ -268,7 +269,7 @@ function GenericExperimentEmbed({ project }: { project: ExperimentProject }) {
               muted
               loop
               controls={false}
-              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+              muxEnvKey={MUX_ENV_KEY}
             />
           ) : null}
         </div>
@@ -445,7 +446,7 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
               muted
               loop
               controls={false}
-              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+              muxEnvKey={MUX_ENV_KEY}
             />
           ) : null}
         </div>
@@ -551,7 +552,7 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
               muted
               loop
               controls={false}
-              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+              muxEnvKey={MUX_ENV_KEY}
             />
           )}
         </div>
@@ -1021,7 +1022,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
               muted
               loop
               controls={false}
-              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+              muxEnvKey={MUX_ENV_KEY}
             />
           )}
         </div>

@@ -4,6 +4,7 @@ import ShimmerImage from './ShimmerImage';
 import ShimmerVideo from './ShimmerVideo';
 import { ArrowUpRight } from './ArrowUpRight';
 import { useScrollLock } from '../utils/useScrollLock';
+import { MUX_ENV_KEY } from '../lib/mux';
 
 // Info icon SVG component - gray-400 color, 20px
 function InfoIcon() {
@@ -298,7 +299,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                     muted
                     loop
                     controls={false}
-                    muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+                    muxEnvKey={MUX_ENV_KEY}
                   />
                 )}
               </div>

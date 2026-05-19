@@ -7,3 +7,8 @@ dist/
 .DS_Store
 next-env.d.ts
 *.tsbuildinfo
+
+# Large binary files — store externally (Sanity / S3 / R2)
+*.har
+*.mov
+*.pdf

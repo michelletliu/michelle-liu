@@ -1,3 +1,4 @@
+const MAX_CACHE_SIZE = 200;
 const detectionCache = new Map<string, Promise<boolean>>();
 
 type EdgeCounts = {
@@ -103,6 +104,11 @@ export function detectWhiteImageBorder(src: string) {
     image.onerror = () => resolve(false);
     image.src = src;
   });
+
+  if (detectionCache.size >= MAX_CACHE_SIZE) {
+    const oldest = detectionCache.keys().next().value;
+    if (oldest !== undefined) detectionCache.delete(oldest);
+  }
 
   detectionCache.set(src, detection);
   return detection;
