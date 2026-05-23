@@ -56,6 +56,7 @@ export default function Tooltip({
   const [isEnding, setIsEnding] = useState(false);
   const [isInstant, setIsInstant] = useState(false);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const clickedRef = useRef(false);
 
   // Force-hide on any touch anywhere — defensive cleanup in case a tooltip
   // got stuck open from a synthetic mouseenter on tap.
@@ -79,6 +80,9 @@ export default function Tooltip({
     // Skip tooltips on touch devices: tapping fires mouseenter without a
     // matching mouseleave, so tooltips would stick after each tap.
     if (isTouchSession) return;
+
+    // After a click, suppress tooltip until the mouse fully leaves and re-enters
+    if (clickedRef.current) return;
 
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
@@ -106,6 +110,7 @@ export default function Tooltip({
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
     }
+    clickedRef.current = true;
     setIsVisible(false);
     setIsEnding(false);
     setIsInstant(false);
@@ -113,6 +118,8 @@ export default function Tooltip({
   };
 
   const handleMouseLeave = () => {
+    clickedRef.current = false;
+
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
