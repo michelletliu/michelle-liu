@@ -101,6 +101,17 @@ export default function Tooltip({
     }
   };
 
+  const handleMouseDown = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsVisible(false);
+    setIsEnding(false);
+    setIsInstant(false);
+    setTooltipWarmup(false);
+  };
+
   const handleMouseLeave = () => {
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
@@ -135,6 +146,7 @@ export default function Tooltip({
       className="relative inline-flex"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
     >
       {children}
       {isVisible && (
