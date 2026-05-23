@@ -1,94 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import svgPaths from "../imports/svg-2tsxp86msm";
 import imgFinalSealLogo1 from "../assets/logo.png";
 import LumaLogo from "../assets/LumaLogo.svg";
 import { imgGroup } from "../imports/svg-poktt";
 import { ScrollReveal } from "./ScrollReveal";
 import { ArrowUpRight } from "./ArrowUpRight";
-import { client } from "../sanity/client";
-import { OWNER_LOCATION_QUERY } from "../sanity/queries";
-import type { OwnerLocation } from "../sanity/types";
 import TextScramble from "./TextScramble";
 import { SocialLinksBackgroundImage, LinksBackgroundImageAndText } from "./SocialLinks";
+import { useLatestCommitDate } from "../hooks/useLatestCommitDate";
+import { useOwnerLocation } from "../hooks/useOwnerLocation";
+import { useLocalTime } from "../hooks/useLocalTime";
 
-type ChangelogPayload = {
-  latestCommitDate?: string | null;
-};
-
-// Hook to fetch latest commit date from generated local changelog file
-function useLatestCommitDate() {
-  const [commitDate, setCommitDate] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchLatestCommit = async () => {
-      try {
-        const response = await fetch('/changelog.json', { cache: 'no-store' });
-        if (!response.ok) throw new Error('Failed to fetch');
-
-        const payload = (await response.json()) as ChangelogPayload;
-        if (payload?.latestCommitDate) {
-          setCommitDate(payload.latestCommitDate);
-        }
-      } catch (error) {
-        console.error('Failed to fetch latest commit date:', error);
-        // Keep null to show fallback
-      }
-    };
-
-    fetchLatestCommit();
-  }, []);
-
-  return commitDate;
-}
-
-const DEFAULT_CITY = "Los Angeles";
-const DEFAULT_TIMEZONE = "America/Los_Angeles";
-
-function useOwnerLocation() {
-  const [location, setLocation] = useState<{ city: string; timezone: string }>({
-    city: DEFAULT_CITY,
-    timezone: DEFAULT_TIMEZONE,
-  });
-
-  useEffect(() => {
-    client
-      .fetch<OwnerLocation | null>(OWNER_LOCATION_QUERY)
-      .then((data) => {
-        if (data?.city && data?.timezone) {
-          setLocation({ city: data.city, timezone: data.timezone });
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  return location;
-}
-
-function useLocalTime(timezone: string) {
-  const format = (tz: string) => {
-    const raw = new Intl.DateTimeFormat("en-US", {
-      timeZone: tz,
-      hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date());
-    const [hStr, mStr] = raw.split(":");
-    const h24 = parseInt(hStr, 10);
-    const h12 = h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24;
-    const ampm = h24 >= 12 ? "PM" : "AM";
-    return { formatted: `${h12}:${mStr} ${ampm}`, h24 };
-  };
-
-  const [state, setState] = useState<{ formatted: string; h24: number } | null>(null);
-
-  useEffect(() => {
-    setState(format(timezone));
-    const id = setInterval(() => setState(format(timezone)), 1000);
-    return () => clearInterval(id);
-  }, [timezone]);
-
-  return state;
-}
 
 function SunIcon({ className }: { className?: string }) {
   return (

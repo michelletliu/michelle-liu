@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { client, urlFor } from '../sanity/client';
+import React, { useMemo } from 'react';
+import { urlFor } from '../sanity/client';
 import { EXPERIMENT_PROJECT_BY_ID_QUERY } from '../sanity/queries';
+import { useSanityQuery } from './useSanityQuery';
 import type { ToolCategory } from '../components/InfoButton';
 import type { SanityImage } from '../sanity/types';
 
@@ -50,45 +51,33 @@ export function useExperimentProject(
   projectId: string,
   defaultProject: ProjectInfo
 ): ProjectInfo {
-  const [project, setProject] = useState<ProjectInfo>(defaultProject);
+  const { data } = useSanityQuery<ExperimentProjectData>(
+    EXPERIMENT_PROJECT_BY_ID_QUERY,
+    { projectId },
+  );
 
-  useEffect(() => {
-    async function fetchProject() {
-      try {
-        const data = await client.fetch<ExperimentProjectData>(
-          EXPERIMENT_PROJECT_BY_ID_QUERY,
-          { projectId }
-        );
+  return useMemo(() => {
+    if (!data) return defaultProject;
 
-        if (data) {
-          const muxUrls = data.muxPlaybackId
-            ? getMuxUrls(data.muxPlaybackId)
-            : { imageSrc: defaultProject.imageSrc, videoSrc: defaultProject.videoSrc };
+    const muxUrls = data.muxPlaybackId
+      ? getMuxUrls(data.muxPlaybackId)
+      : { imageSrc: defaultProject.imageSrc, videoSrc: defaultProject.videoSrc };
 
-          const fallbackUrl = data.fallbackThumbnail
-            ? urlFor(data.fallbackThumbnail).width(1920).url()
-            : undefined;
+    const fallbackUrl = data.fallbackThumbnail
+      ? urlFor(data.fallbackThumbnail).width(1920).url()
+      : undefined;
 
-          setProject({
-            id: data.projectId,
-            title: data.title,
-            year: data.year,
-            description: typeof defaultProject.description !== 'string' ? defaultProject.description : data.description,
-            imageSrc: fallbackUrl || muxUrls.imageSrc,
-            videoSrc: muxUrls.videoSrc,
-            xLink: data.xLink || defaultProject.xLink,
-            tryItOutHref: data.tryItOutHref || defaultProject.tryItOutHref,
-            backgroundColor: data.backgroundColor || defaultProject.backgroundColor,
-            toolCategories: data.toolCategories || defaultProject.toolCategories,
-          });
-        }
-      } catch {
-        // Sanity fetch failed — keep default project data
-      }
-    }
-
-    fetchProject();
-  }, [projectId, defaultProject]);
-
-  return project;
+    return {
+      id: data.projectId,
+      title: data.title,
+      year: data.year,
+      description: typeof defaultProject.description !== 'string' ? defaultProject.description : data.description,
+      imageSrc: fallbackUrl || muxUrls.imageSrc,
+      videoSrc: muxUrls.videoSrc,
+      xLink: data.xLink || defaultProject.xLink,
+      tryItOutHref: data.tryItOutHref || defaultProject.tryItOutHref,
+      backgroundColor: data.backgroundColor || defaultProject.backgroundColor,
+      toolCategories: data.toolCategories || defaultProject.toolCategories,
+    };
+  }, [data, defaultProject]);
 }

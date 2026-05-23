@@ -20,6 +20,7 @@ import { useNavigate } from '@/lib/navigation';
 import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
+import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import type { FilmPhoto } from './film-data';
 import {
   lerpLinemarkTowardTarget,
@@ -2033,35 +2034,22 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
     }
   }, [cancelScrollSnap, galleryX]);  // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
+  const filmKeyMap = useMemo(() => ({
+    ArrowRight: () => {
       if (document.querySelector('[data-info-modal]')) return;
-      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-      const el = e.target as HTMLElement | null;
-      if (
-        el?.closest(
-          'input, textarea, select, [contenteditable="true"], [role="textbox"]',
-        )
-      ) {
-        return;
-      }
       const n = photosRef.current.length;
-      if (n === 0) return;
-      const canGoRight = e.key === 'ArrowRight' && activeIndex < n - 1;
-      const canGoLeft = e.key === 'ArrowLeft' && activeIndex > 0;
-      if (!canGoRight && !canGoLeft) return;
-      e.preventDefault();
-      // Holding an arrow: OS key-repeat was advancing many frames per second.
-      if (e.repeat) return;
-      if (canGoRight) {
-        scrollToIndex(activeIndex + 1, FILM_KEYBOARD_SNAP_SPRING);
-      } else {
-        scrollToIndex(activeIndex - 1, FILM_KEYBOARD_SNAP_SPRING);
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [activeIndex, scrollToIndex]);
+      if (n === 0 || activeIndex >= n - 1) return;
+      scrollToIndex(activeIndex + 1, FILM_KEYBOARD_SNAP_SPRING);
+    },
+    ArrowLeft: () => {
+      if (document.querySelector('[data-info-modal]')) return;
+      const n = photosRef.current.length;
+      if (n === 0 || activeIndex <= 0) return;
+      scrollToIndex(activeIndex - 1, FILM_KEYBOARD_SNAP_SPRING);
+    },
+  }), [activeIndex, scrollToIndex]);
+
+  useKeyboardNavigation(filmKeyMap);
 
   return (
     <>

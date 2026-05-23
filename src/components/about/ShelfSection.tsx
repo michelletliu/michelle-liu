@@ -3,6 +3,9 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { createPortal } from "react-dom";
 import MediaCard, { type MediaCardData } from "./MediaCard";
 import { ArrowUpRight } from "../ArrowUpRight";
+import { useClickOutside } from "../../hooks/useClickOutside";
+import { useAnimationTrigger } from "../../hooks/useAnimationTrigger";
+import { useResizeObserver } from "../../hooks/useResizeObserver";
 
 type YearFilter = {
   year: string;
@@ -61,8 +64,6 @@ export default function ShelfSection({
   const displayItems = activeYear ? filteredItems : filteredItems.slice(0, itemCount);
   const isSquare = mediaType === "music";
 
-  // Animation state - triggers fade up on tab change using a key to force re-render
-  const [animationKey, setAnimationKey] = useState(0);
   const currentView = activeYear || "featured";
   
   // Mobile dropdown state
@@ -192,24 +193,11 @@ export default function ShelfSection({
   }, [isDropdownOpen]);
   
   // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-          buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    }
-    
-    if (isDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isDropdownOpen]);
-  
+  const closeDropdown = useCallback(() => setIsDropdownOpen(false), []);
+  useClickOutside([dropdownRef, buttonRef], closeDropdown, isDropdownOpen);
+
   // Increment animation key when view changes to trigger staggered fade-up
-  useEffect(() => {
-    setAnimationKey(prev => prev + 1);
-  }, [currentView]);
+  const animationKey = useAnimationTrigger(currentView);
 
   useLayoutEffect(() => {
     updateIndicator();
