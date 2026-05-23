@@ -28,8 +28,8 @@ export function useKeyboardNavigation(
         if (el?.closest(ignoreElements)) return;
       }
 
-      if (e.repeat) return;
       if (preventDefault) e.preventDefault();
+      if (e.repeat) return;
       handler();
     };
 

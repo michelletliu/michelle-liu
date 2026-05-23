@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { client } from "../sanity/client";
 import type { QueryParams } from "@sanity/client";
 
@@ -20,6 +20,11 @@ export function useSanityQuery<T>(
   const { enabled = true, defaultValue } = options;
   const [data, setData] = useState<T | undefined>(defaultValue);
   const [loading, setLoading] = useState(enabled);
+
+  const paramsKey = useMemo(
+    () => (params ? JSON.stringify(params) : ""),
+    [params],
+  );
 
   useEffect(() => {
     if (!enabled) {
@@ -50,7 +55,7 @@ export function useSanityQuery<T>(
     return () => {
       cancelled = true;
     };
-  }, [query, enabled]);
+  }, [query, paramsKey, enabled]);
 
   return { data, loading };
 }
