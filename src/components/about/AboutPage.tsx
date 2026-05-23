@@ -686,7 +686,7 @@ export default function AboutPage() {
                 <div className="flex flex-wrap gap-2 md:gap-6 text-base tracking-[0.005em] text-gray-400">
                   <div className="flex items-center gap-2">
                     <img src={mapPinIcon} alt="" className="w-4 h-4" />
-                    <span className="text-gray-400">LA&nbsp;&nbsp;/&nbsp;&nbsp;NYC&nbsp;&nbsp;/&nbsp;&nbsp;SF</span>
+                    <span className="text-gray-400">LA&nbsp;&nbsp;/&nbsp;&nbsp;NYC</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <img src={academicCapIcon} alt="" className="w-4 h-4" />
