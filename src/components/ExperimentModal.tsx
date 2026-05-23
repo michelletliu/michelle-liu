@@ -841,7 +841,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
 
               {/* Dropdown popover below button */}
               {showInfoModal && (
-                <div className="absolute top-full -right-1 -mt-1 z-[70]">
+                <div className="absolute top-full -right-1 -mt-0.5 z-[70]">
                   <InfoPopover project={project} onClose={() => setShowInfoModal(false)} isFullscreen={false} />
                 </div>
               )}
