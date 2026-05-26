@@ -33,6 +33,7 @@ export function useSanityQuery<T>(
     }
 
     let cancelled = false;
+    setData(defaultValue);
     setLoading(true);
 
     const fetchPromise = params
@@ -48,6 +49,7 @@ export function useSanityQuery<T>(
       })
       .catch(() => {
         if (!cancelled) {
+          setData(defaultValue);
           setLoading(false);
         }
       });
