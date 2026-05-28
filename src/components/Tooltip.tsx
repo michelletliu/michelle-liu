@@ -58,45 +58,39 @@ export default function Tooltip({
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const clickedRef = useRef(false);
 
-  // Force-hide on any touch anywhere — defensive cleanup in case a tooltip
-  // got stuck open from a synthetic mouseenter on tap.
+  const clearPendingHover = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+  };
+
+  const dismissTooltip = () => {
+    clearPendingHover();
+    setIsVisible(false);
+    setIsEnding(false);
+    setIsInstant(false);
+    setTooltipWarmup(false);
+  };
+
   useEffect(() => {
     if (!isVisible) return;
-    const hide = () => {
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current);
-        hoverTimeoutRef.current = null;
-      }
-      setIsVisible(false);
-      setIsEnding(false);
-      setIsInstant(false);
-      setTooltipWarmup(false);
-    };
-    window.addEventListener('touchstart', hide, { passive: true });
-    return () => window.removeEventListener('touchstart', hide);
+    window.addEventListener('touchstart', dismissTooltip, { passive: true });
+    return () => window.removeEventListener('touchstart', dismissTooltip);
   }, [isVisible]);
 
   const handleMouseEnter = () => {
-    // Skip tooltips on touch devices: tapping fires mouseenter without a
-    // matching mouseleave, so tooltips would stick after each tap.
     if (isTouchSession) return;
-
-    // After a click, suppress tooltip until the mouse fully leaves and re-enters
     if (clickedRef.current) return;
 
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-    }
-
+    clearPendingHover();
     setIsEnding(false);
 
-    // If warmup is active (another tooltip was recently open), show instantly
     if (tooltipWarmupActive) {
       setIsInstant(true);
       setIsVisible(true);
       setTooltipWarmup(true);
     } else {
-      // Show tooltip after 400ms delay
       setIsInstant(false);
       hoverTimeoutRef.current = setTimeout(() => {
         setIsVisible(true);
@@ -106,35 +100,20 @@ export default function Tooltip({
   };
 
   const handleMouseDown = () => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
     clickedRef.current = true;
-    setIsVisible(false);
-    setIsEnding(false);
-    setIsInstant(false);
-    setTooltipWarmup(false);
+    dismissTooltip();
   };
 
   const handleMouseLeave = () => {
     clickedRef.current = false;
-
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
+    clearPendingHover();
 
     if (isVisible) {
-      // Signal that we're closing (but keep warmup briefly active)
       setTooltipWarmup(false);
-
-      // If instant mode, hide immediately without animation
       if (isInstant) {
         setIsVisible(false);
         setIsInstant(false);
       } else {
-        // Trigger exit animation
         setIsEnding(true);
         setTimeout(() => {
           setIsVisible(false);

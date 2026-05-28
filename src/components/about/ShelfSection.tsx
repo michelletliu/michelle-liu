@@ -5,7 +5,6 @@ import MediaCard, { type MediaCardData } from "./MediaCard";
 import { ArrowUpRight } from "../ArrowUpRight";
 import { useClickOutside } from "../../hooks/useClickOutside";
 import { useAnimationTrigger } from "../../hooks/useAnimationTrigger";
-import { useResizeObserver } from "../../hooks/useResizeObserver";
 
 type YearFilter = {
   year: string;
