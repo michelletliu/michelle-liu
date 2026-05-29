@@ -3,8 +3,7 @@ import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { PortableText } from "@portabletext/react";
 import type { PortableTextComponents } from "@portabletext/react";
-import { client, urlFor } from "../../sanity/client";
-import { PROJECT_BY_COMPANY_QUERY } from "../../sanity/queries";
+import { urlFor } from "../../sanity/client";
 import { getCachedData } from "../../sanity/preload";
 import type { Project, ContentSection } from "../../sanity/types";
 import Footer from "../Footer";
@@ -22,6 +21,25 @@ import lockIcon from "../../assets/lock.svg";
 import expandIcon from "../../assets/Expand.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
 import { posthog, posthogEnabled } from "../../lib/posthog";
+
+async function fetchProjectByCompany(company: string): Promise<{
+  project: Project | null;
+  unlocked: boolean;
+}> {
+  const response = await fetch(`/api/project?company=${encodeURIComponent(company)}`, {
+    cache: "no-store",
+    credentials: "same-origin",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch project ${company}: ${response.status}`);
+  }
+
+  return {
+    project: (await response.json()) as Project | null,
+    unlocked: response.headers.get("x-project-unlocked") === "true",
+  };
+}
 
 // Helper to render text with highlighted portion
 function renderHighlightedText(text: string, highlightedText?: string, highlightColor?: string): React.ReactNode {
@@ -625,9 +643,9 @@ function PasswordInput({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-password': passwordValue,
         },
-        body: JSON.stringify({ project: projectId }),
+        credentials: "same-origin",
+        body: JSON.stringify({ project: projectId, password: passwordValue }),
       });
 
       const data = await response.json();
@@ -816,21 +834,23 @@ export default function ProjectModal({
       try {
         setLoading(true);
         
-        // Check cache first (populated by preloadLikelyPages)
+        // Check cache first (populated by preloadLikelyPages). Cached project
+        // payloads are public-only, so bypass them once this tab is unlocked.
         const cacheKey = `project:${projectId}`;
         const cachedData = getCachedData<Project>(cacheKey);
         
-        if (cachedData) {
+        if (cachedData && !isProjectUnlocked(projectId)) {
           setProject(cachedData);
           setError(null);
           setLoading(false);
           return;
         }
         
-        // Fallback to fetching from Sanity
-        const data = await client.fetch<Project>(PROJECT_BY_COMPANY_QUERY, {
-          company: projectId,
-        });
+        const { project: data, unlocked } = await fetchProjectByCompany(projectId);
+        if (unlocked) {
+          markProjectUnlocked(projectId);
+          setIsUnlocked(true);
+        }
         setProject(data);
         setError(null);
       } catch (err) {
@@ -1087,9 +1107,20 @@ export default function ProjectModal({
   }, [isFullscreen, isUnlocked, projectId]);
 
   // Handle unlocking a password-protected project
-  const handleUnlock = (targetSectionId?: string) => {
+  const handleUnlock = async (targetSectionId?: string) => {
     const normalizedTarget = targetSectionId?.trim();
     pendingUnlockTargetRef.current = normalizedTarget || null;
+
+    try {
+      const { project: unlockedProject } = await fetchProjectByCompany(projectId);
+      if (unlockedProject) {
+        setProject(unlockedProject);
+      }
+    } catch (err) {
+      console.error("Error fetching unlocked project:", err);
+      setError("Failed to load unlocked project content.");
+      return;
+    }
 
     if (posthogEnabled) {
       posthog.capture("protected_content_unlocked", { project_id: projectId });
