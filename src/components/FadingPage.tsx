@@ -280,12 +280,14 @@ export default function FadingPage() {
 
     // Background whispers loop. Two stacked layers offset in phase so the
     // texture is denser and never resets to silence at the loop boundary.
-    // Browsers block autoplay with sound until the user interacts, so we try
-    // to play immediately and, if that's rejected, start on the first
-    // pointer/key event.
+    //
+    // Browsers block autoplay with sound until the user interacts. We don't
+    // rely on play()'s promise rejecting (Safari/Chrome on some hosts resolve
+    // it but silently leave the audio paused). Instead we always listen for
+    // user gestures and retry play() until both layers are actually running.
     const audio = audioRef.current;
     const audio2 = audioRef2.current;
-    let detachInteraction: (() => void) | null = null;
+    const audioCleanup: Array<() => void> = [];
     if (audio && audio2) {
       // Quieter than a single layer because they sum together.
       audio.volume = 0.42;
@@ -309,25 +311,34 @@ export default function FadingPage() {
       else audio2.addEventListener("loadedmetadata", seekSecond, { once: true });
 
       const tryPlay = () => {
-        audio.play().catch(() => {});
-        audio2.play().catch(() => {});
+        if (audio.paused) audio.play().catch(() => {});
+        if (audio2.paused) audio2.play().catch(() => {});
       };
-      const onFirstInteraction = () => {
-        tryPlay();
-        detachInteraction?.();
+
+      // Optimistic immediate attempt — works in dev / when the user navigated
+      // here from another page on the same origin with a recent gesture.
+      tryPlay();
+
+      // Always-on gesture listeners. They no-op once both layers are playing
+      // (the `paused` guard inside tryPlay), but stay armed across the whole
+      // lifetime of the page so any later interaction can rescue stalled
+      // playback (Safari sometimes pauses on tab visibility changes, etc.).
+      const onInteraction = () => tryPlay();
+      window.addEventListener("pointerdown", onInteraction);
+      window.addEventListener("keydown", onInteraction);
+      window.addEventListener("touchstart", onInteraction, { passive: true });
+      window.addEventListener("click", onInteraction);
+      const onVisible = () => {
+        if (document.visibilityState === "visible") tryPlay();
       };
-      const attach = () => {
-        window.addEventListener("pointerdown", onFirstInteraction, {
-          once: true,
-        });
-        window.addEventListener("keydown", onFirstInteraction, { once: true });
-        detachInteraction = () => {
-          window.removeEventListener("pointerdown", onFirstInteraction);
-          window.removeEventListener("keydown", onFirstInteraction);
-        };
-      };
-      Promise.allSettled([audio.play(), audio2.play()]).then((results) => {
-        if (results.some((r) => r.status === "rejected")) attach();
+      document.addEventListener("visibilitychange", onVisible);
+
+      audioCleanup.push(() => {
+        window.removeEventListener("pointerdown", onInteraction);
+        window.removeEventListener("keydown", onInteraction);
+        window.removeEventListener("touchstart", onInteraction);
+        window.removeEventListener("click", onInteraction);
+        document.removeEventListener("visibilitychange", onVisible);
       });
     }
 
@@ -335,7 +346,7 @@ export default function FadingPage() {
       stopped = true;
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", resize);
-      detachInteraction?.();
+      for (const fn of audioCleanup) fn();
       audio?.pause();
       audio2?.pause();
       // Reference preloads so they aren't garbage-collected mid-cycle.
