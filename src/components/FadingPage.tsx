@@ -29,8 +29,8 @@ const FLOOR_FRICTION = 0.55; // horizontal velocity multiplier on impact
 const SETTLE_VY = 0.05; // vy below this on impact = settled (rest on floor)
 const FADE_START = 0.78; // fade begins at this fraction of SHATTER_MS
 // Dust particles are tiny circles (radius in px), independent of image size.
-const DUST_MIN_RADIUS = 1;
-const DUST_MAX_RADIUS = 2;
+const DUST_MIN_RADIUS = 1.5;
+const DUST_MAX_RADIUS = 3;
 const TAU = Math.PI * 2;
 
 type Particle = {
@@ -49,8 +49,6 @@ type Phase = "loading" | "grow" | "shatter";
 export default function FadingPage() {
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const audioRef2 = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -278,77 +276,11 @@ export default function FadingPage() {
     beginGrow();
     rafId = requestAnimationFrame(loop);
 
-    // Background whispers loop. Two stacked layers offset in phase so the
-    // texture is denser and never resets to silence at the loop boundary.
-    //
-    // Browsers block autoplay with sound until the user interacts. We don't
-    // rely on play()'s promise rejecting (Safari/Chrome on some hosts resolve
-    // it but silently leave the audio paused). Instead we always listen for
-    // user gestures and retry play() until both layers are actually running.
-    const audio = audioRef.current;
-    const audio2 = audioRef2.current;
-    const audioCleanup: Array<() => void> = [];
-    if (audio && audio2) {
-      // Quieter than a single layer because they sum together.
-      audio.volume = 0.42;
-      audio2.volume = 0.42;
-      audio.loop = true;
-      audio2.loop = true;
-
-      // Phase-shift the second layer by half the clip length so the two
-      // tracks weave through each other instead of doubling identically.
-      const seekSecond = () => {
-        const d = audio2.duration;
-        if (Number.isFinite(d) && d > 0) {
-          try {
-            audio2.currentTime = d / 2;
-          } catch {
-            /* ignore — some browsers throw before metadata is fully ready */
-          }
-        }
-      };
-      if (audio2.readyState >= 1) seekSecond();
-      else audio2.addEventListener("loadedmetadata", seekSecond, { once: true });
-
-      const tryPlay = () => {
-        if (audio.paused) audio.play().catch(() => {});
-        if (audio2.paused) audio2.play().catch(() => {});
-      };
-
-      // Optimistic immediate attempt — works in dev / when the user navigated
-      // here from another page on the same origin with a recent gesture.
-      tryPlay();
-
-      // Always-on gesture listeners. They no-op once both layers are playing
-      // (the `paused` guard inside tryPlay), but stay armed across the whole
-      // lifetime of the page so any later interaction can rescue stalled
-      // playback (Safari sometimes pauses on tab visibility changes, etc.).
-      const onInteraction = () => tryPlay();
-      window.addEventListener("pointerdown", onInteraction);
-      window.addEventListener("keydown", onInteraction);
-      window.addEventListener("touchstart", onInteraction, { passive: true });
-      window.addEventListener("click", onInteraction);
-      const onVisible = () => {
-        if (document.visibilityState === "visible") tryPlay();
-      };
-      document.addEventListener("visibilitychange", onVisible);
-
-      audioCleanup.push(() => {
-        window.removeEventListener("pointerdown", onInteraction);
-        window.removeEventListener("keydown", onInteraction);
-        window.removeEventListener("touchstart", onInteraction);
-        window.removeEventListener("click", onInteraction);
-        document.removeEventListener("visibilitychange", onVisible);
-      });
-    }
 
     return () => {
       stopped = true;
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", resize);
-      for (const fn of audioCleanup) fn();
-      audio?.pause();
-      audio2?.pause();
       // Reference preloads so they aren't garbage-collected mid-cycle.
       preloads.length;
     };
@@ -379,20 +311,6 @@ export default function FadingPage() {
           willChange: "transform, opacity",
           transformOrigin: "center center",
         }}
-      />
-      <audio
-        ref={audioRef}
-        src="/fading/whispers-loop.mp3"
-        loop
-        preload="auto"
-        aria-hidden="true"
-      />
-      <audio
-        ref={audioRef2}
-        src="/fading/whispers-loop.mp3"
-        loop
-        preload="auto"
-        aria-hidden="true"
       />
     </main>
   );
