@@ -17,6 +17,7 @@ import { PROJECTS_QUERY, EXPERIMENT_PROJECTS_QUERY } from "../sanity/queries";
 import type { SanityImage } from "../sanity/types";
 import { ArrowUpRight } from "./ArrowUpRight";
 import { TouchIcon } from "./TouchIcon";
+import { LinkIcon } from "./LinkIcon";
 import { useScrollLock } from "../utils/useScrollLock";
 import ContactBadge from "./ContactBadge";
 import NavigationTabs from "./NavigationTabs";
@@ -405,29 +406,16 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
               {!hasTryItOut && (
                 <span className="text-[#9ca3af]"> • {project.year}</span>
               )}
-              {hasTryItOut && experimentLink!.external && (
-                <>
-                  <span className="text-[#9ca3af]"> • </span>
-                  <a
-                    href={experimentLink!.href}
-                    onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-baseline gap-1.5 align-baseline text-blue-400 hover:text-blue-300"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {experimentLink!.label}<ArrowUpRight />
-                  </a>
-                </>
-              )}
             </p>
-            {hasTryItOut && !experimentLink!.external && (
+            {hasTryItOut && (
               <a
                 href={experimentLink!.href}
                 onClick={(e) => e.stopPropagation()}
                 className="ml-auto inline-flex items-center shrink-0 text-gray-400 hover:text-gray-500"
                 aria-label={experimentLink!.label}
+                {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
-                <TouchIcon />
+                {experimentLink!.external ? <LinkIcon /> : <TouchIcon />}
               </a>
             )}
           </div>
@@ -474,17 +462,12 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
           <a
             href={experimentLink!.href}
             onClick={(e) => e.stopPropagation()}
-            className={clsx(
-              "md:hidden inline-flex items-baseline gap-1.5 ml-auto shrink-0 text-base",
-              experimentLink!.external
-                ? "text-blue-400 hover:text-blue-300"
-                : "text-gray-400 hover:text-gray-500"
-            )}
+            className="md:hidden inline-flex items-center ml-auto shrink-0 text-gray-400 hover:text-gray-500"
             {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             aria-label={experimentLink!.label}
           >
             {experimentLink!.external ? (
-              <>{experimentLink!.label}<ArrowUpRight /></>
+              <LinkIcon />
             ) : (
               <TouchIcon />
             )}
