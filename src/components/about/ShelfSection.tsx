@@ -265,9 +265,6 @@ export default function ShelfSection({
                     {!activeYear ? (
                       <>
                         {title}
-                        {count !== undefined && (
-                          <span className="text-gray-400"> ({count})</span>
-                        )}
                       </>
                     ) : (
                       (() => {
@@ -326,9 +323,6 @@ export default function ShelfSection({
                           !activeYear ? "text-gray-600" : "text-gray-400"
                         )}>
                           {title}
-                          {count !== undefined && (
-                            <span className={!activeYear ? "text-gray-400" : "text-gray-300"}> ({count})</span>
-                          )}
                         </span>
                       </button>
                       
@@ -382,9 +376,6 @@ export default function ShelfSection({
                   !activeYear ? "text-gray-500" : "text-gray-400"
                 )}>
                   {title}
-                  {count !== undefined && (
-                    <span className={!activeYear ? "text-gray-400" : "text-gray-300"}> ({count})</span>
-                  )}
                 </span>
               </button>
             )}
@@ -420,9 +411,6 @@ export default function ShelfSection({
                   !activeYear ? "text-gray-500" : "text-gray-400 group-hover:text-gray-500"
                 )}>
                   {title}
-                  {count !== undefined && (
-                    <span className={!activeYear ? "text-gray-400" : "text-gray-300"}> ({count})</span>
-                  )}
                 </span>
               </button>
 
@@ -471,7 +459,7 @@ export default function ShelfSection({
                 className="cursor-pointer transition-colors bg-white"
               >
                 <span className="font-['Michelle',sans-serif] text-sm md:text-base font-normal tracking-wide text-gray-400 hover:text-blue-500 transition-colors whitespace-nowrap">
-                  {externalLink.label} <ArrowUpRight className="ml-1" />
+                  {externalLink.label}<ArrowUpRight className="ml-1" />
                 </span>
               </a>
             </div>
