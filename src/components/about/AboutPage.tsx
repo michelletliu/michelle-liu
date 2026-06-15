@@ -690,7 +690,7 @@ export default function AboutPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <img src={academicCapIcon} alt="" className="w-4 h-4" />
-                    <span className="text-gray-400">Art B.A. & Cognitive Science B.S.&nbsp;&nbsp;/&nbsp;&nbsp;UCLA</span>
+                    <span className="text-gray-400">B.A. Art & B.S. Cognitive Science, UCLA</span>
                   </div>
                 </div>
               </ScrollReveal>
