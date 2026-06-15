@@ -1,8 +1,8 @@
 import clsx from "clsx";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import MediaCard, { type MediaCardData } from "./MediaCard";
 import { ArrowUpRight } from "../ArrowUpRight";
+import { FilterDropdown } from "../FilterDropdown";
 
 type YearFilter = {
   year: string;
@@ -65,12 +65,6 @@ export default function ShelfSection({
   const [animationKey, setAnimationKey] = useState(0);
   const currentView = activeYear || "featured";
   
-  // Mobile dropdown state
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
-  const rafRef = useRef<number | null>(null);
   const desktopTagsRef = useRef<HTMLDivElement | null>(null);
   const desktopTagRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const indicatorReadyRef = useRef(false);
@@ -125,87 +119,6 @@ export default function ShelfSection({
     }
   }, [activeTagId]);
   
-  // Function to calculate dropdown position - optimized with RAF
-  const updateDropdownPosition = () => {
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-    }
-    
-    rafRef.current = requestAnimationFrame(() => {
-      if (buttonRef.current && dropdownRef.current) {
-        const rect = buttonRef.current.getBoundingClientRect();
-        const newTop = rect.bottom + 4;
-        const newLeft = rect.left;
-        
-        // Directly update DOM for smooth performance
-        dropdownRef.current.style.transform = `translate(${newLeft}px, ${newTop}px)`;
-      }
-    });
-  };
-  
-  // Initial position setup
-  const initializePosition = () => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + 4,
-        left: rect.left,
-      });
-    }
-  };
-  
-  // Close dropdown when viewport crosses lg breakpoint (1024px)
-  useEffect(() => {
-    if (isDropdownOpen) {
-      const handleResize = () => {
-        // Close dropdown if viewport becomes lg or larger (desktop)
-        if (window.innerWidth >= 1024) {
-          setIsDropdownOpen(false);
-        }
-      };
-      
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }
-  }, [isDropdownOpen]);
-  
-  // Update dropdown position when it opens and on scroll
-  useEffect(() => {
-    if (isDropdownOpen) {
-      initializePosition();
-      
-      // Small delay to ensure portal is mounted before we start updating
-      const timeoutId = setTimeout(() => {
-        window.addEventListener("scroll", updateDropdownPosition, true);
-        window.addEventListener("resize", updateDropdownPosition);
-      }, 0);
-      
-      return () => {
-        clearTimeout(timeoutId);
-        window.removeEventListener("scroll", updateDropdownPosition, true);
-        window.removeEventListener("resize", updateDropdownPosition);
-        if (rafRef.current) {
-          cancelAnimationFrame(rafRef.current);
-        }
-      };
-    }
-  }, [isDropdownOpen]);
-  
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-          buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    }
-    
-    if (isDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isDropdownOpen]);
-  
   // Increment animation key when view changes to trigger staggered fade-up
   useEffect(() => {
     setAnimationKey(prev => prev + 1);
@@ -227,17 +140,11 @@ export default function ShelfSection({
     return () => observer.disconnect();
   }, [updateIndicator, yearFilters]);
 
-  // Get display text for mobile dropdown
-  const getActiveFilterDisplay = () => {
-    if (!activeYear) {
-      return `${title}${count !== undefined ? ` (${count})` : ""}`;
-    }
-    const filter = yearFilters.find(f => f.year === activeYear);
-    if (filter) {
-      return `${filter.year}${filter.count !== undefined ? ` (${filter.count})` : ""}`;
-    }
-    return activeYear;
-  };
+  // Build options for mobile FilterDropdown
+  const mobileFilterOptions = [
+    { value: "", label: title },
+    ...yearFilters.map((f) => ({ value: f.year, label: f.year, count: f.count })),
+  ];
 
   return (
     <div className={clsx("flex w-full flex-col gap-1", className)}>
@@ -245,140 +152,32 @@ export default function ShelfSection({
       <div className="relative flex w-full flex-col py-4">
         {/* Title tag and year filters */}
         <div className="flex items-center pb-2">
-          {/* Mobile/Tablet: Dropdown for year filters - outside overflow container */}
-          {yearFilters.length > 0 && (
-            <div className="relative lg:hidden shrink-0">
-                <button
-                  ref={buttonRef}
-                  onClick={() => {
-                    if (!isDropdownOpen) {
-                      initializePosition();
-                    }
-                    setIsDropdownOpen(!isDropdownOpen);
-                  }}
-                  className={clsx(
-                    "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 transition-colors cursor-pointer",
-                    "bg-gray-500/10"
-                  )}
-                >
-                  <span className="font-['Michelle',sans-serif] font-medium text-sm tracking-wide whitespace-nowrap text-gray-500">
-                    {!activeYear ? (
-                      <>
-                        {title}
-                      </>
-                    ) : (
-                      (() => {
-                        const filter = yearFilters.find(f => f.year === activeYear);
-                        return filter ? (
-                          <>
-                            {filter.year}
-                            {filter.count !== undefined && (
-                              <span className="text-gray-400"> ({filter.count})</span>
-                            )}
-                          </>
-                        ) : activeYear;
-                      })()
-                    )}
-                  </span>
-                  <svg
-                    className={clsx(
-                      "size-4 text-gray-400 transition-transform duration-200",
-                      isDropdownOpen && "rotate-180"
-                    )}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                {/* Dropdown menu - rendered via portal */}
-                {isDropdownOpen && createPortal(
-                  <div 
-                    ref={dropdownRef}
-                    className="fixed bg-white rounded-lg shadow-lg border border-gray-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200"
-                    style={{
-                      top: 0,
-                      left: 0,
-                      transform: `translate(${dropdownPosition.left}px, ${dropdownPosition.top}px)`,
-                      willChange: 'transform',
-                    }}
-                  >
-                    <div className="flex flex-col py-1.5 px-1.5">
-                      {/* Favorites option */}
-                      <button
-                        onClick={() => {
-                          onYearChange?.("");
-                          setIsDropdownOpen(false);
-                        }}
-                        className={clsx(
-                          "flex items-center px-3 py-1.5 rounded-md transition-colors text-left",
-                          !activeYear ? "bg-gray-100" : "hover:bg-gray-50"
-                        )}
-                      >
-                        <span className={clsx(
-                          "font-['Michelle',sans-serif] font-medium text-sm tracking-wide",
-                          !activeYear ? "text-gray-600" : "text-gray-400"
-                        )}>
-                          {title}
-                        </span>
-                      </button>
-                      
-                      {/* Year options */}
-                      {yearFilters.map((filter) => {
-                        const isActive = activeYear === filter.year;
-                        return (
-                          <button
-                            key={filter.year}
-                            onClick={() => {
-                              onYearChange?.(filter.year);
-                              setIsDropdownOpen(false);
-                            }}
-                            className={clsx(
-                              "flex items-center px-3 py-1.5 rounded-md transition-colors text-left",
-                              isActive ? "bg-gray-100" : "hover:bg-gray-50"
-                            )}
-                          >
-                            <span className={clsx(
-                              "font-['Michelle',sans-serif] font-medium text-sm tracking-wide",
-                              isActive ? "text-gray-600" : "text-gray-400"
-                            )}>
-                              {filter.year}
-                              {filter.count !== undefined && (
-                                <span className={isActive ? "text-gray-400" : "text-gray-300"}>
-                                  {" "}({filter.count})
-                                </span>
-                              )}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>,
-                  document.body
-                )}
-              </div>
-            )}
-            
-            {/* Mobile/Tablet: Show title only if no year filters */}
-            {yearFilters.length === 0 && (
+          {/* Mobile/Tablet: Shared FilterDropdown */}
+          <div className="lg:hidden shrink-0">
+            {yearFilters.length > 0 ? (
+              <FilterDropdown
+                options={mobileFilterOptions}
+                activeValue={activeYear ?? ""}
+                onChange={(value) => onYearChange?.(value)}
+                usePortal
+              />
+            ) : (
               <button
                 onClick={() => onYearChange?.("")}
                 className={clsx(
-                  "flex lg:hidden shrink-0 items-center justify-center rounded-full px-3 py-1 transition-colors cursor-pointer",
+                  "flex shrink-0 items-center justify-center rounded-full px-3 py-1 transition-colors cursor-pointer",
                   !activeYear ? "bg-gray-500/10" : "hover:bg-gray-500/5"
                 )}
               >
                 <span className={clsx(
-                  "font-['Michelle',sans-serif] font-medium text-sm tracking-wide whitespace-nowrap",
+                  "font-['Michelle',sans-serif] font-medium text-base tracking-wide whitespace-nowrap",
                   !activeYear ? "text-gray-500" : "text-gray-400"
                 )}>
                   {title}
                 </span>
               </button>
             )}
+          </div>
 
             {/* Spacer to push link to right on mobile/tablet */}
             <div className="flex-1 lg:hidden" />
@@ -458,8 +257,8 @@ export default function ShelfSection({
                 rel="noopener noreferrer"
                 className="cursor-pointer transition-colors bg-white"
               >
-                <span className="font-['Michelle',sans-serif] text-sm md:text-base font-normal tracking-wide text-gray-400 hover:text-blue-500 transition-colors whitespace-nowrap">
-                  {externalLink.label}<ArrowUpRight className="ml-1" />
+                <span className="font-['Michelle',sans-serif] text-base font-normal tracking-wide text-gray-400 hover:text-blue-500 transition-colors whitespace-nowrap">
+                  {externalLink.label}<ArrowUpRight className="ml-1.5" />
                 </span>
               </a>
             </div>
