@@ -300,7 +300,7 @@ export default function LibraryPage({
         <InfoButton project={projectInfo} />
 
         {/* Logo */}
-        <div className="absolute top-0 left-0 pt-8 px-6 md:px-16 z-20">
+        <div className="absolute top-0 left-0 pt-8 px-6 md:px-16 z-40">
           <button
             ref={logoRef}
             onClick={handleBackToHome}

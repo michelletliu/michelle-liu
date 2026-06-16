@@ -1,19 +1,9 @@
 "use client";
 
-import { Link } from "@/lib/navigation";
-import imgLogo from "../assets/logo.png";
-
 export default function NotFound() {
   return (
     <div className="min-h-dvh w-full bg-white flex flex-col items-center justify-center px-8">
-      {/* Logo */}
-      <Link to="/" className="absolute top-8 left-8 md:left-16">
-        <img
-          src={imgLogo}
-          alt="Michelle Liu Logo"
-          className="size-8 md:size-[44px] object-contain transition-opacity duration-200 hover:opacity-80"
-        />
-      </Link>
+      {/* Logo is rendered globally by PersistentLogo in Providers */}
 
       {/* Content */}
       <div className="flex flex-col items-center gap-6 text-center">
