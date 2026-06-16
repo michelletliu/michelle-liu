@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Analytics } from "@vercel/analytics/react";
 import { initPostHog, posthog, posthogEnabled } from "@/lib/posthog";
 import { initCursorCompatibility } from "@/utils/cursorCompat";
+import PersistentLogo from "@/components/PersistentLogo";
 
 const Agentation = lazy(() =>
   import("agentation").then((mod) => ({ default: mod.Agentation }))
@@ -44,6 +45,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <PersistentLogo />
       {children}
       <PostHogPageView />
       <Analytics />
