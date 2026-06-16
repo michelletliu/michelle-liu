@@ -13,7 +13,12 @@
 
 ### Protected sections security
 
-Protected project-section passwords are verified server-side by `api/password.ts`
+Protected project-section passwords are verified server-side by `app/api/password/route.ts`.
 
 - Passwords are stored as individual environment variables
+- Successful unlocks are stored in signed HttpOnly cookies using `PASSWORD_SESSION_SECRET`
+- Project content is fetched through `app/api/project/route.ts`, which strips `visibility: "unlocked"` sections unless the signed cookie verifies
+- Set `SANITY_READ_TOKEN` if protected project content requires authenticated Sanity reads
+
+Important: app-level filtering is not enough if confidential content remains in a publicly readable Sanity dataset. For NDA-grade protection, move protected content behind private Sanity access, such as a private dataset or private document model that anonymous GROQ requests cannot query.
 

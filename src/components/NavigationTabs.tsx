@@ -16,6 +16,10 @@ type TagBackgroundImageAndTextProps = {
   active?: boolean;
   onClick?: () => void;
   onPrefetch?: () => void;
+  /** Render an SSR-visible static pill behind the text until the floating
+   *  indicator has measured itself. Prevents a flash of unstyled active
+   *  tab on first load. */
+  showStaticPill?: boolean;
 };
 
 type NavigationTabItem = {
@@ -31,7 +35,7 @@ const NAVIGATION_TABS: NavigationTabItem[] = [
 ];
 
 const TagBackgroundImageAndText = forwardRef<HTMLButtonElement, TagBackgroundImageAndTextProps>(
-  function TagBackgroundImageAndText({ text, active = false, onClick, onPrefetch }, ref) {
+  function TagBackgroundImageAndText({ text, active = false, onClick, onPrefetch, showStaticPill = false }, ref) {
     return (
       <button
         ref={ref}
@@ -43,6 +47,12 @@ const TagBackgroundImageAndText = forwardRef<HTMLButtonElement, TagBackgroundIma
           "content-stretch group z-10 flex items-center justify-center px-3.5 pt-[5px] pb-[4px] relative rounded-full shrink-0 cursor-pointer border border-transparent",
         )}
       >
+        {showStaticPill && (
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 -z-10 rounded-full border border-white/50 bg-gray-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.02)] md:backdrop-blur-md"
+          />
+        )}
         <p
           className={clsx(
             "font-['Michelle',sans-serif] font-medium leading-normal tracking-[0.005em] relative z-10 shrink-0 text-[1.07em] text-nowrap transition-colors duration-200 ease-out",
@@ -64,6 +74,7 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
   const navigate = useNavigate();
   const router = useRouter();
   const prefetchedRef = useRef<Set<string>>(new Set());
+  const navigateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const prefetchTab = useCallback(
     (href: string) => {
@@ -101,8 +112,10 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
   });
   const [indicatorReady, setIndicatorReady] = useState(false);
 
+  // The slide happens on the previous route's still-mounted NavigationTabs
+  // via the optimistic update in handleTabClick. When this new instance
+  // mounts, the indicator just sits at the active tab — no second animation.
   useLayoutEffect(() => {
-    sessionStorage.removeItem("navigationPreviousTab");
     setDisplayedActiveTab(activeTab);
   }, [activeTab]);
 
@@ -160,13 +173,22 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
     return () => observer.disconnect();
   }, [updateIndicator]);
 
+  useEffect(() => {
+    return () => {
+      if (navigateTimerRef.current) clearTimeout(navigateTimerRef.current);
+    };
+  }, []);
+
   const handleTabClick = (tab: NavigationTabItem) => {
     if (tab.id === displayedActiveTab) return;
 
-    // Optimistically move the indicator so the click feels instant,
-    // even if the new route takes a moment to render.
+    // Kick off the slide locally on this (still-mounted) instance so the
+    // animation starts on the same frame as the click. Delay navigation
+    // by the transition duration so the slide completes before this page
+    // unmounts and the new page's NavigationTabs mounts in place.
+    if (navigateTimerRef.current) clearTimeout(navigateTimerRef.current);
     setDisplayedActiveTab(tab.id);
-    navigate(tab.href);
+    navigateTimerRef.current = setTimeout(() => navigate(tab.href), 300);
   };
 
   return (
@@ -199,6 +221,7 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
                   active={displayedActiveTab === tab.id}
                   onClick={() => handleTabClick(tab)}
                   onPrefetch={() => prefetchTab(tab.href)}
+                  showStaticPill={displayedActiveTab === tab.id && !indicatorReady}
                 />
               ))}
             </div>

@@ -7,7 +7,6 @@
 import profilePic from "../assets/Website Profile Pic.png";
 import { client, urlFor } from "./client";
 import {
-  PROJECT_BY_COMPANY_QUERY,
   ART_PIECES_QUERY,
   SKETCHBOOKS_QUERY,
   MURALS_QUERY,
@@ -104,9 +103,14 @@ async function preloadProject(company: string): Promise<void> {
   }
 
   try {
-    const data = await client.fetch<Project>(PROJECT_BY_COMPANY_QUERY, {
-      company,
+    const response = await fetch(`/api/project?company=${encodeURIComponent(company)}`, {
+      cache: "no-store",
+      credentials: "same-origin",
     });
+    if (!response.ok) {
+      throw new Error(`Project API returned ${response.status}`);
+    }
+    const data = (await response.json()) as Project;
     if (data) {
       setCachedData(cacheKey, data);
       if (data.heroImage) warmImage(urlFor(data.heroImage).width(1200).url());

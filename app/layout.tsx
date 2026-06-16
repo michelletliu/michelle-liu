@@ -3,7 +3,8 @@ import Providers from "@/components/Providers";
 import "@/index.css";
 import "@/styles/globals.css";
 
-const siteDescription = "Previously at Apple, Roblox, & NASA.";
+const siteDescription =
+  "Designing useful products to spark moments of delight & human connection. Previously at Apple, Roblox, & NASA.";
 
 export const metadata: Metadata = {
   title: "michelle liu",
@@ -46,6 +47,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preload" as="image" href="/logo.png" fetchPriority="high" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"

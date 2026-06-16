@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 type TooltipProps = {
   label: string;
@@ -30,6 +30,22 @@ function setTooltipWarmup(active: boolean) {
   }
 }
 
+// Module-level touch detection: a single touchstart anywhere on the page
+// permanently marks the session as touch-driven. This is more robust than
+// `(hover: none)` alone, which can misreport on iPads/Apple Pencil/simulators.
+let isTouchSession = false;
+if (typeof window !== 'undefined') {
+  const initialMatch =
+    window.matchMedia('(hover: none)').matches ||
+    window.matchMedia('(pointer: coarse)').matches;
+  if (initialMatch) isTouchSession = true;
+  const markTouch = () => {
+    isTouchSession = true;
+    window.removeEventListener('touchstart', markTouch);
+  };
+  window.addEventListener('touchstart', markTouch, { passive: true });
+}
+
 export default function Tooltip({ 
   label, 
   children, 
@@ -41,7 +57,29 @@ export default function Tooltip({
   const [isInstant, setIsInstant] = useState(false);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Force-hide on any touch anywhere — defensive cleanup in case a tooltip
+  // got stuck open from a synthetic mouseenter on tap.
+  useEffect(() => {
+    if (!isVisible) return;
+    const hide = () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+        hoverTimeoutRef.current = null;
+      }
+      setIsVisible(false);
+      setIsEnding(false);
+      setIsInstant(false);
+      setTooltipWarmup(false);
+    };
+    window.addEventListener('touchstart', hide, { passive: true });
+    return () => window.removeEventListener('touchstart', hide);
+  }, [isVisible]);
+
   const handleMouseEnter = () => {
+    // Skip tooltips on touch devices: tapping fires mouseenter without a
+    // matching mouseleave, so tooltips would stick after each tap.
+    if (isTouchSession) return;
+
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
     }
@@ -101,7 +139,7 @@ export default function Tooltip({
       {children}
       {isVisible && (
         <div
-          className="tooltip absolute left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-[13px] font-medium rounded-2xl whitespace-nowrap pointer-events-none z-[9999]"
+          className="tooltip absolute left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-[13px] font-medium rounded-lg whitespace-nowrap pointer-events-none z-[9999]"
           data-ending-style={isEnding ? "" : undefined}
           data-instant={isInstant ? "" : undefined}
           style={positionStyles}

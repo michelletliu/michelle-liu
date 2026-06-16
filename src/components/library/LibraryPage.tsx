@@ -2,17 +2,18 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useSearchParams } from "@/lib/navigation";
-import clsx from "clsx";
 import { client, urlFor } from "../../sanity/client";
 import { SHELF_BOOKS_QUERY, BOOK_YEARS_QUERY } from "../../sanity/queries";
 import { BookCard } from "./BookCard";
 import { BookDetailModal } from "./BookDetailModal";
 import { AddBookModal } from "./AddBookModal";
-import { ChevronDownIcon, PlusIcon } from "./icons";
+import { PlusIcon } from "./icons";
 import type { Book, ShelfBookData } from "./types";
 import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
+import { FilterDropdown } from '../FilterDropdown';
+import type { FilterDropdownOption } from '../FilterDropdown';
 import { posthog, posthogEnabled } from '../../lib/posthog';
 
 // Default project info (fallback if Sanity fetch fails)
@@ -60,14 +61,6 @@ function transformShelfBook(item: ShelfBookData): Book {
   };
 }
 
-// Filter type: "favorites", "all", or a year string like "2025"
-type FilterOption = {
-  value: string;
-  label: string;
-  isFavorites?: boolean;
-  isAll?: boolean;
-};
-
 export default function LibraryPage({
   bookSlug: bookSlugProp,
   isFullscreen = false,
@@ -99,16 +92,13 @@ export default function LibraryPage({
   // Fetch project info from Sanity (with fallback to defaults)
   const projectInfo = useExperimentProject('library', DEFAULT_LIBRARY_PROJECT);
   const [books, setBooks] = useState<Book[]>([]);
-  const [filterOptions, setFilterOptions] = useState<FilterOption[]>([{ value: 'favorites', label: 'favorites', isFavorites: true }]);
+  const [filterOptions, setFilterOptions] = useState<FilterDropdownOption[]>([{ value: 'favorites', label: 'favorites' }]);
   const [activeFilter, setActiveFilter] = useState<string>("favorites");
   const [showAddBookModal, setShowAddBookModal] = useState(false);
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [isEntering, setIsEntering] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const logoRef = useRef<HTMLButtonElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const slugify = (value: string) =>
@@ -167,33 +157,6 @@ export default function LibraryPage({
     return findBookBySlug(decodeURIComponent(bookSlug)) ?? null;
   })();
 
-  // Handle dropdown animation
-  useEffect(() => {
-    if (showFilterDropdown) {
-      // Opening: make visible immediately, then animate in
-      requestAnimationFrame(() => {
-        setIsDropdownVisible(true);
-      });
-    } else {
-      // Closing: animate out first
-      setIsDropdownVisible(false);
-    }
-  }, [showFilterDropdown]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowFilterDropdown(false);
-      }
-    }
-
-    if (showFilterDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [showFilterDropdown]);
-
   // Fetch books from Sanity (using shelfItem schema)
   useEffect(() => {
     async function fetchBooks() {
@@ -208,10 +171,12 @@ export default function LibraryPage({
         setBooks(transformedBooks);
         
         // Build filter options: "favorites" + "all" + unique years (already sorted desc from query)
-        const options: FilterOption[] = [
-          { value: 'favorites', label: 'favorites', isFavorites: true },
-          { value: 'all', label: 'all', isAll: true },
-          ...yearsData.map(year => ({ value: year, label: year }))
+        const transformedBooksForCounts = booksData.map(transformShelfBook);
+        const favCount = transformedBooksForCounts.filter(b => b.isFavorite).length;
+        const options: FilterDropdownOption[] = [
+          { value: 'favorites', label: 'favorites', count: favCount },
+          { value: 'all', label: 'all', count: transformedBooksForCounts.length },
+          ...yearsData.map(year => ({ value: year, label: year, count: transformedBooksForCounts.filter(b => b.year === year).length }))
         ];
         
         setFilterOptions(options);
@@ -362,76 +327,16 @@ export default function LibraryPage({
             <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-[34px] relative shrink-0 text-[28px] text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
               library
             </p>
-            <div className="relative" ref={dropdownRef}>
-                <button 
-                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                  className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors cursor-pointer bg-gray-500/10"
-                >
-                  <span className="font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap text-gray-500">
-                    {activeFilter}
-                    <span className="text-gray-400"> ({filteredBooks.length})</span>
-                  </span>
-                  <svg
-                    className={clsx(
-                      "size-4 text-gray-400 transition-transform duration-200",
-                      showFilterDropdown && "rotate-180"
-                    )}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                <div 
-                  className={clsx(
-                    "absolute left-0 top-[calc(100%+4px)] bg-white rounded-xl shadow-lg border border-gray-100 z-50 w-36 transition-all duration-200 ease-out",
-                    showFilterDropdown ? "pointer-events-auto" : "pointer-events-none",
-                    isDropdownVisible 
-                      ? "opacity-100 translate-y-0" 
-                      : "opacity-0 -translate-y-1"
-                  )}
-                >
-                    <div className="flex flex-col gap-1 py-1.5 px-1.5">
-                      {filterOptions.map((option) => {
-                        const isActive = activeFilter === option.value;
-                        const count = option.isFavorites 
-                          ? books.filter(b => b.isFavorite).length
-                          : option.isAll 
-                          ? books.length
-                          : books.filter(b => b.year === option.value).length;
-                        return (
-                          <button
-                            key={option.value}
-                            onClick={() => {
-                              if (posthogEnabled) {
-                                posthog.capture("book_filter_changed", { filter: option.value });
-                              }
-                              setActiveFilter(option.value);
-                              setShowFilterDropdown(false);
-                            }}
-                            className={clsx(
-                              "flex items-center px-3 py-1 rounded-[10px] transition-colors text-left",
-                              isActive ? "bg-gray-100" : "hover:bg-gray-50"
-                            )}
-                          >
-                            <span className={clsx(
-                              "font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em]",
-                              isActive ? "text-gray-600" : "text-gray-400"
-                            )}>
-                              {option.label}
-                              <span className={isActive ? "text-gray-400" : "text-gray-300"}>
-                                {" "}({count})
-                              </span>
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                </div>
-              </div>
+            <FilterDropdown
+                options={filterOptions}
+                activeValue={activeFilter}
+                onChange={(value) => {
+                  if (posthogEnabled) {
+                    posthog.capture("book_filter_changed", { filter: value });
+                  }
+                  setActiveFilter(value);
+                }}
+              />
           </div>
           
           {/* Plus button and modal container */}

@@ -12,9 +12,12 @@ import { ProjectModal as SanityProjectModal } from "./project";
 import { TryItOutButton } from "./TryItOutButton";
 import { preloadLikelyPages } from "../sanity/preload";
 import PageHeader from "./PageHeader";
-import { client } from "../sanity/client";
+import { client, urlFor } from "../sanity/client";
 import { PROJECTS_QUERY, EXPERIMENT_PROJECTS_QUERY } from "../sanity/queries";
+import type { SanityImage } from "../sanity/types";
 import { ArrowUpRight } from "./ArrowUpRight";
+import { TouchIcon } from "./TouchIcon";
+import { LinkIcon } from "./LinkIcon";
 import { useScrollLock } from "../utils/useScrollLock";
 import ContactBadge from "./ContactBadge";
 import NavigationTabs from "./NavigationTabs";
@@ -116,18 +119,19 @@ const staticProjects: Project[] = [
     ],
   },
   {
-    id: "sketchbook",
-    title: "Digital Sketchbook",
+    id: "film",
+    title: "Film Diary",
     year: "2025",
-    description: "A digital home for sketches and visual journaling.",
-    imageSrc: "https://image.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg/thumbnail.png?width=1920",
-    videoSrc: "https://stream.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg.m3u8",
+    description: "A scroll-driven photo strip of life moments.",
+    imageSrc: "https://image.mux.com/p66bkVMzjdu5wUtVpCZX41TwUzNOwWEfbSdtVefW9Vw/thumbnail.png?width=1920",
+    videoSrc: "https://stream.mux.com/p66bkVMzjdu5wUtVpCZX41TwUzNOwWEfbSdtVefW9Vw.m3u8",
+    xLink: "https://x.com/michelletliu/status/1925775994930327773",
     backgroundColor: "#ffffff",
     toolCategories: [
       { label: 'Design', tools: ['Figma'] },
-      { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
-      { label: 'Styling', tools: ['Tailwind CSS'] },
-      { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+      { label: 'Frontend', tools: ['TypeScript', 'React', 'Framer Motion', 'Tailwind CSS'] },
+      { label: 'Data', tools: ['Notion API'] },
+      { label: 'AI', tools: ['Cursor', 'Opus 4.6'] },
     ],
   },
   {
@@ -144,6 +148,37 @@ const staticProjects: Project[] = [
       { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
       { label: 'Styling', tools: ['Tailwind CSS'] },
       { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+    ],
+  },
+  {
+    id: "sketchbook",
+    title: "Digital Sketchbook",
+    year: "2025",
+    description: "A digital home for sketches and visual journaling.",
+    imageSrc: "https://image.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg/thumbnail.png?width=1920",
+    videoSrc: "https://stream.mux.com/iEo013MYI028Zit3nPTJetFvqbgweCC8e2NHbY702qsQBg.m3u8",
+    backgroundColor: "#ffffff",
+    toolCategories: [
+      { label: 'Design', tools: ['Figma'] },
+      { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
+      { label: 'Styling', tools: ['Tailwind CSS'] },
+      { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+    ],
+  },
+  {
+    id: "sundays",
+    title: "Sundays",
+    year: "2026",
+    description: "A new site for Sundays, a weekly coworking session I help host for creatives in LA.",
+    imageSrc: "https://image.mux.com/RmmMHG2l02e02I3powzzRYb6qWuW00HwxAAcB7wo41FGo00/thumbnail.png?width=1920",
+    videoSrc: "https://stream.mux.com/RmmMHG2l02e02I3powzzRYb6qWuW00HwxAAcB7wo41FGo00.m3u8",
+    xLink: "https://x.com/michelletliu/status/2044470508641784033",
+    backgroundColor: "#ffffff",
+    toolCategories: [
+      { label: 'UI & Motion', tools: ['Tailwind CSS', 'Framer Motion'] },
+      { label: 'Frontend', tools: ['Next.js', 'React', 'TypeScript'] },
+      { label: '3D', tools: ['Three.js', 'React Three Fiber'] },
+      { label: 'Content & Infra', tools: ['Notion API', 'Vercel'] },
     ],
   },
 ];
@@ -289,6 +324,18 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
 
 // SocialLinksBackgroundImage and LinksBackgroundImageAndText are now in src/components/SocialLinks.tsx
 
+function getExperimentLink(projectId: string): { href: string; label: string; external: boolean } | null {
+  switch (projectId) {
+    case 'polaroid': return { href: '/polaroid', label: 'Try It Out!', external: false };
+    case 'screentime': return { href: '/screentime', label: 'Try It Out!', external: false };
+    case 'sketchbook': return { href: '/sketchbook', label: 'Try It Out!', external: false };
+    case 'library': return { href: '/library', label: 'Try It Out!', external: false };
+    case 'film': return { href: '/film', label: 'Try It Out!', external: false };
+    case 'sundays': return { href: 'https://sundays.rsvp', label: 'Visit Site', external: true };
+    default: return null;
+  }
+}
+
 type ProjectCardProps = {
   project: Project;
   onProjectClick: (projectId: string) => void;
@@ -298,13 +345,14 @@ type ProjectCardProps = {
 };
 
 const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, featured = false, index = 0 }: ProjectCardProps) {
-  const hasTryItOut = project.id === 'polaroid' || project.id === 'library' || project.id === 'screentime' || project.id === 'sketchbook';
+  const experimentLink = getExperimentLink(project.id);
+  const hasTryItOut = experimentLink !== null;
   
   const handleClick = () => {
     const isDesktop = window.innerWidth >= 768;
     
-    if (hasTryItOut && !isDesktop) {
-      window.location.href = project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library';
+    if (experimentLink && !experimentLink.external && !isDesktop) {
+      window.location.href = experimentLink.href;
     } else {
       onProjectClick(project.id);
     }
@@ -334,12 +382,13 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                 {hasTryItOut && (
                   <>
                     <span className="text-[#9ca3af] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
-                    <a 
-                      href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
+                    <a
+                      href={experimentLink!.href}
                       onClick={(e) => e.stopPropagation()}
-                      className="text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                      className="inline-flex items-baseline gap-1.5 align-baseline text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                      {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     >
-                      Try It Out!
+                      {experimentLink!.label}{experimentLink!.external && <ArrowUpRight />}
                     </a>
                   </>
                 )}
@@ -351,24 +400,25 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
           <p className="font-['Michelle',sans-serif] font-normal leading-[1.4] text-[#9ca3af] text-base tracking-[0.005em] text-left project-hover-text">{project.description}</p>
         </div>
         <div className="md:hidden content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.01em] gap-1">
-          <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
-            <span>{project.title}</span>
-            {!hasTryItOut && (
-              <span className="text-[#9ca3af]"> • {project.year}</span>
-            )}
+          <div className="flex items-center w-full">
+            <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
+              <span>{project.title}</span>
+              {!hasTryItOut && (
+                <span className="text-[#9ca3af]"> • {project.year}</span>
+              )}
+            </p>
             {hasTryItOut && (
-              <>
-                <span className="text-[#9ca3af]"> • </span>
-                <a 
-                  href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
-                  onClick={(e) => e.stopPropagation()}
-                  className="text-blue-400 hover:text-blue-300"
-                >
-                  Try It Out!
-                </a>
-              </>
+              <a
+                href={experimentLink!.href}
+                onClick={(e) => e.stopPropagation()}
+                className="ml-auto inline-flex items-center shrink-0 text-gray-400 hover:text-gray-500"
+                aria-label={experimentLink!.label}
+                {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              >
+                {experimentLink!.external ? <LinkIcon /> : <TouchIcon />}
+              </a>
             )}
-          </p>
+          </div>
           <p className="relative shrink-0 text-[#9ca3af] w-full text-left font-normal leading-[1.3]">{project.description}</p>
         </div>
       </button>
@@ -397,23 +447,30 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
             <>
               <span className="text-[#9ca3af] md:hidden"> • {project.year}</span>
               <span className="text-[#9ca3af] hidden md:inline md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
-              <a 
-                href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
+              <a
+                href={experimentLink!.href}
                 onClick={(e) => e.stopPropagation()}
-                className="hidden md:inline text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                className="hidden md:inline-flex items-baseline gap-1.5 align-baseline text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
-                Try It Out!
+                {experimentLink!.label}{experimentLink!.external && <ArrowUpRight />}
               </a>
             </>
           )}
         </p>
         {hasTryItOut && (
-          <a 
-            href={project.id === 'polaroid' ? '/polaroid' : project.id === 'screentime' ? '/screentime' : project.id === 'sketchbook' ? '/sketchbook' : '/library'}
+          <a
+            href={experimentLink!.href}
             onClick={(e) => e.stopPropagation()}
-            className="md:hidden text-blue-400 hover:text-blue-300 ml-auto shrink-0 text-base"
+            className="md:hidden inline-flex items-center ml-auto shrink-0 text-gray-400 hover:text-gray-500"
+            {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+            aria-label={experimentLink!.label}
           >
-            Try It Out!
+            {experimentLink!.external ? (
+              <LinkIcon />
+            ) : (
+              <TouchIcon />
+            )}
           </a>
         )}
       </div>
@@ -605,8 +662,8 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
               >
                 <path d={svgPaths.p16308a80} />
               </svg>
-              <span className="text-white">
-                <ArrowUpRight />
+              <span className="text-white inline-flex items-center">
+                <ArrowUpRight size="14px" strokeWidth={1.4} />
               </span>
             </a>
           )}
@@ -646,7 +703,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
   );
 }
 
-const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library"];
+const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library", "film", "sundays"];
 const MAIN_PROJECT_IDS = ["apple", "roblox", "adobe", "nasa"];
 
 type SanityProject = {
@@ -662,6 +719,7 @@ type SanityExperimentProject = {
   description: string;
   muxPlaybackIdClip?: string;
   muxPlaybackId?: string;
+  fallbackThumbnail?: SanityImage;
   xLink?: string;
   tryItOutHref?: string;
   backgroundColor?: string;
@@ -724,12 +782,15 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
               const muxUrls = clipPlaybackId 
                 ? getMuxUrls(clipPlaybackId)
                 : { imageSrc: project.imageSrc, videoSrc: project.videoSrc };
+              const fallbackUrl = experimentData.fallbackThumbnail
+                ? urlFor(experimentData.fallbackThumbnail).width(1920).url()
+                : undefined;
               return {
                 ...project,
                 title: experimentData.title,
                 year: experimentData.year,
                 description: experimentData.description,
-                imageSrc: muxUrls.imageSrc,
+                imageSrc: fallbackUrl || muxUrls.imageSrc,
                 videoSrc: muxUrls.videoSrc,
                 xLink: experimentData.xLink || project.xLink,
                 backgroundColor: experimentData.backgroundColor || project.backgroundColor,
@@ -781,7 +842,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
 
   const handleProjectClick = useCallback((projectId: string) => {
     const isMobile = window.innerWidth < 768;
-    const shouldGoFullscreen = isMobile && projectId !== 'sketchbook';
+    const shouldGoFullscreen = projectId === 'film' || (isMobile && projectId !== 'sketchbook' && projectId !== 'sundays');
 
     if (posthogEnabled) {
       posthog.capture("project_opened", {
@@ -794,12 +855,12 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
       setLocalSlug(projectId);
       setLocalFullscreen(true);
       setLocalBookSlug(undefined);
-      navigate(`/project/${projectId}/full`);
+      navigate(projectId === 'film' ? '/film' : `/project/${projectId}/full`);
     } else {
       setLocalSlug(projectId);
       setLocalFullscreen(false);
       setLocalBookSlug(undefined);
-      navigate(`/project/${projectId}`);
+      navigate(projectId === 'film' ? '/film/popup' : `/project/${projectId}`);
     }
   }, [navigate]);
 
@@ -814,7 +875,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     if (localSlug) {
       setLocalFullscreen(true);
       setLocalBookSlug(undefined);
-      navigate(`/project/${localSlug}/full`);
+      navigate(localSlug === 'film' ? '/film' : `/project/${localSlug}/full`);
     }
   };
 
@@ -825,7 +886,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
       navigate(
         bookSlug
           ? `/project/${localSlug}/full/${encodeURIComponent(bookSlug)}`
-          : `/project/${localSlug}/full`
+          : (localSlug === 'film' ? '/film' : `/project/${localSlug}/full`)
       );
     }
   };
@@ -834,7 +895,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     if (localSlug) {
       setLocalFullscreen(false);
       setLocalBookSlug(undefined);
-      navigate(`/project/${localSlug}`);
+      navigate(localSlug === 'film' ? '/film/popup' : `/project/${localSlug}`);
     }
   };
 
@@ -842,8 +903,8 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     if (!localSlug) return;
 
     const basePath = localFullscreen
-      ? `/project/${localSlug}/full`
-      : `/project/${localSlug}`;
+      ? (localSlug === 'film' ? '/film' : `/project/${localSlug}/full`)
+      : (localSlug === 'film' ? '/film/popup' : `/project/${localSlug}`);
     const nextPath = nextBookSlug
       ? `${basePath}/${encodeURIComponent(nextBookSlug)}`
       : basePath;
@@ -856,8 +917,8 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     setLocalSlug(projectId);
     setLocalBookSlug(undefined);
     const newPath = isFullscreenFromUrl
-      ? `/project/${projectId}/full`
-      : `/project/${projectId}`;
+      ? (projectId === 'film' ? '/film' : `/project/${projectId}/full`)
+      : (projectId === 'film' ? '/film/popup' : `/project/${projectId}`);
     navigate(newPath);
   };
 
@@ -904,12 +965,13 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                     {`Previously at `}
                   </span>
                   <span className="text-[#374151]" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <span className="sr-only">Apple</span>
                     <svg 
                       className="inline w-[0.9em] h-[0.9em]" 
                       style={{ verticalAlign: '-0.075em' }}
                       viewBox="0 0 814 1000" 
                       fill="currentColor"
-                      aria-label="Apple"
+                      aria-hidden="true"
                     >
                       <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57-155.5-127C46.7 790.7 0 663 0 541.8c0-194.4 126.4-297.5 250.8-297.5 66.1 0 121.2 43.4 162.7 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/>
                     </svg>
@@ -968,7 +1030,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
         SIDE_PROJECT_IDS.includes(selectedProject.id) ? (
           <ExperimentModal 
             key={selectedProject.id}
-            projectId={selectedProject.id as 'polaroid' | 'library' | 'screentime' | 'sketchbook'}
+            projectId={selectedProject.id as 'polaroid' | 'library' | 'screentime' | 'sketchbook' | 'film' | 'sundays'}
             project={selectedProject} 
             onClose={handleModalClose}
             onExpandToFullscreen={handleExpandExperimentToFullscreen}

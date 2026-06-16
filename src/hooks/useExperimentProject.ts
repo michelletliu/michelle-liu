@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { client } from '../sanity/client';
+import { client, urlFor } from '../sanity/client';
 import { EXPERIMENT_PROJECT_BY_ID_QUERY } from '../sanity/queries';
 import type { ToolCategory } from '../components/InfoButton';
+import type { SanityImage } from '../sanity/types';
 
 // Type for the Sanity experiment project data
 export type ExperimentProjectData = {
@@ -12,6 +13,7 @@ export type ExperimentProjectData = {
   description: string;
   muxPlaybackIdClip?: string;
   muxPlaybackId?: string;
+  fallbackThumbnail?: SanityImage;
   xLink?: string;
   tryItOutHref?: string;
   backgroundColor?: string;
@@ -63,12 +65,16 @@ export function useExperimentProject(
             ? getMuxUrls(data.muxPlaybackId)
             : { imageSrc: defaultProject.imageSrc, videoSrc: defaultProject.videoSrc };
 
+          const fallbackUrl = data.fallbackThumbnail
+            ? urlFor(data.fallbackThumbnail).width(1920).url()
+            : undefined;
+
           setProject({
             id: data.projectId,
             title: data.title,
             year: data.year,
-            description: data.description,
-            imageSrc: muxUrls.imageSrc,
+            description: typeof defaultProject.description !== 'string' ? defaultProject.description : data.description,
+            imageSrc: fallbackUrl || muxUrls.imageSrc,
             videoSrc: muxUrls.videoSrc,
             xLink: data.xLink || defaultProject.xLink,
             tryItOutHref: data.tryItOutHref || defaultProject.tryItOutHref,
