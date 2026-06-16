@@ -707,7 +707,7 @@ export default function AboutPage() {
                     constant pursuit of an intersection between passion, profession, & personal mission.
                   </p>
                   <p>
-                    3 words to describe me: <em>Golden Retriever Energy</em> (even on the bad days.)
+                    3 words to describe me: Golden Retriever Energy (even on the bad days.)
                   </p>
                 </div>
               </ScrollReveal>
