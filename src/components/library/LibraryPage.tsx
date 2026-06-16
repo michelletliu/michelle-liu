@@ -187,11 +187,11 @@ export default function LibraryPage({
         setShowFilterDropdown(false);
       }
     }
-    
+
     if (showFilterDropdown) {
       document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showFilterDropdown]);
 
   // Fetch books from Sanity (using shelfItem schema)

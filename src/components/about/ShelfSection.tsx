@@ -261,13 +261,10 @@ export default function ShelfSection({
                     "bg-gray-500/10"
                   )}
                 >
-                  <span className="font-['Michelle',sans-serif] font-medium text-sm tracking-wide whitespace-nowrap text-gray-500">
+                  <span className="font-['Michelle',sans-serif] font-medium text-base tracking-wide whitespace-nowrap text-gray-500">
                     {!activeYear ? (
                       <>
                         {title}
-                        {count !== undefined && (
-                          <span className="text-gray-400"> ({count})</span>
-                        )}
                       </>
                     ) : (
                       (() => {
@@ -301,7 +298,7 @@ export default function ShelfSection({
                 {isDropdownOpen && createPortal(
                   <div 
                     ref={dropdownRef}
-                    className="fixed bg-white rounded-lg shadow-lg border border-gray-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200"
+                    className="fixed bg-white rounded-xl shadow-lg border border-gray-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200 overflow-hidden"
                     style={{
                       top: 0,
                       left: 0,
@@ -317,18 +314,15 @@ export default function ShelfSection({
                           setIsDropdownOpen(false);
                         }}
                         className={clsx(
-                          "flex items-center px-3 py-1.5 rounded-md transition-colors text-left",
+                          "flex items-center px-3 py-1 rounded-[10px] transition-colors text-left",
                           !activeYear ? "bg-gray-100" : "hover:bg-gray-50"
                         )}
                       >
                         <span className={clsx(
-                          "font-['Michelle',sans-serif] font-medium text-sm tracking-wide",
+                          "font-['Michelle',sans-serif] font-medium text-base tracking-wide",
                           !activeYear ? "text-gray-600" : "text-gray-400"
                         )}>
                           {title}
-                          {count !== undefined && (
-                            <span className={!activeYear ? "text-gray-400" : "text-gray-300"}> ({count})</span>
-                          )}
                         </span>
                       </button>
                       
@@ -343,12 +337,12 @@ export default function ShelfSection({
                               setIsDropdownOpen(false);
                             }}
                             className={clsx(
-                              "flex items-center px-3 py-1.5 rounded-md transition-colors text-left",
+                              "flex items-center px-3 py-1 rounded-[10px] transition-colors text-left",
                               isActive ? "bg-gray-100" : "hover:bg-gray-50"
                             )}
                           >
                             <span className={clsx(
-                              "font-['Michelle',sans-serif] font-medium text-sm tracking-wide",
+                              "font-['Michelle',sans-serif] font-medium text-base tracking-wide",
                               isActive ? "text-gray-600" : "text-gray-400"
                             )}>
                               {filter.year}
@@ -378,13 +372,10 @@ export default function ShelfSection({
                 )}
               >
                 <span className={clsx(
-                  "font-['Michelle',sans-serif] font-medium text-sm tracking-wide whitespace-nowrap",
+                  "font-['Michelle',sans-serif] font-medium text-base tracking-wide whitespace-nowrap",
                   !activeYear ? "text-gray-500" : "text-gray-400"
                 )}>
                   {title}
-                  {count !== undefined && (
-                    <span className={!activeYear ? "text-gray-400" : "text-gray-300"}> ({count})</span>
-                  )}
                 </span>
               </button>
             )}
@@ -420,9 +411,6 @@ export default function ShelfSection({
                   !activeYear ? "text-gray-500" : "text-gray-400 group-hover:text-gray-500"
                 )}>
                   {title}
-                  {count !== undefined && (
-                    <span className={!activeYear ? "text-gray-400" : "text-gray-300"}> ({count})</span>
-                  )}
                 </span>
               </button>
 
@@ -470,7 +458,7 @@ export default function ShelfSection({
                 rel="noopener noreferrer"
                 className="cursor-pointer transition-colors bg-white"
               >
-                <span className="font-['Michelle',sans-serif] text-sm md:text-base font-normal tracking-wide text-gray-400 hover:text-blue-500 transition-colors whitespace-nowrap">
+                <span className="font-['Michelle',sans-serif] text-base font-normal tracking-wide text-gray-400 hover:text-blue-500 transition-colors whitespace-nowrap">
                   {externalLink.label} <ArrowUpRight className="ml-1" />
                 </span>
               </a>
