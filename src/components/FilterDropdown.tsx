@@ -77,8 +77,8 @@ export function FilterDropdown({ options, activeValue, onChange, className, useP
         }
       }}
       className={clsx(
-        "bg-white rounded-xl shadow-lg border border-gray-100 z-[9999] min-w-[140px]",
-        usePortal ? "fixed animate-in fade-in duration-200" : "absolute left-0 top-[calc(100%+4px)] transition-all duration-200 ease-out opacity-100 translate-y-0"
+        "bg-white rounded-xl shadow-lg border border-gray-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200",
+        usePortal ? "fixed" : "absolute left-0 top-[calc(100%+4px)]"
       )}
       style={usePortal ? {
         top: 0,
@@ -152,7 +152,7 @@ export function FilterDropdown({ options, activeValue, onChange, className, useP
         </svg>
       </button>
 
-      {usePortal ? (open && createPortal(panel, document.body)) : panel}
+      {usePortal ? (open && createPortal(panel, document.body)) : open && panel}
     </div>
   );
 }
