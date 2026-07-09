@@ -58,7 +58,7 @@ export function TwoColumnImageSectionComponent({
 
   return (
     <div
-      className="content-stretch flex flex-col items-start justify-between px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full"
+      className="content-stretch flex flex-col items-start justify-between px-8 py-16 relative shrink-0 w-full"
       style={{ backgroundColor: section.backgroundColor || 'transparent' }}
     >
       {/* Two Images Only Layout: Left Image | Right Image */}

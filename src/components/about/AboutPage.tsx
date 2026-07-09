@@ -674,7 +674,7 @@ export default function AboutPage() {
             </ScrollReveal>
 
             {/* Bio Content */}
-            <div className="flex flex-col pt-8 gap-6 flex-1">
+            <div className="flex flex-col pt-8 gap-6 flex-1 max-w-xl">
               <ScrollReveal variant="fade" delay={150}>
                 <h2 className="font-['Michelle',sans-serif] font-medium text-gray-600 text-3xl md:text-3xl">
                   Hi, I'm Michelle!

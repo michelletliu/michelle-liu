@@ -1190,7 +1190,7 @@ export default function ProjectModal({
           "relative bg-white flex flex-col overflow-hidden transition-all duration-400 ease-out",
           isFullscreen
             ? "w-full h-full rounded-none"
-            : "rounded-[26px] w-[calc(100%*10/12)] max-md:w-full min-h-[80vh] sm:min-h-[90vh] max-h-[80vh] sm:max-h-[90vh]",
+            : "rounded-[26px] w-[calc(100%*10/12)] max-w-[800px] max-md:w-full min-h-[80vh] sm:min-h-[90vh] max-h-[80vh] sm:max-h-[90vh]",
           isVisible
             ? "opacity-100 translate-y-0"
             : isClosing
@@ -1297,7 +1297,7 @@ export default function ProjectModal({
           )}
 
           {!loading && !error && project && (
-            <div className="flex flex-col pb-16">
+            <div className="flex flex-col pb-16 w-full max-w-[800px] mx-auto">
               {/* Mobile not available message - shown only after unlocking on mobile (NASA is allowed) */}
               {isUnlocked && isMobile && projectId !== 'nasa' && (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center">
@@ -1311,7 +1311,7 @@ export default function ProjectModal({
               {/* Project Hero Header - hidden on mobile when unlocked (NASA is allowed) */}
               {!(isUnlocked && isMobile && projectId !== 'nasa') && (
               <>
-              <div ref={heroRef} className="content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] pt-32 pb-16 relative shrink-0 w-full">
+              <div ref={heroRef} className="content-stretch flex flex-col gap-8 items-start justify-center px-8 pt-32 pb-16 relative shrink-0 w-full">
                 {/* Logo - skip animation for Apple on mobile since logo is visible from homepage */}
                 {project.logo && (
                   projectId === 'apple' && isMobile ? (
@@ -1677,7 +1677,7 @@ function TestimonialBlock({
   return (
     <div 
       ref={sectionRef}
-      className="content-stretch flex flex-col items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full scroll-mt-8"
+      className="content-stretch flex flex-col items-start justify-center px-8 py-10 relative shrink-0 w-full scroll-mt-8"
     >
       <div className="content-stretch flex flex-col gap-[100px] max-md:gap-16 items-start relative shrink-0 w-full">
         {/* Header Section */}
@@ -1857,7 +1857,7 @@ function ContentBlock({
       // Centered layout when image is provided
       if (hasImage) {
         return (
-          <div ref={missionRef} className="flex flex-col items-center px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
+          <div ref={missionRef} className="flex flex-col items-center px-8 py-10 relative shrink-0 w-full">
             {/* Label + Title */}
             <div className="flex flex-col gap-5 items-center text-center w-[410px] max-md:w-full">
               <p className="leading-5 text-[#9ca3af] uppercase text-base">
@@ -1906,7 +1906,7 @@ function ContentBlock({
       // Original layout (no image)
       return (
         <div ref={missionRef} className={clsx(
-          "content-stretch items-start px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full",
+          "content-stretch items-start px-8 py-16 relative shrink-0 w-full",
           // Use flex column layout when no description
           !hasDescription && "flex flex-col gap-5 justify-center",
           // Use grid layout when there is description (two-column)
@@ -1948,7 +1948,7 @@ function ContentBlock({
       
       const hasPassword = !!section.showPasswordProtection;
       return (
-        <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
+        <div className="content-stretch flex flex-col items-start px-8 py-10 relative shrink-0 w-full">
           <div className="bg-gray-100 content-stretch flex flex-col items-center justify-center overflow-clip p-16 max-md:px-8 max-md:py-16 relative rounded-[26px] shrink-0 w-full">
             <div className={clsx(
               "content-stretch flex flex-col items-start relative shrink-0 w-full",
@@ -2033,7 +2033,7 @@ function ContentBlock({
         return (
           <div className="flex flex-col">
             <div
-              className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full"
+              className="content-stretch flex flex-col items-start px-8 relative shrink-0 w-full"
               style={{ backgroundColor: section.backgroundColor || '#f9fafb' }}
             >
               <div className={clsx("content-stretch flex flex-col justify-between relative shrink-0 w-full", verticalPadding)}>
@@ -2125,7 +2125,7 @@ function ContentBlock({
       return (
         <div className="flex flex-col">
         <div
-          className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full"
+          className="content-stretch flex flex-col items-start px-8 relative shrink-0 w-full"
           style={{ backgroundColor: section.backgroundColor || '#f9fafb' }}
         >
           <div className={clsx(
@@ -2224,7 +2224,7 @@ function ContentBlock({
       // Masonry layout: center images and let them keep natural width (up to a max)
       if (section.layout === "masonry") {
         return (
-          <div className="content-stretch flex flex-col gap-6 px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full">
+          <div className="content-stretch flex flex-col gap-6 px-8 py-16 relative shrink-0 w-full">
             <div className="w-full flex flex-wrap justify-center gap-6 items-start">
               {section.images?.map((image) => (
                 <div
@@ -2260,7 +2260,7 @@ function ContentBlock({
       const isOddCount = imageCount % 2 === 1;
       
       return (
-        <div className="content-stretch flex flex-col gap-4 px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
+        <div className="content-stretch flex flex-col gap-4 px-8 py-10 relative shrink-0 w-full">
           {/* Image Grid */}
           <div
             className={`content-stretch grid gap-4 items-center relative w-full max-md:grid-cols-2 ${colsClass}`}
@@ -2304,7 +2304,7 @@ function ContentBlock({
         const hasBody = section.body && section.body.length > 0;
         return (
           <div className={clsx(
-            "flex gap-20 items-start px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full max-md:flex-col",
+            "flex gap-20 items-start px-8 relative shrink-0 w-full max-md:flex-col",
             hasBody ? "max-md:gap-12" : "max-md:gap-0",
             isTextSectionEmpty ? "py-7 max-md:py-4" : "py-14 max-md:py-8"
           )}>
@@ -2332,7 +2332,7 @@ function ContentBlock({
         const hasCenteredBody = section.body && section.body.length > 0;
         return (
           <div className={clsx(
-            "content-stretch flex flex-col gap-4 items-center px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full",
+            "content-stretch flex flex-col gap-4 items-center px-8 relative shrink-0 w-full",
             isTextSectionEmpty ? "py-5 max-md:py-3" : "py-10 max-md:py-6"
           )}>
             {section.label && (
@@ -2356,7 +2356,7 @@ function ContentBlock({
       if (section.layout === "single-col") {
         return (
           <div className={clsx(
-            "content-stretch grid grid-cols-[2fr_1fr_2fr] items-start px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full max-md:flex max-md:flex-col max-md:gap-8",
+            "content-stretch grid grid-cols-[2fr_1fr_2fr] items-start px-8 relative shrink-0 w-full max-md:flex max-md:flex-col max-md:gap-8",
             isTextSectionEmpty ? "py-5 max-md:py-3" : "py-10 max-md:py-6"
           )}>
             <div className="content-stretch flex flex-col gap-3 items-start relative col-start-1">
@@ -2381,7 +2381,7 @@ function ContentBlock({
       }
       return (
         <div className={clsx(
-          "content-stretch flex flex-col gap-4 items-start px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full",
+          "content-stretch flex flex-col gap-4 items-start px-8 relative shrink-0 w-full",
           isTextSectionEmpty ? "py-5 max-md:py-3" : "py-10 max-md:py-6"
         )}>
           {section.label && (
@@ -2425,7 +2425,7 @@ function ContentBlock({
       return (
         <div className={clsx(
           "content-stretch flex flex-col py-10 relative shrink-0 w-full",
-          imageSize === "full" ? "items-start px-8 md:px-[8%] xl:px-[175px]" : "items-center px-8"
+          imageSize === "full" ? "items-start px-8" : "items-center px-8"
         )}>
           <div
             className={clsx(
@@ -2492,7 +2492,7 @@ function ContentBlock({
           <div
             className={clsx(
               "flex flex-col relative shrink-0 w-full",
-              overlayImageSize === "full" ? "items-start px-8 md:px-[8%] xl:px-[175px]" : "items-center px-8",
+              overlayImageSize === "full" ? "items-start px-8" : "items-center px-8",
               !hasBgColor && "py-10"
             )}
             style={{ backgroundColor: section.backgroundColor || 'transparent' }}
@@ -2565,7 +2565,7 @@ function ContentBlock({
       
       return (
         <div
-          className="content-stretch flex flex-col items-center px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full"
+          className="content-stretch flex flex-col items-center px-8 py-10 relative shrink-0 w-full"
           style={{ backgroundColor: section.backgroundColor || 'transparent' }}
         >
           <div className={clsx("w-full", videoSizeClass)}>
@@ -2656,7 +2656,7 @@ function ContentBlock({
 
       case "dividerSection":
         return (
-          <div className="px-8 md:px-[8%] xl:px-[175px] py-8 w-full">
+          <div className="px-8 py-8 w-full">
             <div className="h-px relative shrink-0 w-full">
               <div className="absolute bg-zinc-100 inset-0" />
             </div>
@@ -2673,7 +2673,7 @@ function ContentBlock({
             : null;
         
         return (
-          <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
+          <div className="content-stretch flex flex-col items-start px-8 py-10 relative shrink-0 w-full">
             <div className={clsx(
               "flex items-center gap-20 w-full",
               isVideoLeft ? "flex-row" : "flex-row-reverse",
@@ -2764,7 +2764,7 @@ function ContentBlock({
 
       case "learningsSection":
         return (
-          <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
+          <div className="content-stretch flex flex-col items-start px-8 py-10 relative shrink-0 w-full">
             {section.sectionTitle && (
               <h3 className="text-2xl font-normal text-black mb-8">
                 {section.sectionTitle}
@@ -2811,7 +2811,7 @@ function ContentBlock({
           <div 
             ref={sectionRef}
             data-section-number={section.number}
-            className="content-stretch flex flex-col gap-5 items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full"
+            className="content-stretch flex flex-col gap-5 items-start justify-center px-8 py-16 relative shrink-0 w-full"
           >
             {/* Number + Title */}
             <div className="content-stretch flex font-normal gap-5 items-start leading-7 relative shrink-0 text-2xl w-full">
@@ -2856,7 +2856,7 @@ function ContentBlock({
             className="content-stretch flex flex-col pt-14 py-8 max-md:flex-col w-full relative shrink-0"
           >
             {/* Left: Text Content */}
-            <div className="max-md:w-full px-8 md:px-[8%] xl:px-[175px] flex flex-col ">
+            <div className="max-md:w-full px-8 flex flex-col ">
               {/* Heading */}
               {section.heading && (
                 <h2 className="text-lg font-normal text-gray-600 whitespace-pre-wrap">
@@ -2873,7 +2873,7 @@ function ContentBlock({
             </div>
 
 {/* Background with Image */}
-<div className="max-md:w-full relative -mt-3 max-md:min-h-[300px] flex items-center justify-center px-8 md:px-[8%] xl:px-[175px] py-8">
+<div className="max-md:w-full relative -mt-3 max-md:min-h-[300px] flex items-center justify-center px-8 py-8">
   {textImageSrc && (
     <div className="inline-block rounded-3xl"             style={{ backgroundColor: textImageBgColor }}>
       <ShimmerImage
@@ -2913,7 +2913,7 @@ function ContentBlock({
         };
         
         return (
-          <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
+          <div className="content-stretch flex flex-col items-start px-8 py-10 relative shrink-0 w-full">
             {/* Section Title with optional divider line */}
             {section.sectionTitle && (
               <div className="flex items-center gap-6 w-full mb-10">
@@ -2967,8 +2967,8 @@ function ContentBlock({
         
         // Layout classes
         const highlightLayoutMap = {
-          '2-col': 'grid-cols-1 md:grid-cols-2 px-8 md:px-[8%] xl:px-[175px]',
-          '3-col': 'grid-cols-1 md:grid-cols-2 gap-4 lg:grid-cols-3 px-8 md:px-[8%] xl:px-[175px]',
+          '2-col': 'grid-cols-1 md:grid-cols-2 px-8',
+          '3-col': 'grid-cols-1 md:grid-cols-2 gap-4 lg:grid-cols-3 px-8',
           'stacked': 'grid-cols-1',
         };
         const highlightLayout = highlightLayoutMap[section.layout || '2-col'];
@@ -3011,7 +3011,7 @@ function ContentBlock({
               <div className={clsx(
                 "grid w-full",
                 highlightLayout,
-                section.layout === 'stacked' ? 'px-8 md:px-[8%] xl:px-[175px]' : '',
+                section.layout === 'stacked' ? 'px-8' : '',
                 section.showDividers ? 'divide-y divide-gray-200 [&>*]:py-16' : 'gap-12'
               )}>
                 {section.cards.map((card) => {
@@ -3165,7 +3165,7 @@ function ContentBlock({
         return (
           <div 
             className={clsx(
-              "content-stretch flex items-center justify-between px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full",
+              "content-stretch flex items-center justify-between px-8 relative shrink-0 w-full",
               headerPadding
             )}
             style={{ backgroundColor: headerBgColor }}
@@ -3232,7 +3232,7 @@ function ContentBlock({
         return (
           <div
             ref={tocRef}
-            className="content-stretch flex flex-col items-start gap-6 md:gap-12 px-8 md:px-[8%] xl:px-[175px] py-10 md:py-16 relative shrink-0 w-full"
+            className="content-stretch flex flex-col items-start gap-6 md:gap-12 px-8 py-10 md:py-16 relative shrink-0 w-full"
             style={{ backgroundColor: tocBgColor }}
           >
             {/* Only render header wrapper if there's content */}

@@ -75,7 +75,7 @@ export default function AlsoCheckOut({
   const displayProjects = projects.slice(0, 2);
 
   return (
-    <div className="flex flex-col items-start justify-center py-10 sm:py-16 px-8 md:px-[8%] xl:px-[175px] w-full max-w-[1440px] mx-auto">
+    <div className="flex flex-col items-start justify-center py-10 sm:py-16 px-8 w-full max-w-[1440px] mx-auto">
       <div className={clsx("flex flex-col gap-8 sm:gap-10 items-start w-full", onViewAll && "mb-10 sm:mb-16")}>
         {/* Section Title */}
         <p className="font-medium text-gray-400 text-base">

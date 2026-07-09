@@ -51,7 +51,7 @@ export default function ProjectCardSection({ cards }: ProjectCardSectionProps) {
   if (!cards || cards.length === 0) return null;
 
   return (
-    <div className="flex flex-col px-8 md:px-[8%] xl:px-[175px] py-8">
+    <div className="flex flex-col px-8 py-8">
       {cards.map((card) => (
         <SingleProjectCard key={card._key} card={card} />
       ))}
