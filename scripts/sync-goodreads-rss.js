@@ -171,7 +171,10 @@ function parseFeed(xml) {
 
     const rating = parseInt(tag(b, 'user_rating') || '0', 10) || 0;
     const readDate = parseDate(tag(b, 'user_read_at'));
-    const addedDate = parseDate(tag(b, 'user_date_added'));
+    // Only sync books with a real finish date. This matches the original
+    // library curation and skips date-less catalogued books (childhood/school
+    // reads, want-to-read carryovers) that were never actually logged as read.
+    if (!readDate) continue;
     const cover = tag(b, 'book_large_image_url') || tag(b, 'book_image_url');
 
     items.push({
@@ -180,8 +183,8 @@ function parseFeed(xml) {
       matchKey: matchKey(rawTitle),
       author: decodeEntities(tag(b, 'author_name')),
       rating,
-      dateRead: readDate ? readDate.iso : null,
-      year: (readDate || addedDate || {}).year || null,
+      dateRead: readDate.iso,
+      year: readDate.year,
       review: cleanReview(tag(b, 'user_review')),
       goodreadsUrl: bookId ? `https://www.goodreads.com/book/show/${bookId}` : null,
       // Goodreads serves a "nophoto" placeholder when a book has no cover.
