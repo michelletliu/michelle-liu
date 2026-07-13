@@ -20,11 +20,12 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 22
 
       - name: Install dependencies
-        run: npm ci
+        # The sync script only needs @sanity/client (fetch is built into Node).
+        # Install it directly to avoid full-tree install / lockfile drift.
+        run: npm install --no-save --no-audit --no-fund @sanity/client@^7
 
       - name: Sync read shelf into Sanity
         env:
