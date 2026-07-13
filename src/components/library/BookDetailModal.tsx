@@ -291,11 +291,11 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                     style={{ fontVariationSettings: "'wdth' 100" }}
                   >
                     {hasRange ? (
-                      <>
+                      <span className="inline-flex items-center">
                         {formatBookDate(book.dateStarted!)}
-                        <ArrowRightIcon className="mx-1.5 inline-block size-4 align-middle text-gray-400" />
+                        <ArrowRightIcon className="mx-1.5 size-4 shrink-0 text-gray-300" />
                         {formatBookDate(finished!)}
-                      </>
+                      </span>
                     ) : (
                       formatBookDate((finished || book.dateStarted)!)
                     )}
@@ -408,11 +408,11 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                       style={{ fontVariationSettings: "'wdth' 100" }}
                     >
                       {hasRange ? (
-                        <>
+                        <span className="inline-flex items-center">
                           {formatBookDate(book.dateStarted!)}
-                          <ArrowRightIcon className="mx-1.5 inline-block size-4 align-middle text-gray-400" />
+                          <ArrowRightIcon className="mx-1.5 size-4 shrink-0 text-gray-300" />
                           {formatBookDate(finished!)}
-                        </>
+                        </span>
                       ) : (
                         formatBookDate((finished || book.dateStarted)!)
                       )}
