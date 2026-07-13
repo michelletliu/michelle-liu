@@ -53,7 +53,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   return (
     <>
       <PopupLine />
-      <div className="font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 text-[15px] w-full mt-2 hidden md:grid">
+      <div className="font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 text-base w-full mt-2 hidden md:grid">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
             <p className="leading-5 text-sm relative shrink-0 text-[#9ca3af]">
@@ -233,7 +233,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                     rel="noopener noreferrer"
                     className="hidden md:flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
                   >
-                    <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
+                    <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
                       View on
                     </span>
                     <svg
@@ -257,7 +257,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   rel="noopener noreferrer"
                   className="md:hidden self-start mb-2 bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 mt-1.5 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
                 >
-                  <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
+                  <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
                     View on
                   </span>
                   <svg 

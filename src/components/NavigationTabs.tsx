@@ -55,7 +55,7 @@ const TagBackgroundImageAndText = forwardRef<HTMLButtonElement, TagBackgroundIma
         )}
         <p
           className={clsx(
-            "font-['Michelle',sans-serif] font-medium leading-normal tracking-[0.005em] relative z-10 shrink-0 text-[1.07em] text-nowrap transition-colors duration-200 ease-out",
+            "font-['Michelle',sans-serif] font-medium leading-normal tracking-[0.005em] relative z-10 shrink-0 text-lg text-nowrap transition-colors duration-200 ease-out",
             active ? "text-[#4b5563]" : "text-[#9ca3af] group-hover:text-[#4b5563]"
           )}
         >

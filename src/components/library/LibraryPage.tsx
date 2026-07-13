@@ -393,7 +393,7 @@ export default function LibraryPage({
           <div className="flex items-start justify-between w-full">
           {/* Title and Filter */}
           <div className="flex flex-col gap-3 items-start shrink-0">
-            <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-[34px] relative shrink-0 text-[28px] text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
+            <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-[34px] relative shrink-0 text-3xl text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
               library
             </p>
             <div className="relative" ref={dropdownRef}>
@@ -498,13 +498,13 @@ export default function LibraryPage({
           {isLoading ? (
             <div className="flex items-center justify-center min-h-[300px]">
               <div className="flex flex-col items-center gap-4">
-                <div className="w-8 h-8 border-2 border-[#e7e5e4] border-t-[#57534e] rounded-full animate-spin" />
-                <p className="font-['SF_Pro:Regular',sans-serif] text-[16px] text-[rgba(0,0,0,0.4)]">Loading books...</p>
+                <div className="w-8 h-8 border-2 border-zinc-200 border-t-zinc-600 rounded-full animate-spin" />
+                <p className="font-['SF_Pro:Regular',sans-serif] text-base text-[rgba(0,0,0,0.4)]">Loading books...</p>
               </div>
             </div>
           ) : filteredBooks.length === 0 ? (
             <div className="flex items-center justify-center min-h-[300px]">
-              <p className="font-['SF_Pro:Regular',sans-serif] text-[18px] text-[rgba(0,0,0,0.4)]">
+              <p className="font-['SF_Pro:Regular',sans-serif] text-lg text-[rgba(0,0,0,0.4)]">
                 No books on this shelf yet.
               </p>
             </div>

@@ -2128,7 +2128,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
             key={photo.id}
             type="button"
             ref={(el) => { itemRefs.current[i] = el; }}
-            className="absolute overflow-hidden rounded-[3px] border-0 bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 cursor-pointer"
+            className="absolute overflow-hidden rounded-sm border-0 bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 cursor-pointer"
             style={{
               width: BASE_WIDTH,
               height: BASE_WIDTH / filmSafeAspectRatio(photo.aspectRatio),

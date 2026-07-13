@@ -293,7 +293,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                     {hasRange ? (
                       <span className="inline-flex items-center">
                         {formatBookDate(book.dateStarted!)}
-                        <ArrowRightIcon className="mx-1.5 size-4 shrink-0 text-gray-300" />
+                        <ArrowRightIcon className="mx-1.5 size-4 shrink-0 text-gray-400" />
                         {formatBookDate(finished!)}
                       </span>
                     ) : (
@@ -359,7 +359,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                   >
                     Rating
                   </span>
-                  <span className="font-['Michelle',sans-serif] text-[19px] md:text-xl">
+                  <span className="font-['Michelle',sans-serif] text-xl">
                     <span className="text-gray-600">{"★".repeat(book.rating)}</span>
                     <span className="text-gray-200">{"★".repeat(5 - book.rating)}</span>
                   </span>
@@ -377,12 +377,12 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {book.isFavorite && (
-                      <span className="bg-gray-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-[16px] text-gray-600" style={{ fontVariationSettings: "'wdth' 100" }}>
+                      <span className="bg-gray-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-base text-gray-600" style={{ fontVariationSettings: "'wdth' 100" }}>
                         favorites
                       </span>
                     )}
                     {book.year && (
-                      <span className="bg-gray-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-[16px] text-gray-600" style={{ fontVariationSettings: "'wdth' 100" }}>
+                      <span className="bg-gray-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-base text-gray-600" style={{ fontVariationSettings: "'wdth' 100" }}>
                         {book.year}
                       </span>
                     )}
@@ -410,7 +410,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                       {hasRange ? (
                         <span className="inline-flex items-center">
                           {formatBookDate(book.dateStarted!)}
-                          <ArrowRightIcon className="mx-1.5 size-4 shrink-0 text-gray-300" />
+                          <ArrowRightIcon className="mx-1.5 size-4 shrink-0 text-gray-400" />
                           {formatBookDate(finished!)}
                         </span>
                       ) : (

@@ -163,7 +163,7 @@ export default function Footer() {
                       src={imgFinalSealLogo1}
                     />
                   </div>
-                  <p className="font-['Michelle',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-[32px] w-[212px]">
+                  <p className="font-['Michelle',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-3xl w-[212px]">
                     michelle liu
                   </p>
                 </a>
@@ -247,7 +247,7 @@ export default function Footer() {
                       src={imgFinalSealLogo1}
                     />
                   </div>
-                  <p className="font-['Michelle',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-[32px] w-[212px]">
+                  <p className="font-['Michelle',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-3xl w-[212px]">
                     michelle liu
                   </p>
                 </a>

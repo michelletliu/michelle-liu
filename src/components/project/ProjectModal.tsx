@@ -1234,8 +1234,8 @@ export default function ProjectModal({
             )}
           >
             <div className="flex flex-col gap-0.5 items-start">
-              <span className="text-[0.8rem]">↓ SKIP TO</span>
-              <span className="text-[0.8rem]">DESIGNS</span>
+              <span className="text-xs">↓ SKIP TO</span>
+              <span className="text-xs">DESIGNS</span>
             </div>
           </a>
 
@@ -1448,7 +1448,7 @@ export default function ProjectModal({
                               }
                             }
                           }}
-                          className="text-left text-[0.8rem] max-w-12 text-gray-700 hover:text-black transition-colors"
+                          className="text-left text-xs max-w-12 text-gray-700 hover:text-black transition-colors"
                         >
                           <span className="font-medium text-[#9ca3af] mr-2">{item.number}</span>
                           <span>{item.title}</span>

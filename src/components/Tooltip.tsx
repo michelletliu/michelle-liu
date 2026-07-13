@@ -139,7 +139,7 @@ export default function Tooltip({
       {children}
       {isVisible && (
         <div
-          className="tooltip absolute left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-[13px] font-medium rounded-lg whitespace-nowrap pointer-events-none z-[9999]"
+          className="tooltip absolute left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-sm font-medium rounded-lg whitespace-nowrap pointer-events-none z-[9999]"
           data-ending-style={isEnding ? "" : undefined}
           data-instant={isInstant ? "" : undefined}
           style={positionStyles}

@@ -190,7 +190,7 @@ function ProfilePhoto({ imageSrc, caption }: { imageSrc?: string; caption?: Reac
               </div>
               {caption && (
                 <p
-                  className={`mt-6 max-w-[600px] text-center font-['DM_Sans'] text-base tracking-[0.005em] font-normal leading-relaxed text-gray-500 [&_a]:text-gray-800 [&_a:hover]:text-gray-900 ${isClosing ? '' : 'animate-[fadeSlideUp_300ms_ease-out_100ms_both]'}`}
+                  className={`mt-6 max-w-[600px] text-center font-['Michelle',sans-serif] text-base tracking-[0.005em] font-normal leading-relaxed text-gray-500 [&_a]:text-gray-800 [&_a:hover]:text-gray-900 ${isClosing ? '' : 'animate-[fadeSlideUp_300ms_ease-out_100ms_both]'}`}
                   style={{ fontVariationSettings: "'opsz' 9" }}
                 >
                   {caption}

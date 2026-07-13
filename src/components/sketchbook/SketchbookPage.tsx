@@ -69,7 +69,7 @@ function formatDate(dateString: string): string {
 function PlaceholderImage({ index }: { index: number }) {
   const colors = [
     'bg-gradient-to-br from-amber-50 to-amber-100',
-    'bg-gradient-to-br from-stone-50 to-stone-100',
+    'bg-gradient-to-br from-zinc-50 to-zinc-100',
     'bg-gradient-to-br from-slate-50 to-slate-100',
     'bg-gradient-to-br from-zinc-50 to-zinc-100',
     'bg-gradient-to-br from-neutral-50 to-neutral-100',

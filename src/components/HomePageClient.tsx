@@ -514,7 +514,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   return (
     <>
       <PopupLine />
-      <div className="font-['Michelle',sans-serif] font-normal gap-4 grid-cols-4 relative shrink-0 text-[15px] w-full mt-2 hidden md:grid">
+      <div className="font-['Michelle',sans-serif] font-normal gap-4 grid-cols-4 relative shrink-0 text-base w-full mt-2 hidden md:grid">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
             <p className="leading-5 relative shrink-0 text-[#9ca3af]">
@@ -670,7 +670,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
               rel="noopener noreferrer"
               className="bg-blue-500 border border-blue-400 border-solid content-stretch flex gap-1 items-center justify-center px-4 py-1.5 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out mt-1"
             >
-              <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-base tracking-[0.005em] text-white whitespace-nowrap">
+              <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-base tracking-[0.005em] text-white whitespace-nowrap">
                 View on
               </span>
               <svg 

@@ -125,7 +125,7 @@ function ToolsSection({ categories, large = false, noLine = false }: { categorie
       {!noLine && <PopupLine />}
       <div className={clsx(
         "font-['Michelle',sans-serif] font-normal relative shrink-0 w-full mt-2 hidden md:grid",
-        large ? "flex gap-5 text-base grid-cols-4" : "gap-3 grid-cols-4 text-[15px]"
+        large ? "flex gap-5 text-base grid-cols-4" : "gap-3 grid-cols-4 text-base"
       )}>
         {categories.map((category, idx) => (
           <div key={idx} className={clsx(
@@ -373,7 +373,7 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
                   rel="noopener noreferrer"
                   className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
                 >
-                  <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-sm text-white whitespace-nowrap">
+                  <span className="font-['Michelle',sans-serif] font-semibold leading-normal text-sm text-white whitespace-nowrap">
                     View on
                   </span>
                   <svg className="block w-[12px] h-[12px] fill-white" viewBox="0 0 19 18">
@@ -395,7 +395,7 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
                 rel="noopener noreferrer"
                 className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
               >
-                <span className="font-['Manrope',sans-serif] font-semibold leading-normal text-sm text-white whitespace-nowrap">
+                <span className="font-['Michelle',sans-serif] font-semibold leading-normal text-sm text-white whitespace-nowrap">
                   View on
                 </span>
                 <svg className="block w-[12px] h-[12px] fill-white" viewBox="0 0 19 18">
@@ -412,7 +412,7 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
               rel="noopener noreferrer"
               className="group inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
             >
-              <span className="font-['Manrope',sans-serif] font-medium leading-normal text-sm text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
+              <span className="font-['Michelle',sans-serif] font-medium leading-normal text-sm text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
                 sundays.rsvp
               </span>
               <span className="text-gray-500 group-hover:text-blue-500 inline-flex items-center">
@@ -494,7 +494,7 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
             rel="noopener noreferrer"
             className="self-start bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
           >
-            <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
+            <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
               View on
             </span>
             <svg className="block w-[12px] h-[12px] fill-white" viewBox="0 0 19 18">
@@ -511,7 +511,7 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
           rel="noopener noreferrer"
           className="group inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
         >
-          <span className="font-['Manrope',sans-serif] font-medium leading-normal text-sm text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
+          <span className="font-['Michelle',sans-serif] font-medium leading-normal text-sm text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
             sundays.rsvp
           </span>
           <span className="text-gray-500 group-hover:text-blue-500 inline-flex items-center">
@@ -977,7 +977,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
               rel="noopener noreferrer"
               className="flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
             >
-              <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
+              <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
                 View on
               </span>
               <svg
@@ -1039,7 +1039,7 @@ function ToolsSectionCompact({ categories, isFullscreen = false }: { categories:
       <PopupLine />
       <div className={clsx(
         "font-['Michelle',sans-serif] font-normal grid grid-cols-4 relative shrink-0 w-full",
-        isFullscreen ? "gap-3 text-[15px] mt-2" : "gap-2 text-sm mt-1"
+        isFullscreen ? "gap-3 text-base mt-2" : "gap-2 text-sm mt-1"
       )}>
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-1 items-start justify-start relative shrink-0">

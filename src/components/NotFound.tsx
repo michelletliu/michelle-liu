@@ -17,7 +17,7 @@ export default function NotFound() {
 
       {/* Content */}
       <div className="flex flex-col items-center gap-6 text-center">
-        <p className="font-['SF_Pro:Regular',sans-serif] text-[80px] md:text-[120px] leading-none text-gray-200">
+        <p className="font-['SF_Pro:Regular',sans-serif] text-7xl md:text-9xl leading-none text-gray-200">
           404
         </p>
         <div className="flex flex-col gap-1">

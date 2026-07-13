@@ -487,12 +487,12 @@ export default function PolaroidPage() {
         {/* Polaroid Frame */}
         <div 
           ref={polaroidRef}
-          className={`content-stretch flex items-center justify-center relative rounded-[2.5px] md:rounded-[5.5px] shadow-[0px_2px_12px_0px_rgba(0,0,0,0.08)] md:shadow-[0px_2.5px_16px_0px_rgba(0,0,0,0.08)] shrink-0 transition-transform duration-300 ease-out hover:rotate-2 ${
+          className={`content-stretch flex items-center justify-center relative rounded-sm md:rounded-md shadow-[0px_2px_12px_0px_rgba(0,0,0,0.08)] md:shadow-[0px_2.5px_16px_0px_rgba(0,0,0,0.08)] shrink-0 transition-transform duration-300 ease-out hover:rotate-2 ${
             isPopupMode 
               ? 'h-[222px] md:h-[274px] w-[192px] md:w-[236px]' 
               : 'h-[320px] md:h-[393.22px] w-[274px] md:w-[337.288px]'
           }`}>
-          <div className={`relative rounded-[2.5px] md:rounded-[5.5px] shrink-0 ${
+          <div className={`relative rounded-sm md:rounded-md shrink-0 ${
             isPopupMode 
               ? 'h-[222px] md:h-[274px] w-[192px] md:w-[236px]' 
               : 'h-[320px] md:h-[393.22px] w-[274px] md:w-[337.288px]'
@@ -539,7 +539,7 @@ export default function PolaroidPage() {
                          A 20% white overlay softens the polaroid tint that
                          would otherwise show through letterbox bars on
                          non-square photos. */
-                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[3px] md:rounded-[5.773px] bg-white/20">
+                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-sm md:rounded-md bg-white/20">
                         <img 
                           alt="Polaroid photo" 
                           className="max-w-full max-h-full w-auto h-auto object-contain" 
@@ -555,7 +555,7 @@ export default function PolaroidPage() {
                           setIsFileDialogOpen(true);
                           fileInputRef.current?.click();
                         }}
-                        className="absolute inset-0 rounded-[3px] md:rounded-[5.773px] flex items-center justify-center cursor-pointer transition-colors duration-200"
+                        className="absolute inset-0 rounded-sm md:rounded-md flex items-center justify-center cursor-pointer transition-colors duration-200"
                         style={{ backgroundColor: isImageHovered ? '#e5e7eb' : '#f3f4f6' }}
                       >
                         <div 
@@ -860,12 +860,12 @@ export default function PolaroidPage() {
                 {/* Mini Polaroid Preview */}
                 <div className="relative shrink-0 h-[198px] sm:h-[254.237px] w-[170px] sm:w-[218.074px]" style={{ perspective: '800px' }}>
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 transition-transform duration-300 ease-out scale-[0.78] sm:scale-100 origin-top hover:[transform:rotateY(-8deg)_rotateX(2deg)]" style={{ width: '218.074px', height: '254.237px' }}>
-                  <div className="absolute content-stretch flex items-center justify-center left-0 rounded-[4.383px] shadow-[0px_2.192px_13.15px_0px_rgba(0,0,0,0.15)] top-0 w-[218.074px]">
-                    <div className="h-[254.237px] relative rounded-[4.383px] shrink-0 w-[218.074px]">
+                  <div className="absolute content-stretch flex items-center justify-center left-0 rounded-md shadow-[0px_2.192px_13.15px_0px_rgba(0,0,0,0.15)] top-0 w-[218.074px]">
+                    <div className="h-[254.237px] relative rounded-md shrink-0 w-[218.074px]">
                       <div className="absolute contents left-0 top-0">
                         <div className="absolute contents left-0 top-0">
                           <div 
-                            className="absolute blur-[0.162px] filter h-[254.237px] left-0 rounded-[4.383px] top-0 w-[218.074px]"
+                            className="absolute blur-[0.162px] filter h-[254.237px] left-0 rounded-md top-0 w-[218.074px]"
                             style={{ backgroundColor: selectedColor ? selectedColor.tint : 'white' }}
                           >
                             <div 
@@ -876,7 +876,7 @@ export default function PolaroidPage() {
                           </div>
                         </div>
                         <div 
-                          className="absolute content-stretch flex items-center left-0 pb-[49.313px] pt-[13.15px] px-[13.15px] rounded-[4.383px] top-0"
+                          className="absolute content-stretch flex items-center left-0 pb-[49.313px] pt-[13.15px] px-[13.15px] rounded-md top-0"
                           style={{ backgroundColor: selectedColor ? selectedColor.tint : 'white' }}
                         >
                           <div className="relative rounded-[2.192px] shrink-0 size-[191.774px]">
@@ -1144,12 +1144,12 @@ export default function PolaroidPage() {
                   {/* Mini Polaroid Preview */}
                   <div className="relative shrink-0 h-[198px] sm:h-[254.237px] w-[170px] sm:w-[218.074px]" style={{ perspective: '800px' }}>
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 transition-transform duration-300 ease-out scale-[0.78] sm:scale-100 origin-top hover:[transform:rotateY(-8deg)_rotateX(2deg)]" style={{ width: '218.074px', height: '254.237px' }}>
-                    <div className="absolute content-stretch flex items-center justify-center left-0 rounded-[4.383px] shadow-[0px_2.192px_13.15px_0px_rgba(0,0,0,0.15)] top-0 w-[218.074px]">
-                      <div className="h-[254.237px] relative rounded-[4.383px] shrink-0 w-[218.074px]">
+                    <div className="absolute content-stretch flex items-center justify-center left-0 rounded-md shadow-[0px_2.192px_13.15px_0px_rgba(0,0,0,0.15)] top-0 w-[218.074px]">
+                      <div className="h-[254.237px] relative rounded-md shrink-0 w-[218.074px]">
                         <div className="absolute contents left-0 top-0">
                           <div className="absolute contents left-0 top-0">
                             <div 
-                              className="absolute blur-[0.162px] filter h-[254.237px] left-0 rounded-[4.383px] top-0 w-[218.074px]"
+                              className="absolute blur-[0.162px] filter h-[254.237px] left-0 rounded-md top-0 w-[218.074px]"
                               style={{ backgroundColor: selectedColor ? selectedColor.tint : 'white' }}
                             >
                               <div 
@@ -1160,7 +1160,7 @@ export default function PolaroidPage() {
                             </div>
                           </div>
                           <div 
-                            className="absolute content-stretch flex items-center left-0 pb-[49.313px] pt-[13.15px] px-[13.15px] rounded-[4.383px] top-0"
+                            className="absolute content-stretch flex items-center left-0 pb-[49.313px] pt-[13.15px] px-[13.15px] rounded-md top-0"
                             style={{ backgroundColor: selectedColor ? selectedColor.tint : 'white' }}
                           >
                             <div className="relative rounded-[2.192px] shrink-0 size-[191.774px]">
