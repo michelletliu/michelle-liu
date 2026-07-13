@@ -110,6 +110,7 @@ export default function LibraryPage({
   const logoRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const didInitFilterRef = useRef(false);
 
   const slugify = (value: string) =>
     value
@@ -224,6 +225,39 @@ export default function LibraryPage({
     
     fetchBooks();
   }, []);
+
+  // Sync the active filter with the URL (?shelf=). On first load, adopt a valid
+  // ?shelf= value from the URL; afterwards, keep the URL in sync with the active
+  // filter (re-asserting it after book open/close navigations drop the query).
+  // "favorites" is the default shelf, so it stays out of the URL for a clean link.
+  useEffect(() => {
+    const path = location.pathname;
+    const isLibraryPath =
+      path === "/library" ||
+      path.startsWith("/library/") ||
+      path.startsWith("/project/library");
+    if (!isLibraryPath) return;
+
+    // First pass: adopt the filter from the URL, then let state settle.
+    if (!didInitFilterRef.current) {
+      if (isLoading) return;
+      didInitFilterRef.current = true;
+      const shelf = searchParams.get("shelf");
+      if (shelf && filterOptions.some((option) => option.value === shelf)) {
+        setActiveFilter(shelf);
+        return;
+      }
+    }
+
+    const current = searchParams.get("shelf");
+    const desired = activeFilter === "favorites" ? null : activeFilter;
+    if ((current ?? null) === (desired ?? null)) return;
+
+    const next = new URLSearchParams(searchParams.toString());
+    if (desired) next.set("shelf", desired);
+    else next.delete("shelf");
+    setSearchParams(next, { replace: true });
+  }, [activeFilter, isLoading, filterOptions, location.pathname, searchParams, setSearchParams]);
 
   // Filter books based on active filter (favorites, all, or by year)
   const filteredBooks = activeFilter === 'all' 

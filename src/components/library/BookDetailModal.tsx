@@ -2,6 +2,18 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import type { Book } from "./types";
 import ShimmerImage from "../ShimmerImage";
+import { ArrowUpRight } from "../ArrowUpRight";
+
+// Format a YYYY-MM-DD date string. Force UTC so the stored calendar date isn't
+// shifted a day earlier when rendered in a negative-offset timezone.
+function formatBookDate(date: string): string {
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
 
 interface BookDetailModalProps {
   book: Book;
@@ -230,7 +242,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                 >
                   Rating
                 </span>
-                <span className="font-['DM_Sans:Medium','Noto_Sans_Symbols2:Regular',sans-serif] text-lg">
+                <span className="font-['Michelle',sans-serif] text-lg">
                   <span className="text-gray-600">{"★".repeat(book.rating)}</span>
                   <span className="text-gray-200">{"★".repeat(5 - book.rating)}</span>
                 </span>
@@ -262,34 +274,35 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
             )}
             
             {/* Dates Read */}
-            {(book.dateStarted || book.dateFinished || book.dateRead) && (
-              <div className="flex items-start">
-                <span 
-                  className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-gray-400 w-[100px] shrink-0"
-                  style={{ fontVariationSettings: "'wdth' 100" }}
-                >
-                  {book.dateStarted && book.dateFinished ? 'Dates Read' : 'Date Read'}
-                </span>
-                <span 
-                  className="font-['SF_Pro:Regular',sans-serif] text-base text-gray-600"
-                  style={{ fontVariationSettings: "'wdth' 100" }}
-                >
-                  {book.dateStarted && book.dateFinished ? (
-                    <>
-                      {new Date(book.dateStarted).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                      {' → '}
-                      {new Date(book.dateFinished).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                    </>
-                  ) : (
-                    new Date(book.dateFinished || book.dateRead || '').toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })
-                  )}
-                </span>
-              </div>
-            )}
+            {(() => {
+              const finished = book.dateFinished || book.dateRead;
+              const hasRange = Boolean(book.dateStarted && finished);
+              if (!book.dateStarted && !finished) return null;
+              return (
+                <div className="flex items-start">
+                  <span 
+                    className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-gray-400 w-[100px] shrink-0"
+                    style={{ fontVariationSettings: "'wdth' 100" }}
+                  >
+                    {hasRange ? 'Dates Read' : 'Date Read'}
+                  </span>
+                  <span 
+                    className="font-['SF_Pro:Regular',sans-serif] text-base text-gray-600"
+                    style={{ fontVariationSettings: "'wdth' 100" }}
+                  >
+                    {hasRange ? (
+                      <>
+                        {formatBookDate(book.dateStarted!)}
+                        <ArrowUpRight className="mx-1.5 text-gray-400" />
+                        {formatBookDate(finished!)}
+                      </>
+                    ) : (
+                      formatBookDate((finished || book.dateStarted)!)
+                    )}
+                  </span>
+                </div>
+              );
+            })()}
             
             </div>
           </div>
@@ -346,7 +359,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                   >
                     Rating
                   </span>
-                  <span className="font-['DM_Sans:Medium','Noto_Sans_Symbols2:Regular',sans-serif] text-[19px] md:text-xl">
+                  <span className="font-['Michelle',sans-serif] text-[19px] md:text-xl">
                     <span className="text-gray-600">{"★".repeat(book.rating)}</span>
                     <span className="text-gray-200">{"★".repeat(5 - book.rating)}</span>
                   </span>
@@ -377,35 +390,36 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                 </div>
               )}
               
-              {/* Date Read */}
-              {(book.dateStarted || book.dateFinished || book.dateRead) && (
-                <div className="flex flex-row gap-6 md:gap-8 lg:gap-10 items-center">
-                  <span 
-                    className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-gray-400 w-[88px] shrink-0"
-                    style={{ fontVariationSettings: "'wdth' 100" }}
-                  >
-                    {book.dateStarted && book.dateFinished ? 'Dates Read' : 'Date Read'}
-                  </span>
-                  <span 
-                    className="font-['SF_Pro:Regular',sans-serif] text-base text-gray-600"
-                    style={{ fontVariationSettings: "'wdth' 100" }}
-                  >
-                    {book.dateStarted && book.dateFinished ? (
-                      <>
-                        {new Date(book.dateStarted).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                        {' → '}
-                        {new Date(book.dateFinished).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                      </>
-                    ) : (
-                      new Date(book.dateFinished || book.dateRead || '').toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      })
-                    )}
-                  </span>
-                </div>
-              )}
+              {/* Dates Read */}
+              {(() => {
+                const finished = book.dateFinished || book.dateRead;
+                const hasRange = Boolean(book.dateStarted && finished);
+                if (!book.dateStarted && !finished) return null;
+                return (
+                  <div className="flex flex-row gap-6 md:gap-8 lg:gap-10 items-center">
+                    <span 
+                      className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-gray-400 w-[88px] shrink-0"
+                      style={{ fontVariationSettings: "'wdth' 100" }}
+                    >
+                      {hasRange ? 'Dates Read' : 'Date Read'}
+                    </span>
+                    <span 
+                      className="font-['SF_Pro:Regular',sans-serif] text-base text-gray-600"
+                      style={{ fontVariationSettings: "'wdth' 100" }}
+                    >
+                      {hasRange ? (
+                        <>
+                          {formatBookDate(book.dateStarted!)}
+                          <ArrowUpRight className="mx-1.5 text-gray-400" />
+                          {formatBookDate(finished!)}
+                        </>
+                      ) : (
+                        formatBookDate((finished || book.dateStarted)!)
+                      )}
+                    </span>
+                  </div>
+                );
+              })()}
               
             </div>
           </div>
