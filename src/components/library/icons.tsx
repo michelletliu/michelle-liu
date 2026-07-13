@@ -26,6 +26,26 @@ export function ChevronDownIcon({ className = "" }: IconProps) {
   );
 }
 
+// Flat horizontal right arrow (matches the dropdown chevron's stroke weight)
+export function ArrowRightIcon({ className = "" }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M4 12h16M14 6l6 6-6 6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 // Plus icon for add book button
 export function PlusIcon({ className = "" }: IconProps) {
   return (
