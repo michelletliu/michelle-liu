@@ -1,11 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Sidebar, { type SidebarNode } from "../Sidebar";
 import BlueprintLogo from "../BlueprintLogo";
+import { markBlueprintDoorwayNav } from "../blueprintDoorwayNav";
 import Footer from "../Footer";
+import { Chevron, ChevronRightIcon } from "../Chevron";
+import { Close } from "../Close";
+import { useScrollLock } from "../../utils/useScrollLock";
 import { fadeUpStyles } from "../../styles/animations";
 import { tocSections, tocSubsections, subSlug } from "./tokens";
 
@@ -55,7 +61,37 @@ const ComponentSection = dynamic(() => import("./sections/ComponentSection"), {
   loading: () => <SectionSkeleton tall />,
 });
 
-/** Apple HIG–style pop-up button for mobile section navigation. */
+function SearchMagnifierIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <circle
+        cx="11"
+        cy="11"
+        r="6.25"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        vectorEffect="non-scaling-stroke"
+      />
+      <path
+        d="M16.5 16.5L20 20"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+/**
+ * Mobile section picker — HIG-inspired local bar + full-screen sheet.
+ * Uses site zinc neutrals, blue active accent, stroke-1.5 icons, and existing motion.
+ */
 function MobileSectionMenu({
   activeSection,
   onSelect,
@@ -64,88 +100,171 @@ function MobileSectionMenu({
   onSelect: (id: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [filter, setFilter] = useState("");
+  const [mounted, setMounted] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const filterRef = useRef<HTMLInputElement>(null);
+  const wasOpenRef = useRef(false);
   const activeLabel =
     tocSections.find((s) => s.id === activeSection)?.label ?? tocSections[0].label;
 
+  useScrollLock(open);
+
   useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      setFilter("");
+      if (wasOpenRef.current) {
+        wasOpenRef.current = false;
+        triggerRef.current?.focus();
+      }
+      return;
+    }
+    wasOpenRef.current = true;
+    const t = window.setTimeout(() => filterRef.current?.focus(), 50);
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
         setOpen(false);
       }
     };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+    const onResize = () => {
+      if (window.innerWidth >= 1024) setOpen(false);
     };
-    document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
+    window.addEventListener("resize", onResize);
     return () => {
-      document.removeEventListener("mousedown", onPointerDown);
+      window.clearTimeout(t);
       document.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("resize", onResize);
     };
   }, [open]);
 
-  return (
-    <div ref={containerRef} className="relative">
-      <button
-        type="button"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-label={`Current section: ${activeLabel}. Choose a section.`}
-        onClick={() => setOpen((v) => !v)}
-        className="flex min-h-11 min-w-[9.5rem] items-center justify-between gap-2 rounded-full bg-zinc-500/10 px-3.5 py-2 transition-colors"
-      >
-        <span className="truncate font-medium tracking-[0.01em] text-zinc-600">{activeLabel}</span>
-        <svg
-          className={`size-4 shrink-0 text-zinc-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          aria-hidden="true"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
+  const filteredSections = useMemo(() => {
+    const q = filter.trim().toLowerCase();
+    if (!q) return tocSections;
+    return tocSections.filter((s) => s.label.toLowerCase().includes(q));
+  }, [filter]);
 
-      {open && (
-        <div
-          role="listbox"
-          aria-label="Sections"
-          className="absolute left-0 top-[calc(100%+4px)] z-50 max-h-[min(70dvh,28rem)] min-w-[12rem] overflow-y-auto rounded-xl border border-zinc-100 bg-white py-1.5 pl-1.5 pr-1.5 shadow-elevated animate-in fade-in slide-in-from-top-1 duration-200"
-        >
-          <div className="flex flex-col gap-0.5">
-            {tocSections.map((s) => {
-              const isActive = activeSection === s.id;
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  role="option"
-                  aria-selected={isActive}
-                  onClick={() => {
-                    onSelect(s.id);
-                    setOpen(false);
-                  }}
-                  className={`flex min-h-11 items-center rounded-[10px] px-3 py-2 text-left transition-colors ${
-                    isActive ? "bg-zinc-100" : "hover:bg-zinc-50"
-                  }`}
-                >
-                  <span
-                    className={`font-medium tracking-[0.01em] ${
-                      isActive ? "text-zinc-700" : "text-zinc-400"
-                    }`}
-                  >
-                    {s.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
+  const close = () => setOpen(false);
+
+  const sheet =
+    open && mounted
+      ? createPortal(
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Design System sections"
+            className="fixed inset-0 z-[60] flex flex-col bg-white animate-in fade-in duration-200 lg:hidden"
+          >
+            {/* Header: page title + close */}
+            <div className="flex items-center justify-between gap-4 px-5 pt-5 pb-3">
+              <h2 className="min-w-0 truncate text-lg font-medium tracking-[0.01em] text-zinc-900">
+                Design System
+              </h2>
+              <button
+                type="button"
+                onClick={close}
+                aria-label="Close section menu"
+                className="flex size-10 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition-colors duration-200 hover:bg-zinc-50 hover:text-zinc-700"
+              >
+                <Close size="20px" />
+              </button>
+            </div>
+
+            {/* Filter field */}
+            <div className="px-5 pb-3">
+              <label className="relative flex items-center">
+                <span className="pointer-events-none absolute left-3.5 text-zinc-400">
+                  <SearchMagnifierIcon className="size-4" />
+                </span>
+                <input
+                  ref={filterRef}
+                  type="text"
+                  inputMode="search"
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  placeholder="Filter"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  className="w-full rounded-full border-0 bg-zinc-100 py-2.5 pl-10 pr-4 text-base font-medium tracking-[0.01em] text-zinc-700 placeholder:text-zinc-400 outline-none transition-colors duration-200 focus:bg-zinc-100/80"
+                />
+              </label>
+            </div>
+
+            {/* Section list */}
+            <div
+              role="listbox"
+              aria-label="Sections"
+              className="min-h-0 flex-1 overflow-y-auto border-t border-zinc-100 px-2 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+            >
+              {filteredSections.length === 0 ? (
+                <p className="px-3 py-6 text-sm text-zinc-400">No matching sections</p>
+              ) : (
+                <ul className="py-1">
+                  {filteredSections.map((s) => {
+                    const isActive = activeSection === s.id;
+                    return (
+                      <li key={s.id}>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={isActive}
+                          onClick={() => {
+                            onSelect(s.id);
+                            close();
+                          }}
+                          className="flex w-full min-h-12 items-center gap-2.5 rounded-lg px-3 py-3 text-left transition-colors duration-200 hover:bg-zinc-50"
+                        >
+                          <ChevronRightIcon
+                            className={`size-4 shrink-0 ${
+                              isActive ? "text-blue-500" : "text-zinc-300"
+                            }`}
+                          />
+                          <span
+                            className={`font-medium tracking-[0.01em] ${
+                              isActive ? "text-blue-500" : "text-zinc-800"
+                            }`}
+                          >
+                            {s.label}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={`Current section: ${activeLabel}. Open section menu.`}
+        onClick={() => setOpen(true)}
+        className="flex w-full min-h-12 items-center justify-between gap-3 bg-transparent py-3 text-left transition-colors duration-200"
+      >
+        <span className="truncate font-medium tracking-[0.01em] text-zinc-800">
+          {activeLabel}
+        </span>
+        <Chevron
+          direction="down"
+          className="size-4 shrink-0 text-zinc-400 transition-transform duration-200"
+        />
+      </button>
+      {sheet}
+    </>
   );
 }
 
@@ -153,12 +272,13 @@ function sectionHasSubs(id: string) {
   return (tocSubsections[id] ?? []).length > 0;
 }
 
-/** Sticky offset for the desktop TOC rail (top-28 — clears fixed logo). */
+/** Sticky offset for the desktop TOC rail while the fixed logo is visible (top-28). */
 const TOC_STICKY_TOP_PX = 112;
-/** Fixed logo bottom edge (top-8 + size-11) — hide before covering footer brand. */
-const LOGO_BOTTOM_PX = 32 + 44;
+/** Sticky offset once the logo is hidden near the footer — no reserved clearance. */
+const TOC_STICKY_TOP_COLLAPSED_PX = 0;
 
 export default function SystemPage() {
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState<string>(tocSections[0].id);
   const [activeSub, setActiveSub] = useState<string | null>(null);
   // Sticky expand: only switch which group is open when a *grouped* section
@@ -167,17 +287,38 @@ export default function SystemPage() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   // Sticky-until-footer: TOC sticks until the footer would collide, then docks.
-  // Logo stays position:fixed (reliable hit target) and simply hides near footer
-  // so it can't cover the footer brand link.
+  // Logo stays position:fixed (reliable hit target) and hides once the footer
+  // enters the viewport so only the footer brand shows near the bottom.
   const zoneRef = useRef<HTMLDivElement>(null);
   const desktopChromeRef = useRef<HTMLDivElement>(null);
   const [desktopDocked, setDesktopDocked] = useState(false);
   const [logoHidden, setLogoHidden] = useState(false);
 
-  // Logo doorway + route entry: always land at the top of the DS.
+  // Logo doorway + route entry: land at top, but preserve scroll on back/forward.
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const entry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
+    if (entry && entry.type !== "back_forward") {
+      window.scrollTo(0, 0);
+    }
   }, []);
+
+  // Capture-phase home navigation. Next/Link soft-nav can miss while the
+  // blueprint morph re-renders mid-click; a document capture listener always
+  // sees the gesture (and still respects cmd/ctrl-click via early return).
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const target = e.target as Element | null;
+      const a = target?.closest?.('a[aria-label="Back to home"]');
+      if (!a) return;
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (getComputedStyle(a).pointerEvents === "none") return;
+      e.preventDefault();
+      window.scrollTo(0, 0);
+      router.push("/");
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, [router]);
 
   useEffect(() => {
     const zone = zoneRef.current;
@@ -189,15 +330,21 @@ export default function SystemPage() {
       if (!footer) return;
       const footerTop = footer.getBoundingClientRect().top;
 
-      setLogoHidden((prev) => {
-        const next = footerTop <= LOGO_BOTTOM_PX + 8;
-        return prev === next ? prev : next;
-      });
+      // Hide as soon as any part of the footer is on-screen. A collision-only
+      // threshold (~logo bottom) left both logos visible whenever the footer
+      // brand sat lower in a tall viewport.
+      const nextLogoHidden = footerTop < window.innerHeight;
+      setLogoHidden((prev) => (prev === nextLogoHidden ? prev : nextLogoHidden));
 
       const desktop = desktopChromeRef.current;
       if (desktop) {
         // Dock when the sticky TOC's bottom would cross the footer top.
-        const next = footerTop <= TOC_STICKY_TOP_PX + desktop.offsetHeight;
+        // Use the collapsed offset when the logo is hidden so dock math matches
+        // the TOC's actual sticky top (no leftover logo clearance).
+        const stickyTop = nextLogoHidden
+          ? TOC_STICKY_TOP_COLLAPSED_PX
+          : TOC_STICKY_TOP_PX;
+        const next = footerTop <= stickyTop + desktop.offsetHeight;
         setDesktopDocked((prev) => (prev === next ? prev : next));
       }
     };
@@ -351,7 +498,9 @@ export default function SystemPage() {
       <Link
         href="/"
         aria-label="Back to home"
-        onClick={() => window.scrollTo(0, 0)}
+        aria-hidden={logoHidden}
+        tabIndex={logoHidden ? -1 : undefined}
+        onClick={() => markBlueprintDoorwayNav()}
         className={`group fixed left-6 top-8 z-50 size-8 overflow-visible transition-[opacity,transform] duration-200 ease-out hover:scale-[1.02] active:scale-95 md:left-16 md:size-11 ${
           logoHidden ? "pointer-events-none opacity-0" : "opacity-100"
         }`}
@@ -365,26 +514,32 @@ export default function SystemPage() {
         collide, then docks to the zone bottom so it can't cover the footer.
       */}
       <div ref={zoneRef} className="relative">
-        {/* Mobile section menu — clears fixed logo */}
+        {/* Mobile section menu — clears fixed logo; HIG-style local bar */}
         <nav
           aria-label="Sections"
-          className="sticky top-0 z-40 flex items-center border-b border-zinc-100 bg-white/85 py-2 pl-16 pr-4 backdrop-blur-md lg:hidden"
+          className="sticky top-0 z-40 border-y border-zinc-200/80 bg-white/90 pl-16 pr-5 backdrop-blur-md lg:hidden"
         >
           <MobileSectionMenu activeSection={activeSection} onSelect={scrollTo} />
         </nav>
 
         {/*
           Desktop: TOC as left rail (sticky top-28 clears fixed logo, z-50 above
-          body::before). Outer aside is an in-flow width spacer; inner chrome
-          docks to the zone bottom when the footer would collide.
+          body::before). When the logo hides near the footer, collapse to top-0
+          so Overview isn't left with an empty clearance band. Outer aside is an
+          in-flow width spacer; inner chrome docks to the zone bottom when the
+          footer would collide.
         */}
         <div className="flex items-start gap-48 px-6 pt-24 md:px-16 lg:pt-28">
           {/* self-stretch: tall containing block so sticky has a runway matching main */}
           <aside className="relative hidden w-44 shrink-0 self-stretch lg:block">
             <div
               ref={desktopChromeRef}
-              className={`z-50 w-44 ${
-                desktopDocked ? "absolute bottom-0 left-0" : "sticky top-28"
+              className={`z-50 w-44 transition-[top] duration-200 ease-out ${
+                desktopDocked
+                  ? "absolute bottom-0 left-0"
+                  : logoHidden
+                    ? "sticky top-0"
+                    : "sticky top-28"
               }`}
             >
               <div className="animate-fade-up">

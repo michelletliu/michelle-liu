@@ -1,15 +1,16 @@
-import { shadows } from "../tokens";
+import { shadows, uniformTag } from "../tokens";
 import { Section, Grid, TokenCard } from "../primitives";
 
 export default function ShadowSection() {
+  const sectionTag = uniformTag(shadows);
   return (
-    <Section id="shadows" title="Shadows">
+    <Section id="shadows" title="Shadows" tag={sectionTag}>
       <Grid min="240px">
         {shadows.map((s) => (
           <TokenCard
             key={s.name}
             name={s.name}
-            tag={s.tag}
+            tag={sectionTag ? undefined : s.tag}
             value={s.value}
             usage={s.usage}
             sample={
