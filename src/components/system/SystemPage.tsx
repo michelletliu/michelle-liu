@@ -9,10 +9,7 @@ import { motion } from "framer-motion";
 import clsx from "clsx";
 import Sidebar, { type SidebarNode } from "../Sidebar";
 import BlueprintLogo from "../BlueprintLogo";
-import {
-  clearBlueprintDoorwaySticky,
-  markBlueprintDoorwayNav,
-} from "../blueprintDoorwayNav";
+import { markBlueprintDoorwayNav } from "../blueprintDoorwayNav";
 import Footer from "../Footer";
 import { Chevron } from "../Chevron";
 import { FieldInput, FieldShell } from "../FieldInput";
