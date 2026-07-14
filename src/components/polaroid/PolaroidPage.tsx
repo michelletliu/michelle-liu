@@ -27,7 +27,7 @@ const DEFAULT_POLAROID_PROJECT = {
   videoSrc: 'https://stream.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w.m3u8',
   xLink: 'https://x.com/michelletliu/status/1991201412072734777',
   tryItOutHref: '/polaroid',
-  backgroundColor: '#f0f9ff',
+  backgroundColor: '#eff6ff',
   toolCategories: [
     { label: 'Design', tools: ['Figma'] },
     { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -462,7 +462,7 @@ export default function PolaroidPage() {
           isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
         }`}
         style={{ 
-          backgroundColor: projectInfo.backgroundColor || '#f0f9ff',
+          backgroundColor: projectInfo.backgroundColor || '#eff6ff',
           transitionDuration: isExiting ? '280ms' : '300ms',
           transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out'
         }}
