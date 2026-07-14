@@ -16,8 +16,9 @@ import ArtSidebar, { ArtCategory } from "./ArtSidebar";
 import SketchbookGallery from "./SketchbookGallery";
 import MuralGallery from "./MuralGallery";
 import type { ArtCardData } from "./ArtCard";
-import type { SketchbookData } from "./SketchbookGallery";
-import type { MuralData } from "./MuralGallery";
+import type { SketchbookData, SketchbookItem } from "./SketchbookGallery";
+import type { MuralData, MuralImage } from "./MuralGallery";
+import ArtLightbox, { type ArtLightboxItem } from "./ArtLightbox";
 
 // Sanity imports
 import { client, urlFor } from "../../sanity/client";
@@ -33,6 +34,9 @@ function transformArtPieces(sanityData: ArtPiece[]): ArtCardData[] {
     return {
       id: piece._id,
       imageSrc: piece.image ? urlFor(piece.image).width(800).url() : "",
+      fullImageSrc: piece.image
+        ? urlFor(piece.image).width(1600).quality(90).url()
+        : undefined,
       aspectRatio: piece.image?.dimensions?.aspectRatio,
       title: piece.title,
       metadata: metadata || undefined,
@@ -50,6 +54,9 @@ function transformSketchbooks(sanityData: Sketchbook[]): SketchbookData[] {
       sketchbook.images?.map((img) => ({
         id: img._key,
         imageSrc: img.asset ? urlFor(img).height(600).url() : "",
+        fullImageSrc: img.asset
+          ? urlFor(img).width(1600).quality(90).url()
+          : undefined,
       })) || [],
   }));
 }
@@ -66,6 +73,9 @@ function transformMurals(sanityData: Mural[]): MuralData[] {
       mural.images?.map((img) => ({
         id: img._key,
         imageSrc: img.asset ? urlFor(img).height(600).url() : "",
+        fullImageSrc: img.asset
+          ? urlFor(img).width(1600).quality(90).url()
+          : undefined,
       })) || [],
   }));
 }
@@ -118,6 +128,7 @@ export default function ArtPage() {
   const [murals, setMurals] = useState<MuralData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lightboxItem, setLightboxItem] = useState<ArtLightboxItem | null>(null);
 
   // Fetch data from Sanity (uses preloaded cache if available)
   useEffect(() => {
@@ -305,7 +316,43 @@ export default function ArtPage() {
   }, [sketchbooks.length, murals.length]);
 
   const handleArtItemClick = (item: ArtCardData) => {
-    console.log("Art item clicked:", item);
+    const src = item.fullImageSrc || item.imageSrc;
+    if (!src) return;
+    setLightboxItem({
+      imageSrc: src,
+      previewSrc: item.imageSrc || undefined,
+      title: item.title,
+      detail: item.metadata,
+      alt: item.title,
+    });
+  };
+
+  const handleSketchbookImageClick = (
+    sketchbook: SketchbookData,
+    image: SketchbookItem
+  ) => {
+    const src = image.fullImageSrc || image.imageSrc;
+    if (!src) return;
+    setLightboxItem({
+      imageSrc: src,
+      previewSrc: image.imageSrc || undefined,
+      title: sketchbook.title,
+      detail: sketchbook.date || undefined,
+      alt: sketchbook.title,
+    });
+  };
+
+  const handleMuralImageClick = (mural: MuralData, image: MuralImage) => {
+    const src = image.fullImageSrc || image.imageSrc;
+    if (!src) return;
+    const detail = [mural.location, mural.date].filter(Boolean).join(", ");
+    setLightboxItem({
+      imageSrc: src,
+      previewSrc: image.imageSrc || undefined,
+      title: mural.title,
+      detail: detail || undefined,
+      alt: mural.title,
+    });
   };
 
   // Calculate counts for sidebar
@@ -467,7 +514,12 @@ export default function ArtPage() {
                         className="w-full"
                       >
                         <div className="w-full" ref={(el) => { sketchbookRefs.current[index] = el; }}>
-                          <SketchbookGallery data={sketchbook} />
+                          <SketchbookGallery
+                            data={sketchbook}
+                            onImageClick={(image) =>
+                              handleSketchbookImageClick(sketchbook, image)
+                            }
+                          />
                         </div>
                       </ScrollReveal>
                     ))}
@@ -491,7 +543,12 @@ export default function ArtPage() {
                         className="w-full"
                       >
                         <div className="w-full" ref={(el) => { muralRefs.current[index] = el; }}>
-                          <MuralGallery data={mural} />
+                          <MuralGallery
+                            data={mural}
+                            onImageClick={(image) =>
+                              handleMuralImageClick(mural, image)
+                            }
+                          />
                         </div>
                       </ScrollReveal>
                     ))}
@@ -507,6 +564,11 @@ export default function ArtPage() {
 
       {/* Footer */}
       <Footer />
+
+      <ArtLightbox
+        item={lightboxItem}
+        onClose={() => setLightboxItem(null)}
+      />
     </div>
   );
 }

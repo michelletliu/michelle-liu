@@ -9,6 +9,8 @@ export { default as SketchbookGallery } from "./SketchbookGallery";
 export type { SketchbookData, SketchbookItem } from "./SketchbookGallery";
 export { default as MuralGallery } from "./MuralGallery";
 export type { MuralData, MuralImage } from "./MuralGallery";
+export { default as ArtLightbox } from "./ArtLightbox";
+export type { ArtLightboxItem } from "./ArtLightbox";
 export { ChevronLeftIcon, ChevronRightIcon } from "./ChevronIcons";
 
 
