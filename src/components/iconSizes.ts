@@ -4,7 +4,7 @@
  * `strokeWidth={1.5}` + `vectorEffect="non-scaling-stroke"` stay consistent.
  *
  * Sticky morph (chevron↔Close) uses `touch` (24) for both states. Close’s
- * path bounds match Chevron’s compact footprint so glyphs read the same size.
+ * 12×12 path band matches Chevron’s vertical span so glyphs read the same size.
  */
 export const iconSizes = {
   /** Dense / meta */

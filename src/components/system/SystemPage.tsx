@@ -70,13 +70,23 @@ const ComponentSection = dynamic(() => import("./sections/ComponentSection"), {
   loading: () => <SectionSkeleton tall />,
 });
 
-/** Hit target for the floating chevron↔X morph (bar slot + sheet slot + button). */
+/**
+ * Ghost icon-button hit target — SpecButton icon **md** (`size-10` / 40px).
+ * Shared by sticky-bar slot, sheet close slot, and the floating morph control.
+ */
 const MORPH_CONTROL_BOX = "size-10";
 /**
  * One glyph size for both morph states — touch (24). Close/Chevron share
  * comparable path bounds in the 24 viewBox so glyphs match optically.
  */
 const MORPH_ICON = iconSize("touch");
+/**
+ * Optical end-align: pull the control into the `px-5`/`pr-5` gutter so the
+ * glyph’s right tip lines up with the Filter field (and sticky content edge).
+ * 14px ≈ (40−24)/2 box pad + (24−12)/2 Close/Chevron path inset.
+ */
+const MORPH_OPTICAL_END = "-mr-3.5";
+const MORPH_SLOT = `${MORPH_CONTROL_BOX} shrink-0 ${MORPH_OPTICAL_END}`;
 const MORPH_TRANSITION = { duration: 0.3, ease: "easeOut" } as const;
 
 /**
@@ -164,7 +174,7 @@ function MobileSectionMenu({
   }, []);
 
   // One floating toggle — always tracks the sticky-bar slot so open-state X
-  // keeps the same top/right + size-10 hit box as the closed chevron.
+  // keeps the same top/right + md (size-10) hit box as the closed chevron.
   useLayoutEffect(() => {
     if (!mounted) return;
     const measure = () => {
@@ -284,8 +294,9 @@ function MobileSectionMenu({
               : `Open section menu. Current: ${activeLabel}`
           }
           className={clsx(
-            "fixed z-[70] flex items-center justify-center rounded-lg bg-transparent text-zinc-400",
-            "transition-colors duration-200 hover:bg-zinc-100 hover:text-zinc-500",
+            // SpecButton ghost · icon · md: size-10, rounded-full, translucent wash
+            "fixed z-[70] flex items-center justify-center rounded-full bg-transparent text-zinc-400",
+            "transition-colors duration-200 hover:bg-zinc-900/5 hover:text-zinc-500",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
             "lg:hidden",
             MORPH_CONTROL_BOX,
@@ -320,8 +331,8 @@ function MobileSectionMenu({
             className="fixed inset-0 z-[60] flex flex-col bg-white animate-in fade-in duration-200 lg:hidden"
           >
             {/*
-              Mirror sticky bar chrome (py-3 + h-8/h-10 + pr-5 size-10 slot) so
-              the reserved close slot sits under the shared floating control.
+              Mirror sticky bar chrome (py-3 + h-8/h-10 + pr-5 md slot + optical
+              -mr) so the reserved close slot sits under the floating control.
             */}
             <div className="px-5 py-3">
               <div className="flex h-8 w-full items-center overflow-visible">
@@ -329,10 +340,7 @@ function MobileSectionMenu({
                   <h2 className="min-w-0 flex-1 overflow-visible text-base font-medium leading-normal tracking-wide text-zinc-800">
                     Design System
                   </h2>
-                  <span
-                    className={`${MORPH_CONTROL_BOX} shrink-0`}
-                    aria-hidden
-                  />
+                  <span className={MORPH_SLOT} aria-hidden />
                 </div>
               </div>
             </div>
@@ -497,11 +505,7 @@ function MobileSectionMenu({
           >
             {activeLabel}
           </button>
-          <span
-            ref={barSlotRef}
-            className={`${MORPH_CONTROL_BOX} shrink-0`}
-            aria-hidden
-          />
+          <span ref={barSlotRef} className={MORPH_SLOT} aria-hidden />
         </div>
       </div>
       {floatingToggle}
