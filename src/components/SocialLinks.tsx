@@ -73,7 +73,7 @@ const SOCIAL_ICONS = [
     className: "social-link",
     icon: (
       <SocialLinksBackgroundImage>
-        <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #c4c9d0)" id="Vector" />
+        <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #d4d4d8)" id="Vector" />
       </SocialLinksBackgroundImage>
     ),
   },
@@ -90,7 +90,7 @@ const SOCIAL_ICONS = [
           >
             <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 19 18">
               <g id="Group">
-                <path d={svgPaths.p16308a80} fill="var(--fill-0, #c4c9d0)" id="Vector" />
+                <path d={svgPaths.p16308a80} fill="var(--fill-0, #d4d4d8)" id="Vector" />
               </g>
             </svg>
           </div>
@@ -105,7 +105,7 @@ const SOCIAL_ICONS = [
     icon: (
       <div className="content-stretch flex items-center justify-center relative shrink-0 size-6">
         <SocialLinksBackgroundImage>
-          <path d={svgPaths.p1e086000} fill="var(--fill-0, #c4c9d0)" id="Vector" stroke="var(--stroke-0, #c4c9d0)" />
+          <path d={svgPaths.p1e086000} fill="var(--fill-0, #d4d4d8)" id="Vector" stroke="var(--stroke-0, #d4d4d8)" />
         </SocialLinksBackgroundImage>
       </div>
     ),

@@ -64,7 +64,7 @@ export default function ProjectHeroHeader({
         )}
       >
         {/* Title */}
-        <p className="font-normal leading-5 relative shrink-0 text-4xl text-black">
+        <p className="font-normal leading-5 relative shrink-0 text-4xl text-zinc-900">
           {title}
         </p>
 
@@ -93,7 +93,7 @@ export default function ProjectHeroHeader({
               <p className="font-medium relative shrink-0 text-zinc-400">
                 {item.label}
               </p>
-              <p className="font-normal relative leading-relaxed shrink-0 text-black">
+              <p className="font-normal relative leading-relaxed shrink-0 text-zinc-900">
                 {Array.isArray(item.value) ? (
                   item.value.map((v, i) => (
                     <React.Fragment key={i}>

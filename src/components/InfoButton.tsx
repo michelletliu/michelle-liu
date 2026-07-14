@@ -184,7 +184,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
         <div data-info-modal className="fixed inset-0 z-[100] flex items-center justify-center px-8">
           {/* Overlay */}
           <div 
-            className={`absolute inset-0 bg-black/20 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`} 
+            className={`absolute inset-0 bg-zinc-900/20 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`} 
             onClick={handleClose} 
           />
           
@@ -208,7 +208,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                 <div className="flex flex-col min-w-0 gap-1">
                   {/* Title row */}
                   <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
-                    <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
+                    <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-zinc-900">
                       {project.title}
                     </p>
                     <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base">

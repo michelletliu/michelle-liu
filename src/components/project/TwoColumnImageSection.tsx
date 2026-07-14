@@ -155,7 +155,7 @@ export function TwoColumnImageSectionComponent({
                   </p>
                 )}
                 {section.heading && (
-                  <h3 className="leading-normal text-2xl text-black whitespace-pre-wrap">
+                  <h3 className="leading-normal text-2xl text-zinc-900 whitespace-pre-wrap">
                     {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                   </h3>
                 )}
@@ -210,7 +210,7 @@ export function TwoColumnImageSectionComponent({
                   </p>
                 )}
                 {section.heading && (
-                  <h3 className="leading-normal text-2xl text-black whitespace-pre-wrap">
+                  <h3 className="leading-normal text-2xl text-zinc-900 whitespace-pre-wrap">
                     {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                   </h3>
                 )}

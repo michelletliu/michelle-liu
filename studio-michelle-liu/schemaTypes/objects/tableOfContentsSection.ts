@@ -50,7 +50,7 @@ export const tableOfContentsSection = defineType({
     defineField({
       name: 'accentColor',
       title: 'Accent Color',
-      description: 'Color for numbers and titles (default: pink #ec4899)',
+      description: 'Color for numbers and titles (default: Tailwind pink-500 #ec4899)',
       type: 'string',
       initialValue: '#ec4899',
     }),

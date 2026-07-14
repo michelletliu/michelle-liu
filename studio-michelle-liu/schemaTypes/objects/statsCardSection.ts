@@ -31,9 +31,9 @@ export const statsCardSection = defineType({
     defineField({
       name: 'titleColor',
       title: 'Title Color',
-      description: 'Color for the section title (default: gray #9ca3af)',
+      description: 'Color for the section title (default: zinc-400 #a1a1aa)',
       type: 'string',
-      initialValue: '#9ca3af',
+      initialValue: '#a1a1aa',
     }),
     defineField({
       name: 'showDividerLine',
@@ -45,7 +45,7 @@ export const statsCardSection = defineType({
     defineField({
       name: 'statColor',
       title: 'Stat Number Color',
-      description: 'Color for all stat numbers (default: pink #ec4899)',
+      description: 'Color for all stat numbers (default: Tailwind pink-500 #ec4899)',
       type: 'string',
       initialValue: '#ec4899',
     }),

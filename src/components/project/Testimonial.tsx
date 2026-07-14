@@ -135,7 +135,7 @@ export default function Testimonial({
           <p className="leading-5 relative shrink-0 text-[#a1a1aa] uppercase text-base">
             {label}
           </p>
-          <p className="leading-7 min-w-full relative shrink-0 text-2xl text-black whitespace-pre-wrap">
+          <p className="leading-7 min-w-full relative shrink-0 text-2xl text-zinc-900 whitespace-pre-wrap">
             {title}
           </p>
         </div>
@@ -174,7 +174,7 @@ export default function Testimonial({
                 isMobile && "flex-[1_0_0] min-h-px min-w-px"
               )}
             >
-              <p className="relative shrink-0 text-black">{authorName}</p>
+              <p className="relative shrink-0 text-zinc-900">{authorName}</p>
               <p className="relative shrink-0 text-[#a1a1aa]">{authorTitle}</p>
             </div>
           </div>

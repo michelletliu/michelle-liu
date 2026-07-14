@@ -94,7 +94,7 @@ const staticProjects: Project[] = [
     imageSrc: "https://image.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w/thumbnail.png?width=1920",
     videoSrc: "https://stream.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w.m3u8",
     xLink: "https://x.com/michelletliu/status/1991201412072734777",
-    backgroundColor: "#f0f9ff",
+    backgroundColor: "#eff6ff",
     toolCategories: [
       { label: 'Design', tools: ['Figma'] },
       { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -573,7 +573,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-8">
       <div 
-        className={`absolute inset-0 bg-black/20 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`} 
+        className={`absolute inset-0 bg-zinc-900/20 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`} 
         onClick={handleClose} 
       />
       
@@ -599,7 +599,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
             <div className="content-stretch flex flex-[1_0_0] flex-col gap-[6px] items-start min-h-px min-w-px relative shrink-0">
               <div className="content-stretch flex items-start relative shrink-0 w-full">
                 <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
-                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
+                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-zinc-900">
                     {project.title}
                   </p>
                   <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base tracking-[0.005em]">
@@ -627,7 +627,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
             <div className="content-stretch flex flex-col gap-[6px] items-start relative shrink-0 w-full">
               <div className="content-stretch flex items-start relative shrink-0 w-full">
                 <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
-                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
+                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-zinc-900">
                     {project.title}
                   </p>
                   <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base tracking-[0.005em]">
