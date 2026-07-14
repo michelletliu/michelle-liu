@@ -182,6 +182,7 @@ function MobileSectionMenu({
   const filterRef = useRef<HTMLInputElement>(null);
   const barSlotRef = useRef<HTMLSpanElement>(null);
   const sheetSlotRef = useRef<HTMLSpanElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
   const wasOpenRef = useRef(false);
   const [togglePos, setTogglePos] = useState<{ top: number; left: number } | null>(
     null,
@@ -239,6 +240,26 @@ function MobileSectionMenu({
         e.preventDefault();
         setOpen(false);
       }
+      if (e.key === "Tab") {
+        const sheet = sheetRef.current;
+        if (!sheet) return;
+        const focusable = sheet.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        );
+        const firstFocusable = focusable[0];
+        const lastFocusable = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === firstFocusable) {
+            e.preventDefault();
+            lastFocusable?.focus();
+          }
+        } else {
+          if (document.activeElement === lastFocusable) {
+            e.preventDefault();
+            firstFocusable?.focus();
+          }
+        }
+      }
     };
     const onResize = () => {
       if (window.innerWidth >= 1024) setOpen(false);
@@ -289,39 +310,47 @@ function MobileSectionMenu({
     window.setTimeout(() => onSelect(id), 0);
   };
 
-  const floatingToggle =
-    mounted && togglePos
-      ? createPortal(
-          <motion.button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-label={
-              open
-                ? "Close section menu"
-                : `Open section menu. Current: ${activeLabel}`
-            }
-            // Ghost icon-button: no default bg; rounded-lg matches DS radius for size-10.
-            className={clsx(
-              "fixed z-[70] flex items-center justify-center rounded-lg bg-transparent text-zinc-400",
-              "transition-colors duration-200 hover:bg-zinc-100 hover:text-zinc-500",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
-              "lg:hidden",
-              MORPH_CONTROL_BOX,
-            )}
-            initial={false}
-            animate={{ top: togglePos.top, left: togglePos.left }}
-            transition={{ duration: toggleMoveDuration, ease: "easeOut" }}
-          >
-            <ChevronCloseMorph open={open} />
-          </motion.button>,
-          document.body,
-        )
-      : null;
+  const floatingToggle = mounted
+    ? createPortal(
+        <motion.button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={
+            open
+              ? "Close section menu"
+              : `Open section menu. Current: ${activeLabel}`
+          }
+          className={clsx(
+            "fixed z-[70] flex items-center justify-center rounded-lg bg-transparent text-zinc-400",
+            "transition-colors duration-200 hover:bg-zinc-100 hover:text-zinc-500",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
+            "lg:hidden",
+            MORPH_CONTROL_BOX,
+          )}
+          initial={false}
+          animate={
+            togglePos
+              ? { top: togglePos.top, left: togglePos.left }
+              : { top: 0, left: 0 }
+          }
+          transition={{ duration: toggleMoveDuration, ease: "easeOut" }}
+          style={
+            !togglePos
+              ? { opacity: 0, pointerEvents: "none" as const }
+              : undefined
+          }
+        >
+          <ChevronCloseMorph open={open} />
+        </motion.button>,
+        document.body,
+      )
+    : null;
 
   const sheet =
     open && mounted
       ? createPortal(
           <div
+            ref={sheetRef}
             role="dialog"
             aria-modal="true"
             aria-label="Design System sections"
