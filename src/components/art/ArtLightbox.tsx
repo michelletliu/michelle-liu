@@ -180,7 +180,9 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
               )}
               {item.detail && (
                 <>
-                  {item.title && <span className="text-zinc-400">{"   "}</span>}
+                  {item.title && (
+                    <span className="inline-block w-1.5" aria-hidden />
+                  )}
                   <span className="text-zinc-400">{item.detail}</span>
                 </>
               )}
