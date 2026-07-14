@@ -53,8 +53,16 @@ export function FieldShell({
 }
 
 /**
- * Leading mark slot — `size-5` matches FieldInput `h-5` / `leading-5` so the
- * icon box and text line share one midline inside FieldShell `items-center`.
+ * Icon slot box — `size-5` matches FieldInput `h-5` / `leading-5` so the
+ * icon and text line share one midline inside FieldShell `items-center`.
+ * `[&_svg]:block` overrides Arrow’s `inline-block` + verticalAlign so glyphs
+ * don’t sit optically low.
+ */
+export const fieldIconSlotClassName =
+  "flex size-5 shrink-0 items-center justify-center [&_svg]:block [&_svg]:shrink-0";
+
+/**
+ * Leading mark slot — search/filter magnifier inside FieldShell.
  */
 export function FieldLeadingIcon({
   children,
@@ -66,11 +74,31 @@ export function FieldLeadingIcon({
   return (
     <span
       className={clsx(
-        "pointer-events-none ml-2.5 flex size-5 shrink-0 items-center justify-center text-zinc-400 [&_svg]:block [&_svg]:shrink-0",
+        "pointer-events-none ml-2.5 text-zinc-400",
+        fieldIconSlotClassName,
         className,
       )}
       aria-hidden
     >
+      {children}
+    </span>
+  );
+}
+
+/**
+ * Trailing mark slot — password submit arrow (and DS specimen). Apply
+ * `fieldIconSlotClassName` directly on `<button type="submit">` when the
+ * control itself must be the flex item.
+ */
+export function FieldTrailingIcon({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <span className={clsx(fieldIconSlotClassName, className)} aria-hidden>
       {children}
     </span>
   );

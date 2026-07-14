@@ -20,7 +20,7 @@ import { useScrollLock } from "../../utils/useScrollLock";
 import lockIcon from "../../assets/lock.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
 import { posthog, posthogEnabled } from "../../lib/posthog";
-import { FieldInput, FieldShell } from "../FieldInput";
+import { FieldInput, FieldShell, fieldIconSlotClassName } from "../FieldInput";
 import { Chevron } from "../Chevron";
 import { Close } from "../Close";
 import { ArrowRightIcon } from "../Arrow";
@@ -673,12 +673,15 @@ function PasswordInput({
             type="submit"
             disabled={isLoading}
             aria-label="Submit password"
-            className="relative shrink-0 size-[14px] text-zinc-500 hover:opacity-70 transition-opacity disabled:opacity-50"
+            className={clsx(
+              fieldIconSlotClassName,
+              "relative text-zinc-500 transition-opacity hover:opacity-70 disabled:opacity-50",
+            )}
           >
             {isLoading ? (
-              <div className="w-3.5 h-3.5 border-2 border-zinc-300 border-t-zinc-500 rounded-full animate-spin" />
+              <div className="size-3.5 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-500" />
             ) : (
-              <ArrowRightIcon size="14px" className="block size-full" />
+              <ArrowRightIcon size="14px" />
             )}
           </button>
         </div>

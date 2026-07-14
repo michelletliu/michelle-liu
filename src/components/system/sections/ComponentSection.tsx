@@ -9,7 +9,13 @@ import {
   type ReactNode,
 } from "react";
 import { ArrowUpRight } from "../../ArrowUpRight";
-import { FieldInput, FieldLeadingIcon, FieldShell, SearchMagnifierIcon } from "../../FieldInput";
+import {
+  FieldInput,
+  FieldLeadingIcon,
+  FieldShell,
+  FieldTrailingIcon,
+  SearchMagnifierIcon,
+} from "../../FieldInput";
 import { FilterDropdown } from "../../FilterDropdown";
 import Sidebar, { type SidebarNode } from "../../Sidebar";
 import Tooltip from "../../Tooltip";
@@ -452,7 +458,7 @@ function SidebarSpecimen() {
 function InputSpecimensSection() {
   return (
     <>
-      <SubLabel note="Pill field shared by password gates, library modal, and mobile Filter. Leading icons use FieldLeadingIcon (size-5) with FieldInput h-5 / leading-5 / p-0.">
+      <SubLabel note="Pill field shared by password gates, library modal, and mobile Filter. Leading/trailing icons use FieldLeadingIcon / FieldTrailingIcon (size-5) with FieldInput h-5 / leading-5 / p-0.">
         Inputs
       </SubLabel>
       <div className={SPECIMEN_GRID}>
@@ -469,9 +475,9 @@ function InputSpecimensSection() {
         <Specimen label="Password" span={SPAN_WIDE}>
           <FieldShell className="max-w-[280px] justify-between">
             <FieldInput type="password" placeholder="Enter" defaultValue="" aria-label="Password input specimen" />
-            <span className="size-3.5 shrink-0 text-zinc-400" aria-hidden>
-              <ArrowRightIcon size="14px" className="block size-full" />
-            </span>
+            <FieldTrailingIcon className="text-zinc-400">
+              <ArrowRightIcon size="14px" />
+            </FieldTrailingIcon>
           </FieldShell>
         </Specimen>
 
