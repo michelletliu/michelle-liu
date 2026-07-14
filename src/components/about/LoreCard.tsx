@@ -6,7 +6,7 @@ export type LoreCardData = {
   id: string;
   /** Image source for the card */
   imageSrc?: string;
-  /** Background color for the image placeholder (default: light purple) */
+  /** Background color for the image placeholder (default: zinc-200) */
   imageBackground?: string;
   /** Main headline text */
   headline: string;
@@ -32,7 +32,7 @@ type LoreCardProps = {
  */
 export default function LoreCard({ className, data, onClick }: LoreCardProps) {
   const hasImage = !!data.imageSrc;
-  const bgColor = data.imageBackground || "#e3dff4";
+  const bgColor = data.imageBackground;
 
   const sharedClassName = clsx(
     "group flex w-full flex-col items-start text-left",
@@ -55,8 +55,11 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
           />
         ) : (
           <div
-            className="h-full w-full transition-transform duration-200 ease-out group-hover:scale-[0.99]"
-            style={{ backgroundColor: bgColor }}
+            className={clsx(
+              "h-full w-full transition-transform duration-200 ease-out group-hover:scale-[0.99]",
+              !bgColor && "bg-zinc-200"
+            )}
+            style={bgColor ? { backgroundColor: bgColor } : undefined}
           />
         )}
       </div>

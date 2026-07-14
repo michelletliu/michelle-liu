@@ -25,14 +25,14 @@ export const sectionHeaderBar = defineType({
     defineField({
       name: 'backgroundColor',
       title: 'Background Color',
-      description: 'Background color for the bar (default: light pink #fdf2f8)',
+      description: 'Background color for the bar (default: Tailwind pink-50 #fdf2f8)',
       type: 'string',
       initialValue: '#fdf2f8',
     }),
     defineField({
       name: 'textColor',
       title: 'Text Color',
-      description: 'Color for all text (default: pink #ec4899)',
+      description: 'Color for all text (default: Tailwind pink-500 #ec4899)',
       type: 'string',
       initialValue: '#ec4899',
     }),

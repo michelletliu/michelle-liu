@@ -40,7 +40,7 @@ export const twoColumnTextImageSection = defineType({
       title: 'Highlight Color',
       type: 'string',
       description: 'Color for highlighted text',
-      initialValue: '#EC4899',
+      initialValue: '#ec4899', // Tailwind pink-500
     }),
     defineField({
       name: 'textContent',

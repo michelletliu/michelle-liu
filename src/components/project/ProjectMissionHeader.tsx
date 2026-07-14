@@ -64,7 +64,7 @@ export default function ProjectMissionHeader({
           <p className="leading-5 text-[#a1a1aa] text-base">
             {label}
           </p>
-          <p className="leading-7 text-2xl text-black whitespace-pre-wrap text-pretty">
+          <p className="leading-7 text-2xl text-zinc-900 whitespace-pre-wrap text-pretty">
             {title}
           </p>
         </div>
@@ -155,7 +155,7 @@ export default function ProjectMissionHeader({
         <p className="relative shrink-0 text-[#a1a1aa] text-base">
           {label}
         </p>
-        <p className=" min-w-full leading-normal relative shrink-0 text-2xl text-black whitespace-pre-wrap text-pretty">
+        <p className=" min-w-full leading-normal relative shrink-0 text-2xl text-zinc-900 whitespace-pre-wrap text-pretty">
           {title}
         </p>
       </div>
