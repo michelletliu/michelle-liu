@@ -22,29 +22,34 @@ import { Section, SubLabel, TagChip } from "../primitives";
 import type { Tag } from "../tokens";
 
 /**
- * Sitewide ghost affordance — transparent resting surface, zinc wash on hover.
- * Pair with the control’s DS radius (rounded-full / rounded-lg / rounded-md).
+ * Ghost affordance — transparent resting surface, translucent zinc wash on hover
+ * so the specimen (or page) background still shows through.
+ * Pair with the control’s DS radius (rounded-full / rounded-xl / rounded-md).
  */
 const GHOST_SURFACE =
-  "bg-transparent transition-colors duration-200 hover:bg-zinc-100";
+  "bg-transparent transition-colors duration-200 hover:bg-zinc-900/5";
 
 /** Canonical button class patterns for DS specimens — not a site-wide API. */
 type SpecButtonVariant = "primary" | "secondary" | "tertiary" | "ghost";
 type SpecButtonSize = "sm" | "md" | "lg";
 
+/** Translucent hover washes — background shows through under the control. */
+const HOVER_WASH_ZINC = "hover:bg-zinc-900/5";
+const HOVER_WASH_ZINC_STRONG = "hover:bg-zinc-500/10";
+
 const SPEC_BUTTON_VARIANT: Record<SpecButtonVariant, string> = {
   primary:
     "border border-blue-400 bg-blue-500 text-white hover:border-blue-300 hover:bg-blue-400",
   secondary:
-    "border border-[#e4e4e7] bg-[#fafafa] text-zinc-700 hover:bg-[#f4f4f5]",
-  tertiary: "bg-zinc-100 text-zinc-700 hover:bg-zinc-200",
+    `border border-[#e4e4e7] bg-[#fafafa] text-zinc-700 ${HOVER_WASH_ZINC}`,
+  tertiary: `bg-zinc-100 text-zinc-700 ${HOVER_WASH_ZINC_STRONG}`,
   ghost: `${GHOST_SURFACE} text-zinc-700`,
 };
 
 const SPEC_BUTTON_RADIUS: Record<SpecButtonVariant, string> = {
   primary: "rounded-full",
   secondary: "rounded-full",
-  tertiary: "rounded-lg",
+  tertiary: "rounded-xl",
   ghost: "rounded-full",
 };
 
