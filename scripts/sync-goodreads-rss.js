@@ -6,7 +6,8 @@
  * - Backfills ONLY missing metadata (rating, dateRead, review, goodreadsUrl, cover)
  *   on existing books, so it never clobbers values curated by hand in Studio.
  * - When several Sanity books share a title, author must uniquely match;
- *   otherwise the feed item is skipped or created — never patched onto matches[0].
+ *   otherwise the feed item is skipped — never patched onto matches[0] or
+ *   created as a duplicate. Draft+published pairs collapse to one match.
  *
  * Dry-run when SANITY_TOKEN is not set: prints what it would do and writes a
  * scripts/goodreads-sync-preview.json for review.
@@ -99,19 +100,51 @@ function authorsMatch(a, b) {
   return shorter.every((t) => longer.includes(t));
 }
 
+/** Strip drafts. / versions.* prefixes so draft+published pairs collapse to one id. */
+function publishedId(id) {
+  if (!id) return id;
+  if (id.startsWith('drafts.')) return id.slice('drafts.'.length);
+  const versionMatch = id.match(/^versions\.[^.]+\.(.+)$/);
+  if (versionMatch) return versionMatch[1];
+  return id;
+}
+
+/**
+ * Prefer the published doc when both a draft and published copy are present.
+ * Prevents draft+published pairs from looking like two different books.
+ */
+function collapseMatches(matches) {
+  if (!matches || matches.length === 0) return [];
+  const byId = new Map();
+  for (const doc of matches) {
+    const id = publishedId(doc._id);
+    const existing = byId.get(id);
+    if (!existing) {
+      byId.set(id, doc);
+      continue;
+    }
+    // Prefer non-draft over draft when both exist.
+    if (existing._id.startsWith('drafts.') && !doc._id.startsWith('drafts.')) {
+      byId.set(id, doc);
+    }
+  }
+  return [...byId.values()];
+}
+
 /**
  * Pick the Sanity shelfItem for a Goodreads feed item.
  * When several books share a normalized title, author must disambiguate —
  * never fall back to matches[0], which can write metadata to the wrong doc.
  */
 function findExistingMatch(matches, item) {
-  if (!matches || matches.length === 0) return null;
-  if (matches.length === 1) return matches[0];
+  const unique = collapseMatches(matches);
+  if (unique.length === 0) return null;
+  if (unique.length === 1) return unique[0];
 
   // Multiple books share this title — require a unique author match.
   if (!item.author) return null;
 
-  const byAuthor = matches.filter(
+  const byAuthor = unique.filter(
     (mm) => mm.author && authorsMatch(mm.author, item.author)
   );
   if (byAuthor.length === 1) return byAuthor[0];
@@ -159,7 +192,7 @@ function bookIdFromDoc(doc) {
   return null;
 }
 
-function parseFeed(xml) {
+function parseFeed(xml, { requireReadDate = true } = {}) {
   const items = [];
   const re = /<item>([\s\S]*?)<\/item>/g;
   let m;
@@ -174,7 +207,7 @@ function parseFeed(xml) {
     // Only sync books with a real finish date. This matches the original
     // library curation and skips date-less catalogued books (childhood/school
     // reads, want-to-read carryovers) that were never actually logged as read.
-    if (!readDate) continue;
+    if (requireReadDate && !readDate) continue;
     const cover = tag(b, 'book_large_image_url') || tag(b, 'book_image_url');
 
     items.push({
@@ -183,8 +216,8 @@ function parseFeed(xml) {
       matchKey: matchKey(rawTitle),
       author: decodeEntities(tag(b, 'author_name')),
       rating,
-      dateRead: readDate.iso,
-      year: readDate.year,
+      dateRead: readDate ? readDate.iso : null,
+      year: readDate ? readDate.year : null,
       review: cleanReview(tag(b, 'user_review')),
       goodreadsUrl: bookId ? `https://www.goodreads.com/book/show/${bookId}` : null,
       // Goodreads serves a "nophoto" placeholder when a book has no cover.
@@ -193,6 +226,12 @@ function parseFeed(xml) {
     });
   }
   return items;
+}
+
+/** Count <item> blocks in a page — used for pagination before read-date filtering. */
+function countFeedItems(xml) {
+  const matches = xml.match(/<item>/gi);
+  return matches ? matches.length : 0;
 }
 
 async function fetchFeedPage(page) {
@@ -207,7 +246,7 @@ async function fetchFeedPage(page) {
 }
 
 // list_rss caps each response at ~100 items. Walk page=1,2,... until a page
-// returns fewer than PAGE_SIZE (or zero), then dedupe by bookId.
+// returns fewer than PAGE_SIZE raw items (or zero), then dedupe by bookId.
 async function fetchAllFeedBooks() {
   const all = [];
   const seen = new Set();
@@ -215,8 +254,9 @@ async function fetchAllFeedBooks() {
 
   while (true) {
     const xml = await fetchFeedPage(page);
+    const rawCount = countFeedItems(xml);
     const items = parseFeed(xml);
-    console.log(`  page ${page}: ${items.length} items`);
+    console.log(`  page ${page}: ${items.length} dated / ${rawCount} raw items`);
 
     for (const item of items) {
       const key = item.bookId || item.matchKey;
@@ -225,7 +265,7 @@ async function fetchAllFeedBooks() {
       all.push(item);
     }
 
-    if (items.length < PAGE_SIZE) break;
+    if (rawCount < PAGE_SIZE) break;
     page += 1;
   }
 
@@ -238,8 +278,9 @@ async function main() {
   const feedBooks = await fetchAllFeedBooks();
   console.log(`Parsed ${feedBooks.length} books from the "${SHELF}" shelf\n`);
 
+  // Exclude drafts/versions so a Studio edit never looks like a second book.
   const existing = await client.fetch(`
-    *[_type == "shelfItem" && mediaType == "book"]{
+    *[_type == "shelfItem" && mediaType == "book" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{
       _id, title, author, rating, dateRead, review, goodreadsUrl,
       externalCoverUrl, year, isLibraryFavorite, "hasCover": defined(cover)
     }
@@ -302,19 +343,24 @@ async function main() {
       if (Object.keys(set).length > 0) {
         patches.push({ _id: match._id, title: match.title, set });
       }
-    } else if (matches.length > 1 && !item.author) {
-      // Same title, no author on the feed item — do not guess among candidates.
-      console.log(
-        `  ! Skipping ambiguous title "${item.title}" — ${matches.length} matches, no author to disambiguate`
-      );
     } else {
-      // No title match, or author didn't match any candidate (different book).
-      if (matches.length > 1) {
+      const uniqueMatches = collapseMatches(matches);
+      if (uniqueMatches.length === 0) {
+        // No existing title/id match — genuinely new book.
+        creates.push(buildCreateDoc(item));
+      } else if (
+        item.author &&
+        !uniqueMatches.some((m) => m.author && authorsMatch(m.author, item.author))
+      ) {
+        // Same short title, different author (e.g. two unrelated "1984"s) — create.
+        creates.push(buildCreateDoc(item));
+      } else {
+        // Candidates exist but couldn't uniquely match — never invent a duplicate.
+        // (Same title + author on draft+published used to fall through and create.)
         console.log(
-          `  ! Ambiguous title "${item.title}" by ${item.author} — no author match among ${matches.length}; creating new doc`
+          `  ! Skipping ambiguous title "${item.title}"${item.author ? ` by ${item.author}` : ''} — ${uniqueMatches.length} existing match(es), not creating`
         );
       }
-      creates.push(buildCreateDoc(item));
     }
   }
 
@@ -371,6 +417,8 @@ module.exports = {
   matchKey,
   authorsMatch,
   findExistingMatch,
+  collapseMatches,
+  publishedId,
   cleanTitle,
   parseFeed,
 };
