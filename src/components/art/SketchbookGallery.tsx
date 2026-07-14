@@ -1,14 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
-import { ChevronLeftIcon, ChevronRightIcon } from "./ChevronIcons";
+import { ChevronLeftIcon, ChevronRightIcon } from "../Chevron";
 import EdgeGradients from "./EdgeGradients";
 import LiquidGlassButton from "./LiquidGlassButton";
 
 export type SketchbookItem = {
   id: string;
   imageSrc: string;
-  /** Higher-res source for lightbox */
-  fullImageSrc?: string;
 };
 
 export type SketchbookData = {

@@ -96,7 +96,7 @@ export default function ShelfGallery({
                     >
                       {category.label}
                       {category.count !== undefined && (
-                        <span className="text-zinc-400"> ({category.count})</span>
+                        <span className="text-zinc-400"> {category.count}</span>
                       )}
                     </span>
                   </button>
@@ -124,7 +124,7 @@ export default function ShelfGallery({
                     {category.label}
                     {category.count !== undefined && (
                       <span className={isActive ? "text-zinc-400" : "text-zinc-300"}>
-                        {" "}({category.count})
+                        {" "}{category.count}
                       </span>
                     )}
                   </span>

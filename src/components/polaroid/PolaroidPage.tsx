@@ -15,6 +15,7 @@ import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';
 import Tooltip from '../Tooltip';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
+import { Close } from '../Close';
 
 
 // Default project info (fallback if Sanity fetch fails)
@@ -27,7 +28,7 @@ const DEFAULT_POLAROID_PROJECT = {
   videoSrc: 'https://stream.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w.m3u8',
   xLink: 'https://x.com/michelletliu/status/1991201412072734777',
   tryItOutHref: '/polaroid',
-  backgroundColor: '#f0f9ff',
+  backgroundColor: '#eff6ff',
   toolCategories: [
     { label: 'Design', tools: ['Figma'] },
     { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -462,7 +463,7 @@ export default function PolaroidPage() {
           isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
         }`}
         style={{ 
-          backgroundColor: projectInfo.backgroundColor || '#f0f9ff',
+          backgroundColor: projectInfo.backgroundColor || '#eff6ff',
           transitionDuration: isExiting ? '280ms' : '300ms',
           transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out'
         }}
@@ -475,7 +476,7 @@ export default function PolaroidPage() {
       <div className={`flex flex-col items-center w-full max-w-[583px] my-auto ${isPopupMode ? 'gap-[20px] md:gap-[28px] pt-[60px] pb-[40px] md:pt-[70px] md:pb-[50px]' : 'gap-[32px] md:gap-[48px] py-[100px] md:py-[120px]'}`}>
         {/* Title */}
         <div 
-          className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-2xl md:text-3rxl text-black text-center text-nowrap" 
+          className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-2xl md:text-3rxl text-zinc-900 text-center text-nowrap" 
           style={{ fontVariationSettings: "'wdth' 100" }}
         >
           <p className="">
@@ -662,7 +663,7 @@ export default function PolaroidPage() {
             >
               <div className="content-stretch flex items-center relative w-full overflow-hidden">
                 <div 
-                  className={`flex flex-col justify-center leading-[0] not-italic relative text-black text-center text-nowrap tracking-[0.15em] overflow-hidden text-ellipsis ${
+                  className={`flex flex-col justify-center leading-[0] not-italic relative text-zinc-900 text-center text-nowrap tracking-[0.15em] overflow-hidden text-ellipsis ${
                     isPopupMode ? 'text-[10px] md:text-[12px]' : 'text-[14.6px] md:text-[18px]'
                   }`}
                   style={{ fontFamily: "'Courier New', monospace" }}
@@ -748,7 +749,7 @@ export default function PolaroidPage() {
                       aria-label="Toggle date"
                     >
                       <div className={`absolute inset-0 flex items-center justify-center transition-colors duration-300`}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={showDate && isDateFocused ? 'white' : showDate ? '#27272a' : 'black'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={showDate && isDateFocused ? 'white' : showDate ? '#27272a' : '#18181b'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                           <line x1="16" y1="2" x2="16" y2="6" />
                           <line x1="8" y1="2" x2="8" y2="6" />
@@ -785,7 +786,7 @@ export default function PolaroidPage() {
                       aria-label="Toggle text"
                     >
                       <div className={`absolute inset-0 flex items-center justify-center transition-colors duration-300`}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={showText && isTextFocused ? 'white' : showText ? '#27272a' : 'black'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={showText && isTextFocused ? 'white' : showText ? '#27272a' : '#18181b'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="4 7 4 4 20 4 20 7" />
                           <line x1="9" y1="20" x2="15" y2="20" />
                           <line x1="12" y1="4" x2="12" y2="20" />
@@ -814,7 +815,7 @@ export default function PolaroidPage() {
             <button 
               className={`rounded-[999px] flex items-center gap-[8px] px-6 py-3 text-[17px] text-white transition-colors ${
                 uploadedImage 
-                  ? 'bg-black cursor-pointer hover:bg-[rgba(0,0,0,0.8)]' 
+                  ? 'bg-zinc-900 cursor-pointer hover:bg-[rgba(24,24,27,0.8)]' 
                   : 'bg-zinc-800 cursor-not-allowed opacity-50'
               }`}
               onClick={() => uploadedImage && setShowShareModal(true)}
@@ -853,7 +854,7 @@ export default function PolaroidPage() {
                 : 'gap-[24px] sm:gap-[32px] px-[20px] sm:px-[28px] md:px-[36px] py-[24px] sm:py-[30px] pb-[48px] sm:pb-[40px] sm:min-w-[400px] md:min-w-[530px]'
             }`}>
               <div className={`content-stretch flex flex-col items-center relative shrink-0 w-full ${isPopupMode ? 'gap-[20px]' : 'gap-[36px]'}`}>
-                <div className={`flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] min-w-full relative shrink-0 text-[22px] text-black tracking-[-0.26px] w-[min-content] ${isPopupMode ? 'self-start pl-0' : ''}`} style={{ fontVariationSettings: "'wdth' 100" }}>
+                <div className={`flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] min-w-full relative shrink-0 text-[22px] text-zinc-900 tracking-[-0.26px] w-[min-content] ${isPopupMode ? 'self-start pl-0' : ''}`} style={{ fontVariationSettings: "'wdth' 100" }}>
                   <p className="leading-[28px]">Share Polaroid</p>
                 </div>
                 
@@ -922,7 +923,7 @@ export default function PolaroidPage() {
                           <div className="absolute content-stretch flex items-center left-[8.07px] px-[5.172px] py-[2.586px] top-[207.15px] w-[104.741px]">
                             <div className="content-stretch flex items-center relative shrink-0">
                               <div 
-                                className="flex flex-col justify-center leading-[0] not-italic relative shrink-0 text-[12.931px] text-black text-center text-nowrap tracking-[0.15em]"
+                                className="flex flex-col justify-center leading-[0] not-italic relative shrink-0 text-[12.931px] text-zinc-900 text-center text-nowrap tracking-[0.15em]"
                                 style={{ fontFamily: "'Courier New', monospace" }}
                               >
                                 <p className="leading-[21.983px]">{caption}</p>
@@ -1048,10 +1049,7 @@ export default function PolaroidPage() {
                 onClick={handleCloseShareModal}
                 className="absolute bg-white right-[17px] rounded-full size-[32px] top-[17px] cursor-pointer hover:bg-zinc-100 transition-colors flex items-center justify-center"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(20,20,20,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <Close size="18px" className="text-zinc-900/50" />
               </button>
 
               {/* App Icon Row */}
@@ -1137,7 +1135,7 @@ export default function PolaroidPage() {
             <div className={`bg-white fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[26px] z-[101] max-h-[calc(100vh-40px)] max-h-[calc(100dvh-40px)] sm:max-h-none w-[calc(100%-64px)] max-w-[400px] sm:max-w-none sm:w-auto sm:min-w-[400px] md:min-w-[530px] overflow-y-auto sm:overflow-visible ${isClosingShareModal ? 'animate-modal-scale-out' : 'animate-modal-scale-in'}`}>
               <div className="content-stretch flex flex-col items-center overflow-clip relative rounded-[inherit] w-full gap-[24px] sm:gap-[32px] px-[20px] sm:px-[28px] md:px-[36px] py-[24px] sm:py-[30px] pb-[24px] sm:pb-[40px] sm:min-w-[400px] md:min-w-[530px]">
                 <div className="content-stretch flex flex-col gap-[36px] items-center relative shrink-0 w-full">
-                  <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] min-w-full relative shrink-0 text-[22px] text-black tracking-[-0.26px] w-[min-content]" style={{ fontVariationSettings: "'wdth' 100" }}>
+                  <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] min-w-full relative shrink-0 text-[22px] text-zinc-900 tracking-[-0.26px] w-[min-content]" style={{ fontVariationSettings: "'wdth' 100" }}>
                     <p className="leading-[28px]">Share Polaroid</p>
                   </div>
                   
@@ -1200,7 +1198,7 @@ export default function PolaroidPage() {
                           <div className="absolute content-stretch flex items-center left-[8.07px] px-[5.172px] py-[2.586px] top-[207.15px] w-[104.741px]">
                             <div className="content-stretch flex items-center relative shrink-0">
                               <div 
-                                className="flex flex-col justify-center leading-[0] not-italic relative shrink-0 text-[12.931px] text-black text-center text-nowrap tracking-[0.15em]"
+                                className="flex flex-col justify-center leading-[0] not-italic relative shrink-0 text-[12.931px] text-zinc-900 text-center text-nowrap tracking-[0.15em]"
                                 style={{ fontFamily: "'Courier New', monospace" }}
                               >
                                 <p className="leading-[21.983px]">{caption}</p>
@@ -1325,10 +1323,7 @@ export default function PolaroidPage() {
                   onClick={handleCloseShareModal}
                   className="absolute bg-white right-[17px] rounded-full size-[32px] top-[17px] cursor-pointer hover:bg-zinc-100 transition-colors flex items-center justify-center"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(20,20,20,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
+                  <Close size="18px" className="text-zinc-900/50" />
                 </button>
 
                 {/* App Icon Row */}

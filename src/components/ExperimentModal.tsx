@@ -10,6 +10,7 @@ import type { ToolCategory } from './InfoButton';
 import { TryItOutButton } from './TryItOutButton';
 import Tooltip from './Tooltip';
 import Footer from './Footer';
+import { Chevron } from './Chevron';
 
 // Kick off chunk fetches immediately when this module loads (not when modal opens)
 const polaroidPagePromise = import('./polaroid/PolaroidPage');
@@ -28,10 +29,10 @@ const FilmPage = lazy(() => filmPagePromise);
 function ExpandIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 4H4V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M4 4L10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M14 20H20V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M20 20L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M10 4H4V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+      <path d="M4 4L10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+      <path d="M14 20H20V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+      <path d="M20 20L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
     </svg>
   );
 }
@@ -53,18 +54,6 @@ function LoadingSpinner() {
     </div>
   );
 }
-
-const ChevronRightIcon = () => (
-  <svg className="block size-full" viewBox="0 0 16 16" fill="none">
-    <path
-      d="M6 12L10 8L6 4"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
 
 type BreadcrumbProps = {
   projectName: string;
@@ -91,9 +80,7 @@ function Breadcrumb({ projectName, onWorkClick, isScrolled = false, isPastHero =
         </span>
       </button>
 
-      <div className="shrink-0 size-4 text-zinc-500">
-        <ChevronRightIcon />
-      </div>
+      <Chevron direction="right" className="size-4 shrink-0 text-zinc-500" />
 
       <div className="flex items-center justify-center px-1 py-0.5">
         <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#27272a]">
@@ -470,7 +457,7 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
       {/* Title row */}
       <div className="flex flex-col min-w-0 gap-0.5 px-6">
         <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
-          <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
+          <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-zinc-900">
             {project.title}
           </p>
           <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base">
@@ -766,7 +753,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
       {/* Overlay */}
       <div 
         className={clsx(
-          "absolute inset-0 bg-black/20 transition-opacity duration-500",
+          "absolute inset-0 bg-zinc-900/20 transition-opacity duration-500",
           isVisible && !isFullscreen ? 'opacity-100' : 'opacity-0',
           isFullscreen && 'pointer-events-none'
         )} 
@@ -952,7 +939,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
           {/* Left column: title and description stacked vertically */}
           <div className="flex flex-col min-w-0 gap-0">
             <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
-              <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
+              <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-zinc-900">
                 {project.title}
               </p>
               <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base">

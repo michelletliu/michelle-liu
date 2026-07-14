@@ -358,7 +358,7 @@ export default function LibraryPage({
           <div className="flex items-start justify-between w-full">
           {/* Title and Filter */}
           <div className="flex flex-col gap-3 items-start shrink-0">
-            <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-[34px] relative shrink-0 text-3xl text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
+            <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-[34px] relative shrink-0 text-3xl text-zinc-900" style={{ fontVariationSettings: "'wdth' 100" }}>
               library
             </p>
             <FilterDropdown

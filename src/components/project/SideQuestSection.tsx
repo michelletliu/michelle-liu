@@ -5,6 +5,7 @@ import ShimmerImage from "../ShimmerImage";
 import { urlFor } from "../../sanity/client";
 import { useScrollLock } from "../../utils/useScrollLock";
 import type { SanityImage } from "../../sanity/types";
+import { Close } from "../Close";
 
 interface TeamMember {
   _key: string;
@@ -105,7 +106,7 @@ export default function SideQuestSection({
               <p className="text-[#a1a1aa] uppercase text-base pb-2">{label}</p>
             )}
             {title && (
-              <h3 className="text-2xl text-black">{renderHighlightedText(title, highlightedText, highlightColor)}</h3>
+              <h3 className="text-2xl text-zinc-900">{renderHighlightedText(title, highlightedText, highlightColor)}</h3>
             )}
             {subtitle && (
               <p className="text-zinc-500 text-xl">{subtitle}</p>
@@ -207,20 +208,7 @@ export default function SideQuestSection({
               className={`fixed right-4 top-4 z-[10000] flex h-10 w-10 items-center justify-center text-zinc-500 transition-all duration-200 hover:scale-110 ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
               aria-label="Close expanded image"
             >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 14 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M1 1L13 13M1 13L13 1"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <Close size="12px" />
             </button>
 
             <div

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import clsx from "clsx";
 import lockIcon from "../../assets/lock.svg";
+import { FieldInput, FieldShell } from "../FieldInput";
+import { ArrowRightIcon } from "../Arrow";
 
 // Lock icon with circular background and shadow (matches Figma exactly)
 const LockIcon = () => (
@@ -10,23 +12,6 @@ const LockIcon = () => (
       <img src={lockIcon} alt="" className="w-[19px] h-[28px]" />
     </div>
   </div>
-);
-
-// Arrow right icon SVG
-const ArrowRightIcon = () => (
-  <svg
-    className="block size-full"
-    viewBox="0 0 12 14"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M6 0C6.41421 0 6.75 0.335786 6.75 0.75V11.4393L10.7197 7.46967C11.0126 7.17678 11.4874 7.17678 11.7803 7.46967C12.0732 7.76256 12.0732 8.23744 11.7803 8.53033L6.53033 13.7803C6.23744 14.0732 5.76256 14.0732 5.46967 13.7803L0.21967 8.53033C-0.0732233 8.23744 -0.0732233 7.76256 0.21967 7.46967C0.512563 7.17678 0.987437 7.17678 1.28033 7.46967L5.25 11.4393V0.75C5.25 0.335786 5.58579 0 6 0Z"
-      fill="#A1A1AA"
-    />
-  </svg>
 );
 
 type ProtectedContentProps = {
@@ -91,7 +76,7 @@ export default function ProtectedContent({
 
             {/* Text Content */}
             <div className="content-stretch flex flex-col gap-2 items-start opacity-60 relative shrink-0 w-full">
-              <p className="leading-7 relative shrink-0 text-2xl text-black">
+              <p className="leading-7 relative shrink-0 text-2xl text-zinc-900">
                 {isPassword ? "This case study is password-protected." : "Confidential"}
               </p>
               <p className="leading-6 relative shrink-0 text-[#71717a] text-lg">
@@ -136,26 +121,21 @@ export default function ProtectedContent({
           {/* Password Input - shown when hasPassword is true (password is set in Sanity) */}
           {showPasswordInput && (
             <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-[313px]">
-              <div 
-                className={clsx(
-                  "bg-white border border-solid content-stretch flex items-center justify-between pl-4 pr-3 py-2 relative rounded-full shrink-0 w-full transition-colors duration-200",
-                  error ? "border-[#f87171]" : "border-transparent focus-within:border-[#d4d4d8]"
-                )}
-              >
-                <input
+              <FieldShell error={error} className="justify-between">
+                <FieldInput
                   type="password"
                   placeholder="Enter"
                   value={passwordValue}
                   onChange={(e) => setPasswordValue(e.target.value)}
-                  className="leading-5 relative shrink-0 text-[#a1a1aa] text-base bg-transparent border-none outline-none flex-1 placeholder:text-[#a1a1aa]"
                 />
                 <button
                   type="submit"
-                  className="relative shrink-0 size-[14px] rotate-[-90deg] hover:opacity-70 transition-opacity"
+                  className="relative shrink-0 size-[14px] text-zinc-400 hover:opacity-70 transition-opacity"
+                  aria-label="Submit password"
                 >
-                  <ArrowRightIcon />
+                  <ArrowRightIcon size="14px" className="block size-full" />
                 </button>
-              </div>
+              </FieldShell>
               {/* Error Message with smooth animation */}
               <div 
                 className={clsx(

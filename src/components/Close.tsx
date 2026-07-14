@@ -1,4 +1,14 @@
-export function ArrowUpRight({ className = "", size, strokeWidth }: { className?: string; size?: string; strokeWidth?: number }) {
+export type CloseProps = {
+  className?: string;
+  size?: string;
+  strokeWidth?: number;
+};
+
+/**
+ * Shared close (X) — one path, sized like ArrowUpRight / Chevron.
+ * Canonical stroke from library CloseIcon.
+ */
+export function Close({ className = "", size, strokeWidth }: CloseProps) {
   return (
     <svg
       width={size ?? "1em"}
@@ -8,15 +18,19 @@ export function ArrowUpRight({ className = "", size, strokeWidth }: { className?
       xmlns="http://www.w3.org/2000/svg"
       className={`inline-block shrink-0 ${className}`}
       style={{ verticalAlign: "-0.1em" }}
+      aria-hidden
     >
       <path
-        d="M5 19L19 5M19 5H8M19 5V16"
+        d="M3 3L21 21M21 3L3 21"
         stroke="currentColor"
         strokeWidth={strokeWidth ?? 1.5}
         strokeLinecap="round"
-        strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
       />
     </svg>
   );
+}
+
+export function CloseIcon(props: CloseProps) {
+  return <Close {...props} />;
 }
