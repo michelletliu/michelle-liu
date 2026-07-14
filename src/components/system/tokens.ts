@@ -416,10 +416,10 @@ export const tocSections: { id: string; label: string }[] = [
   { id: "shadows", label: "Shadows" },
   { id: "spacing", label: "Spacing" },
   { id: "borders", label: "Borders" },
-  { id: "materials", label: "Materials & effects" },
   { id: "motion", label: "Motion" },
   { id: "icons", label: "Iconography" },
   { id: "components", label: "Components" },
+  { id: "materials", label: "Materials" },
 ];
 
 /** If every item shares one provenance tag, return it; otherwise undefined. */

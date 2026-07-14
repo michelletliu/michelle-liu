@@ -240,7 +240,7 @@ function MaterialSpecimen({ name }: { name: string }) {
 
 export default function MaterialSection() {
   return (
-    <Section id="materials" title="Materials & effects">
+    <Section id="materials" title="Materials">
       <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
         {materials.map((m) => (
           <div key={m.name} className="flex flex-col gap-3">

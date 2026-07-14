@@ -891,10 +891,10 @@ export default function SystemPage() {
               <SpacingSection key="spacing" />,
               <BorderSection key="borders" />,
               <RadiusSection key="radius" />,
-              <MaterialSection key="materials" />,
               <MotionSection key="motion" />,
               <IconSection key="icons" />,
               <ComponentSection key="components" />,
+              <MaterialSection key="materials" />,
             ].map((block, i) => (
               <div
                 key={i}
