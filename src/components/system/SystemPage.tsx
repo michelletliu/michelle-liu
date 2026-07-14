@@ -206,7 +206,10 @@ function MobileSectionMenu({
       const slot = barSlotRef.current;
       if (!slot) return;
       const r = slot.getBoundingClientRect();
-      setTogglePos({ top: r.top, left: r.left });
+      setTogglePos((prev) => {
+        if (prev && prev.top === r.top && prev.left === r.left) return prev;
+        return { top: r.top, left: r.left };
+      });
     };
     measure();
     window.addEventListener("scroll", measure, { passive: true });
@@ -631,9 +634,9 @@ export default function SystemPage() {
       const desktop = desktopChromeRef.current;
       if (desktop) {
         // Dock when the sticky TOC's bottom would cross the footer top.
-        // Use the collapsed offset when the logo is hidden so dock math matches
-        // the TOC's actual sticky top (no leftover logo clearance).
-        const stickyTop = nextLogoHidden
+        // Use the current logo visibility state to match the actual sticky top
+        // (which follows logoHidden with a 200ms transition).
+        const stickyTop = logoHidden
           ? TOC_STICKY_TOP_COLLAPSED_PX
           : TOC_STICKY_TOP_PX;
         const next = footerTop <= stickyTop + desktop.offsetHeight;

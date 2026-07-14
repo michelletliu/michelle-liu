@@ -462,7 +462,12 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
           <a
             href={experimentLink!.href}
             onClick={(e) => e.stopPropagation()}
-            className="md:hidden inline-flex items-center ml-auto shrink-0 text-zinc-400 hover:text-zinc-500"
+            className={clsx(
+              "md:hidden inline-flex items-center ml-auto shrink-0",
+              experimentLink!.external
+                ? "text-blue-400 hover:text-blue-300"
+                : "text-zinc-400 hover:text-zinc-500"
+            )}
             {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             aria-label={experimentLink!.label}
           >
