@@ -5,7 +5,7 @@ export default function RadiusSection() {
   return (
     <Section
       id="radius"
-      title="Radii & corners"
+      title="Corner Radius"
       subtitle="Generously rounded. 26px is the signature radius on project media & modals. A global squircle enhancement reshapes every corner where supported."
     >
       <div className="mb-10 rounded-2xl bg-zinc-50 p-6">

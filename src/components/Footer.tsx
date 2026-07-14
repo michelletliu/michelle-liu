@@ -186,7 +186,7 @@ export default function Footer() {
                   <p className="leading-6 relative shrink-0 text-base break-all">
                     <a href="mailto:studio@liumichelle.com" className="group/email hover:text-blue-500 text-zinc-600 font-medium transition-colors duration-200">
                       <span>{`studio@liumichelle.com`}</span>
-                      <span className="font-['Michelle',sans-serif] font-bold ml-1 opacity-0 group-hover/email:opacity-100 transition-opacity duration-150 ease-out"><ArrowUpRight /></span>
+                      <span className="font-['Michelle',sans-serif] font-semibold ml-1 opacity-0 group-hover/email:opacity-100 transition-opacity duration-150 ease-out"><ArrowUpRight /></span>
                     </a>
                   </p>
                 </div>
@@ -264,7 +264,7 @@ export default function Footer() {
                     <p className="leading-6 relative shrink-0 text-base w-full break-all">
                       <a href="mailto:studio@liumichelle.com" className="group/email hover:text-blue-500 text-zinc-600 font-medium transition-colors duration-200">
                         <span>{`studio@liumichelle.com`}</span>
-                        <span className="font-['Michelle',sans-serif] font-bold ml-0 group-hover/email:ml-1.5 opacity-0 group-hover/email:opacity-100 transition-all duration-150 ease-out"><ArrowUpRight /></span>
+                        <span className="font-['Michelle',sans-serif] font-semibold ml-0 group-hover/email:ml-1.5 opacity-0 group-hover/email:opacity-100 transition-all duration-150 ease-out"><ArrowUpRight /></span>
                       </a>
                     </p>
                   </div>

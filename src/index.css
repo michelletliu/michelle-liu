@@ -666,35 +666,10 @@ video {
   60%, 80% { opacity: 0; }
 }
 
-/* Blueprint logo — animated crop-mark frame around the seal */
-.blueprint-frame-line {
-  stroke-dasharray: 140;
-  stroke-dashoffset: 140;
-  transition:
-    stroke-dashoffset 480ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 200ms ease-out;
-}
-
-.group:hover .blueprint-frame-line,
-.blueprint-logo--always .blueprint-frame-line {
-  stroke-dashoffset: 0;
-}
-
-.blueprint-logo--always .blueprint-frame-line {
-  animation: blueprint-frame-draw 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.blueprint-logo--always .blueprint-frame {
+/* Blueprint logo — soft breathe while resting in gray/rails mode.
+   Morph timing/easing lives in BlueprintLogo.tsx (framer-motion). */
+.blueprint-logo--always.blueprint-logo--blueprint .blueprint-frame {
   animation: blueprint-frame-breathe 4.5s ease-in-out 700ms infinite;
-}
-
-@keyframes blueprint-frame-draw {
-  from {
-    stroke-dashoffset: 140;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
 }
 
 @keyframes blueprint-frame-breathe {
@@ -708,14 +683,7 @@ video {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .blueprint-frame-line {
-    stroke-dasharray: none;
-    stroke-dashoffset: 0;
-    transition: opacity 150ms ease-out;
-  }
-
-  .blueprint-logo--always .blueprint-frame-line,
-  .blueprint-logo--always .blueprint-frame {
+  .blueprint-logo--always.blueprint-logo--blueprint .blueprint-frame {
     animation: none;
   }
 }

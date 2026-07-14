@@ -9,7 +9,7 @@ function Specimen({ label, children, className = "" }: { label: string; children
   return (
     <div className="flex flex-col gap-3">
       <div
-        className={`flex min-h-[128px] flex-1 items-center justify-center gap-4 rounded-xl bg-zinc-50 p-6 ring-1 ring-inset ring-black/5 ${className}`}
+        className={`flex min-h-[128px] flex-1 items-center justify-center gap-4 rounded-xl bg-zinc-50 p-6 ${className}`}
       >
         {children}
       </div>

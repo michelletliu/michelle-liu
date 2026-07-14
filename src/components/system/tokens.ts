@@ -182,10 +182,17 @@ export const typeScale: TypeToken[] = [
   { name: "text-xl", className: "text-xl", px: "20px", usage: "Section / community titles", tag: "canonical", role: "heading" },
   { name: "text-2xl", className: "text-2xl", px: "24px", usage: "Quote cards, mission headers", tag: "canonical", role: "heading" },
   { name: "text-3xl", className: "text-3xl", px: "30px", usage: "Section headings, library title, footer CTA", tag: "canonical", role: "heading" },
-  { name: "text-4xl", className: "text-4xl", px: "36px", usage: "Hero name, project hero", tag: "canonical", role: "heading" },
-  { name: "text-5xl", className: "text-5xl", px: "48px", usage: "Stats, emoji blocks", tag: "canonical", role: "heading" },
-  { name: "text-7xl", className: "text-7xl", px: "72px", usage: "404 display code (mobile)", tag: "one-off", role: "heading" },
-  { name: "text-9xl", className: "text-9xl", px: "128px", usage: "404 display code (desktop)", tag: "one-off", role: "heading" },
+  { name: "text-4xl", className: "text-4xl", px: "36px", usage: "Project hero, large display sizes (base size for Display name)", tag: "canonical", role: "heading" },
+  {
+    name: "Display name",
+    className: "font-['Michelle',sans-serif] text-4xl font-medium leading-normal tracking-[0.0125em] text-[#3f3f46]",
+    px: "36px",
+    sample: "michelle liu",
+    usage: "Home hero name, Design System title",
+    tag: "canonical",
+    role: "heading",
+  },
+  { name: "text-5xl", className: "text-5xl", px: "48px", usage: "Stats, emoji blocks, 404 display code", tag: "canonical", role: "heading" },
 ];
 
 // Every core-site size now snaps to the standard scale above. Only experiments
@@ -196,18 +203,15 @@ export const arbitraryTypeSizes: ScaleToken[] = [
 ];
 
 export const fontWeights: ScaleToken[] = [
-  { name: "font-light", value: "300", usage: "Stats numerals", tag: "one-off" },
-  { name: "font-normal", value: "400", usage: "Body default (--font-weight-normal)", tag: "canonical" },
+  { name: "font-normal", value: "400", usage: "Body default (--font-weight-normal), stats numerals", tag: "canonical" },
   { name: "font-medium", value: "500", usage: "Headings, labels, nav (--font-weight-medium)", tag: "canonical" },
-  { name: "font-semibold", value: "600", usage: "CTAs, filters, ikigai link", tag: "canonical" },
-  { name: "font-bold", value: "700", usage: "Footer email arrow reveal", tag: "one-off" },
+  { name: "font-semibold", value: "600", usage: "CTAs, filters, ikigai link, footer email arrow reveal", tag: "canonical" },
 ];
 
 export const tracking: ScaleToken[] = [
   { name: "tracking-[0.005em]", value: "0.005em", usage: "Core micro-tracking (nav, cards, about)", tag: "canonical" },
-  { name: "tracking-[0.01em]", value: "0.01em", usage: "Media cards, library filter", tag: "canonical" },
-  { name: "tracking-[0.0125em]", value: "0.0125em", usage: "Hero name", tag: "canonical" },
-  { name: "tracking-[0.16px]", value: "0.16px", usage: "Social link labels", tag: "one-off" },
+  { name: "tracking-[0.01em]", value: "0.01em", usage: "Media cards, library filter, social link labels", tag: "canonical" },
+  { name: "tracking-[0.0125em]", value: "0.0125em", usage: "Display name (home hero name, Design System title)", tag: "canonical" },
   { name: "tracking-[-0.31px]", value: "-0.31px", usage: "Tool grid values", tag: "canonical" },
   { name: "tracking-wide", value: "0.025em", usage: "Section subtitles, sidebar nav", tag: "canonical" },
   { name: "tracking-wider", value: "0.05em", usage: "Footer clock", tag: "one-off" },
@@ -495,7 +499,7 @@ export const tocSections: { id: string; label: string }[] = [
   { id: "color", label: "Color" },
   { id: "typography", label: "Typography" },
   { id: "shadows", label: "Shadows" },
-  { id: "radius", label: "Radii & corners" },
+  { id: "radius", label: "Corner Radius" },
   { id: "spacing", label: "Spacing" },
   { id: "borders", label: "Borders & focus" },
   { id: "materials", label: "Materials & effects" },
@@ -534,7 +538,6 @@ export const tocSubsections: Record<string, string[]> = {
   radius: ["Radius scale", "Experiment radii"],
   spacing: ["Gap scale", "Layout widths"],
   borders: ["Borders", "Focus states"],
-  materials: ["Signature materials", "Full inventory"],
   motion: ["Animations", "Duration scale"],
   components: ["Navigation & pills", "Buttons", "Loaders", "Cards"],
 };

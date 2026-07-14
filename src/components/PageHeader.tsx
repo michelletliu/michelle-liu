@@ -41,10 +41,8 @@ export default function PageHeader({
         <div className="size-full">
           <div className="content-stretch flex flex-col items-start px-16 pt-8 pb-8 max-md:px-6 max-md:pt-8 max-md:pb-4 relative w-full">
             <div className="content-stretch flex items-start justify-between relative shrink-0 w-full">
-              {/* Logo doubles as a hidden doorway to the design system: on hover
-                  the seal cross-fades to zinc-400 with an animated blueprint frame.
-                  Use a real Link (not motion.button + router.push) so hover prefetches
-                  /design-system and click navigates immediately. */}
+              {/* Logo doorway to the design system: red → gray blueprint on hover.
+                  Use a real Link so hover prefetches /design-system. */}
               <Link
                 href="/design-system"
                 aria-label="Open the design system"
