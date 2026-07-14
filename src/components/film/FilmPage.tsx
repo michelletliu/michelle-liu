@@ -16,7 +16,8 @@ import {
   type AnimationPlaybackControls,
   type MotionValue,
 } from 'framer-motion';
-import { useNavigate } from '@/lib/navigation';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
@@ -644,7 +645,7 @@ function FilmPhotoHashmarks({
         <div className="pointer-events-none absolute top-0 left-1/2 z-20 flex w-max max-w-[min(92vw,720px)] -translate-x-1/2 flex-col items-center px-2 text-center">
           <motion.p
             key={notePhoto.note}
-            className={`line-clamp-2 max-w-full text-pretty ${isPopup ? 'text-[13px]' : 'text-[15px]'} font-medium leading-snug text-black`}
+            className={`line-clamp-2 max-w-full text-pretty ${isPopup ? 'text-[13px]' : 'text-[15px]'} font-medium leading-snug text-zinc-900`}
             initial={{ opacity: 0, filter: 'blur(4px)' }}
             animate={{ opacity: 1, filter: 'blur(0px)' }}
             transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
@@ -858,9 +859,31 @@ function FilmLoadingText() {
 }
 
 export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen }: { initialPhotos?: FilmPhoto[]; onCollapse?: () => void; isFullscreen?: boolean }) {
-  const navigate = useNavigate();
-  const [isExiting, setIsExiting] = useState(false);
+  const router = useRouter();
   const projectInfo = useExperimentProject('film', DEFAULT_FILM_PROJECT);
+
+  // Prefetch home + idle-warm HomePageClient ( /film is outside the home layout).
+  useEffect(() => {
+    router.prefetch('/');
+    let cancelled = false;
+    const warmHome = () => {
+      if (!cancelled) void import('../HomePageClient');
+    };
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      idleId = window.requestIdleCallback(warmHome);
+    } else {
+      timeoutId = setTimeout(warmHome, 400);
+    }
+    return () => {
+      cancelled = true;
+      if (idleId !== undefined && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    };
+  }, [router]);
   const pageRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -1707,7 +1730,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
     };
 
     const beginDrag = (clientX: number, clientY: number, target: Element | null) => {
-      if (target?.closest('button[aria-label="Go back to home"]')) return;
+      if (target?.closest('[aria-label="Go back to home"]')) return;
       if (target?.closest('[role="tablist"]')) return;
       lastInputWasTouchRef.current = true;
 
@@ -2072,11 +2095,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
         ? "sticky top-0 z-[50] isolate overflow-hidden overscroll-none bg-white"
         : "fixed inset-0 z-[50] isolate overflow-hidden overscroll-none bg-[#fafafa]"
       }
-      style={{
-        ...(isPopupMode ? { width: '100%', height: getVh() } : undefined),
-        opacity: isExiting ? 0 : 1,
-        transition: 'opacity 200ms ease-out',
-      }}
+      style={isPopupMode ? { width: '100%', height: getVh() } : undefined}
     >
       <div
         className={`absolute inset-0 z-[5] flex flex-col items-center justify-center gap-2 px-8 text-center transition-opacity duration-700 ease-out ${
@@ -2196,22 +2215,47 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
         ) : null}
       </div>
 
-      <button
-        type="button"
+      <Link
+        href="/"
+        prefetch
+        aria-label="Go back to home"
+        onMouseEnter={() => {
+          router.prefetch('/');
+          void import('../HomePageClient');
+        }}
+        onFocus={() => {
+          router.prefetch('/');
+          void import('../HomePageClient');
+        }}
+        onTouchStart={() => {
+          router.prefetch('/');
+          void import('../HomePageClient');
+        }}
         onClick={() => {
-          if (isExiting) return;
-          setIsExiting(true);
-          setTimeout(() => navigate('/'), 200);
+          // Stop in-flight film work immediately; don't wait for exit animation.
+          setFilmAutoplayPlaying(false);
+          cancelScrollSnap();
+          if (rafRef.current) {
+            cancelAnimationFrame(rafRef.current);
+            rafRef.current = 0;
+          }
+          if (filmAutoplayStepTimerRef.current !== null) {
+            clearTimeout(filmAutoplayStepTimerRef.current);
+            filmAutoplayStepTimerRef.current = null;
+          }
+          if (scrollIdleSnapTimerRef.current !== null) {
+            clearTimeout(scrollIdleSnapTimerRef.current);
+            scrollIdleSnapTimerRef.current = null;
+          }
         }}
         className={`${isPopupMode ? 'absolute' : 'fixed'} top-8 left-6 z-[100] cursor-pointer hover:opacity-80 md:left-16`}
-        aria-label="Go back to home"
       >
         <img
           src={imgLogo}
           alt=""
           className="relative z-[100] h-8 w-8 object-contain md:h-[44px] md:w-[44px]"
         />
-      </button>
+      </Link>
 
       <InfoButton project={projectInfo} />
     </motion.div>
