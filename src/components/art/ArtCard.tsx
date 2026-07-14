@@ -57,7 +57,7 @@ export default function ArtCard({ className, data, onClick }: ArtCardProps) {
         <span className="text-zinc-600">{data.title}</span>
         {data.metadata && (
           <>
-            <span className="inline-block w-1.5" aria-hidden />
+            <span className="inline-block w-1" aria-hidden />
             <span className="text-zinc-400">{data.metadata}</span>
           </>
         )}
