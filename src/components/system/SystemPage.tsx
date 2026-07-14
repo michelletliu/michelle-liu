@@ -509,26 +509,29 @@ function MobileSectionMenu({
   return (
     <>
       {/*
-        h-10 matches the morph control box so label + chevron share one midline
-        (optically nudged with the sticky nav's pt below).
+        Outer h-8 matches the mobile seal hit target (size-8). Inner h-10
+        matches the morph control and centers within that band so Overview +
+        chevron share the seal's vertical midline.
       */}
-      <div className="flex h-10 w-full items-center gap-3">
-        <button
-          ref={triggerRef}
-          type="button"
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          aria-label={`Current section: ${activeLabel}. Open section menu.`}
-          onClick={openMenu}
-          className="min-w-0 flex-1 truncate text-left text-base font-medium leading-none tracking-wide text-zinc-800 transition-colors duration-200"
-        >
-          {activeLabel}
-        </button>
-        <span
-          ref={barSlotRef}
-          className={`${MORPH_CONTROL_BOX} shrink-0`}
-          aria-hidden
-        />
+      <div className="flex h-8 w-full items-center">
+        <div className="flex h-10 w-full items-center gap-3">
+          <button
+            ref={triggerRef}
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            aria-label={`Current section: ${activeLabel}. Open section menu.`}
+            onClick={openMenu}
+            className="min-w-0 flex-1 truncate text-left text-base font-medium leading-none tracking-wide text-zinc-800 transition-colors duration-200"
+          >
+            {activeLabel}
+          </button>
+          <span
+            ref={barSlotRef}
+            className={`${MORPH_CONTROL_BOX} shrink-0`}
+            aria-hidden
+          />
+        </div>
       </div>
       {floatingToggle}
       {sheet}
@@ -799,10 +802,9 @@ export default function SystemPage() {
       */}
       <div ref={zoneRef} className="relative">
         {/*
-          Mobile section menu — clears fixed logo (left-6 top-8 size-8).
-          Seal center ≈ 48px. Row is h-10 (40); geometric center with pt-6 is
-          44px — ~4px above seal center so Overview + chevron read optically
-          centered with the seal (text sits low in its em box).
+          Mobile section menu — shares the seal's top + height (top-8 / size-8)
+          so the Overview + chevron band centers on the seal (48px). Inner row
+          stays h-10 for the morph control and overflows ±4px inside that band.
           pl-18 clears the seal; pb-3 breathes under the row.
           Bottom hairline only when stuck (sentinel leaves the viewport).
         */}
@@ -814,7 +816,7 @@ export default function SystemPage() {
         <nav
           aria-label="Sections"
           className={clsx(
-            "sticky top-0 z-40 bg-white/90 pl-18 pr-5 pt-6 pb-3 backdrop-blur-md transition-[border-color] duration-200 lg:hidden",
+            "sticky top-0 z-40 bg-white/90 pl-18 pr-5 pt-8 pb-3 backdrop-blur-md transition-[border-color] duration-200 lg:hidden",
             mobileNavStuck ? "border-b border-zinc-100" : "border-b border-transparent",
           )}
         >
