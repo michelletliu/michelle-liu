@@ -378,7 +378,7 @@ export default function SystemPage() {
         */}
         <nav
           aria-label="Sections"
-          className="sticky top-0 z-40 flex items-center border-b border-zinc-100 bg-white/85 pt-[26px] md:pt-8 pb-5 pl-16 pr-4 backdrop-blur-md lg:hidden"
+          className="sticky top-0 z-40 flex items-center border-b border-zinc-100 bg-white/85 pt-[26px] md:pt-8 pb-5 pl-18 pr-4 backdrop-blur-md lg:hidden"
         >
           <MobileSectionMenu activeSection={activeSection} onSelect={scrollTo} />
         </nav>
