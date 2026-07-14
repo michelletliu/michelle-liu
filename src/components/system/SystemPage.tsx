@@ -14,6 +14,8 @@ import {
 import Footer from "../Footer";
 import { Chevron, ChevronRightIcon } from "../Chevron";
 import { Close } from "../Close";
+import { FieldInput, FieldShell } from "../FieldInput";
+import { iconSize } from "../iconSizes";
 import { useScrollLock } from "../../utils/useScrollLock";
 import { fadeUpStyles } from "../../styles/animations";
 import { tocSections, tocSubsections, subSlug } from "./tokens";
@@ -64,12 +66,14 @@ const ComponentSection = dynamic(() => import("./sections/ComponentSection"), {
   loading: () => <SectionSkeleton tall />,
 });
 
-function SearchMagnifierIcon({ className }: { className?: string }) {
+function SearchMagnifierIcon({ size = iconSize("inline") }: { size?: string }) {
   return (
     <svg
-      className={className}
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
+      className="inline-block shrink-0"
       aria-hidden
     >
       <circle
@@ -176,17 +180,17 @@ function MobileSectionMenu({
                 aria-label="Close section menu"
                 className="flex size-10 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition-colors duration-200 hover:bg-zinc-50 hover:text-zinc-700"
               >
-                <Close size="20px" />
+                <Close size={iconSize("touch")} />
               </button>
             </div>
 
-            {/* Filter field */}
+            {/* Filter field — FieldShell is already rounded-full */}
             <div className="px-5 pb-3">
-              <label className="relative flex items-center">
-                <span className="pointer-events-none absolute left-3.5 text-zinc-400">
-                  <SearchMagnifierIcon className="size-4" />
+              <FieldShell tone="muted" className="gap-2">
+                <span className="pointer-events-none ml-2.5 text-zinc-400" aria-hidden>
+                  <SearchMagnifierIcon />
                 </span>
-                <input
+                <FieldInput
                   ref={filterRef}
                   type="text"
                   inputMode="search"
@@ -196,9 +200,10 @@ function MobileSectionMenu({
                   autoComplete="off"
                   autoCorrect="off"
                   spellCheck={false}
-                  className="w-full rounded-full border-0 bg-zinc-100 py-2.5 pl-10 pr-4 text-base font-medium tracking-[0.01em] text-zinc-700 placeholder:text-zinc-400 outline-none transition-colors duration-200 focus:bg-zinc-100/80"
+                  aria-label="Filter sections"
+                  className="pr-3 font-medium tracking-[0.01em] text-zinc-700"
                 />
-              </label>
+              </FieldShell>
             </div>
 
             {/* Section list */}
@@ -226,9 +231,10 @@ function MobileSectionMenu({
                           className="flex w-full min-h-12 items-center gap-2.5 rounded-lg px-3 py-3 text-left transition-colors duration-200 hover:bg-zinc-50"
                         >
                           <ChevronRightIcon
-                            className={`size-4 shrink-0 ${
+                            size={iconSize("toolbar")}
+                            className={
                               isActive ? "text-blue-500" : "text-zinc-300"
-                            }`}
+                            }
                           />
                           <span
                             className={`font-medium tracking-[0.01em] ${
@@ -265,7 +271,8 @@ function MobileSectionMenu({
         </span>
         <Chevron
           direction="down"
-          className="size-4 shrink-0 text-zinc-400 transition-transform duration-200"
+          size={iconSize("toolbar")}
+          className="text-zinc-400 transition-transform duration-200"
         />
       </button>
       {sheet}
@@ -521,11 +528,13 @@ export default function SystemPage() {
       <div ref={zoneRef} className="relative">
         {/*
           Mobile section menu — clears fixed logo (left-6 top-8 size-8).
-          pl-18 clears the seal; pb-5 gives the sticky bar breathing room.
+          pl-18 clears the seal; pt-6 centers the label/chevron with the seal
+          (seal center ≈ 48px; min-h-12 row centers at 24px → need ~24px pt);
+          pb-3 gives the sticky bar a little breathing room under the row.
         */}
         <nav
           aria-label="Sections"
-          className="sticky top-0 z-40 border-y border-zinc-200/80 bg-white/90 pl-18 pr-5 pb-1 backdrop-blur-md lg:hidden"
+          className="sticky top-0 z-40 border-y border-zinc-200/80 bg-white/90 pl-18 pr-5 pt-6 pb-3 backdrop-blur-md lg:hidden"
         >
           <MobileSectionMenu activeSection={activeSection} onSelect={scrollTo} />
         </nav>

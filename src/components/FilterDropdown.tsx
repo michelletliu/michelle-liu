@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { Chevron } from "./Chevron";
+import { iconSize } from "./iconSizes";
 
 export type FilterDropdownOption = {
   value: string;
@@ -158,8 +159,9 @@ export function FilterDropdown({
         </span>
         <Chevron
           direction="down"
+          size={iconSize("toolbar")}
           className={clsx(
-            "size-4 text-zinc-400 transition-transform duration-200",
+            "text-zinc-400 transition-transform duration-200",
             open && "rotate-180"
           )}
         />

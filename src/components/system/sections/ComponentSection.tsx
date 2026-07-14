@@ -16,6 +16,7 @@ import Tooltip from "../../Tooltip";
 import LiquidGlassButton from "../../art/LiquidGlassButton";
 import { ChevronRightIcon } from "../../Chevron";
 import { Close } from "../../Close";
+import { iconSize } from "../../iconSizes";
 import { ArrowRightIcon } from "../../Arrow";
 import { PlusIcon, SendIcon } from "../../library/icons";
 import { Section, SubLabel, TagChip } from "../primitives";
@@ -626,7 +627,7 @@ export default function ComponentSection() {
             className="flex size-8 items-center justify-center rounded-full bg-white text-zinc-500 transition-colors hover:bg-zinc-100"
             aria-label="Close"
           >
-            <Close size="18px" />
+            <Close size={iconSize("touch")} />
           </button>
         </Specimen>
 
@@ -636,7 +637,7 @@ export default function ComponentSection() {
           className="!bg-gradient-to-br from-zinc-200 via-zinc-100 to-zinc-300"
         >
           <LiquidGlassButton className="text-zinc-500 hover:text-zinc-700" aria-label="Scroll right">
-            <ChevronRightIcon className="size-5 translate-x-px" />
+            <ChevronRightIcon size={iconSize("toolbar")} className="translate-x-px" />
           </LiquidGlassButton>
         </Specimen>
       </div>

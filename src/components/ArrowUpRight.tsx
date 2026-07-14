@@ -1,3 +1,4 @@
+/** Prefer `size={iconSize(...)}` from `iconSizes` over CSS `size-*`. */
 export function ArrowUpRight({ className = "", size, strokeWidth }: { className?: string; size?: string; strokeWidth?: number }) {
   return (
     <svg

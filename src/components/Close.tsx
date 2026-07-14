@@ -6,6 +6,7 @@ export type CloseProps = {
 
 /**
  * Shared close (X) — one path, sized like ArrowUpRight / Chevron.
+ * Prefer `size={iconSize("touch")}` for full-screen sheet dismiss; `toolbar` for denser chrome.
  * Canonical stroke from library CloseIcon.
  */
 export function Close({ className = "", size, strokeWidth }: CloseProps) {

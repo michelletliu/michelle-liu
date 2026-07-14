@@ -7,6 +7,7 @@ import { TouchIcon } from "../../TouchIcon";
 import { Chevron } from "../../Chevron";
 import { Close } from "../../Close";
 import { Arrow } from "../../Arrow";
+import { iconSize, iconSizes } from "../../iconSizes";
 import {
   PlusIcon,
   SendIcon,
@@ -236,9 +237,9 @@ const uiIcons: IconSpecimen[] = [
     usage: "External / meta links, CTAs, email hover — stroke stays 1.5px at any size",
     sample: (
       <div className="flex items-end gap-3">
-        <ArrowUpRight size="12px" />
-        <ArrowUpRight size="20px" />
-        <ArrowUpRight size="32px" />
+        <ArrowUpRight size={iconSize("meta")} />
+        <ArrowUpRight size={iconSize("toolbar")} />
+        <ArrowUpRight size={iconSize("hero")} />
       </div>
     ),
   },
@@ -248,9 +249,10 @@ const uiIcons: IconSpecimen[] = [
     usage: "Nav, filters, breadcrumbs, carousels — one path, size prop; direction via rotate (right/down/left/up)",
     sample: (
       <div className="flex items-end gap-3">
-        <Chevron size="12px" />
-        <Chevron size="20px" />
-        <Chevron size="32px" />
+        <Chevron size={iconSize("meta")} />
+        <Chevron size={iconSize("inline")} />
+        <Chevron size={iconSize("toolbar")} />
+        <Chevron size={iconSize("hero")} />
       </div>
     ),
   },
@@ -266,9 +268,10 @@ const uiIcons: IconSpecimen[] = [
     usage: "Modals, lightboxes, menus — one path, size prop; stroke stays 1.5px at any size",
     sample: (
       <div className="flex items-end gap-3">
-        <Close size="12px" />
-        <Close size="20px" />
-        <Close size="32px" />
+        <Close size={iconSize("meta")} />
+        <Close size={iconSize("toolbar")} />
+        <Close size={iconSize("touch")} />
+        <Close size={iconSize("hero")} />
       </div>
     ),
   },
@@ -296,9 +299,9 @@ const uiIcons: IconSpecimen[] = [
     usage: "Library date ranges, password submit — one path, size prop; direction via rotate (right/down/left/up)",
     sample: (
       <div className="flex items-end gap-3">
-        <Arrow size="12px" />
-        <Arrow size="20px" />
-        <Arrow size="32px" />
+        <Arrow size={iconSize("meta")} />
+        <Arrow size={iconSize("toolbar")} />
+        <Arrow size={iconSize("hero")} />
       </div>
     ),
   },
@@ -306,7 +309,7 @@ const uiIcons: IconSpecimen[] = [
     name: "Link",
     source: "LinkIcon.tsx",
     usage: "External experiment links on home",
-    sample: <LinkIcon size="20px" />,
+    sample: <LinkIcon size={iconSize("toolbar")} />,
   },
   {
     name: "Eye / eye-off",
@@ -335,7 +338,7 @@ const uiIcons: IconSpecimen[] = [
     name: "Touch",
     source: "TouchIcon.tsx",
     usage: "Interactive / in-site experiment links",
-    sample: <TouchIcon size="20px" />,
+    sample: <TouchIcon size={iconSize("toolbar")} />,
   },
 ];
 
@@ -457,7 +460,12 @@ const socialIcons: IconSpecimen[] = [
 export default function IconSection() {
   return (
     <Section id="icons" title="Iconography">
-      <SubLabel note="Stroke affordances — text-zinc-500 · strokeWidth 1.5 · vector-effect non-scaling-stroke.">
+      <SubLabel
+        note={`Size ramp (iconSizes) — ${iconSizes.meta} meta · ${iconSizes.inline} inline · ${iconSizes.toolbar} toolbar/chevrons · ${iconSizes.touch} touch/Close · ${iconSizes.hero} hero. Chevrons sit one step below the paired Close.`}
+      >
+        Size
+      </SubLabel>
+      <SubLabel note="Stroke affordances — text-zinc-500 · strokeWidth 1.5 · vector-effect non-scaling-stroke. Prefer size={iconSize(...)} over CSS size-*.">
         Stroke icons
       </SubLabel>
       <Grid min="160px">
