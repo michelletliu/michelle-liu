@@ -66,7 +66,7 @@ export default function DesignSystemLogoLink() {
         markBlueprintDoorwayNav();
         window.scrollTo(0, 0);
       }}
-      className="group relative -m-2 inline-block shrink-0 cursor-pointer overflow-visible p-2 transition-transform duration-200 ease-out hover:scale-[1.02] active:scale-95"
+      className="group relative -m-2 inline-block shrink-0 cursor-pointer overflow-visible p-2 transition-transform duration-200 ease-out [@media(hover:hover)]:hover:scale-[1.02] active:scale-95"
     >
       <span className="relative block size-8 md:size-11">
         <BlueprintLogo mode="hover" />
