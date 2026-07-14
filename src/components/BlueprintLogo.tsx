@@ -130,11 +130,11 @@ export default function BlueprintLogo({
         },
       });
       railControls.start({
-        opacity: [1, 0.25, 0, 0],
+        opacity: [0.25, 0, 0],
         transition: {
           duration: MORPH_DURATION,
           ease: MORPH_EASE,
-          times: [0, 0.08, 0.24, 1],
+          times: [0.08, 0.24, 1],
         },
       });
     }
