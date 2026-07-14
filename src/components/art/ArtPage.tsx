@@ -323,6 +323,7 @@ export default function ArtPage() {
       : item.title;
     setLightboxItem({
       imageSrc: src,
+      previewSrc: item.imageSrc || undefined,
       caption,
       alt: item.title,
     });
@@ -336,6 +337,7 @@ export default function ArtPage() {
     if (!src) return;
     setLightboxItem({
       imageSrc: src,
+      previewSrc: image.imageSrc || undefined,
       caption: [sketchbook.title, sketchbook.date].filter(Boolean).join(", "),
       alt: sketchbook.title,
     });
@@ -349,6 +351,7 @@ export default function ArtPage() {
       .join(", ");
     setLightboxItem({
       imageSrc: src,
+      previewSrc: image.imageSrc || undefined,
       caption,
       alt: mural.title,
     });

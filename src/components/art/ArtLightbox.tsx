@@ -2,10 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import clsx from "clsx";
 import { useScrollLock } from "../../utils/useScrollLock";
 
 export type ArtLightboxItem = {
   imageSrc: string;
+  /** Gallery thumbnail already in cache — shown while full res loads */
+  previewSrc?: string;
   caption?: string;
   alt?: string;
 };
@@ -21,6 +24,7 @@ type ArtLightboxProps = {
  */
 export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
   const [isClosing, setIsClosing] = useState(false);
+  const [fullImageLoaded, setFullImageLoaded] = useState(false);
   const isOpen = !!item;
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -45,23 +49,36 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, handleClose]);
 
-  // Reset closing state when a new item opens and clear any pending close timers
+  // Reset closing + load state when a new item opens; clear any pending close timers
   useEffect(() => {
-    if (item) {
-      setIsClosing(false);
-      if (closeTimerRef.current) {
-        clearTimeout(closeTimerRef.current);
-        closeTimerRef.current = null;
-      }
+    if (!item) return;
+    setIsClosing(false);
+    setFullImageLoaded(false);
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
     }
   }, [item]);
 
+  // Catch cached full-res images where onLoad may have already fired
+  useEffect(() => {
+    if (!item?.imageSrc) return;
+    const img = new Image();
+    img.src = item.imageSrc;
+    if (img.complete && img.naturalWidth > 0) {
+      setFullImageLoaded(true);
+    }
+  }, [item?.imageSrc]);
+
   if (!item) return null;
+
+  const hasPreview = !!item.previewSrc && item.previewSrc !== item.imageSrc;
+  const showImage = hasPreview || fullImageLoaded;
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-[99999] isolate flex items-center justify-center p-4 sm:p-6 transition-opacity duration-200 ease-out ${
-        isClosing ? "opacity-0" : "animate-[fadeIn_200ms_ease-out]"
+      className={`fixed inset-0 z-[99999] isolate flex items-center justify-center p-4 sm:p-6 ${
+        isClosing ? "animate-overlay-out" : "animate-overlay-in"
       }`}
       onClick={handleClose}
       role="dialog"
@@ -77,7 +94,7 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
           handleClose();
         }}
         className={`fixed right-4 top-4 z-10 flex h-10 w-10 items-center justify-center text-zinc-500 transition-all duration-200 hover:scale-110 ${
-          isClosing ? "" : "animate-[fadeSlideDown_300ms_ease-out]"
+          isClosing ? "opacity-0" : "animate-[fadeSlideDown_300ms_ease-out]"
         }`}
         aria-label="Close artwork"
       >
@@ -98,18 +115,52 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
       </button>
 
       <div
-        className={`relative z-10 flex w-full max-h-[90vh] max-w-[min(96vw,1100px)] flex-col items-center transition-all duration-200 ease-out ${
-          isClosing ? "opacity-0 scale-95" : "animate-[scaleIn_300ms_ease-out]"
+        className={`relative z-10 flex max-h-[90vh] max-w-[min(96vw,1100px)] flex-col items-center ${
+          isClosing
+            ? "animate-modal-scale-out-flex"
+            : "animate-modal-scale-in-flex"
         }`}
-        onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative flex w-full flex-col items-center">
-          <img
-            src={item.imageSrc}
-            alt={item.alt || item.caption || "Artwork"}
-            className="max-h-[min(75vh,820px)] w-auto max-w-full object-contain rounded-sm sm:rounded-md"
-          />
-          {item.caption && (
+        {/* Hug content only — empty space around the image closes the lightbox */}
+        <div
+          className="relative flex flex-col items-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="relative max-h-[min(75vh,820px)] max-w-full overflow-hidden rounded-2xl bg-zinc-100">
+            {/* Instant preview from the already-cached gallery image */}
+            {hasPreview && (
+              <img
+                src={item.previewSrc}
+                alt=""
+                aria-hidden
+                className="max-h-[min(75vh,820px)] w-auto max-w-full object-contain rounded-2xl"
+              />
+            )}
+
+            {/* Shimmer while waiting for the first paint (no preview) */}
+            {!showImage && (
+              <div
+                className="h-[min(60vh,520px)] w-[min(80vw,360px)] animate-shimmer rounded-2xl"
+                aria-hidden
+              />
+            )}
+
+            <img
+              src={item.imageSrc}
+              alt={item.alt || item.caption || "Artwork"}
+              decoding="async"
+              fetchPriority="high"
+              onLoad={() => setFullImageLoaded(true)}
+              className={clsx(
+                "max-h-[min(75vh,820px)] w-auto max-w-full object-contain rounded-2xl transition-opacity duration-300 ease-out",
+                hasPreview && "absolute inset-0 size-full",
+                !hasPreview && !fullImageLoaded && "absolute",
+                fullImageLoaded ? "opacity-100" : "opacity-0"
+              )}
+            />
+          </div>
+
+          {item.caption && showImage && (
             <p
               className={`mt-4 sm:mt-6 max-w-[min(100%,600px)] px-2 text-center font-['Michelle',sans-serif] text-sm sm:text-base tracking-[0.005em] font-normal leading-relaxed text-zinc-600 ${
                 isClosing
