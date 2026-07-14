@@ -1,7 +1,10 @@
-import { radii, oddRadii, subSlug } from "../tokens";
+import { radii, oddRadii, subSlug, uniformTag } from "../tokens";
 import { Section, SubLabel, Grid, RowList, TokenCard, TokenRow } from "../primitives";
 
 export default function RadiusSection() {
+  const radiiTag = uniformTag(radii);
+  const oddRadiiTag = uniformTag(oddRadii);
+
   return (
     <Section id={subSlug("Border Radius")} title="Border Radius">
       <div className="mb-10 rounded-2xl bg-zinc-50 p-6">
@@ -18,13 +21,13 @@ export default function RadiusSection() {
         </p>
       </div>
 
-      <SubLabel>Radius scale</SubLabel>
+      <SubLabel tag={radiiTag}>Radius scale</SubLabel>
       <Grid min="170px">
         {radii.map((r) => (
           <TokenCard
             key={r.name}
             name={r.name}
-            tag={r.tag}
+            tag={radiiTag ? undefined : r.tag}
             value={
               r.compensated
                 ? `${r.value}px → ${r.compensated} squircle`
@@ -43,12 +46,21 @@ export default function RadiusSection() {
         ))}
       </Grid>
 
-      <SubLabel note="Deliberately precise / odd radii from Figma exports and device mockups.">
+      <SubLabel
+        note="Deliberately precise / odd radii from Figma exports and device mockups."
+        tag={oddRadiiTag}
+      >
         Experiment radii
       </SubLabel>
       <RowList>
         {oddRadii.map((r) => (
-          <TokenRow key={r.name} name={r.name} tag={r.tag} value={r.value} usage={r.usage} />
+          <TokenRow
+            key={r.name}
+            name={r.name}
+            tag={oddRadiiTag ? undefined : r.tag}
+            value={r.value}
+            usage={r.usage}
+          />
         ))}
       </RowList>
     </Section>

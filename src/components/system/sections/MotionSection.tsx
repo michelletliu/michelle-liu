@@ -1,4 +1,4 @@
-import { motion, durationScale } from "../tokens";
+import { motion, durationScale, uniformTag } from "../tokens";
 import { Section, SubLabel, RowList, TokenRow, TagChip } from "../primitives";
 
 const demoStyles = `
@@ -34,7 +34,7 @@ function Demo({ kind }: { kind: string }) {
     case "slideUp":
       return <div className={common} style={{ animation: "sys-slideUp 2.4s cubic-bezier(0.16,1,0.3,1) infinite" }} />;
     case "slideDown":
-      return <div className={common} style={{ animation: "sys-slideDown 2.4s ease-out infinite" }} />;
+      return <div className={common} style={{ animation: "sys-slideDown 2.4s cubic-bezier(0.16,1,0.3,1) infinite" }} />;
     case "scale":
       return <div className={common} style={{ animation: "sys-scale 2.4s cubic-bezier(0.16,1,0.3,1) infinite" }} />;
     default:
@@ -43,11 +43,17 @@ function Demo({ kind }: { kind: string }) {
 }
 
 export default function MotionSection() {
+  const animationsTag = uniformTag(motion);
+  const durationsTag = uniformTag(durationScale);
+
   return (
     <Section id="motion" title="Motion">
       <style dangerouslySetInnerHTML={{ __html: demoStyles }} />
 
-      <SubLabel note="Live loops — the demos below repeat continuously so you can see each curve.">
+      <SubLabel
+        note="Live loops — the demos below repeat continuously so you can see each curve."
+        tag={animationsTag}
+      >
         Animations
       </SubLabel>
       <div className="grid gap-x-6 gap-y-9" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
@@ -59,7 +65,7 @@ export default function MotionSection() {
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between gap-2">
                 <code className="font-mono text-sm text-zinc-700">{m.name}</code>
-                <TagChip tag={m.tag} />
+                {!animationsTag && <TagChip tag={m.tag} />}
               </div>
               <div className="flex items-center gap-2 text-sm text-zinc-400">
                 <span className="tabular-nums">{m.duration}</span>
@@ -72,10 +78,16 @@ export default function MotionSection() {
         ))}
       </div>
 
-      <SubLabel>Duration scale</SubLabel>
+      <SubLabel tag={durationsTag}>Duration scale</SubLabel>
       <RowList>
         {durationScale.map((d) => (
-          <TokenRow key={d.name} name={d.name} tag={d.tag} value={d.value} usage={d.usage} />
+          <TokenRow
+            key={d.name}
+            name={d.name}
+            tag={durationsTag ? undefined : d.tag}
+            value={d.value}
+            usage={d.usage}
+          />
         ))}
       </RowList>
     </Section>

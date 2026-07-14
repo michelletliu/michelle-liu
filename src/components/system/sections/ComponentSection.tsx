@@ -1,14 +1,25 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { ArrowUpRight } from "../../ArrowUpRight";
 import ContactBadge from "../../ContactBadge";
+import { FieldInput, FieldShell } from "../../FieldInput";
+import { FilterDropdown } from "../../FilterDropdown";
 import Sidebar, { type SidebarNode } from "../../Sidebar";
 import Tooltip from "../../Tooltip";
 import LiquidGlassButton from "../../art/LiquidGlassButton";
-import { ChevronRightIcon } from "../../art/ChevronIcons";
+import { ChevronRightIcon } from "../../Chevron";
+import { Close } from "../../Close";
+import { ArrowRightIcon } from "../../Arrow";
 import { PlusIcon, SendIcon } from "../../library/icons";
 import { Section, SubLabel, TagChip } from "../primitives";
+import type { Tag } from "../tokens";
 
 const X_LOGO_PATH =
   "M10.6862 7.6055L17.3844 0H15.8002L9.97941 6.60311L5.36277 0H0.178833L7.19548 9.9737L0.178833 17.9454H1.76308L7.90171 10.9761L12.7696 17.9454H17.9536L10.6858 7.6055H10.6862ZM8.7057 10.0639L7.99222 9.06869L2.33673 1.16544H4.60063L9.33802 7.5516L10.0515 8.54678L15.8011 16.8348H13.5372L8.7057 10.0643V10.0639Z";
@@ -16,12 +27,13 @@ const X_LOGO_PATH =
 function SpecimenInfoIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <circle cx="12" cy="12" r="9.25" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="12" cy="12" r="9.25" stroke="currentColor" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
       <path
         d="M12 10.75V16.5M12 7.75V8"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
       />
     </svg>
   );
@@ -30,10 +42,10 @@ function SpecimenInfoIcon() {
 function SpecimenExpandIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M10 4H4V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M4 4L10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M14 20H20V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M20 20L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 4H4V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      <path d="M4 4L10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      <path d="M14 20H20V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      <path d="M20 20L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }
@@ -41,8 +53,11 @@ function SpecimenExpandIcon() {
 /**
  * Shared bento tile for component specimens.
  * - Soft zinc-50 rounded card behind every specimen
- * - `h-full` + grid `items-stretch` → equal height within a row
+ * - Outer + card are always `w-full` so the bg fills the grid cell (never shrink-wrap)
+ * - `min-h-64` keeps short specimens (e.g. tag badges) level with neighbors
+ * - `h-full` + grid `items-stretch` / `justify-items-stretch` → equal height + full cell width
  * - `span` varies width (bento); never clips content (no overflow-hidden)
+ * - Inner children stay content-sized and centered; only the bg card stretches
  */
 function Specimen({
   label,
@@ -57,9 +72,9 @@ function Specimen({
   span?: string;
 }) {
   return (
-    <div className={`flex h-full min-w-0 flex-col gap-3 ${span}`}>
+    <div className={`flex h-full w-full min-w-0 flex-col gap-3 self-stretch ${span}`}>
       <div
-        className={`flex min-h-40 w-full flex-1 items-center justify-center gap-4 overflow-visible rounded-2xl bg-zinc-50 px-6 py-8 ${className}`}
+        className={`flex min-h-64 w-full min-w-0 flex-1 items-center justify-center gap-4 overflow-visible rounded-2xl bg-zinc-50 px-6 py-8 ${className}`}
       >
         {children}
       </div>
@@ -68,8 +83,9 @@ function Specimen({
   );
 }
 
-/** 12-col bento: variable widths, equal row height via items-stretch. */
-const SPECIMEN_GRID = "grid grid-cols-2 items-stretch gap-x-5 gap-y-8 md:grid-cols-12";
+/** 12-col bento: variable widths, equal row height + full cell width via stretch. */
+const SPECIMEN_GRID =
+  "grid grid-cols-2 items-stretch justify-items-stretch gap-x-5 gap-y-8 md:grid-cols-12";
 /** ~1/4 — icon / compact controls */
 const SPAN_NARROW = "col-span-1 md:col-span-3";
 /** ~1/3 — default mid-size specimens */
@@ -80,99 +96,201 @@ const SPAN_WIDE = "col-span-2 md:col-span-6";
 const SPAN_XWIDE = "col-span-2 md:col-span-8";
 
 const LIBRARY_OPTIONS = [
-  { label: "favorites", count: 8 },
-  { label: "all", count: 32 },
-  { label: "2026", count: 11 },
-  { label: "2025", count: 13 },
+  { value: "favorites", label: "favorites", count: 8 },
+  { value: "all", label: "all", count: 32 },
+  { value: "2026", label: "2026", count: 11 },
+  { value: "2025", label: "2025", count: 13 },
 ];
 
 const SHELF_OPTIONS = [
-  { label: "Books ★", count: 5 },
-  { label: "2026", count: 11 },
-  { label: "2025", count: 13 },
-  { label: "2024", count: 7 },
+  { value: "books", label: "Books ★", count: 5 },
+  { value: "2026", label: "2026", count: 11 },
+  { value: "2025", label: "2025", count: 13 },
+  { value: "2024", label: "2024", count: 7 },
 ];
 
-type FilterOption = { label: string; count: number };
-type FilterSize = "sm" | "md";
+const FILTER_PILLS = [
+  { id: "books", label: "★ Books", count: 5 },
+  { id: "2026", label: "2026", count: 10 },
+  { id: "2025", label: "2025", count: 13 },
+];
 
-/**
- * Live replica of the Library / About-shelf filter dropdown, unified into one
- * component with sm + md size variants. Both share the same corner-radius
- * pattern (rounded-full trigger, rounded-xl menu, rounded-[10px] options);
- * only text size and padding change between sizes.
- */
-function FilterDropdown({
-  size,
+const NAV_TABS = [
+  { id: "work", label: "Work" },
+  { id: "art", label: "Art" },
+  { id: "about", label: "About" },
+] as const;
+
+type NavTabId = (typeof NAV_TABS)[number]["id"];
+
+/** Sliding-pill nav tabs — same interaction as NavigationTabs, local state only. */
+function NavTabsSpecimen() {
+  const [active, setActive] = useState<NavTabId>("work");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Record<NavTabId, HTMLButtonElement | null>>({
+    work: null,
+    art: null,
+    about: null,
+  });
+  const [indicator, setIndicator] = useState({ left: 0, width: 0, height: 0, top: 0, ready: false });
+
+  const updateIndicator = useCallback(() => {
+    const container = containerRef.current;
+    const tab = tabRefs.current[active];
+    if (!container || !tab) return;
+    const c = container.getBoundingClientRect();
+    const t = tab.getBoundingClientRect();
+    setIndicator({
+      left: t.left - c.left,
+      width: t.width,
+      height: t.height,
+      top: t.top - c.top,
+      ready: true,
+    });
+  }, [active]);
+
+  useLayoutEffect(() => {
+    updateIndicator();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(updateIndicator);
+    if (containerRef.current) observer.observe(containerRef.current);
+    NAV_TABS.forEach((tab) => {
+      const el = tabRefs.current[tab.id];
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [updateIndicator]);
+
+  return (
+    <div ref={containerRef} className="relative flex flex-wrap justify-center gap-1">
+      <div
+        aria-hidden
+        className={`pointer-events-none absolute left-0 top-0 z-0 rounded-full border border-white/50 bg-zinc-200/60 shadow-glass backdrop-blur-md motion-reduce:transition-none ${
+          indicator.ready ? "transition-[transform,width] duration-300 ease-out" : ""
+        }`}
+        style={{
+          transform: `translate3d(${indicator.left}px, ${indicator.top}px, 0)`,
+          width: indicator.width,
+          height: indicator.height,
+          opacity: indicator.ready ? 1 : 0,
+        }}
+      />
+      {NAV_TABS.map((tab) => {
+        const isActive = active === tab.id;
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            ref={(el) => {
+              tabRefs.current[tab.id] = el;
+            }}
+            onClick={() => setActive(tab.id)}
+            className="group relative z-10 cursor-pointer rounded-full border border-transparent px-3.5 pb-1 pt-[5px]"
+          >
+            <span
+              className={`text-lg font-medium tracking-[0.005em] transition-colors duration-200 ease-out ${
+                isActive ? "text-[#52525b]" : "text-[#a1a1aa] group-hover:text-[#52525b]"
+              }`}
+            >
+              {tab.label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Shelf-style filter pills — toggle active/rest on click. */
+function FilterPillsSpecimen() {
+  const [active, setActive] = useState("books");
+
+  return (
+    <div className="flex flex-wrap justify-center gap-2 font-['Michelle',sans-serif] text-sm font-medium tracking-wide">
+      {FILTER_PILLS.map((pill) => {
+        const isActive = active === pill.id;
+        return (
+          <button
+            key={pill.id}
+            type="button"
+            onClick={() => setActive(pill.id)}
+            className={`cursor-pointer rounded-full px-3 py-1.5 transition-colors ${
+              isActive ? "bg-zinc-500/10" : "hover:bg-zinc-500/5"
+            }`}
+          >
+            <span className={isActive ? "text-zinc-500" : "text-zinc-400"}>
+              {pill.label}{" "}
+              <span className={isActive ? "text-zinc-400" : "text-zinc-300"}>{pill.count}</span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Featured work-card title pill chrome — matches HomePageClient ProjectCard. */
+function ProjectTitlePill({
+  suffix,
+  suffixClassName,
+}: {
+  suffix: string;
+  suffixClassName: string;
+}) {
+  return (
+    <div className="flex items-center justify-center rounded-full border border-zinc-100 bg-white px-3 pb-[4.8px] pt-[5px]">
+      <p className="font-['Michelle',sans-serif] text-base font-medium leading-[1.4] tracking-[0.005em] text-zinc-900">
+        Polaroid <span className={suffixClassName}>• {suffix}</span>
+      </p>
+    </div>
+  );
+}
+
+/** Two static states of the project title pill — year at rest, Try It Out! on hover. */
+function ProjectTitlePillSpecimen() {
+  return (
+    <div className="flex flex-wrap items-end justify-center gap-8">
+      <div className="flex flex-col items-center gap-3">
+        <ProjectTitlePill suffix="2024" suffixClassName="text-zinc-400" />
+        <span className="text-xs text-zinc-400">Default</span>
+      </div>
+      <div className="flex flex-col items-center gap-3">
+        <ProjectTitlePill suffix="Try It Out!" suffixClassName="text-blue-400" />
+        <span className="text-xs text-zinc-400">Hover</span>
+      </div>
+    </div>
+  );
+}
+
+const TAG_BADGE_TAGS: Tag[] = ["canonical", "one-off", "experiment"];
+
+/** Provenance tag chips — decorative labels, non-interactive. */
+function TagBadgesSpecimen() {
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-2">
+      {TAG_BADGE_TAGS.map((tag) => (
+        <TagChip key={tag} tag={tag} />
+      ))}
+    </div>
+  );
+}
+
+/** Live FilterDropdown with local active value. */
+function FilterDropdownSpecimen({
   options,
   initialActive,
 }: {
-  size: FilterSize;
-  options: FilterOption[];
+  options: { value: string; label: string; count: number }[];
   initialActive: string;
 }) {
-  const [open, setOpen] = useState(true);
   const [active, setActive] = useState(initialActive);
-  const activeCount = options.find((o) => o.label === active)?.count;
-
-  const md = size === "md";
-  const textCls = md ? "text-base tracking-[0.01em]" : "text-sm tracking-wide";
-
   return (
-    <div className="flex flex-col items-start gap-1">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className={`flex items-center gap-1.5 rounded-full bg-zinc-500/10 px-3 transition-colors cursor-pointer ${
-          md ? "py-1.5" : "py-1"
-        }`}
-      >
-        <span className={`font-['Michelle',sans-serif] font-medium text-zinc-500 ${textCls}`}>
-          {active}
-          <span className="text-zinc-400"> {activeCount}</span>
-        </span>
-        <svg
-          className={`size-4 text-zinc-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={1.5}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      {open && (
-        <div
-          className={`rounded-xl border border-zinc-100 bg-white shadow-elevated ${
-            md ? "w-36" : "min-w-[140px]"
-          }`}
-        >
-          <div className="flex flex-col gap-1 px-1.5 py-1.5">
-            {options.map((o) => {
-              const isActive = active === o.label;
-              return (
-                <button
-                  key={o.label}
-                  onClick={() => setActive(o.label)}
-                  className={`flex items-center rounded-[10px] px-3 text-left transition-colors ${
-                    md ? "py-1" : "py-1.5"
-                  } ${isActive ? "bg-zinc-100" : "hover:bg-zinc-50"}`}
-                >
-                  <span
-                    className={`font-['Michelle',sans-serif] font-medium ${textCls} ${
-                      isActive ? "text-zinc-600" : "text-zinc-400"
-                    }`}
-                  >
-                    {o.label}
-                    <span className={isActive ? "text-zinc-400" : "text-zinc-300"}> {o.count}</span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
+    <FilterDropdown
+      options={options}
+      activeValue={active}
+      onChange={setActive}
+      defaultOpen
+    />
   );
 }
 
@@ -246,65 +364,43 @@ export default function ComponentSection() {
       <SubLabel>Navigation & pills</SubLabel>
       <div className={SPECIMEN_GRID}>
         <Specimen
-          label="Sidebar nav — grouped, expandable sub-headings (click to switch)"
+          label="Sidebar nav"
           span={SPAN_WIDE}
           className="!items-start !justify-start"
         >
           <SidebarSpecimen />
         </Specimen>
 
-        <Specimen label="Nav tabs — glass active pill" span={SPAN_WIDE}>
-          <div className="flex flex-wrap justify-center gap-1">
-            <span className="rounded-full border border-white/50 bg-zinc-200/60 px-3.5 pb-1 pt-[5px] text-lg font-medium tracking-[0.005em] text-[#52525b] shadow-glass backdrop-blur-md">
-              Work
-            </span>
-            <span className="rounded-full border border-transparent px-3.5 pb-1 pt-[5px] text-lg font-medium tracking-[0.005em] text-[#a1a1aa]">
-              Art
-            </span>
-            <span className="rounded-full border border-transparent px-3.5 pb-1 pt-[5px] text-lg font-medium tracking-[0.005em] text-[#a1a1aa]">
-              About
-            </span>
-          </div>
+        <Specimen label="Nav tabs" span={SPAN_WIDE}>
+          <NavTabsSpecimen />
         </Specimen>
 
-        <Specimen label="Project title pill" span={SPAN_MID}>
-          <div className="flex items-center justify-center rounded-full border border-[#f4f4f5] bg-white px-3 pb-[4.8px] pt-[5px]">
-            <p className="text-base font-medium tracking-[0.005em] text-[#18181b]">
-              Polaroid <span className="text-[#a1a1aa]">• 2024</span>
-            </p>
-          </div>
+        <Specimen label="Project title pill" span={SPAN_WIDE}>
+          <ProjectTitlePillSpecimen />
         </Specimen>
 
-        <Specimen label="Tag badges — canonical / one-off / experiment" span={SPAN_MID}>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <TagChip tag="canonical" />
-            <TagChip tag="one-off" />
-            <TagChip tag="experiment" />
-          </div>
+        <Specimen label="Tag badges" span={SPAN_WIDE}>
+          <TagBadgesSpecimen />
         </Specimen>
 
-        <Specimen label="Filter pill (active / rest)" span={SPAN_MID}>
-          <div className="flex flex-wrap justify-center gap-2">
-            <span className="rounded-full bg-zinc-500/10 px-3 py-1.5 text-sm text-zinc-600">All</span>
-            <span className="rounded-full px-3 py-1.5 text-sm text-zinc-400">Books</span>
-            <span className="rounded-full px-3 py-1.5 text-sm text-zinc-400">Film</span>
-          </div>
+        <Specimen label="Filter pill" span={SPAN_WIDE}>
+          <FilterPillsSpecimen />
         </Specimen>
 
         <Specimen
-          label="Filter dropdown — md (Library)"
+          label="Filter dropdown"
           span={SPAN_WIDE}
           className="!items-start !justify-start"
         >
-          <FilterDropdown size="md" options={LIBRARY_OPTIONS} initialActive="2026" />
+          <FilterDropdownSpecimen options={LIBRARY_OPTIONS} initialActive="2026" />
         </Specimen>
 
         <Specimen
-          label="Filter dropdown — sm (About shelf)"
+          label="Filter dropdown"
           span={SPAN_WIDE}
           className="!items-start !justify-start"
         >
-          <FilterDropdown size="sm" options={SHELF_OPTIONS} initialActive="2026" />
+          <FilterDropdownSpecimen options={SHELF_OPTIONS} initialActive="2026" />
         </Specimen>
 
         <Specimen label="Tooltip" span={SPAN_WIDE}>
@@ -337,20 +433,78 @@ export default function ComponentSection() {
           </div>
         </Specimen>
 
-        <Specimen label="Availability badge" span={SPAN_MID}>
-          <div className="flex shrink-0 items-center gap-2 rounded-full bg-[#ecfdf5] px-3 py-1.5">
+        <Specimen label="Availability badge" span={SPAN_WIDE}>
+          <button
+            type="button"
+            className="flex shrink-0 cursor-default items-center gap-2 rounded-full bg-[#ecfdf5] px-3 py-1.5 transition-colors hover:bg-emerald-50"
+            aria-label="Available for work"
+          >
             <span className="relative flex h-2.5 w-2.5 shrink-0">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-200 opacity-75" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
             </span>
             <span className="whitespace-nowrap text-sm text-emerald-600">Available for work</span>
-          </div>
+          </button>
         </Specimen>
 
-        <Specimen label="Social / meta link" span={SPAN_NARROW}>
-          <a className="inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-blue-500">
+        <Specimen label="Social / meta link" span={SPAN_WIDE}>
+          <a
+            href="#components"
+            className="inline-flex cursor-pointer items-center gap-1 text-sm text-zinc-600 transition-colors hover:text-blue-500"
+            onClick={(e) => e.preventDefault()}
+          >
             Read more <ArrowUpRight />
           </a>
+        </Specimen>
+      </div>
+
+      <SubLabel note="Pill field shared by password gates and the library submit-book modal. Idle border transparent → zinc-300 on focus; red-400 on error.">
+        Inputs
+      </SubLabel>
+      <div className={SPECIMEN_GRID}>
+        <Specimen label="Text" span={SPAN_WIDE}>
+          <FieldShell className="max-w-[280px]">
+            <FieldInput type="text" placeholder="Book Title" defaultValue="" aria-label="Text input specimen" />
+          </FieldShell>
+        </Specimen>
+
+        <Specimen label="Password" span={SPAN_WIDE}>
+          <FieldShell className="max-w-[280px] justify-between">
+            <FieldInput type="password" placeholder="Enter" defaultValue="" aria-label="Password input specimen" />
+            <span className="size-3.5 shrink-0 text-zinc-400" aria-hidden>
+              <ArrowRightIcon size="14px" className="block size-full" />
+            </span>
+          </FieldShell>
+        </Specimen>
+
+        <Specimen label="Focused" span={SPAN_WIDE}>
+          <FieldShell active className="max-w-[240px]">
+            <FieldInput type="text" defaultValue="Michelle" aria-label="Focused input specimen" readOnly />
+          </FieldShell>
+        </Specimen>
+
+        <Specimen label="Muted (library)" span={SPAN_WIDE}>
+          <FieldShell tone="muted" className="max-w-[240px]">
+            <FieldInput
+              type="text"
+              placeholder="Say Hi"
+              defaultValue=""
+              className="px-3.5"
+              aria-label="Muted library input specimen"
+            />
+          </FieldShell>
+        </Specimen>
+
+        <Specimen label="Disabled" span={SPAN_WIDE}>
+          <FieldShell className="max-w-[240px]">
+            <FieldInput type="text" placeholder="Unavailable" disabled aria-label="Disabled input specimen" />
+          </FieldShell>
+        </Specimen>
+
+        <Specimen label="Error" span={SPAN_WIDE}>
+          <FieldShell error className="max-w-[240px]">
+            <FieldInput type="password" placeholder="Enter" defaultValue="••••" aria-label="Error input specimen" readOnly />
+          </FieldShell>
         </Specimen>
       </div>
 
@@ -400,7 +554,7 @@ export default function ComponentSection() {
           <ContactBadge className="shrink-0 gap-1.5 px-3 py-1.5" />
         </Specimen>
 
-        <Specimen label="Ghost text" span={SPAN_NARROW}>
+        <Specimen label="Ghost text" span={SPAN_MID}>
           <button className="text-left text-base leading-5 text-[#a1a1aa] transition-colors hover:text-[#71717a]">
             Read more
           </button>
@@ -427,7 +581,7 @@ export default function ComponentSection() {
           </button>
         </Specimen>
 
-        <Specimen label="Icon — info" span={SPAN_NARROW}>
+        <Specimen label="Icon" span={SPAN_NARROW}>
           <button
             className="rounded-full p-2 text-[#a1a1aa] transition-colors duration-200 hover:bg-zinc-200/50"
             aria-label="Project info"
@@ -436,7 +590,7 @@ export default function ComponentSection() {
           </button>
         </Specimen>
 
-        <Specimen label="Icon — expand" span={SPAN_NARROW}>
+        <Specimen label="Icon" span={SPAN_NARROW}>
           <button
             className="flex size-6 items-center justify-center rounded-lg text-[#a1a1aa] transition-colors duration-200 hover:bg-zinc-200"
             aria-label="Expand to full page"
@@ -445,7 +599,7 @@ export default function ComponentSection() {
           </button>
         </Specimen>
 
-        <Specimen label="Icon — add" span={SPAN_NARROW}>
+        <Specimen label="Icon" span={SPAN_NARROW}>
           <button
             className="flex size-9 items-center justify-center rounded-full bg-zinc-500/10 text-zinc-400 transition-all duration-300 hover:bg-[rgba(0,0,0,0.1)]"
             aria-label="Add book"
@@ -454,7 +608,7 @@ export default function ComponentSection() {
           </button>
         </Specimen>
 
-        <Specimen label="Icon — submit" span={SPAN_NARROW}>
+        <Specimen label="Icon" span={SPAN_NARROW}>
           <button
             className="flex size-10 items-center justify-center rounded-full border border-blue-400 bg-blue-500 text-white transition-colors hover:bg-blue-400"
             aria-label="Submit"
@@ -463,21 +617,18 @@ export default function ComponentSection() {
           </button>
         </Specimen>
 
-        <Specimen label="Modal close" span={SPAN_NARROW} className="!bg-zinc-200/80">
+        <Specimen label="Modal close" span={SPAN_WIDE} className="!bg-zinc-200/80">
           <button
             className="flex size-8 items-center justify-center rounded-full bg-white text-zinc-500 transition-colors hover:bg-zinc-100"
             aria-label="Close"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <Close size="18px" />
           </button>
         </Specimen>
 
         <Specimen
           label="Glass carousel arrow"
-          span={SPAN_NARROW}
+          span={SPAN_WIDE}
           className="!bg-gradient-to-br from-zinc-200 via-zinc-100 to-zinc-300"
         >
           <LiquidGlassButton className="text-zinc-500 hover:text-zinc-700" aria-label="Scroll right">
@@ -488,7 +639,7 @@ export default function ComponentSection() {
 
       <SubLabel>Loaders</SubLabel>
       <div className={SPECIMEN_GRID}>
-        <Specimen label="Spinner — sm / md / lg" span={SPAN_MID}>
+        <Specimen label="Spinner" span={SPAN_MID}>
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-400" />
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-400" />
           <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-zinc-200 border-t-zinc-400" />
@@ -503,38 +654,43 @@ export default function ComponentSection() {
         </Specimen>
 
         <Specimen label="Film loading dots" span={SPAN_MID}>
-          <div className="flex items-end gap-1.5 text-zinc-400">
-            <span className="text-sm">Loading</span>
-            <span className="mb-0.5 flex gap-0.5">
-              {[0, 0.2, 0.4].map((d) => (
-                <span
-                  key={d}
-                  className="h-1 w-1 rounded-full bg-zinc-400"
-                  style={{ animation: `sys-pulse 1.4s ease-in-out ${d}s infinite` }}
-                />
-              ))}
-            </span>
-          </div>
+          <style>{`@keyframes film-dot-pulse{0%,80%,100%{opacity:.15}40%{opacity:1}}.film-dot{animation:film-dot-pulse 1.4s ease-in-out infinite;opacity:.15}`}</style>
+          <p className="text-sm text-zinc-600">
+            Loading
+            <span className="film-dot" style={{ animationDelay: "0s" }}>.</span>
+            <span className="film-dot" style={{ animationDelay: "0.2s" }}>.</span>
+            <span className="film-dot" style={{ animationDelay: "0.4s" }}>.</span>
+          </p>
         </Specimen>
       </div>
 
       <SubLabel>Cards</SubLabel>
       <div className={SPECIMEN_GRID}>
-        <Specimen label="Card — shadow-default" span={SPAN_MID} className="!bg-zinc-100">
-          <div className="flex h-24 w-48 flex-col justify-end rounded-3xl border border-zinc-100 bg-white p-4 shadow-default">
+        <Specimen label="Card" span={SPAN_MID} className="!bg-zinc-100">
+          <button
+            type="button"
+            className="flex h-24 w-48 cursor-pointer flex-col justify-end rounded-3xl border border-zinc-100 bg-white p-4 shadow-default shadow-default-hover transition-transform duration-200 hover:scale-[1.01]"
+          >
             <span className="text-sm font-medium text-zinc-700">Media card</span>
             <span className="text-xs text-zinc-400">rounded-3xl · shadow-default</span>
-          </div>
+          </button>
         </Specimen>
 
-        <Specimen label="Book cover" span={SPAN_NARROW} className="!bg-zinc-100">
-          <div className="h-28 w-20 rounded-sm bg-gradient-to-br from-zinc-300 to-zinc-400 shadow-media" />
+        <Specimen label="Book cover" span={SPAN_MID} className="!bg-zinc-100">
+          <button
+            type="button"
+            className="h-28 w-20 cursor-pointer rounded-sm bg-gradient-to-br from-zinc-300 to-zinc-400 shadow-media transition-transform duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02]"
+            aria-label="Book cover"
+          />
         </Specimen>
 
-        <Specimen label="Quote card" span={SPAN_WIDE} className="!bg-zinc-100">
-          <div className="flex h-24 w-48 flex-col justify-center rounded-3xl border border-zinc-100 bg-white px-4 shadow-default">
+        <Specimen label="Quote card" span={SPAN_MID} className="!bg-zinc-100">
+          <button
+            type="button"
+            className="flex h-24 w-48 cursor-pointer flex-col justify-center rounded-3xl border border-zinc-100 bg-white px-4 shadow-default shadow-default-hover transition-transform duration-200 hover:scale-[1.01]"
+          >
             <span className="text-2xl tracking-[0.01em] text-zinc-700">“delightful.”</span>
-          </div>
+          </button>
         </Specimen>
       </div>
     </Section>
