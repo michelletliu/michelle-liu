@@ -824,12 +824,14 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
           <div className={clsx(
             "absolute top-0 right-0 z-[60] pointer-events-none pr-7 pt-6"
           )}>
-            <div className="pointer-events-auto relative" data-info-button-container>
-              <Tooltip label="Info" position="bottom">
+            {/* -m-1 on the container (not the button) so the popover's right-0
+                aligns with the hover circle, not the shrunk margin box */}
+            <div className="pointer-events-auto relative inline-flex -m-1" data-info-button-container>
+              <Tooltip label="Info" position="bottom" disabled={showInfoModal}>
                 <button
                   onClick={() => setShowInfoModal(!showInfoModal)}
                   className={clsx(
-                    "cursor-pointer transition-colors duration-200 text-[#a1a1aa] rounded-full p-2 -m-1",
+                    "cursor-pointer transition-colors duration-200 text-[#a1a1aa] rounded-full p-2",
                     showInfoModal ? "bg-zinc-200/50" : "hover:bg-zinc-200/50"
                   )}
                   aria-label="Project info"
@@ -839,9 +841,9 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
                 </button>
               </Tooltip>
 
-              {/* Dropdown popover below button */}
+              {/* Dropdown popover — same 6px offset as Tooltip */}
               {showInfoModal && (
-                <div className="absolute top-full right-0 mt-2 z-[70]">
+                <div className="absolute top-full right-0 z-[70] mt-1.5">
                   <InfoPopover project={project} onClose={() => setShowInfoModal(false)} isFullscreen={false} />
                 </div>
               )}
