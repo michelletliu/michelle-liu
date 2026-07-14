@@ -12,8 +12,14 @@ import BlueprintLogo from "../BlueprintLogo";
 import { markBlueprintDoorwayNav } from "../blueprintDoorwayNav";
 import Footer from "../Footer";
 import { Chevron } from "../Chevron";
-import { FieldInput, FieldShell } from "../FieldInput";
-import { iconSize, iconSizes } from "../iconSizes";
+import { Close } from "../Close";
+import {
+  FieldInput,
+  FieldLeadingIcon,
+  FieldShell,
+  SearchMagnifierIcon,
+} from "../FieldInput";
+import { iconSize } from "../iconSizes";
 import { useScrollLock } from "../../utils/useScrollLock";
 import { fadeUpStyles } from "../../styles/animations";
 import { tocSections, tocSubsections, subSlug } from "./tokens";
@@ -64,92 +70,51 @@ const ComponentSection = dynamic(() => import("./sections/ComponentSection"), {
   loading: () => <SectionSkeleton tall />,
 });
 
-function SearchMagnifierIcon({ size = iconSize("inline") }: { size?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      className="block shrink-0"
-      aria-hidden
-    >
-      <circle
-        cx="11"
-        cy="11"
-        r="6.25"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        vectorEffect="non-scaling-stroke"
-      />
-      <path
-        d="M16.5 16.5L20 20"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
-  );
-}
-
 /** Hit target for the floating chevron↔X morph (bar slot + sheet slot + button). */
 const MORPH_CONTROL_BOX = "size-10";
 /**
- * One glyph size for both morph states — touch (24), one step above toolbar,
- * so the sticky chevron balances “Overview” and the open-state X matches it.
+ * One glyph size for both morph states — touch (24). Close/Chevron share
+ * comparable path bounds in the 24 viewBox so glyphs match optically.
  */
-const MORPH_ICON_PX = iconSizes.touch;
+const MORPH_ICON = iconSize("touch");
+const MORPH_TRANSITION = { duration: 0.3, ease: "easeOut" } as const;
 
-/** Shared control: down-chevron morphs into Close X (and reverse). */
+/**
+ * Shared control: down-chevron morphs into Close X (and reverse).
+ * Animates HTML wrappers (not SVG `<g>`) — Framer Motion’s SVG `fill-box`
+ * transforms + default `overflow:hidden` can leave the chevron clipped or
+ * stuck at opacity 0 after close.
+ */
 function ChevronCloseMorph({ open }: { open: boolean }) {
   return (
-    <svg
-      width={MORPH_ICON_PX}
-      height={MORPH_ICON_PX}
-      viewBox="0 0 24 24"
-      fill="none"
-      className="inline-block shrink-0"
+    <span
+      className="relative inline-flex size-6 items-center justify-center overflow-visible"
       aria-hidden
     >
-      <motion.g
+      <motion.span
+        className="absolute inset-0 flex items-center justify-center"
         initial={false}
         animate={{
-          rotate: 90,
-          scale: open ? 0.7 : 1,
           opacity: open ? 0 : 1,
+          scale: open ? 0.7 : 1,
         }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        style={{ transformOrigin: "12px 12px" }}
+        transition={MORPH_TRANSITION}
       >
-        <path
-          d="M9 18L15 12L9 6"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          vectorEffect="non-scaling-stroke"
-        />
-      </motion.g>
-      <motion.g
+        <Chevron direction="down" size={MORPH_ICON} />
+      </motion.span>
+      <motion.span
+        className="absolute inset-0 flex items-center justify-center"
         initial={false}
         animate={{
-          rotate: open ? 0 : -45,
-          scale: open ? 1 : 0.7,
           opacity: open ? 1 : 0,
+          scale: open ? 1 : 0.7,
+          rotate: open ? 0 : -45,
         }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        style={{ transformOrigin: "12px 12px" }}
+        transition={MORPH_TRANSITION}
       >
-        <path
-          d="M3 3L21 21M21 3L3 21"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-        />
-      </motion.g>
-    </svg>
+        <Close size={MORPH_ICON} />
+      </motion.span>
+    </span>
   );
 }
 
@@ -328,15 +293,15 @@ function MobileSectionMenu({
           initial={false}
           animate={
             togglePos
-              ? { top: togglePos.top, left: togglePos.left }
-              : { top: 0, left: 0 }
+              ? { top: togglePos.top, left: togglePos.left, opacity: 1 }
+              : { top: 0, left: 0, opacity: 0 }
           }
           transition={{ duration: 0, ease: "easeOut" }}
-          style={
-            !togglePos
-              ? { opacity: 0, pointerEvents: "none" as const }
-              : undefined
-          }
+          style={{
+            // Keep pointer-events out of Motion’s opacity channel so a prior
+            // style={{ opacity: 0 }} can’t stick after togglePos is measured.
+            pointerEvents: togglePos ? "auto" : "none",
+          }}
         >
           <ChevronCloseMorph open={open} />
         </motion.button>,
@@ -373,13 +338,10 @@ function MobileSectionMenu({
             </div>
 
             <div className="px-5 pb-3">
-              <FieldShell tone="muted" className="items-center gap-2">
-                <span
-                  className="pointer-events-none ml-2.5 flex shrink-0 items-center text-zinc-400"
-                  aria-hidden
-                >
+              <FieldShell tone="muted" className="gap-2">
+                <FieldLeadingIcon>
                   <SearchMagnifierIcon />
-                </span>
+                </FieldLeadingIcon>
                 <FieldInput
                   ref={filterRef}
                   type="text"
@@ -391,7 +353,7 @@ function MobileSectionMenu({
                   autoCorrect="off"
                   spellCheck={false}
                   aria-label="Filter sections"
-                  className="pr-3 font-medium leading-5 tracking-[0.01em] text-zinc-700"
+                  className="pr-3 font-medium tracking-[0.01em] text-zinc-700"
                 />
               </FieldShell>
             </div>

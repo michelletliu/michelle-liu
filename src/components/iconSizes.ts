@@ -3,8 +3,8 @@
  * Prefer `iconSize("toolbar")` over ad-hoc rem/`size-*` classes so
  * `strokeWidth={1.5}` + `vectorEffect="non-scaling-stroke"` stay consistent.
  *
- * Sticky morph (chevron↔Close) uses `touch` (24) for both states so size and
- * hit box stay identical. List disclosure chevrons stay at `toolbar` (20).
+ * Sticky morph (chevron↔Close) uses `touch` (24) for both states. Close’s
+ * path bounds match Chevron’s compact footprint so glyphs read the same size.
  */
 export const iconSizes = {
   /** Dense / meta */

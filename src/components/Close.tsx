@@ -5,9 +5,9 @@ export type CloseProps = {
 };
 
 /**
- * Shared close (X) — one path, sized like ArrowUpRight / Chevron.
- * Prefer `size={iconSize("touch")}` for full-screen sheet dismiss; `toolbar` for denser chrome.
- * Canonical stroke from library CloseIcon.
+ * Shared close (X) — one path, optically sized like Chevron / Arrow.
+ * Path sits in an 8×8 band (M8…16) so it matches Chevron’s compact
+ * viewBox footprint; prefer `size={iconSize("touch")}` for sheet dismiss.
  */
 export function Close({ className = "", size, strokeWidth }: CloseProps) {
   return (
@@ -22,7 +22,7 @@ export function Close({ className = "", size, strokeWidth }: CloseProps) {
       aria-hidden
     >
       <path
-        d="M3 3L21 21M21 3L3 21"
+        d="M8 8L16 16M16 8L8 16"
         stroke="currentColor"
         strokeWidth={strokeWidth ?? 1.5}
         strokeLinecap="round"
