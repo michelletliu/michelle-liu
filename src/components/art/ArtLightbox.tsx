@@ -74,7 +74,7 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
     if (img.complete && img.naturalWidth > 0) {
       setFullImageLoaded(true);
     }
-  }, [item?.imageSrc]);
+  }, [item]);
 
   if (!item) return null;
 
