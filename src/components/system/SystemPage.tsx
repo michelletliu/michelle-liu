@@ -787,7 +787,6 @@ export default function SystemPage() {
         aria-label="Back to home"
         aria-hidden={logoHidden}
         tabIndex={logoHidden ? -1 : undefined}
-        onClick={() => markBlueprintDoorwayNav()}
         className={`group fixed left-6 top-8 z-50 size-8 overflow-visible transition-[opacity,transform] duration-200 ease-out hover:scale-[1.02] active:scale-95 md:left-16 md:size-11 ${
           logoHidden ? "pointer-events-none opacity-0" : "opacity-100"
         }`}
