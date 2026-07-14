@@ -7,9 +7,19 @@ import {
   useReducedMotion,
   type Transition,
 } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import {
+  startTransition,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import imgFinalSealLogo from "../assets/logo.png";
 import imgSealGlyph from "../assets/logo-glyph.png";
+import {
+  clearBlueprintDoorwaySticky,
+  peekBlueprintDoorwaySticky,
+} from "./blueprintDoorwayNav";
 
 type BlueprintLogoProps = {
   /**
@@ -52,30 +62,80 @@ export default function BlueprintLogo({
   const rootRef = useRef<HTMLSpanElement>(null);
   const reduceMotion = useReducedMotion();
   const [groupHovered, setGroupHovered] = useState(false);
-  // Hover mode: ignore sticky hover after nav until the pointer leaves once.
-  // Always mode arms immediately so gray→red still works on first hover.
-  const [hoverArmed, setHoverArmed] = useState(always);
+  // Hover mode: arm on mount so the first red→blueprint hover works. Only stay
+  // disarmed when returning from the design-system doorway with the pointer
+  // still over the logo (see markBlueprintDoorwayNav). Always mode ignores this.
+  const [hoverArmed, setHoverArmed] = useState(true);
+  /** True when this instance is holding a sticky-return lock (red until leave). */
+  const stickyLockRef = useRef(false);
   const prevBlueprint = useRef<boolean | null>(null);
 
   const roundedControls = useAnimationControls();
   const railControls = useAnimationControls();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const group = rootRef.current?.closest(".group");
     if (!group) return;
 
-    const onEnter = () => setGroupHovered(true);
+    let raf1 = 0;
+    let raf2 = 0;
+
+    if (!always) {
+      // On client nav the new logo node often isn't :hover yet inside
+      // useLayoutEffect even when the pointer never moved. Tentatively lock
+      // when a doorway mark is pending, then confirm after paint.
+      if (peekBlueprintDoorwaySticky()) {
+        stickyLockRef.current = true;
+        setHoverArmed(false);
+        if (group.matches(":hover")) setGroupHovered(true);
+
+        raf1 = requestAnimationFrame(() => {
+          raf2 = requestAnimationFrame(() => {
+            if (group.matches(":hover")) {
+              setGroupHovered(true);
+              return;
+            }
+            // Pointer isn't on the doorway — normal first-hover arming.
+            stickyLockRef.current = false;
+            clearBlueprintDoorwaySticky();
+            setGroupHovered(false);
+            setHoverArmed(true);
+          });
+        });
+      } else {
+        stickyLockRef.current = false;
+        setHoverArmed(true);
+        // Hydration/remount can miss pointerenter when the cursor is already over.
+        if (group.matches(":hover")) setGroupHovered(true);
+      }
+    }
+
+    const onEnter = () => {
+      // Defer morph re-render so an in-flight click on the parent Link
+      // isn't interrupted mid-gesture.
+      startTransition(() => setGroupHovered(true));
+    };
     const onLeave = () => {
-      setGroupHovered(false);
-      setHoverArmed(true);
+      startTransition(() => {
+        setGroupHovered(false);
+        setHoverArmed(true);
+        // Only the sticky-locked hover doorway clears the mark — never the
+        // always-mode DS logo (its unmount leave would wipe a just-set mark).
+        if (stickyLockRef.current) {
+          stickyLockRef.current = false;
+          clearBlueprintDoorwaySticky();
+        }
+      });
     };
     group.addEventListener("pointerenter", onEnter);
     group.addEventListener("pointerleave", onLeave);
     return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
       group.removeEventListener("pointerenter", onEnter);
       group.removeEventListener("pointerleave", onLeave);
     };
-  }, []);
+  }, [always]);
 
   const showBlueprint = always
     ? !groupHovered

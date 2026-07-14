@@ -8,6 +8,7 @@ import BlueprintLogo from "../BlueprintLogo";
 import Footer from "../Footer";
 import { fadeUpStyles } from "../../styles/animations";
 import { tocSections, tocSubsections, subSlug } from "./tokens";
+import { clearBlueprintDoorwaySticky } from "../blueprintDoorwayNav";
 
 /** Lightweight placeholder so the DS shell (logo, TOC, intro) paints before specimens. */
 function SectionSkeleton({ tall = false }: { tall?: boolean }) {
@@ -177,6 +178,9 @@ export default function SystemPage() {
   // Logo doorway + route entry: always land at the top of the DS.
   useEffect(() => {
     window.scrollTo(0, 0);
+    return () => {
+      clearBlueprintDoorwaySticky();
+    };
   }, []);
 
   useEffect(() => {
