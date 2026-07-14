@@ -1,41 +1,8 @@
-import React from "react";
-
-export function ChevronLeftIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-    >
-      <path
-        d="M15 18L9 12L15 6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-export function ChevronRightIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-    >
-      <path
-        d="M9 18L15 12L9 6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+/** @deprecated Import from `../Chevron` — kept for existing art gallery imports. */
+export {
+  Chevron,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "../Chevron";

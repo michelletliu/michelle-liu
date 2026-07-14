@@ -1,50 +1,14 @@
 // Library page icons as SVG components
-// Stroke standard: strokeWidth 1.5 on a 24-unit viewBox (optical parity with DS Icons).
+// Stroke standard: strokeWidth 1.5 + vectorEffect non-scaling-stroke
+// so optical weight stays 1.5 CSS px at any display size.
+// Chevron → ../Chevron.tsx · Close → ../Close.tsx · Arrow → ../Arrow.tsx
+
+export { ArrowRightIcon, ArrowDownIcon } from "../Arrow";
+export { ChevronDownIcon } from "../Chevron";
+export { CloseIcon } from "../Close";
 
 interface IconProps {
   className?: string;
-}
-
-// Downward chevron for shelf dropdown
-export function ChevronDownIcon({ className = "" }: IconProps) {
-  return (
-    <svg
-      className={className}
-      width="12"
-      height="8"
-      viewBox="0 0 24 16"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M2 3L12 13L22 3"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-// Flat horizontal right arrow
-export function ArrowRightIcon({ className = "" }: IconProps) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M4 12h16M14 6l6 6-6 6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
 }
 
 // Plus icon for add book button
@@ -63,27 +27,7 @@ export function PlusIcon({ className = "" }: IconProps) {
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-// Close icon (X) for modals
-export function CloseIcon({ className = "" }: IconProps) {
-  return (
-    <svg
-      className={className}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M3 3L21 21M21 3L3 21"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
       />
     </svg>
   );
@@ -106,6 +50,7 @@ export function SendIcon({ className = "" }: IconProps) {
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
     </svg>
   );
@@ -128,6 +73,7 @@ export function SmileyIcon({ className = "" }: IconProps) {
         r="10.2"
         stroke="currentColor"
         strokeWidth="1.5"
+        vectorEffect="non-scaling-stroke"
       />
       <circle cx="8.4" cy="9.6" r="1.5" fill="currentColor" />
       <circle cx="15.6" cy="9.6" r="1.5" fill="currentColor" />
@@ -136,6 +82,7 @@ export function SmileyIcon({ className = "" }: IconProps) {
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
       />
     </svg>
   );

@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import { SendIcon, SmileyIcon } from "./icons";
 import { posthog, posthogEnabled } from "../../lib/posthog";
+import { FieldInput, FieldShell } from "../FieldInput";
 
 interface AddBookModalProps {
   onClose: () => void;
@@ -15,7 +16,6 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
   const [isClosing, setIsClosing] = useState(false);
   const noteInputRef = useRef<HTMLInputElement>(null);
   const noteSectionRef = useRef<HTMLDivElement>(null);
-  const [focusedField, setFocusedField] = useState<"title" | "note">("title");
   const hasTitle = bookTitle.trim().length > 0;
   const shouldShowNoteField = hasTitle && !isSubmitted;
   const [shouldRenderNoteField, setShouldRenderNoteField] = useState(false);
@@ -116,12 +116,9 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
     }
   };
 
-  const inputBorderClass = (active: boolean) =>
-    `absolute border-[1.5px] border-solid inset-0 pointer-events-none rounded-[999px] transition-colors duration-300 ${
-      isSubmitted ? "border-[rgba(0,0,0,0.1)]" : active ? "border-[rgba(0,0,0,0.1)]" : "border-transparent"
-    }`;
-
   const inputFont = { fontVariationSettings: "'wdth' 100" } as const;
+  const libraryInputClass =
+    "px-3.5 font-['SF_Pro:Regular',sans-serif] font-normal transition-opacity duration-300";
 
   return (
     <>
@@ -134,7 +131,7 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
         />
         <div className="content-stretch flex flex-col items-start p-5 pt-4.5 pb-5 relative w-full">
           <div
-            className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-normal relative shrink-0 text-base gap-0 text-black w-full"
+            className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-normal relative shrink-0 text-base gap-0 text-zinc-900 w-full"
             style={inputFont}
           >
             <p className="font-normal">
@@ -146,33 +143,31 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
 
           {/* Book Title Row */}
           <div className="content-stretch flex gap-2.5 items-center relative shrink-0 w-full mt-3">
-            <div className="basis-0 bg-[#f5f5f5] px-1 py-2 grow min-h-px min-w-px relative rounded-[999px] shrink-0">
-              <div aria-hidden="true" className={inputBorderClass(focusedField === "title")} />
-              <div className="flex flex-row items-center size-full">
-                <div className="content-stretch flex items-center px-[14px] relative size-full">
-                  {isSubmitted ? (
-                    <div
-                      className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-base text-blue-500 text-nowrap transition-opacity duration-300"
-                      style={inputFont}
-                    >
-                      <p>Thank you!</p>
-                    </div>
-                  ) : (
-                    <input
-                      type="text"
-                      value={bookTitle}
-                      onChange={(e) => setBookTitle(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      onFocus={() => setFocusedField("title")}
-                      placeholder="Book Title"
-                      className="w-full bg-transparent outline-none font-['SF_Pro:Regular',sans-serif] font-normal text-base text-[rgba(0,0,0,0.8)] placeholder:text-zinc-400 transition-opacity duration-300"
-                      style={inputFont}
-                      autoFocus
-                    />
-                  )}
+            <FieldShell
+              tone="muted"
+              active={isSubmitted}
+              className="basis-0 grow min-h-px min-w-px"
+            >
+              {isSubmitted ? (
+                <div
+                  className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 px-3.5 text-base text-blue-500 text-nowrap transition-opacity duration-300"
+                  style={inputFont}
+                >
+                  <p>Thank you!</p>
                 </div>
-              </div>
-            </div>
+              ) : (
+                <FieldInput
+                  type="text"
+                  value={bookTitle}
+                  onChange={(e) => setBookTitle(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Book Title"
+                  className={libraryInputClass}
+                  style={inputFont}
+                  autoFocus
+                />
+              )}
+            </FieldShell>
 
             <button
               onClick={(e) => { e.stopPropagation(); handleSubmit(); }}
@@ -209,29 +204,23 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
               >
                 <div className="h-px bg-zinc-100 w-[calc(100%-50px)]" />
                 <p
-                  className="font-['SF_Pro:Regular',sans-serif] font-normal text-base text-black mt-3"
+                  className="font-['SF_Pro:Regular',sans-serif] font-normal text-base text-zinc-900 mt-3"
                   style={inputFont}
                 >
                   Add your name, email, or a note?
                 </p>
-                <div className="bg-[#f5f5f5] px-1 py-2 min-h-[40px] relative rounded-[999px] mt-3">
-                  <div aria-hidden="true" className={inputBorderClass(focusedField === "note")} />
-                  <div className="flex flex-row items-center size-full">
-                    <div className="content-stretch flex items-center px-[14px] relative size-full">
-                      <input
-                        ref={noteInputRef}
-                        type="text"
-                        value={senderNote}
-                        onChange={(e) => setSenderNote(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        onFocus={() => setFocusedField("note")}
-                        placeholder="Say Hi"
-                        className="w-full bg-transparent outline-none font-['SF_Pro:Regular',sans-serif] font-normal text-base text-[rgba(0,0,0,0.8)] placeholder:text-zinc-400 transition-opacity duration-300"
-                        style={inputFont}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <FieldShell tone="muted" className="mt-3 min-h-10">
+                  <FieldInput
+                    ref={noteInputRef}
+                    type="text"
+                    value={senderNote}
+                    onChange={(e) => setSenderNote(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Say Hi"
+                    className={libraryInputClass}
+                    style={inputFont}
+                  />
+                </FieldShell>
               </div>
             </div>
           )}

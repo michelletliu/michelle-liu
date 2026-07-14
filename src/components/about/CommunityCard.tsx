@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { useScrollLock } from "../../utils/useScrollLock";
 import ShimmerImage from "../ShimmerImage";
 import Tooltip from "../Tooltip";
+import { Close } from "../Close";
 
 export type CommunityPhoto = {
   id: string;
@@ -117,7 +118,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                 href={data.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-6 w-6 shrink-0 items-center justify-center text-[#c4c9d0] transition-colors hover:text-zinc-700"
+                className="flex h-6 w-6 shrink-0 items-center justify-center text-zinc-300 transition-colors hover:text-zinc-700"
                 aria-label={`${data.title} Instagram`}
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -157,7 +158,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                 href={data.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-6 w-6 items-center justify-center text-[#c4c9d0] transition-colors hover:text-zinc-700"
+                className="flex h-6 w-6 items-center justify-center text-zinc-300 transition-colors hover:text-zinc-700"
                 aria-label={`${data.title} Instagram`}
               >
                 <svg
@@ -384,20 +385,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
               className={`fixed right-4 top-4 z-10 flex h-10 w-10 items-center justify-center text-zinc-500 transition-all duration-200 hover:scale-110 ${isClosingPhoto ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
               aria-label="Close expanded photo"
             >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 14 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M1 1L13 13M1 13L13 1"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <Close size="12px" />
             </button>
 
             {/* Expanded photo container */}

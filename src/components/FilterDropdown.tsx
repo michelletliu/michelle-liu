@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
+import { Chevron } from "./Chevron";
 
 export type FilterDropdownOption = {
   value: string;
@@ -15,10 +16,19 @@ type FilterDropdownProps = {
   className?: string;
   /** Render the panel into document.body to escape stacking contexts */
   usePortal?: boolean;
+  /** Start with the menu open (design-system specimens) */
+  defaultOpen?: boolean;
 };
 
-export function FilterDropdown({ options, activeValue, onChange, className, usePortal = false }: FilterDropdownProps) {
-  const [open, setOpen] = useState(false);
+export function FilterDropdown({
+  options,
+  activeValue,
+  onChange,
+  className,
+  usePortal = false,
+  defaultOpen = false,
+}: FilterDropdownProps) {
+  const [open, setOpen] = useState(defaultOpen);
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -108,7 +118,7 @@ export function FilterDropdown({ options, activeValue, onChange, className, useP
                 {option.label}
                 {option.count !== undefined && (
                   <span className={isActive ? "text-zinc-400" : "text-zinc-300"}>
-                    {" "}({option.count})
+                    {" "}{option.count}
                   </span>
                 )}
               </span>
@@ -135,21 +145,16 @@ export function FilterDropdown({ options, activeValue, onChange, className, useP
         <span className="font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap text-zinc-500">
           {activeOption?.label ?? activeValue}
           {activeOption?.count !== undefined && (
-            <span className="text-zinc-400"> ({activeOption.count})</span>
+            <span className="text-zinc-400"> {activeOption.count}</span>
           )}
         </span>
-        <svg
+        <Chevron
+          direction="down"
           className={clsx(
             "size-4 text-zinc-400 transition-transform duration-200",
             open && "rotate-180"
           )}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={1.5}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+        />
       </button>
 
       {usePortal ? (open && createPortal(panel, document.body)) : open && panel}

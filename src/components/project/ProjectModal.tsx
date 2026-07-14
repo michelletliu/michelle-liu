@@ -20,6 +20,10 @@ import { useScrollLock } from "../../utils/useScrollLock";
 import lockIcon from "../../assets/lock.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
 import { posthog, posthogEnabled } from "../../lib/posthog";
+import { FieldInput, FieldShell } from "../FieldInput";
+import { Chevron } from "../Chevron";
+import { Close } from "../Close";
+import { ArrowRightIcon } from "../Arrow";
 
 async function fetchProjectByCompany(company: string): Promise<{
   project: Project | null;
@@ -200,19 +204,6 @@ function isProjectUnlocked(projectId: string): boolean {
   return getUnlockedProjects().includes(projectId);
 }
 
-// Chevron right icon for breadcrumb
-const ChevronRightIcon = () => (
-  <svg className="block size-full" viewBox="0 0 16 16" fill="none">
-    <path
-      d="M6 12L10 8L6 4"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 // Breadcrumb component for fullscreen modal header
 type BreadcrumbProps = {
   projectName: string;
@@ -241,9 +232,7 @@ function Breadcrumb({ projectName, onWorkClick, isScrolled = false, isPastHero =
       </button>
 
       {/* Chevron separator */}
-      <div className="shrink-0 size-4 text-zinc-500">
-        <ChevronRightIcon />
-      </div>
+      <Chevron direction="right" className="size-4 shrink-0 text-zinc-500" />
 
       {/* Project name - not clickable */}
       <div className="flex items-center justify-center px-1 py-0.5">
@@ -452,65 +441,38 @@ declare global {
   }
 }
 
-// Close icon SVG
-const CloseIcon = () => (
-  <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 10">
-    <path
-      d="M9.76256 1.17736C10.0791 0.860788 10.0791 0.347859 9.76256 0.031284C9.44599 -0.285291 8.93306 -0.285291 8.61648 0.031284L5 3.64776L1.38352 0.031284C1.06694 -0.285291 0.554014 -0.285291 0.237439 0.031284C-0.0791362 0.347859 -0.0791362 0.860788 0.237439 1.17736L3.85392 4.79384L0.237439 8.41032C-0.0791362 8.7269 -0.0791362 9.23982 0.237439 9.5564C0.554014 9.87297 1.06694 9.87297 1.38352 9.5564L5 5.93992L8.61648 9.5564C8.93306 9.87297 9.44599 9.87297 9.76256 9.5564C10.0791 9.23982 10.0791 8.7269 9.76256 8.41032L6.14608 4.79384L9.76256 1.17736Z"
-      fill="currentColor"
-    />
-  </svg>
-);
-
 // Expand icon — inline SVG so strokeWidth 1.5 matches ExperimentModal / DS Icons
 const BackArrowIcon = () => (
   <svg className="block size-full" viewBox="0 0 24 24" fill="none" aria-hidden>
-    <path d="M10 4H4V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M4 4L10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M14 20H20V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M20 20L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-// Arrow right icon SVG (for password input submit button)
-const ArrowRightIcon = () => (
-  <svg
-    className="block size-full"
-    viewBox="0 0 12 14"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M6 0C6.41421 0 6.75 0.335786 6.75 0.75V11.4393L10.7197 7.46967C11.0126 7.17678 11.4874 7.17678 11.7803 7.46967C12.0732 7.76256 12.0732 8.23744 11.7803 8.53033L6.53033 13.7803C6.23744 14.0732 5.76256 14.0732 5.46967 13.7803L0.21967 8.53033C-0.0732233 8.23744 -0.0732233 7.76256 0.21967 7.46967C0.512563 7.17678 0.987437 7.17678 1.28033 7.46967L5.25 11.4393V0.75C5.25 0.335786 5.58579 0 6 0Z"
-      fill="currentColor"
-    />
+    <path d="M10 4H4V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+    <path d="M4 4L10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+    <path d="M14 20H20V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+    <path d="M20 20L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
   </svg>
 );
 
 // Eye icon for showing password (zinc-400 to match arrow)
 const EyeIcon = () => (
   <svg className="block size-full" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 5.25C4.5 5.25 1.5 12 1.5 12C1.5 12 4.5 18.75 12 18.75C19.5 18.75 22.5 12 22.5 12C22.5 12 19.5 5.25 12 5.25Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 15.75C14.0711 15.75 15.75 14.0711 15.75 12C15.75 9.92893 14.0711 8.25 12 8.25C9.92893 8.25 8.25 9.92893 8.25 12C8.25 14.0711 9.92893 15.75 12 15.75Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 5.25C4.5 5.25 1.5 12 1.5 12C1.5 12 4.5 18.75 12 18.75C19.5 18.75 22.5 12 22.5 12C22.5 12 19.5 5.25 12 5.25Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+    <path d="M12 15.75C14.0711 15.75 15.75 14.0711 15.75 12C15.75 9.92893 14.0711 8.25 12 8.25C9.92893 8.25 8.25 9.92893 8.25 12C8.25 14.0711 9.92893 15.75 12 15.75Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
   </svg>
 );
 
 // Eye-off icon for hiding password (zinc-400 to match arrow)
 const EyeOffIcon = () => (
   <svg className="block size-full" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14.12 14.12C13.5646 14.6755 12.7998 14.9855 12 14.9855C11.2002 14.9855 10.4354 14.6755 9.88 14.12C9.32457 13.5646 9.0145 12.7998 9.0145 12C9.0145 11.2002 9.32457 10.4354 9.88 9.88" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M4.5 4.5L19.5 19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M9.75 5.5C10.485 5.34 11.235 5.25 12 5.25C19.5 5.25 22.5 12 22.5 12C22.02 12.945 21.42 13.815 20.73 14.61" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M17.94 17.94C16.23 19.17 14.16 19.875 12 19.875C4.5 19.875 1.5 13.125 1.5 13.125C2.505 11.205 3.975 9.54 5.775 8.355" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M14.12 14.12C13.5646 14.6755 12.7998 14.9855 12 14.9855C11.2002 14.9855 10.4354 14.6755 9.88 14.12C9.32457 13.5646 9.0145 12.7998 9.0145 12C9.0145 11.2002 9.32457 10.4354 9.88 9.88" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+    <path d="M4.5 4.5L19.5 19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+    <path d="M9.75 5.5C10.485 5.34 11.235 5.25 12 5.25C19.5 5.25 22.5 12 22.5 12C22.02 12.945 21.42 13.815 20.73 14.61" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+    <path d="M17.94 17.94C16.23 19.17 14.16 19.875 12 19.875C4.5 19.875 1.5 13.125 1.5 13.125C2.505 11.205 3.975 9.54 5.775 8.355" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
   </svg>
 );
 
 // Laptop icon for mobile not available message
 const LaptopIcon = () => (
   <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="8" y="12" width="44" height="30" rx="2" stroke="#a1a1aa" strokeWidth="1.5" fill="none"/>
+    <rect x="8" y="12" width="44" height="30" rx="2" stroke="#a1a1aa" strokeWidth="1.5" fill="none" vectorEffect="non-scaling-stroke"/>
     <rect x="12" y="16" width="36" height="22" rx="1" fill="#e4e4e7"/>
     <path d="M4 42h52v2a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-2z" fill="#d4d4d8"/>
   </svg>
@@ -588,20 +550,7 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
               className={`fixed right-4 top-4 z-[10000] flex h-10 w-10 items-center justify-center text-zinc-500 transition-all duration-200 hover:scale-110 ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
               aria-label="Close expanded image"
             >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 14 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M1 1L13 13M1 13L13 1"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <Close size="12px" />
             </button>
 
             <div
@@ -680,19 +629,13 @@ function PasswordInput({
 
   return (
     <form onSubmit={handleSubmit} className="relative w-full max-w-[313px]">
-      <div className={clsx(
-        "bg-white border border-solid content-stretch flex items-center justify-between pl-4 pr-3 py-2 relative rounded-full shrink-0 w-full transition-colors duration-200",
-        error
-          ? "border-[#f87171] focus-within:border-[#f87171]"
-          : "border-transparent focus-within:border-[#d4d4d8]"
-      )}>
-        <input
+      <FieldShell error={error} className="justify-between">
+        <FieldInput
           type={showPassword ? "text" : "password"}
           placeholder="Enter"
           value={passwordValue}
           onChange={handleInputChange}
           disabled={isLoading}
-          className="leading-5 relative shrink-0 text-black text-base bg-transparent border-none outline-none flex-1 placeholder:text-[#a1a1aa] disabled:opacity-50"
         />
         <div className="flex items-center gap-2.5">
           {/* Show/Hide password toggle - only visible when there's input */}
@@ -700,6 +643,7 @@ function PasswordInput({
             type="button"
             onClick={toggleShowPassword}
             disabled={isLoading}
+            aria-label={showPassword ? "Hide password" : "Show password"}
             className={clsx(
               "relative shrink-0 size-[18px] text-zinc-500 hover:opacity-70 transition-all duration-200",
               passwordValue.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -728,16 +672,17 @@ function PasswordInput({
           <button
             type="submit"
             disabled={isLoading}
-            className="relative shrink-0 size-[14px] rotate-[-90deg] text-zinc-500 hover:opacity-70 transition-opacity disabled:opacity-50"
+            aria-label="Submit password"
+            className="relative shrink-0 size-[14px] text-zinc-500 hover:opacity-70 transition-opacity disabled:opacity-50"
           >
             {isLoading ? (
               <div className="w-3.5 h-3.5 border-2 border-zinc-300 border-t-zinc-500 rounded-full animate-spin" />
             ) : (
-              <ArrowRightIcon />
+              <ArrowRightIcon size="14px" className="block size-full" />
             )}
           </button>
         </div>
-      </div>
+      </FieldShell>
       {/* Error message overlays without affecting layout size */}
       <div
         className={clsx(
@@ -1181,7 +1126,7 @@ export default function ProjectModal({
       {/* Overlay */}
       <div
         className={clsx(
-          "absolute inset-0 bg-black/20 transition-opacity duration-400",
+          "absolute inset-0 bg-zinc-900/20 transition-opacity duration-400",
           isVisible && !isFullscreen ? "opacity-100" : "opacity-0",
           isFullscreen && "pointer-events-none"
         )}
@@ -1343,7 +1288,7 @@ export default function ProjectModal({
                 <div className="content-stretch flex flex-col gap-10 items-start relative shrink-0 w-full">
                   {/* Title */}
                   <ScrollReveal variant="fade" delay={80} rootMargin="0px">
-                    <p className="font-normal leading-5 relative shrink-0 text-4xl text-black">
+                    <p className="font-normal leading-5 relative shrink-0 text-4xl text-zinc-900">
                       {project.title}
                     </p>
                   </ScrollReveal>
@@ -1452,7 +1397,7 @@ export default function ProjectModal({
                               }
                             }
                           }}
-                          className="text-left text-xs max-w-12 text-zinc-700 hover:text-black transition-colors"
+                          className="text-left text-xs max-w-12 text-zinc-700 hover:text-zinc-900 transition-colors"
                         >
                           <span className="font-medium text-[#a1a1aa] mr-2">{item.number}</span>
                           <span>{item.title}</span>
@@ -1689,7 +1634,7 @@ function TestimonialBlock({
           <p className="leading-5 relative shrink-0 text-[#a1a1aa] uppercase text-base">
             {sectionLabel}
           </p>
-          <p className="leading-7 min-w-full relative shrink-0 text-2xl text-black whitespace-pre-wrap">
+          <p className="leading-7 min-w-full relative shrink-0 text-2xl text-zinc-900 whitespace-pre-wrap">
             {sectionTitle && renderHighlightedText(sectionTitle, highlightedText, highlightColor)}
           </p>
         </div>
@@ -1730,7 +1675,7 @@ function TestimonialBlock({
 
             {/* Name and Title */}
             <div className="content-stretch flex flex-col gap-1 items-start leading-5 relative shrink-0 text-base max-md:flex-1">
-              <p className="relative shrink-0 text-black">{authorName}</p>
+              <p className="relative shrink-0 text-zinc-900">{authorName}</p>
               <p className="relative shrink-0 text-[#a1a1aa]">{authorSubtitle}</p>
             </div>
           </div>
@@ -1867,7 +1812,7 @@ function ContentBlock({
               <p className="leading-5 text-[#a1a1aa] uppercase text-base">
                 {section.sectionLabel || "The Mission"}
               </p>
-              <p className="leading-7 text-2xl text-black whitespace-pre-wrap text-pretty">
+              <p className="leading-7 text-2xl text-zinc-900 whitespace-pre-wrap text-pretty">
                 {renderHighlightedText(section.missionTitle, section.highlightedText, section.highlightColor)}
               </p>
             </div>
@@ -1926,7 +1871,7 @@ function ContentBlock({
             <p className="leading-5 relative shrink-0 text-[#a1a1aa] uppercase text-base">
               {section.sectionLabel || "The Mission"}
             </p>
-            <p className="leading-normal w-full relative shrink-0 text-xl text-black whitespace-pre-wrap text-pretty">
+            <p className="leading-normal w-full relative shrink-0 text-xl text-zinc-900 whitespace-pre-wrap text-pretty">
               {renderHighlightedText(section.missionTitle, section.highlightedText, section.highlightColor)}
             </p>
           </div>
@@ -1968,7 +1913,7 @@ function ContentBlock({
 
                 {/* Text Content */}
                 <div className="content-stretch flex flex-col gap-2 items-start relative shrink-0 w-full">
-                  <p className="leading-7 relative shrink-0 text-2xl text-black">
+                  <p className="leading-7 relative shrink-0 text-2xl text-zinc-900">
                     {(section.title || (projectId === "apple" ? "This work is confidential." : hasPassword ? "This case study is password-protected." : "Confidential")).replace(/\n/g, ' ')}
                   </p>
                   <p className="leading-6 relative shrink-0 text-[#a1a1aa] text-lg">
@@ -2071,7 +2016,7 @@ function ContentBlock({
 
                       {/* Heading */}
                       {section.heading && (
-                        <p className="leading-normal min-w-120 relative shrink-0 text-2xl text-black whitespace-pre-wrap">
+                        <p className="leading-normal min-w-120 relative shrink-0 text-2xl text-zinc-900 whitespace-pre-wrap">
                           {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                         </p>
                       )}
@@ -2167,7 +2112,7 @@ function ContentBlock({
               
               {/* Heading */}
               {section.heading && (
-                <p className="leading-normal min-w-120 relative shrink-0 text-2xl text-black whitespace-pre-wrap">
+                <p className="leading-normal min-w-120 relative shrink-0 text-2xl text-zinc-900 whitespace-pre-wrap">
                   {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                 </p>
               )}
@@ -2319,7 +2264,7 @@ function ContentBlock({
                 </p>
               )}
               {section.heading && (
-                <p className={clsx("leading-7 relative shrink-0 text-2xl text-black max-md:max-w-[85%] max-md:text-left", isFullscreen && "whitespace-pre-wrap max-md:whitespace-normal")}>
+                <p className={clsx("leading-7 relative shrink-0 text-2xl text-zinc-900 max-md:max-w-[85%] max-md:text-left", isFullscreen && "whitespace-pre-wrap max-md:whitespace-normal")}>
                   {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                 </p>
               )}
@@ -2345,7 +2290,7 @@ function ContentBlock({
               </p>
             )}
             {section.heading && (
-              <p className={clsx("leading-7 relative shrink-0 text-2xl text-black text-center max-md:text-left max-md:max-w-[85%] max-md:self-start", isFullscreen && "whitespace-pre-line max-md:whitespace-normal")}>
+              <p className={clsx("leading-7 relative shrink-0 text-2xl text-zinc-900 text-center max-md:text-left max-md:max-w-[85%] max-md:self-start", isFullscreen && "whitespace-pre-line max-md:whitespace-normal")}>
                 {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
               </p>
             )}
@@ -2370,7 +2315,7 @@ function ContentBlock({
                 </p>
               )}
               {section.heading && (
-                <p className={clsx("leading-7 min-w-full max-md:min-w-0 max-md:max-w-[85%] relative shrink-0 text-2xl text-black", isFullscreen && "whitespace-pre-wrap max-md:whitespace-normal")}>
+                <p className={clsx("leading-7 min-w-full max-md:min-w-0 max-md:max-w-[85%] relative shrink-0 text-2xl text-zinc-900", isFullscreen && "whitespace-pre-wrap max-md:whitespace-normal")}>
                   {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                 </p>
               )}
@@ -2394,7 +2339,7 @@ function ContentBlock({
             </p>
           )}
           {section.heading && (
-            <p className={clsx("leading-7 relative shrink-0 text-2xl text-black max-md:max-w-[85%]", isFullscreen && "whitespace-pre-line max-md:whitespace-normal")}>
+            <p className={clsx("leading-7 relative shrink-0 text-2xl text-zinc-900 max-md:max-w-[85%]", isFullscreen && "whitespace-pre-line max-md:whitespace-normal")}>
               {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
             </p>
           )}
@@ -2607,7 +2552,7 @@ function ContentBlock({
           {(section.title || section.caption) && (
             <div className="flex flex-col items-center gap-2 mt-8 text-center">
               {section.title && (
-                <p className="text-xl text-black">{section.title}</p>
+                <p className="text-xl text-zinc-900">{section.title}</p>
               )}
               {section.caption && (
                 <p className="text-base text-[#a1a1aa]">{section.caption}</p>
@@ -2736,7 +2681,7 @@ function ContentBlock({
                   )}
                   
                   {section.heading && (
-                    <h3 className="text-xl font-normal text-black leading-normal whitespace-pre-line">
+                    <h3 className="text-xl font-normal text-zinc-900 leading-normal whitespace-pre-line">
                       {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                     </h3>
                   )}
@@ -2770,7 +2715,7 @@ function ContentBlock({
         return (
           <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
             {section.sectionTitle && (
-              <h3 className="text-2xl font-normal text-black mb-8">
+              <h3 className="text-2xl font-normal text-zinc-900 mb-8">
                 {section.sectionTitle}
               </h3>
             )}
@@ -2820,12 +2765,12 @@ function ContentBlock({
             {/* Number + Title */}
             <div className="content-stretch flex font-normal gap-5 items-start leading-7 relative shrink-0 text-2xl w-full">
               {section.number && (
-                <p className="relative shrink-0" style={{ color: section.numberColor || '#7fa2ff' }}>
+                <p className="relative shrink-0" style={{ color: section.numberColor || '#60a5fa' }}>
                   {section.number}
                 </p>
               )}
               {section.title && (
-                <p className="relative shrink-0" style={{ color: section.titleColor || '#2e5ede' }}>
+                <p className="relative shrink-0" style={{ color: section.titleColor || '#2563eb' }}>
                   {section.title}
                 </p>
               )}
@@ -2894,7 +2839,7 @@ function ContentBlock({
         );
 
       case "statsCardSection":
-        const statsStatColor = section.statColor || '#ec4899';
+        const statsStatColor = section.statColor || '#ec4899'; // pink-500
         const statsTitleColor = section.titleColor || '#a1a1aa';
         
         // Layout classes
@@ -3134,8 +3079,8 @@ function ContentBlock({
         );
 
       case "sectionHeaderBar":
-        const headerBgColor = section.backgroundColor || '#fdf2f8';
-        const headerTextColor = section.textColor || '#ec4899';
+        const headerBgColor = section.backgroundColor || '#fdf2f8'; // pink-50
+        const headerTextColor = section.textColor || '#ec4899'; // pink-500
         
         // Image size classes
         const headerImageSizeMap = {
@@ -3230,7 +3175,7 @@ function ContentBlock({
 
       case "tableOfContentsSection":
         const tocBgColor = section.backgroundColor || '#f4f4f5';
-        const tocAccentColor = section.accentColor || '#ec4899';
+        const tocAccentColor = section.accentColor || '#ec4899'; // pink-500
         const hasHeaderContent = section.sectionNumber || section.sectionTitle || section.subtitle || section.hintText || section.sectionDescription;
 
         return (

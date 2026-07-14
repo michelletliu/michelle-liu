@@ -218,7 +218,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
             {/* Title & Author - left aligned */}
             <div className="flex flex-col gap-0.5">
               <h2 
-                className="font-['SF_Pro:Regular',sans-serif] font-medium text-xl text-black"
+                className="font-['SF_Pro:Regular',sans-serif] font-medium text-xl text-zinc-900"
                 style={{ fontVariationSettings: "'wdth' 100" }}
               >
                 {formatText(book.title)}
@@ -335,7 +335,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
             {/* Title & Author */}
             <div className="flex flex-col gap-0.5">
               <h2 
-                className="font-['SF_Pro:Regular',sans-serif] font-medium text-xl text-black"
+                className="font-['SF_Pro:Regular',sans-serif] font-medium text-xl text-zinc-900"
                 style={{ fontVariationSettings: "'wdth' 100" }}
               >
                 {formatText(book.title)}
@@ -440,7 +440,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
               Review
             </span>
             <div 
-              className="font-['SF_Pro:Regular',sans-serif] text-lg text-black leading-relaxed whitespace-pre-wrap"
+              className="font-['SF_Pro:Regular',sans-serif] text-lg text-zinc-900 leading-relaxed whitespace-pre-wrap"
               style={{ fontVariationSettings: "'wdth' 100" }}
             >
               {formatReview(book.review)}

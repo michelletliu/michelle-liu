@@ -48,6 +48,7 @@ import imgNotionIcon from '../../assets/receipt/icons-optimized/IMG_6925.png';
 import imgYoutubeIcon from '../../assets/receipt/icons-optimized/IMG_6932.png';
 import imgNetflixIcon from '../../assets/receipt/icons-optimized/IMG_6933 1.png';
 import imgSpotifyIcon from '../../assets/receipt/icons-optimized/IMG_6931.png';
+import { Close } from '../Close';
 
 const APP_ICONS = {
   instagram: imgInstagramIcon,
@@ -560,26 +561,26 @@ function StatusBar() {
       <div className="absolute bg-gradient-to-b from-[#f4f4f5] from-[32.87%] h-[108px] left-1/2 to-transparent top-0 -translate-x-1/2 w-[402px] max-w-full" />
       <div className="absolute flex gap-[154px] items-center justify-center left-1/2 pb-[19px] pt-[21px] px-[16px] top-0 -translate-x-1/2 w-[402px] max-w-full">
         <div className="basis-0 flex grow h-[22px] items-center justify-center min-h-px min-w-px pb-0 pt-[2px] px-0 relative shrink-0">
-          <p className="font-mono font-semibold leading-[22px] relative shrink-0 text-[17px] text-black text-center text-nowrap">
+          <p className="font-mono font-semibold leading-[22px] relative shrink-0 text-[17px] text-zinc-900 text-center text-nowrap">
             {currentTime}
           </p>
         </div>
         <div className="basis-0 flex gap-[7px] grow h-[22px] items-center justify-center min-h-px min-w-px pb-0 pt-px px-0 relative shrink-0">
           <div className="relative shrink-0 h-[12.226px] w-[19.2px]">
             <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 19.2 12.2264">
-              <path clipRule="evenodd" d={svgPaths.cellular} fill="black" fillRule="evenodd" />
+              <path clipRule="evenodd" d={svgPaths.cellular} fill="#18181b" fillRule="evenodd" />
             </svg>
           </div>
           <div className="relative shrink-0 h-[12.328px] w-[17.142px]">
             <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 17.1417 12.3283">
-              <path clipRule="evenodd" d={svgPaths.wifi} fill="black" fillRule="evenodd" />
+              <path clipRule="evenodd" d={svgPaths.wifi} fill="#18181b" fillRule="evenodd" />
             </svg>
           </div>
           <div className="h-[13px] relative shrink-0 w-[27.328px]">
             <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 27.328 13">
-              <rect height="12" opacity="0.35" rx="3.8" stroke="black" width="24" x="0.5" y="0.5" />
-              <path d={svgPaths.batteryCap} fill="black" opacity="0.4" />
-              <rect fill="black" height="9" rx="2.5" width="21" x="2" y="2" />
+              <rect height="12" opacity="0.35" rx="3.8" stroke="#18181b" width="24" x="0.5" y="0.5" />
+              <path d={svgPaths.batteryCap} fill="#18181b" opacity="0.4" />
+              <rect fill="#18181b" height="9" rx="2.5" width="21" x="2" y="2" />
             </svg>
           </div>
         </div>
@@ -594,7 +595,7 @@ function HomeIndicator({ additionalClassNames = "" }: { additionalClassNames?: s
     <div className={`md:hidden absolute h-[34px] left-1/2 -translate-x-1/2 w-[400px] max-w-full ${additionalClassNames}`}>
       <div className="absolute bottom-[8px] flex h-[5px] items-center justify-center left-1/2 -translate-x-1/2 w-[144px]">
         <div className="flex-none rotate-180 scale-y-[-1]">
-          <div className="bg-black h-[5px] rounded-[100px] w-[144px]" />
+          <div className="bg-zinc-900 h-[5px] rounded-[100px] w-[144px]" />
         </div>
       </div>
     </div>
@@ -619,7 +620,7 @@ function GenerateScreen({
       <div className="bg-[rgba(116,116,128,0.08)] flex flex-col items-center justify-center p-[8px] relative rounded-full shrink-0 size-[80px]">
         <img src={phoneIconSvg} alt="Phone" className="w-[25px] h-[42px]" />
       </div>
-      <div className="font-mono leading-[28px] relative shrink-0 text-[22px] text-black text-center text-nowrap">
+      <div className="font-mono leading-[28px] relative shrink-0 text-[22px] text-zinc-900 text-center text-nowrap">
         <p className="mb-0">SCREEN TIME</p>
         <p>RECEIPT</p>
       </div>
@@ -638,7 +639,7 @@ function GenerateScreen({
           >
             <div className="flex flex-row items-center justify-center size-full">
               <div className="flex items-center justify-center px-[10px] py-[2px] relative size-full">
-                <p className={`basis-0 font-mono ${period === 'daily' ? 'font-semibold' : 'font-medium'} grow leading-[18px] min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-[14px] text-black text-center text-nowrap tracking-[-0.08px]`}>
+                <p className={`basis-0 font-mono ${period === 'daily' ? 'font-semibold' : 'font-medium'} grow leading-[18px] min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-[14px] text-zinc-900 text-center text-nowrap tracking-[-0.08px]`}>
                   Daily
                 </p>
               </div>
@@ -650,7 +651,7 @@ function GenerateScreen({
           >
             <div className="flex flex-row items-center justify-center size-full">
               <div className="flex items-center justify-center px-[10px] py-[3px] relative size-full">
-                <p className={`basis-0 font-mono ${period === 'weekly' ? 'font-semibold' : 'font-medium'} grow leading-[18px] min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-[14px] text-black text-center text-nowrap`}>
+                <p className={`basis-0 font-mono ${period === 'weekly' ? 'font-semibold' : 'font-medium'} grow leading-[18px] min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-[14px] text-zinc-900 text-center text-nowrap`}>
                   Weekly
                 </p>
               </div>
@@ -862,7 +863,7 @@ function ReceiptScreen({
           <div className="flex flex-col gap-[32px] items-center px-[24px] py-[32px] relative w-full">
             <div className="flex flex-col gap-[24px] items-center relative shrink-0 w-full">
               <div className="flex flex-col font-mono gap-[4px] items-center relative shrink-0 text-center w-[201px] max-w-full">
-                <p className="leading-[22px] min-w-full relative shrink-0 text-[17px] text-black font-semibold">DIGITAL RECEIPT</p>
+                <p className="leading-[22px] min-w-full relative shrink-0 text-[17px] text-zinc-900 font-semibold">DIGITAL RECEIPT</p>
                 <p className="leading-[22px] relative shrink-0 text-[13px] text-zinc-400 text-nowrap">
                   {data.period === 'weekly' ? 'Weekly' : 'Daily'} Screen Time Summary
                 </p>
@@ -880,7 +881,7 @@ function ReceiptScreen({
                 <div key={idx} className="flex flex-col gap-[16px] items-start relative shrink-0 w-full">
                   {/* Category Header */}
                   <div className="flex flex-col gap-[4px] items-start relative shrink-0 w-full">
-                    <p className="font-mono leading-[22px] font-semibold relative shrink-0 text-[13px] text-black w-full">{category.name}</p>
+                    <p className="font-mono leading-[22px] font-semibold relative shrink-0 text-[13px] text-zinc-900 w-full">{category.name}</p>
                     <div className="h-0 relative shrink-0 w-full">
                       <div className="absolute inset-[-1px_0_0_0]">
                         <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 289 1">
@@ -896,7 +897,7 @@ function ReceiptScreen({
                       <AppIcon appName={app.name} icon={app.icon} />
                       <div className="basis-0 flex font-mono grow items-start justify-between leading-[22px] min-h-px min-w-px relative shrink-0 text-[13px]">
                         <div className="flex flex-col items-start relative shrink-0 w-[97px]">
-                          <p className="min-w-full relative shrink-0 text-black font-semibold">{app.name}</p>
+                          <p className="min-w-full relative shrink-0 text-zinc-900 font-semibold">{app.name}</p>
                           <p className="relative shrink-0 text-[rgba(0,0,0,0.4)] text-center text-nowrap">{app.category}</p>
                         </div>
                         <p className="relative shrink-0 text-[rgba(0,0,0,0.4)] text-center text-nowrap font-semibold">{formatTime(app.minutes)}</p>
@@ -909,7 +910,7 @@ function ReceiptScreen({
                     <div className="h-0 relative shrink-0 w-full">
                       <div className="absolute inset-[-1px_0_0_0]">
                         <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 289 1">
-                          <line stroke="black" strokeDasharray="2 2" strokeOpacity="0.3" x2="289" y1="0.5" y2="0.5" />
+                          <line stroke="#18181b" strokeDasharray="2 2" strokeOpacity="0.3" x2="289" y1="0.5" y2="0.5" />
                         </svg>
                       </div>
                     </div>
@@ -929,19 +930,19 @@ function ReceiptScreen({
                 <div className="h-0 relative shrink-0 w-full">
                   <div className="absolute inset-[-1px_0_0_0]">
                     <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 289 1">
-                      <line stroke="black" strokeDasharray="6 3" x2="289" y1="0.5" y2="0.5" />
+                      <line stroke="#18181b" strokeDasharray="6 3" x2="289" y1="0.5" y2="0.5" />
                     </svg>
                   </div>
                 </div>
                 <div className="flex font-mono items-start justify-between leading-[22px] relative shrink-0 text-[17px] text-nowrap w-full font-semibold">
-                  <p className="relative shrink-0 text-black">GRAND TOTAL:</p>
+                  <p className="relative shrink-0 text-zinc-900">GRAND TOTAL:</p>
                   <p className="relative shrink-0 text-[rgba(0,0,0,0.8)] text-center">{formatTime(grandTotal)}</p>
                 </div>
                 {/* Divider */}
                 <div className="h-0 relative shrink-0 w-full">
                   <div className="absolute inset-[-1px_0_0_0]">
                     <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 289 1">
-                      <line stroke="black" strokeDasharray="6 3" x2="289" y1="0.5" y2="0.5" />
+                      <line stroke="#18181b" strokeDasharray="6 3" x2="289" y1="0.5" y2="0.5" />
                     </svg>
                   </div>
                 </div>
@@ -1033,7 +1034,7 @@ function ShareSheet({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/20 animate-fade-in" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-900/20 animate-fade-in" onClick={onClose}>
       <div 
         className="bg-white rounded-t-[20px] w-full max-w-[402px] pb-8 animate-slide-in max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
@@ -1323,7 +1324,7 @@ function UploadInstructions({
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
       {/* Overlay */}
       <div 
-        className={`absolute inset-0 bg-black/5 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`} 
+        className={`absolute inset-0 bg-zinc-900/5 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`} 
         onClick={handleClose} 
       />
       
@@ -1345,12 +1346,12 @@ function UploadInstructions({
           }
         `}</style>
         <div className="top-0 bg-white flex items-center justify-center pt-6 w-full rounded-t-[20px]">
-          <h2 className="text-lg text-black text-center text-balance max-w-[250px] font-semibold">Upload Your Screen Time Data</h2>
+          <h2 className="text-lg text-zinc-900 text-center text-balance max-w-[250px] font-semibold">Upload Your Screen Time Data</h2>
         </div>
         
         <div className="px-8 pt-6 pb-5 space-y-7 text-[15px]">
           <div className="space-y-3.5">
-            <h3 className="text-base text-black">iPhone</h3>
+            <h3 className="text-base text-zinc-900">iPhone</h3>
             <div className="border-t border-zinc-100" />
             <ol className="space-y-1 pl-10 list-decimal text-zinc-500 leading-normal">
               <li>Open <strong>Settings</strong></li>
@@ -1361,7 +1362,7 @@ function UploadInstructions({
           </div>
 
           <div className="space-y-3.5">
-            <h3 className="text-base text-black">Android</h3>
+            <h3 className="text-base text-zinc-900">Android</h3>
             <div className="border-t border-zinc-100" />
             <ol className="space-y-1 pl-10 list-decimal text-zinc-500 leading-normal">
               <li>Open <strong>Settings</strong></li>
@@ -1381,10 +1382,7 @@ function UploadInstructions({
                 onClick={() => setError(null)}
                 className="flex-shrink-0 text-red-300 hover:text-red-600 transition-colors"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <Close size="16px" />
               </button>
             </div>
           )}

@@ -27,13 +27,13 @@ export function BookCard({ book, onClick }: BookCardProps) {
 
       {/* Text content - appears on hover, centered with cover (desktop only) */}
       <div className="absolute top-[225px] lg:top-[250px] left-1/2 -translate-x-1/2 w-[150px] lg:w-[160px] hidden md:flex flex-col items-center text-center leading-[0] opacity-0 transition-opacity duration-[400ms] ease-out group-hover:opacity-100">
-        <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-medium justify-center relative shrink-0 text-base text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-medium justify-center relative shrink-0 text-base text-zinc-900" style={{ fontVariationSettings: "'wdth' 100" }}>
           <p className="leading-normal line-clamp-2">{formatText(book.title)}</p>
         </div>
         <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-base text-zinc-500" style={{ fontVariationSettings: "'wdth' 100" }}>
           <p className="leading-normal">{book.author}</p>
         </div>
-        <p className="font-['Michelle',sans-serif] leading-normal not-italic relative shrink-0 text-sm sm:text-base lg:text-lg text-black text-nowrap">
+        <p className="font-['Michelle',sans-serif] leading-normal not-italic relative shrink-0 text-sm sm:text-base lg:text-lg text-zinc-900 text-nowrap">
           <span className="text-zinc-500">{"★".repeat(book.rating)}</span>
           <span className="text-zinc-200">{"★".repeat(5 - book.rating)}</span>
         </p>

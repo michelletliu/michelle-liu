@@ -59,6 +59,7 @@ import type { CommunityCardData, CommunityPhoto as CommunityPhotoType } from "./
 import type { LoreCardData } from "./LoreCard";
 import type { StartupCardData } from "./StartupCard";
 import type { MediaCardData } from "./MediaCard";
+import { Close } from "../Close";
 
 // fadeUpStyles imported from shared animations
 
@@ -171,9 +172,7 @@ function ProfilePhoto({ imageSrc, caption }: { imageSrc?: string; caption?: Reac
             className={`fixed right-4 top-4 z-10 flex h-10 w-10 items-center justify-center text-zinc-500 transition-all duration-200 hover:scale-110 ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
             aria-label="Close expanded photo"
           >
-            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L13 13M1 13L13 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <Close size="12px" />
           </button>
 
           <div

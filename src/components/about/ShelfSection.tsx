@@ -176,7 +176,7 @@ export default function ShelfSection({
                 )}>
                   {title}
                   {count !== undefined && (
-                    <span className={!activeYear ? "text-zinc-400" : "text-zinc-300"}> ({count})</span>
+                    <span className={!activeYear ? "text-zinc-400" : "text-zinc-300"}> {count}</span>
                   )}
                 </span>
               </button>
@@ -215,7 +215,7 @@ export default function ShelfSection({
                 )}>
                   {title}
                   {count !== undefined && (
-                    <span className={!activeYear ? "text-zinc-400" : "text-zinc-300"}> ({count})</span>
+                    <span className={!activeYear ? "text-zinc-400" : "text-zinc-300"}> {count}</span>
                   )}
                 </span>
               </button>
@@ -243,7 +243,7 @@ export default function ShelfSection({
                       {filter.year}
                       {filter.count !== undefined && (
                         <span className={isActive ? "text-zinc-400" : "text-zinc-300"}>
-                          {" "}({filter.count})
+                          {" "}{filter.count}
                         </span>
                       )}
                     </span>
