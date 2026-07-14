@@ -2,6 +2,17 @@ import type { ReactNode } from "react";
 import type { Tag } from "./tokens";
 import { subSlug } from "./tokens";
 
+/**
+ * Soft gray tile behind glass / border-white/50 specimens.
+ * zinc-50 → zinc-100 → zinc-200 — light tile, still enough contrast for white/50
+ * and frosted glass. Keep Borders & Materials in sync.
+ */
+export const GLASS_SPECIMEN_BG_CLASS =
+  "bg-gradient-to-br from-zinc-50 via-zinc-100 to-zinc-200";
+/** Same stops as GLASS_SPECIMEN_BG_CLASS, for inline style={{ backgroundImage }}. */
+export const GLASS_SPECIMEN_GRADIENT =
+  "linear-gradient(to bottom right, #fafafa, #f4f4f5, #e4e4e7)";
+
 /** Colored text on a tint of the same color — one entry per provenance tag. */
 const tagBadge: Record<Tag, string> = {
   canonical: "bg-zinc-100 text-zinc-600",
@@ -23,18 +34,24 @@ export function TagChip({ tag }: { tag: Tag }) {
 export function Section({
   id,
   title,
+  tag,
   children,
 }: {
   id: string;
   title: string;
+  /** When every token in the section shares one tag, show it beside the H2. */
+  tag?: Tag;
   children: ReactNode;
 }) {
   return (
     <section id={id} className="scroll-mt-24 border-t border-zinc-100 pt-16 pb-4">
       <div className="mb-10">
-        <h2 className="font-['Michelle',sans-serif] text-2xl font-medium leading-relaxed tracking-tight text-zinc-900">
-          {title}
-        </h2>
+        <div className="flex items-center gap-2.5">
+          <h2 className="font-['Michelle',sans-serif] text-2xl font-medium leading-relaxed tracking-tight text-zinc-900">
+            {title}
+          </h2>
+          {tag && <TagChip tag={tag} />}
+        </div>
       </div>
       {children}
     </section>
@@ -42,11 +59,23 @@ export function Section({
 }
 
 /** Group heading used to organize entries within a section. */
-export function SubLabel({ children, note }: { children: ReactNode; note?: string }) {
+export function SubLabel({
+  children,
+  note,
+  tag,
+}: {
+  children: ReactNode;
+  note?: string;
+  /** When every token in the group shares one tag, show it beside the H3. */
+  tag?: Tag;
+}) {
   const id = typeof children === "string" ? subSlug(children) : undefined;
   return (
     <div id={id} className="mb-5 mt-20 scroll-mt-28 first:mt-0">
-      <h3 className="text-xl font-medium leading-relaxed text-zinc-700">{children}</h3>
+      <div className="flex items-center gap-2.5">
+        <h3 className="text-xl font-medium leading-relaxed text-zinc-700">{children}</h3>
+        {tag && <TagChip tag={tag} />}
+      </div>
       {note && (
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400 text-pretty">{note}</p>
       )}
@@ -80,7 +109,8 @@ export function TokenCard({
 }: {
   sample: ReactNode;
   name: string;
-  tag: Tag;
+  /** Omit when the section header already shows a uniform group tag. */
+  tag?: Tag;
   value?: string;
   usage: string;
 }) {
@@ -92,7 +122,7 @@ export function TokenCard({
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-2">
           <span className="text-base font-medium text-zinc-700">{name}</span>
-          <TagChip tag={tag} />
+          {tag && <TagChip tag={tag} />}
         </div>
         {value && (
           <code className="block break-words font-mono text-sm leading-relaxed text-zinc-400">
@@ -115,7 +145,8 @@ export function TokenRow({
 }: {
   sample?: ReactNode;
   name: string;
-  tag: Tag;
+  /** Omit when the section header already shows a uniform group tag. */
+  tag?: Tag;
   value: string;
   usage: string;
 }) {
@@ -125,7 +156,7 @@ export function TokenRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2.5">
           <code className="font-mono text-sm text-zinc-700">{name}</code>
-          <TagChip tag={tag} />
+          {tag && <TagChip tag={tag} />}
         </div>
         <p className="mt-0.5 truncate text-sm text-zinc-400">{usage}</p>
       </div>

@@ -73,18 +73,17 @@ export const colorGroups: ColorGroup[] = [
     label: "Zinc",
     note: "The site's neutral backbone (Tailwind zinc-*). Muted zinc-400 (#a1a1aa) is the single most-used color.",
     colors: [
-      { name: "zinc-900", value: "#18181b", className: "text-zinc-900", usage: "Project titles, emphasis body", tag: "canonical" },
+      { name: "zinc-900", value: "#18181b", className: "text-zinc-900", usage: "★ Darkest canonical — headings, icons, --primary / --secondary-foreground / --accent-foreground / --sidebar-primary", tag: "canonical" },
       { name: "zinc-800", value: "#27272a", className: "text-zinc-800", usage: "Modal tab labels, testimonial body, film timeline active", tag: "canonical" },
-      { name: "zinc-700", value: "#3f3f46", className: "text-zinc-700", usage: "Hero name, section headings, footer", tag: "canonical" },
+      { name: "zinc-700", value: "#3f3f46", className: "text-zinc-700", usage: "Hero name, section headings, footer; CMS — Adobe highlightCard headlineColor", tag: "canonical" },
       { name: "zinc-600", value: "#52525b", className: "text-zinc-600", usage: "Active nav, body copy, metadata, film info, library spinner", tag: "canonical" },
-      { name: "zinc-500", value: "#71717a", className: "text-zinc-500", usage: "Secondary body, tool lists, film loading hint", tag: "canonical" },
-      { name: "zinc-400", value: "#a1a1aa", className: "text-zinc-400", usage: "Muted labels, captions, placeholders (most common)", tag: "canonical" },
-      { name: "zinc-300", value: "#d4d4d8", className: "text-zinc-300", usage: "Focus borders, quote underline, inactive badges", tag: "canonical" },
-      { name: "zinc-200", value: "#e4e4e7", className: "bg-zinc-200", usage: "Shimmer base, card borders, spinners, film idle marks", tag: "canonical" },
+      { name: "zinc-500", value: "#71717a", className: "text-zinc-500", usage: "Secondary body, tool lists, film loading hint, --muted-foreground; CMS — Adobe muted highlightColor", tag: "canonical" },
+      { name: "zinc-400", value: "#a1a1aa", className: "text-zinc-400", usage: "Muted labels, captions, placeholders, footer tagline (most common); CMS — NASA/Adobe sectionTitle numberColor, Roblox muted highlightColor, stats title default", tag: "canonical" },
+      { name: "zinc-300", value: "#d4d4d8", className: "text-zinc-300", usage: "Focus borders, quote underline, inactive badges, muted icons, scramble glyphs", tag: "canonical" },
+      { name: "zinc-200", value: "#e4e4e7", className: "bg-zinc-200", usage: "Shimmer base, card borders, spinners, film idle marks, lore card image fallback", tag: "canonical" },
       { name: "zinc-100", value: "#f4f4f5", className: "bg-zinc-100", usage: "Pill borders, hover fills, dividers, modal hero bands", tag: "canonical" },
       { name: "zinc-50", value: "#fafafa", className: "bg-zinc-50", usage: "Button bg, section bg", tag: "canonical" },
       { name: "white", value: "#ffffff", className: "bg-white", usage: "Page & card surfaces", tag: "canonical" },
-      { name: "black", value: "#000000", className: "text-black", usage: "Primary headings, overlays base", tag: "canonical" },
     ],
   },
   {
@@ -92,16 +91,52 @@ export const colorGroups: ColorGroup[] = [
     label: "Blue",
     note: "Blue-500 (#3b82f6) is the single accent for links, CTAs, active states, and text selection.",
     colors: [
-      { name: "blue-600", value: "#2563eb", className: "text-blue-600", usage: "Ikigai link hover", tag: "canonical" },
+      { name: "blue-600", value: "#2563eb", className: "text-blue-600", usage: "Ikigai link hover, CMS section title default", tag: "canonical" },
       { name: "blue-500", value: "#3b82f6", className: "bg-blue-500", usage: "Links, CTAs, active nav, selection", tag: "canonical" },
-      { name: "blue-400", value: "#60a5fa", className: "bg-blue-400", usage: "CTA hover fill / border, project links", tag: "canonical" },
+      { name: "blue-400", value: "#60a5fa", className: "bg-blue-400", usage: "CTA hover fill / border, project links, CMS number default", tag: "canonical" },
       { name: "blue-300", value: "#93c5fd", className: "border-blue-300", usage: "CTA hover border", tag: "canonical" },
       { name: "blue-100", value: "#dbeafe", usage: "Text selection background", tag: "canonical" },
+      { name: "blue-50", value: "#eff6ff", className: "bg-blue-50", usage: "Polaroid project card bg", tag: "canonical" },
+    ],
+  },
+  {
+    id: "cms",
+    label: "CMS & case study",
+    note: "Hexes from Sanity project content (published NASA, Adobe, Roblox, Apple) plus code defaults for CMS sections. Brand/project hues are one-offs; pink-50/500 stay canonical defaults. Surface neutrals already in Zinc are omitted.",
+    colors: [
+      // Canonical CMS defaults
+      { name: "pink-500", value: "#ec4899", className: "text-pink-500", usage: "CMS default — TOC accent, section header text, stats, two-column highlight initial", tag: "canonical" },
+      { name: "pink-50", value: "#fdf2f8", className: "bg-pink-50", usage: "CMS section header bar background default", tag: "canonical" },
+      { name: "blue-500", value: "#3b82f6", className: "text-blue-500", usage: "CMS highlightColor default (mission / text / feature) — also under Blue", tag: "canonical" },
+
+      // Adobe brand
+      { name: "Adobe pink", value: "#F63768", usage: "Adobe — highlightColor, Express card headlineColor", tag: "one-off" },
+      { name: "Adobe pink deep", value: "#DE3C82", usage: "Adobe — sectionTitle titleColor, highlightColor", tag: "one-off" },
+      { name: "Adobe pink soft", value: "#F777B0", usage: "Adobe — sectionTitle numberColor / titleColor", tag: "one-off" },
+      { name: "Adobe blush", value: "#FF8EAB", usage: "Adobe Express — highlightCard highlightColor", tag: "one-off" },
+      { name: "Adobe orange", value: "#FD9A00", usage: "Adobe Express — highlightCard headlineColor", tag: "one-off" },
+      { name: "Adobe orange soft", value: "#FFB748", usage: "Adobe Express — highlightCard highlightColor", tag: "one-off" },
+      { name: "Adobe sky", value: "#32A7F9", usage: "Adobe Express — highlightCard headlineColor", tag: "one-off" },
+      { name: "Adobe sky soft", value: "#88CEFF", usage: "Adobe Express — highlightCard highlightColor", tag: "one-off" },
+      { name: "Adobe cyan", value: "#34A9F3", usage: "Adobe — two-column / feature highlightColor", tag: "one-off" },
+
+      // NASA brand
+      { name: "NASA periwinkle", value: "#828EE4", usage: "NASA — sectionTitle numberColor", tag: "one-off" },
+      { name: "NASA indigo", value: "#5365DE", usage: "NASA — sectionTitle titleColor, highlightCard headlineColor", tag: "one-off" },
+
+      // Roblox brand
+      { name: "Roblox blue", value: "#335FFF", usage: "Roblox — highlightColor", tag: "one-off" },
+      { name: "Roblox blue mid", value: "#7FA2FF", usage: "Roblox — sectionTitle numberColor", tag: "one-off" },
+      { name: "Roblox blue deep", value: "#2E5EDE", usage: "Roblox — sectionTitle titleColor, highlightColor", tag: "one-off" },
+      { name: "Roblox teal soft", value: "#6FD8D2", usage: "Roblox — sectionTitle numberColor", tag: "one-off" },
+      { name: "Roblox teal", value: "#38C4BC", usage: "Roblox — sectionTitle titleColor", tag: "one-off" },
+      { name: "Roblox purple soft", value: "#B378DB", usage: "Roblox — sectionTitle numberColor", tag: "one-off" },
+      { name: "Roblox purple", value: "#842CBF", usage: "Roblox — sectionTitle titleColor", tag: "one-off" },
     ],
   },
   {
     id: "status",
-    label: "Status & feedback",
+    label: "Status",
     note: "Emerald for availability, red for errors, green for the pulse ring.",
     colors: [
       { name: "emerald-500", value: "#10b981", usage: "Availability dot, submit button", tag: "canonical" },
@@ -110,25 +145,6 @@ export const colorGroups: ColorGroup[] = [
       { name: "green-200", value: "#bbf7d0", usage: "Availability pulse ring", tag: "one-off" },
       { name: "red-500", value: "#ef4444", usage: "Modal error state", tag: "canonical" },
       { name: "red-400", value: "#f87171", usage: "Form error text / border", tag: "canonical" },
-    ],
-  },
-  {
-    id: "custom",
-    label: "Custom & CMS-driven hues",
-    note: "One-off colors, mostly defaults for CMS-editable fields and brand gradients.",
-    colors: [
-      { name: "Footer tagline", value: "#b5bcc5", usage: "Footer tagline text", tag: "one-off" },
-      { name: "Icon muted", value: "#c4c9d0", usage: "Footer social icons, community links", tag: "one-off" },
-      { name: "Scramble glyph", value: "#c4c4c4", usage: "TextScramble interim characters", tag: "one-off" },
-      { name: "CMS number", value: "#7fa2ff", usage: "Stat card number default", tag: "one-off" },
-      { name: "CMS title", value: "#2e5ede", usage: "Highlight card title default", tag: "one-off" },
-      { name: "CMS header bg", value: "#fdf2f8", usage: "Section header default (pink-50)", tag: "one-off" },
-      { name: "CMS accent", value: "#ec4899", usage: "Stat / header accent (pink-500)", tag: "one-off" },
-      { name: "Sky-50", value: "#f0f9ff", usage: "Polaroid project card bg", tag: "one-off" },
-      { name: "Shadow tint", value: "#eaeaea", usage: "Legacy device-mockup shadow color (snapped to shadow-soft)", tag: "one-off" },
-      { name: "Lore lavender", value: "#e3dff4", usage: "Lore card image fallback", tag: "one-off" },
-      { name: "--primary (legacy)", value: "#030213", usage: "shadcn token in globals.css only", tag: "one-off" },
-      { name: "--muted-foreground", value: "#717182", usage: "shadcn token in globals.css", tag: "one-off" },
     ],
   },
   {
@@ -322,7 +338,6 @@ export const gutters: ScaleToken[] = [
 
 export const borders: ScaleToken[] = [
   { name: "border", value: "1px solid", usage: "Cards, images, modals (hairline)", tag: "canonical" },
-  { name: "border-[1.5px]", value: "1.5px", usage: "Add-book input ring", tag: "one-off" },
   { name: "border-2", value: "2px", usage: "Loading spinners", tag: "canonical" },
   { name: "border-zinc-50", value: "#fafafa", usage: "Image hairline overlays", tag: "canonical" },
   { name: "border-zinc-100", value: "#f4f4f5", usage: "Cards, dropdowns, community frames, project card frames", tag: "canonical" },
@@ -355,7 +370,7 @@ export const materials: MaterialToken[] = [
   { name: "Green pulse ring", detail: "#bbf7d0 ring, pulse-ring 2.3s infinite", usage: "Availability dot", tag: "canonical" },
   { name: "Quote underline", detail: "#d4d4d8 2px line, 0.6s reveal", usage: "Media quote cards", tag: "canonical" },
   { name: "Edge fades", detail: "Multi-stop white/#fafafa gradients (up to 11 stops)", usage: "Film & Art carousels, top scroll fade", tag: "canonical" },
-  { name: "Modal scrim", detail: "bg-black/20", usage: "All modal overlays", tag: "canonical" },
+  { name: "Modal scrim", detail: "bg-zinc-900/20", usage: "All modal overlays", tag: "canonical" },
   { name: "Blur-reveal text", detail: "filter blur(4px)→blur(0), 0.26s", usage: "Film captions focus-pull", tag: "experiment" },
   { name: "Canvas particles", detail: "Sampled-RGB dust, gravity 0.0012, drag 0.9986", usage: "Fading shatter effect", tag: "experiment" },
   { name: "Hover scale", detail: "scale-[0.99] cards, scale-[1.005] link cards", usage: "Interactive lift", tag: "canonical" },
@@ -407,6 +422,13 @@ export const tocSections: { id: string; label: string }[] = [
   { id: "components", label: "Components" },
 ];
 
+/** If every item shares one provenance tag, return it; otherwise undefined. */
+export function uniformTag<T extends { tag: Tag }>(items: readonly T[]): Tag | undefined {
+  if (items.length === 0) return undefined;
+  const first = items[0].tag;
+  return items.every((item) => item.tag === first) ? first : undefined;
+}
+
 /** Slugify a heading string into a URL-safe token. */
 export function slugify(text: string): string {
   return text
@@ -428,16 +450,16 @@ export function subSlug(label: string): string {
 export const tocSubsections: Record<string, string[]> = {
   color: colorGroups.map((g) => g.label),
   typography: [
-    "Font families",
-    "Type scale",
-    "Experiment-only sizes",
+    "Families",
+    "Scale",
+    "Experiments",
     "Weights",
-    "Letter-spacing",
-    "Line-height",
+    "Tracking",
+    "Leading",
   ],
   spacing: ["Gap scale", "Layout widths"],
   borders: ["Borders", "Focus states", "Border Radius"],
   motion: ["Animations", "Duration scale"],
-  icons: ["UI icons", "Social"],
-  components: ["Navigation & pills", "Buttons", "Loaders", "Cards"],
+  icons: ["Stroke icons", "Filled icons", "Social"],
+  components: ["Navigation & pills", "Inputs", "Buttons", "Loaders", "Cards"],
 };

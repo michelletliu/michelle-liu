@@ -1,10 +1,13 @@
-import { spacingScale, gutters } from "../tokens";
+import { spacingScale, gutters, uniformTag } from "../tokens";
 import { Section, SubLabel, RowList, TokenRow, TagChip } from "../primitives";
 
 export default function SpacingSection() {
+  const gapTag = uniformTag(spacingScale);
+  const gutterTag = uniformTag(gutters);
+
   return (
     <Section id="spacing" title="Spacing">
-      <SubLabel>Gap scale</SubLabel>
+      <SubLabel tag={gapTag}>Gap scale</SubLabel>
       <RowList>
         {spacingScale.map((s) => {
           const px = parseInt(s.value, 10);
@@ -16,7 +19,7 @@ export default function SpacingSection() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2.5">
                   <code className="font-mono text-sm text-zinc-700">{s.name}</code>
-                  <TagChip tag={s.tag} />
+                  {!gapTag && <TagChip tag={s.tag} />}
                 </div>
                 <p className="mt-0.5 truncate text-sm text-zinc-400">{s.usage}</p>
               </div>
@@ -28,10 +31,18 @@ export default function SpacingSection() {
         })}
       </RowList>
 
-      <SubLabel note="Page gutters and grid-based widths.">Layout widths</SubLabel>
+      <SubLabel note="Page gutters and grid-based widths." tag={gutterTag}>
+        Layout widths
+      </SubLabel>
       <RowList>
         {gutters.map((g) => (
-          <TokenRow key={g.name} name={g.name} tag={g.tag} value={g.value} usage={g.usage} />
+          <TokenRow
+            key={g.name}
+            name={g.name}
+            tag={gutterTag ? undefined : g.tag}
+            value={g.value}
+            usage={g.usage}
+          />
         ))}
       </RowList>
     </Section>
