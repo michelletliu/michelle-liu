@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import clsx from "clsx";
 import Sidebar, { type SidebarNode } from "../Sidebar";
 import BlueprintLogo from "../BlueprintLogo";
 import {
@@ -12,10 +14,9 @@ import {
   markBlueprintDoorwayNav,
 } from "../blueprintDoorwayNav";
 import Footer from "../Footer";
-import { Chevron, ChevronRightIcon } from "../Chevron";
-import { Close } from "../Close";
+import { Chevron } from "../Chevron";
 import { FieldInput, FieldShell } from "../FieldInput";
-import { iconSize } from "../iconSizes";
+import { iconSize, iconSizes } from "../iconSizes";
 import { useScrollLock } from "../../utils/useScrollLock";
 import { fadeUpStyles } from "../../styles/animations";
 import { tocSections, tocSubsections, subSlug } from "./tokens";
@@ -95,15 +96,82 @@ function SearchMagnifierIcon({ size = iconSize("inline") }: { size?: string }) {
   );
 }
 
+/** Shared control: down-chevron morphs into Close X (and reverse). */
+function ChevronCloseMorph({ open }: { open: boolean }) {
+  const px = open ? iconSizes.touch : iconSizes.toolbar;
+  return (
+    <svg
+      width={px}
+      height={px}
+      viewBox="0 0 24 24"
+      fill="none"
+      className="inline-block shrink-0 transition-[width,height] duration-300 ease-out"
+      aria-hidden
+    >
+      <motion.g
+        initial={false}
+        animate={{
+          rotate: 90,
+          scale: open ? 0.7 : 1,
+          opacity: open ? 0 : 1,
+        }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        style={{ transformOrigin: "12px 12px" }}
+      >
+        <path
+          d="M9 18L15 12L9 6"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </motion.g>
+      <motion.g
+        initial={false}
+        animate={{
+          rotate: open ? 0 : -45,
+          scale: open ? 1 : 0.7,
+          opacity: open ? 1 : 0,
+        }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        style={{ transformOrigin: "12px 12px" }}
+      >
+        <path
+          d="M3 3L21 21M21 3L3 21"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </motion.g>
+    </svg>
+  );
+}
+
+/** Matches Chevron toolbar width so flat rows align with expandable ones. */
+const LEADING_ICON_SLOT = "w-5 shrink-0";
+
+type SheetLeaf = { id: string; label: string };
+type SheetRow =
+  | { kind: "item"; id: string; label: string }
+  | { kind: "group"; id: string; label: string; children: SheetLeaf[] };
+
 /**
  * Mobile section picker — HIG-inspired local bar + full-screen sheet.
- * Uses site zinc neutrals, blue active accent, stroke-1.5 icons, and existing motion.
+ * Mirrors desktop Sidebar colors/expand behavior; chevron morphs into Close.
  */
 function MobileSectionMenu({
   activeSection,
+  activeId,
+  expandedSection,
+  onToggleExpand,
   onSelect,
 }: {
   activeSection: string;
+  activeId: string;
+  expandedSection: string | null;
+  onToggleExpand: (id: string) => void;
   onSelect: (id: string) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -111,7 +179,15 @@ function MobileSectionMenu({
   const [mounted, setMounted] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const filterRef = useRef<HTMLInputElement>(null);
+  const barSlotRef = useRef<HTMLSpanElement>(null);
+  const sheetSlotRef = useRef<HTMLSpanElement>(null);
   const wasOpenRef = useRef(false);
+  const [togglePos, setTogglePos] = useState<{ top: number; left: number } | null>(
+    null,
+  );
+  /** 300ms only when open toggles; 0 while tracking scroll on the sticky bar. */
+  const [toggleMoveDuration, setToggleMoveDuration] = useState(0);
+  const prevOpenRef = useRef(open);
   const activeLabel =
     tocSections.find((s) => s.id === activeSection)?.label ?? tocSections[0].label;
 
@@ -120,6 +196,29 @@ function MobileSectionMenu({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // One floating toggle — tracks bar/sheet slots; morphs chevron↔X in place.
+  useLayoutEffect(() => {
+    if (!mounted) return;
+    const measure = () => {
+      const slot = open ? sheetSlotRef.current : barSlotRef.current;
+      if (!slot) return;
+      const r = slot.getBoundingClientRect();
+      setTogglePos({ top: r.top, left: r.left });
+    };
+    if (prevOpenRef.current !== open) {
+      prevOpenRef.current = open;
+      setToggleMoveDuration(0.3);
+      window.setTimeout(() => setToggleMoveDuration(0), 300);
+    }
+    measure();
+    window.addEventListener("scroll", measure, { passive: true });
+    window.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("scroll", measure);
+      window.removeEventListener("resize", measure);
+    };
+  }, [mounted, open]);
 
   useEffect(() => {
     if (!open) {
@@ -152,13 +251,64 @@ function MobileSectionMenu({
     };
   }, [open]);
 
-  const filteredSections = useMemo(() => {
+  const filtering = filter.trim().length > 0;
+
+  const rows = useMemo<SheetRow[]>(() => {
     const q = filter.trim().toLowerCase();
-    if (!q) return tocSections;
-    return tocSections.filter((s) => s.label.toLowerCase().includes(q));
+    const out: SheetRow[] = [];
+    for (const s of tocSections) {
+      const subs = tocSubsections[s.id] ?? [];
+      if (subs.length === 0) {
+        if (!q || s.label.toLowerCase().includes(q)) {
+          out.push({ kind: "item", id: s.id, label: s.label });
+        }
+        continue;
+      }
+      const allChildren = subs.map((label) => ({ id: subSlug(label), label }));
+      if (!q) {
+        out.push({ kind: "group", id: s.id, label: s.label, children: allChildren });
+        continue;
+      }
+      const sectionHit = s.label.toLowerCase().includes(q);
+      const children = sectionHit
+        ? allChildren
+        : allChildren.filter((c) => c.label.toLowerCase().includes(q));
+      if (sectionHit || children.length > 0) {
+        out.push({ kind: "group", id: s.id, label: s.label, children });
+      }
+    }
+    return out;
   }, [filter]);
 
   const close = () => setOpen(false);
+  const openMenu = () => setOpen(true);
+
+  const selectLeaf = (id: string) => {
+    onSelect(id);
+    close();
+  };
+
+  const floatingToggle =
+    mounted && togglePos
+      ? createPortal(
+          <motion.button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={
+              open
+                ? "Close section menu"
+                : `Open section menu. Current: ${activeLabel}`
+            }
+            className="fixed z-[70] flex size-10 items-center justify-center rounded-lg text-zinc-400 transition-colors duration-200 hover:bg-zinc-50 hover:text-zinc-500 lg:hidden"
+            initial={false}
+            animate={{ top: togglePos.top, left: togglePos.left }}
+            transition={{ duration: toggleMoveDuration, ease: "easeOut" }}
+          >
+            <ChevronCloseMorph open={open} />
+          </motion.button>,
+          document.body,
+        )
+      : null;
 
   const sheet =
     open && mounted
@@ -169,22 +319,13 @@ function MobileSectionMenu({
             aria-label="Design System sections"
             className="fixed inset-0 z-[60] flex flex-col bg-white animate-in fade-in duration-200 lg:hidden"
           >
-            {/* Header: page title + close */}
             <div className="flex items-center justify-between gap-4 px-5 pt-5 pb-3">
-              <h2 className="min-w-0 truncate text-lg font-medium tracking-[0.01em] text-zinc-900">
+              <h2 className="min-w-0 truncate text-base font-medium tracking-wide text-zinc-800">
                 Design System
               </h2>
-              <button
-                type="button"
-                onClick={close}
-                aria-label="Close section menu"
-                className="flex size-10 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition-colors duration-200 hover:bg-zinc-50 hover:text-zinc-700"
-              >
-                <Close size={iconSize("touch")} />
-              </button>
+              <span ref={sheetSlotRef} className="size-10 shrink-0" aria-hidden />
             </div>
 
-            {/* Filter field — FieldShell is already rounded-full */}
             <div className="px-5 pb-3">
               <FieldShell tone="muted" className="gap-2">
                 <span className="pointer-events-none ml-2.5 text-zinc-400" aria-hidden>
@@ -206,44 +347,113 @@ function MobileSectionMenu({
               </FieldShell>
             </div>
 
-            {/* Section list */}
             <div
               role="listbox"
               aria-label="Sections"
-              className="min-h-0 flex-1 overflow-y-auto border-t border-zinc-100 px-2 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+              className="min-h-0 flex-1 overflow-y-auto px-2 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
             >
-              {filteredSections.length === 0 ? (
+              {rows.length === 0 ? (
                 <p className="px-3 py-6 text-sm text-zinc-400">No matching sections</p>
               ) : (
-                <ul className="py-1">
-                  {filteredSections.map((s) => {
-                    const isActive = activeSection === s.id;
+                <ul className="flex flex-col gap-1 py-1">
+                  {rows.map((row) => {
+                    if (row.kind === "item") {
+                      const active = activeId === row.id;
+                      return (
+                        <li key={row.id}>
+                          <button
+                            type="button"
+                            role="option"
+                            aria-selected={active}
+                            onClick={() => selectLeaf(row.id)}
+                            className="flex w-full min-h-11 items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors duration-200 hover:bg-zinc-50"
+                          >
+                            <span className={LEADING_ICON_SLOT} aria-hidden />
+                            <span
+                              className={clsx(
+                                "text-base font-medium tracking-wide leading-5 transition-colors duration-200",
+                                active
+                                  ? "text-blue-500"
+                                  : "text-zinc-400 hover:text-zinc-500",
+                              )}
+                            >
+                              {row.label}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    }
+
+                    const groupActive = activeSection === row.id;
+                    const expanded = filtering || expandedSection === row.id;
                     return (
-                      <li key={s.id}>
+                      <li key={row.id}>
                         <button
                           type="button"
-                          role="option"
-                          aria-selected={isActive}
+                          aria-expanded={expanded}
                           onClick={() => {
-                            onSelect(s.id);
-                            close();
+                            if (!filtering) onToggleExpand(row.id);
                           }}
-                          className="flex w-full min-h-12 items-center gap-2.5 rounded-lg px-3 py-3 text-left transition-colors duration-200 hover:bg-zinc-50"
+                          className="flex w-full min-h-11 items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors duration-200 hover:bg-zinc-50"
                         >
-                          <ChevronRightIcon
+                          <Chevron
+                            direction="right"
                             size={iconSize("toolbar")}
-                            className={
-                              isActive ? "text-blue-500" : "text-zinc-300"
-                            }
+                            className={clsx(
+                              "shrink-0 transition-transform duration-200 ease-out",
+                              expanded ? "rotate-90 text-zinc-400" : "text-zinc-300",
+                            )}
                           />
                           <span
-                            className={`font-medium tracking-[0.01em] ${
-                              isActive ? "text-blue-500" : "text-zinc-800"
-                            }`}
+                            className={clsx(
+                              "text-base font-medium tracking-wide leading-5 transition-colors duration-200",
+                              groupActive
+                                ? "text-zinc-500"
+                                : "text-zinc-400 hover:text-zinc-500",
+                            )}
                           >
-                            {s.label}
+                            {row.label}
                           </span>
                         </button>
+                        <div
+                          className={clsx(
+                            "grid transition-[grid-template-rows,opacity] duration-200 ease-out",
+                            expanded
+                              ? "grid-rows-[1fr] opacity-100"
+                              : "pointer-events-none grid-rows-[0fr] opacity-0",
+                          )}
+                          aria-hidden={!expanded}
+                        >
+                          <div className="min-h-0 overflow-hidden">
+                            <ul className="flex flex-col gap-1 pb-1 pt-0.5">
+                              {row.children.map((child) => {
+                                const active = activeId === child.id;
+                                return (
+                                  <li key={child.id}>
+                                    <button
+                                      type="button"
+                                      role="option"
+                                      aria-selected={active}
+                                      onClick={() => selectLeaf(child.id)}
+                                      className="flex w-full min-h-11 items-center gap-2.5 rounded-lg py-2.5 pl-[2.375rem] pr-3 text-left transition-colors duration-200 hover:bg-zinc-50"
+                                    >
+                                      <span
+                                        className={clsx(
+                                          "text-base font-medium tracking-wide leading-5 transition-colors duration-200",
+                                          active
+                                            ? "text-blue-500"
+                                            : "text-zinc-400 hover:text-zinc-500",
+                                        )}
+                                      >
+                                        {child.label}
+                                      </span>
+                                    </button>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+                        </div>
                       </li>
                     );
                   })}
@@ -251,30 +461,27 @@ function MobileSectionMenu({
               )}
             </div>
           </div>,
-          document.body
+          document.body,
         )
       : null;
 
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-label={`Current section: ${activeLabel}. Open section menu.`}
-        onClick={() => setOpen(true)}
-        className="flex w-full min-h-12 items-center justify-between gap-3 bg-transparent py-3 text-left transition-colors duration-200"
-      >
-        <span className="truncate font-medium tracking-[0.01em] text-zinc-800">
+      <div className="flex w-full min-h-12 items-center gap-3 py-3">
+        <button
+          ref={triggerRef}
+          type="button"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-label={`Current section: ${activeLabel}. Open section menu.`}
+          onClick={openMenu}
+          className="min-w-0 flex-1 truncate text-left text-base font-medium tracking-wide text-zinc-800 transition-colors duration-200"
+        >
           {activeLabel}
-        </span>
-        <Chevron
-          direction="down"
-          size={iconSize("toolbar")}
-          className="text-zinc-400 transition-transform duration-200"
-        />
-      </button>
+        </button>
+        <span ref={barSlotRef} className="size-10 shrink-0" aria-hidden />
+      </div>
+      {floatingToggle}
       {sheet}
     </>
   );
@@ -302,13 +509,31 @@ export default function SystemPage() {
   // Logo stays position:fixed (reliable hit target) and hides once the footer
   // enters the viewport so only the footer brand shows near the bottom.
   const zoneRef = useRef<HTMLDivElement>(null);
+  const mobileStickySentinelRef = useRef<HTMLDivElement>(null);
   const desktopChromeRef = useRef<HTMLDivElement>(null);
   const [desktopDocked, setDesktopDocked] = useState(false);
   const [logoHidden, setLogoHidden] = useState(false);
+  /** True when the mobile section bar is stuck and overlapping content below. */
+  const [mobileNavStuck, setMobileNavStuck] = useState(false);
 
   // Logo doorway + route entry: always land at the top of the DS.
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  // Mobile sticky bar: show bottom hairline only once the bar is stuck
+  // (sentinel above it has scrolled out of view → content passes underneath).
+  useEffect(() => {
+    const sentinel = mobileStickySentinelRef.current;
+    if (!sentinel) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        setMobileNavStuck(!entry.isIntersecting);
+      },
+      { threshold: 0 },
+    );
+    io.observe(sentinel);
+    return () => io.disconnect();
   }, []);
 
   // Capture-phase home navigation. Next/Link soft-nav can miss while the
@@ -528,12 +753,29 @@ export default function SystemPage() {
           pl-18 clears the seal; pt-6 centers the label/chevron with the seal
           (seal center ≈ 48px; min-h-12 row centers at 24px → need ~24px pt);
           pb-3 gives the sticky bar a little breathing room under the row.
+          Bottom hairline only when stuck (sentinel leaves the viewport).
         */}
+        <div
+          ref={mobileStickySentinelRef}
+          className="h-px w-full lg:hidden"
+          aria-hidden
+        />
         <nav
           aria-label="Sections"
-          className="sticky top-0 z-40 border-y border-zinc-200/80 bg-white/90 pl-18 pr-5 pt-6 pb-3 backdrop-blur-md lg:hidden"
+          className={clsx(
+            "sticky top-0 z-40 bg-white/90 pl-18 pr-5 pt-6 pb-3 backdrop-blur-md transition-[border-color] duration-200 lg:hidden",
+            mobileNavStuck ? "border-b border-zinc-100" : "border-b border-transparent",
+          )}
         >
-          <MobileSectionMenu activeSection={activeSection} onSelect={scrollTo} />
+          <MobileSectionMenu
+            activeSection={activeSection}
+            activeId={activeId}
+            expandedSection={expandedSection}
+            onToggleExpand={(id) =>
+              setExpandedSection((prev) => (prev === id ? null : id))
+            }
+            onSelect={scrollTo}
+          />
         </nav>
 
         {/*
