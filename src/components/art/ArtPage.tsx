@@ -318,13 +318,11 @@ export default function ArtPage() {
   const handleArtItemClick = (item: ArtCardData) => {
     const src = item.fullImageSrc || item.imageSrc;
     if (!src) return;
-    const caption = item.metadata
-      ? `${item.title}, ${item.metadata}`
-      : item.title;
     setLightboxItem({
       imageSrc: src,
       previewSrc: item.imageSrc || undefined,
-      caption,
+      title: item.title,
+      detail: item.metadata,
       alt: item.title,
     });
   };
@@ -338,7 +336,8 @@ export default function ArtPage() {
     setLightboxItem({
       imageSrc: src,
       previewSrc: image.imageSrc || undefined,
-      caption: [sketchbook.title, sketchbook.date].filter(Boolean).join(", "),
+      title: sketchbook.title,
+      detail: sketchbook.date || undefined,
       alt: sketchbook.title,
     });
   };
@@ -346,13 +345,12 @@ export default function ArtPage() {
   const handleMuralImageClick = (mural: MuralData, image: MuralImage) => {
     const src = image.fullImageSrc || image.imageSrc;
     if (!src) return;
-    const caption = [mural.title, mural.location, mural.date]
-      .filter(Boolean)
-      .join(", ");
+    const detail = [mural.location, mural.date].filter(Boolean).join(", ");
     setLightboxItem({
       imageSrc: src,
       previewSrc: image.imageSrc || undefined,
-      caption,
+      title: mural.title,
+      detail: detail || undefined,
       alt: mural.title,
     });
   };

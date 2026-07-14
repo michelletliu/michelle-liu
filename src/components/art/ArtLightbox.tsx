@@ -9,7 +9,10 @@ export type ArtLightboxItem = {
   imageSrc: string;
   /** Gallery thumbnail already in cache — shown while full res loads */
   previewSrc?: string;
-  caption?: string;
+  /** Piece / sketchbook / mural name */
+  title?: string;
+  /** Medium, size, date, location, etc. — one gray lighter than title */
+  detail?: string;
   alt?: string;
 };
 
@@ -83,7 +86,7 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
       onClick={handleClose}
       role="dialog"
       aria-modal="true"
-      aria-label={item.alt || item.caption || "Artwork"}
+      aria-label={item.alt || item.title || "Artwork"}
     >
       <div className="absolute inset-0 bg-zinc-100/95" />
 
@@ -147,7 +150,7 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
 
             <img
               src={item.imageSrc}
-              alt={item.alt || item.caption || "Artwork"}
+              alt={item.alt || item.title || "Artwork"}
               decoding="async"
               fetchPriority="high"
               onLoad={() => setFullImageLoaded(true)}
@@ -160,16 +163,26 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
             />
           </div>
 
-          {item.caption && showImage && (
+          {(item.title || item.detail) && showImage && (
             <p
-              className={`mt-4 sm:mt-6 max-w-[min(100%,600px)] px-2 text-center font-['Michelle',sans-serif] text-sm sm:text-base tracking-[0.005em] font-normal leading-relaxed text-zinc-600 ${
+              className={`mt-4 sm:mt-6 max-w-[min(100%,600px)] px-2 text-center font-['Michelle',sans-serif] text-sm sm:text-base tracking-[0.005em] font-normal leading-relaxed ${
                 isClosing
                   ? ""
                   : "animate-[fadeSlideUp_300ms_ease-out_100ms_both]"
               }`}
               style={{ fontVariationSettings: "'opsz' 9" }}
             >
-              {item.caption}
+              {item.title && (
+                <span className="text-zinc-600">{item.title}</span>
+              )}
+              {item.detail && (
+                <>
+                  {item.title && (
+                    <span className="text-zinc-500">{", "}</span>
+                  )}
+                  <span className="text-zinc-500">{item.detail}</span>
+                </>
+              )}
             </p>
           )}
         </div>
