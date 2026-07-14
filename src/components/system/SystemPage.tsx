@@ -96,16 +96,20 @@ function SearchMagnifierIcon({ size = iconSize("inline") }: { size?: string }) {
   );
 }
 
+/** Hit target for the floating chevron↔X morph (bar slot + sheet slot + button). */
+const MORPH_CONTROL_BOX = "size-10";
+/** One glyph size for both morph states — no resize jump. */
+const MORPH_ICON_PX = iconSizes.toolbar;
+
 /** Shared control: down-chevron morphs into Close X (and reverse). */
 function ChevronCloseMorph({ open }: { open: boolean }) {
-  const px = open ? iconSizes.touch : iconSizes.toolbar;
   return (
     <svg
-      width={px}
-      height={px}
+      width={MORPH_ICON_PX}
+      height={MORPH_ICON_PX}
       viewBox="0 0 24 24"
       fill="none"
-      className="inline-block shrink-0 transition-[width,height] duration-300 ease-out"
+      className="inline-block shrink-0"
       aria-hidden
     >
       <motion.g
@@ -299,7 +303,14 @@ function MobileSectionMenu({
                 ? "Close section menu"
                 : `Open section menu. Current: ${activeLabel}`
             }
-            className="fixed z-[70] flex size-10 items-center justify-center rounded-lg text-zinc-400 transition-colors duration-200 hover:bg-zinc-50 hover:text-zinc-500 lg:hidden"
+            // Ghost icon-button: no default bg; rounded-lg matches DS radius for size-10.
+            className={clsx(
+              "fixed z-[70] flex items-center justify-center rounded-lg bg-transparent text-zinc-400",
+              "transition-colors duration-200 hover:bg-zinc-100 hover:text-zinc-500",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
+              "lg:hidden",
+              MORPH_CONTROL_BOX,
+            )}
             initial={false}
             animate={{ top: togglePos.top, left: togglePos.left }}
             transition={{ duration: toggleMoveDuration, ease: "easeOut" }}
@@ -323,7 +334,11 @@ function MobileSectionMenu({
               <h2 className="min-w-0 truncate text-base font-medium tracking-wide text-zinc-800">
                 Design System
               </h2>
-              <span ref={sheetSlotRef} className="size-10 shrink-0" aria-hidden />
+              <span
+                ref={sheetSlotRef}
+                className={`${MORPH_CONTROL_BOX} shrink-0`}
+                aria-hidden
+              />
             </div>
 
             <div className="px-5 pb-3">
@@ -467,7 +482,11 @@ function MobileSectionMenu({
 
   return (
     <>
-      <div className="flex w-full min-h-12 items-center gap-3 py-3">
+      {/*
+        h-10 matches the morph control box so label + chevron share one midline
+        (optically nudged with the sticky nav's pt below).
+      */}
+      <div className="flex h-10 w-full items-center gap-3">
         <button
           ref={triggerRef}
           type="button"
@@ -475,11 +494,15 @@ function MobileSectionMenu({
           aria-expanded={open}
           aria-label={`Current section: ${activeLabel}. Open section menu.`}
           onClick={openMenu}
-          className="min-w-0 flex-1 truncate text-left text-base font-medium tracking-wide text-zinc-800 transition-colors duration-200"
+          className="min-w-0 flex-1 truncate text-left text-base font-medium leading-none tracking-wide text-zinc-800 transition-colors duration-200"
         >
           {activeLabel}
         </button>
-        <span ref={barSlotRef} className="size-10 shrink-0" aria-hidden />
+        <span
+          ref={barSlotRef}
+          className={`${MORPH_CONTROL_BOX} shrink-0`}
+          aria-hidden
+        />
       </div>
       {floatingToggle}
       {sheet}
@@ -750,9 +773,10 @@ export default function SystemPage() {
       <div ref={zoneRef} className="relative">
         {/*
           Mobile section menu — clears fixed logo (left-6 top-8 size-8).
-          pl-18 clears the seal; pt-6 centers the label/chevron with the seal
-          (seal center ≈ 48px; min-h-12 row centers at 24px → need ~24px pt);
-          pb-3 gives the sticky bar a little breathing room under the row.
+          Seal center ≈ 48px. Row is h-10 (40); geometric center with pt-6 is
+          44px — ~4px above seal center so Overview + chevron read optically
+          centered with the seal (text sits low in its em box).
+          pl-18 clears the seal; pb-3 breathes under the row.
           Bottom hairline only when stuck (sentinel leaves the viewport).
         */}
         <div
