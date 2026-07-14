@@ -7,6 +7,7 @@ import LiquidGlassButton from "./LiquidGlassButton";
 export type MuralImage = {
   id: string;
   imageSrc: string;
+  fullImageSrc?: string;
 };
 
 export type MuralData = {

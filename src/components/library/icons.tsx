@@ -4,6 +4,7 @@
 // Chevron → ../Chevron.tsx · Close → ../Close.tsx · Arrow → ../Arrow.tsx
 
 export { ArrowRightIcon, ArrowDownIcon } from "../Arrow";
+export { ChevronDownIcon } from "../Chevron";
 export { CloseIcon } from "../Close";
 
 interface IconProps {
