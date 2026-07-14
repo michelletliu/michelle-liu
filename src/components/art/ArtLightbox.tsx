@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../utils/useScrollLock";
 
@@ -22,15 +22,17 @@ type ArtLightboxProps = {
 export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
   const [isClosing, setIsClosing] = useState(false);
   const isOpen = !!item;
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useScrollLock(isOpen);
 
   const handleClose = useCallback(() => {
     if (isClosing || !item) return;
     setIsClosing(true);
-    setTimeout(() => {
+    closeTimerRef.current = setTimeout(() => {
       onClose();
       setIsClosing(false);
+      closeTimerRef.current = null;
     }, 200);
   }, [isClosing, item, onClose]);
 
@@ -43,9 +45,15 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, handleClose]);
 
-  // Reset closing state when a new item opens
+  // Reset closing state when a new item opens and clear any pending close timers
   useEffect(() => {
-    if (item) setIsClosing(false);
+    if (item) {
+      setIsClosing(false);
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+    }
   }, [item]);
 
   if (!item) return null;
