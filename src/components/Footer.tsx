@@ -129,14 +129,14 @@ function SunIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <circle cx="8" cy="8" r="3.5" />
-      <line x1="8" y1="0.5" x2="8" y2="2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="8" y1="13.5" x2="8" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="15.5" y1="8" x2="13.5" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="2.5" y1="8" x2="0.5" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="13.3" y1="2.7" x2="11.89" y2="4.11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="4.11" y1="11.89" x2="2.7" y2="13.3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="13.3" y1="13.3" x2="11.89" y2="11.89" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="4.11" y1="4.11" x2="2.7" y2="2.7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="8" y1="0.5" x2="8" y2="2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <line x1="8" y1="13.5" x2="8" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <line x1="15.5" y1="8" x2="13.5" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <line x1="2.5" y1="8" x2="0.5" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <line x1="13.3" y1="2.7" x2="11.89" y2="4.11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <line x1="4.11" y1="11.89" x2="2.7" y2="13.3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <line x1="13.3" y1="13.3" x2="11.89" y2="11.89" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <line x1="4.11" y1="4.11" x2="2.7" y2="2.7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }
@@ -191,7 +191,7 @@ export default function Footer({ logoVariant = "default" }: FooterProps) {
               {/* Column 1: Logo + Time */}
               <div className="[grid-area:1_/_1] content-stretch flex flex-col gap-0 items-start relative shrink-0">
                 <FooterBrand logoVariant={logoVariant} gapClassName="gap-3" />
-                <p className="font-['Michelle',sans-serif] font-normal leading-5 text-[#b5bcc5] text-base">
+                <p className="font-['Michelle',sans-serif] font-normal leading-5 text-zinc-400 text-base">
                   <BlinkingTime time={localTime} h24={localH24} city={city} />
                 </p>
               </div>
@@ -225,7 +225,7 @@ export default function Footer({ logoVariant = "default" }: FooterProps) {
               {/* Logo Section + Time */}
               <div className="content-stretch flex flex-col gap-0 items-start relative shrink-0">
                 <FooterBrand logoVariant={logoVariant} gapClassName="gap-2" />
-                <p className="font-['Michelle',sans-serif] font-normal leading-5 text-[#b5bcc5] text-base">
+                <p className="font-['Michelle',sans-serif] font-normal leading-5 text-zinc-400 text-base">
                   <BlinkingTime time={localTime} h24={localH24} city={city} />
                 </p>
               </div>

@@ -71,7 +71,7 @@ export default function TextScramble({
           if (!q[i].char || Math.random() < 0.28) {
             q[i].char = CHARS[Math.floor(Math.random() * CHARS.length)];
           }
-          output += `<span style="color: #c4c4c4">${q[i].char}</span>`;
+          output += `<span class="text-zinc-300">${q[i].char}</span>`;
         } else {
           output += to;
         }

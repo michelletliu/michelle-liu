@@ -28,9 +28,9 @@ export const loreItem = defineType({
     defineField({
       name: 'imageBackground',
       title: 'Image Background Color',
-      description: 'Fallback background color (hex code, e.g., #e3dff4)',
+      description: 'Fallback background color (default: zinc-200 #e4e4e7)',
       type: 'string',
-      initialValue: '#e3dff4',
+      initialValue: '#e4e4e7',
     }),
     defineField({
       name: 'date',

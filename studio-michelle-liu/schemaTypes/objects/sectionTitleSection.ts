@@ -32,8 +32,8 @@ export const sectionTitleSection = defineType({
       name: 'numberColor',
       title: 'Number Color',
       type: 'string',
-      description: 'Hex color for the number (e.g., "#7fa2ff")',
-      initialValue: '#7fa2ff',
+      description: 'Hex color for the number (default: blue-400 #60a5fa)',
+      initialValue: '#60a5fa',
     }),
     defineField({
       name: 'title',
@@ -46,8 +46,8 @@ export const sectionTitleSection = defineType({
       name: 'titleColor',
       title: 'Title Color',
       type: 'string',
-      description: 'Hex color for the title (e.g., "#2e5ede")',
-      initialValue: '#2e5ede',
+      description: 'Hex color for the title (default: blue-600 #2563eb)',
+      initialValue: '#2563eb',
     }),
     defineField({
       name: 'lineColor',
