@@ -4,6 +4,8 @@ import clsx from "clsx";
 export type ArtCardData = {
   id: string;
   imageSrc: string;
+  /** Higher-res source for lightbox */
+  fullImageSrc?: string;
   title: string;
   aspectRatio?: number;
   /** Medium, Size, Date info */

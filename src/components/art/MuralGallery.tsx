@@ -7,6 +7,8 @@ import LiquidGlassButton from "./LiquidGlassButton";
 export type MuralImage = {
   id: string;
   imageSrc: string;
+  /** Higher-res source for lightbox */
+  fullImageSrc?: string;
 };
 
 export type MuralData = {
