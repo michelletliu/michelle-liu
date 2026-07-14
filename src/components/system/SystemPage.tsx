@@ -119,7 +119,9 @@ function MobileSectionMenu({
       setFilter("");
       if (wasOpenRef.current) {
         wasOpenRef.current = false;
-        triggerRef.current?.focus();
+        if (window.innerWidth < 1024) {
+          triggerRef.current?.focus();
+        }
       }
       return;
     }
@@ -293,14 +295,6 @@ export default function SystemPage() {
   const desktopChromeRef = useRef<HTMLDivElement>(null);
   const [desktopDocked, setDesktopDocked] = useState(false);
   const [logoHidden, setLogoHidden] = useState(false);
-
-  // Logo doorway + route entry: land at top, but preserve scroll on back/forward.
-  useEffect(() => {
-    const entry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
-    if (entry && entry.type !== "back_forward") {
-      window.scrollTo(0, 0);
-    }
-  }, []);
 
   // Capture-phase home navigation. Next/Link soft-nav can miss while the
   // blueprint morph re-renders mid-click; a document capture listener always
