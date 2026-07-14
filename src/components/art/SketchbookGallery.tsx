@@ -7,6 +7,7 @@ import LiquidGlassButton from "./LiquidGlassButton";
 export type SketchbookItem = {
   id: string;
   imageSrc: string;
+  fullImageSrc?: string;
 };
 
 export type SketchbookData = {
