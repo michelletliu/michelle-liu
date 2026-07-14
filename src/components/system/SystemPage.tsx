@@ -519,10 +519,13 @@ export default function SystemPage() {
         collide, then docks to the zone bottom so it can't cover the footer.
       */}
       <div ref={zoneRef} className="relative">
-        {/* Mobile section menu — clears fixed logo; HIG-style local bar */}
+        {/*
+          Mobile section menu — clears fixed logo (left-6 top-8 size-8).
+          pl-18 clears the seal; pb-5 gives the sticky bar breathing room.
+        */}
         <nav
           aria-label="Sections"
-          className="sticky top-0 z-40 border-y border-zinc-200/80 bg-white/90 pl-16 pr-5 backdrop-blur-md lg:hidden"
+          className="sticky top-0 z-40 border-y border-zinc-200/80 bg-white/90 pl-18 pr-5 pb-1 backdrop-blur-md lg:hidden"
         >
           <MobileSectionMenu activeSection={activeSection} onSelect={scrollTo} />
         </nav>

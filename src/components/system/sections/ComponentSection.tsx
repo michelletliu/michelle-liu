@@ -55,15 +55,16 @@ function SpecimenExpandIcon() {
  * - Soft zinc-50 rounded card behind every specimen
  * - Outer + card are always `w-full` so the bg fills the grid cell (never shrink-wrap)
  * - `min-h-64` keeps short specimens (e.g. tag badges) level with neighbors
+ * - Mobile (< lg): full content-column width; lg+: variable bento spans
  * - `h-full` + grid `items-stretch` / `justify-items-stretch` → equal height + full cell width
- * - `span` varies width (bento); never clips content (no overflow-hidden)
+ * - Never clips content (no overflow-hidden)
  * - Inner children stay content-sized and centered; only the bg card stretches
  */
 function Specimen({
   label,
   children,
   className = "",
-  span = "col-span-2 md:col-span-4",
+  span = "col-span-1 lg:col-span-4",
 }: {
   label: string;
   children: ReactNode;
@@ -83,17 +84,20 @@ function Specimen({
   );
 }
 
-/** 12-col bento: variable widths, equal row height + full cell width via stretch. */
+/**
+ * Mobile: single column so every zinc-50 card fills the content width
+ * (page px-6 / md:px-16 padding still applies). lg+: 12-col bento packing.
+ */
 const SPECIMEN_GRID =
-  "grid grid-cols-2 items-stretch justify-items-stretch gap-x-5 gap-y-8 md:grid-cols-12";
+  "grid grid-cols-1 items-stretch justify-items-stretch gap-y-8 lg:grid-cols-12 lg:gap-x-5";
 /** ~1/4 — icon / compact controls */
-const SPAN_NARROW = "col-span-1 md:col-span-3";
+const SPAN_NARROW = "col-span-1 lg:col-span-3";
 /** ~1/3 — default mid-size specimens */
-const SPAN_MID = "col-span-2 md:col-span-4";
+const SPAN_MID = "col-span-1 lg:col-span-4";
 /** ~1/2 — primary CTAs, dual controls */
-const SPAN_WIDE = "col-span-2 md:col-span-6";
+const SPAN_WIDE = "col-span-1 lg:col-span-6";
 /** ~2/3 — long copy (e.g. Contact CTA) */
-const SPAN_XWIDE = "col-span-2 md:col-span-8";
+const SPAN_XWIDE = "col-span-1 lg:col-span-8";
 
 const LIBRARY_OPTIONS = [
   { value: "favorites", label: "favorites", count: 8 },
