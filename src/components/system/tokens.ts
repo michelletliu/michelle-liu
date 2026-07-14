@@ -465,7 +465,6 @@ export const tocSubsections: Record<string, string[]> = {
     "Navigation & pills",
     "Inputs",
     "Buttons",
-    "Icon buttons",
     "Loaders",
     "Cards",
   ],
