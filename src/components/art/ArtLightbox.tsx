@@ -54,7 +54,10 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
 
   // Reset closing + load state when a new item opens; clear any pending close timers
   useEffect(() => {
-    if (!item) return;
+    if (!item) {
+      setFullImageLoaded(false);
+      return;
+    }
     setIsClosing(false);
     setFullImageLoaded(false);
     if (closeTimerRef.current) {
