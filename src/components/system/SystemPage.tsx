@@ -95,7 +95,7 @@ function MobileSectionMenu({
         aria-expanded={open}
         aria-label={`Current section: ${activeLabel}. Choose a section.`}
         onClick={() => setOpen((v) => !v)}
-        className="flex min-h-11 min-w-[9.5rem] items-center justify-between gap-2 rounded-full bg-zinc-500/10 px-3.5 py-2 transition-colors"
+        className="flex min-h-11 min-w-[9.5rem] items-center justify-between gap-2 rounded-full px-3.5 py-2 transition-colors"
       >
         <span className="truncate font-medium tracking-[0.01em] text-zinc-600">{activeLabel}</span>
         <svg
@@ -369,10 +369,14 @@ export default function SystemPage() {
         collide, then docks to the zone bottom so it can't cover the footer.
       */}
       <div ref={zoneRef} className="relative">
-        {/* Mobile section menu — clears fixed logo */}
+        {/*
+          Mobile section menu — clears fixed logo (left-6 top-8 size-8).
+          pt-[26px] vertically centers the min-h-11 filter with the seal;
+          pb-5 gives the sticky white bar more breathing room under the row.
+        */}
         <nav
           aria-label="Sections"
-          className="sticky top-0 z-40 flex items-center border-b border-zinc-100 bg-white/85 py-2 pl-16 pr-4 backdrop-blur-md lg:hidden"
+          className="sticky top-0 z-40 flex items-center border-b border-zinc-100 bg-white/85 pt-[26px] pb-5 pl-16 pr-4 backdrop-blur-md lg:hidden"
         >
           <MobileSectionMenu activeSection={activeSection} onSelect={scrollTo} />
         </nav>

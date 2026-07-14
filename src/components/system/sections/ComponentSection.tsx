@@ -93,14 +93,21 @@ const SHELF_OPTIONS = [
   { label: "2024", count: 7 },
 ];
 
-type FilterOption = { label: string; count: number };
-type FilterSize = "sm" | "md";
+type FilterOption = { label: string; count?: number };
+type FilterSize = "sm" | "md" | "mobile";
+
+const DS_SECTION_OPTIONS: FilterOption[] = [
+  { label: "Overview" },
+  { label: "Color" },
+  { label: "Typography" },
+  { label: "Components" },
+];
 
 /**
- * Live replica of the Library / About-shelf filter dropdown, unified into one
- * component with sm + md size variants. Both share the same corner-radius
- * pattern (rounded-full trigger, rounded-xl menu, rounded-[10px] options);
- * only text size and padding change between sizes.
+ * Live replica of the Library / About-shelf filter dropdown, plus the mobile
+ * design-system section picker (`mobile`: bare trigger, no gray pill bg).
+ * Corner-radius pattern is shared (rounded-full trigger, rounded-xl menu,
+ * rounded-[10px] options); size/padding/background change between variants.
  */
 function FilterDropdown({
   size,
@@ -116,22 +123,33 @@ function FilterDropdown({
   const activeCount = options.find((o) => o.label === active)?.count;
 
   const md = size === "md";
-  const textCls = md ? "text-base tracking-[0.01em]" : "text-sm tracking-wide";
+  const mobile = size === "mobile";
+  const textCls = md || mobile ? "text-base tracking-[0.01em]" : "text-sm tracking-wide";
 
   return (
     <div className="flex flex-col items-start gap-1">
       <button
         onClick={() => setOpen((o) => !o)}
-        className={`flex items-center gap-1.5 rounded-full bg-zinc-500/10 px-3 transition-colors cursor-pointer ${
-          md ? "py-1.5" : "py-1"
-        }`}
+        className={
+          mobile
+            ? "flex min-h-11 min-w-[9.5rem] items-center justify-between gap-2 rounded-full px-3.5 py-2 transition-colors cursor-pointer"
+            : `flex items-center gap-1.5 rounded-full bg-zinc-500/10 px-3 transition-colors cursor-pointer ${
+                md ? "py-1.5" : "py-1"
+              }`
+        }
       >
-        <span className={`font-['Michelle',sans-serif] font-medium text-zinc-500 ${textCls}`}>
+        <span
+          className={`font-['Michelle',sans-serif] font-medium ${
+            mobile ? "truncate text-zinc-600" : "text-zinc-500"
+          } ${textCls}`}
+        >
           {active}
-          <span className="text-zinc-400"> {activeCount}</span>
+          {activeCount !== undefined && (
+            <span className="text-zinc-400"> {activeCount}</span>
+          )}
         </span>
         <svg
-          className={`size-4 text-zinc-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`size-4 shrink-0 text-zinc-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -144,7 +162,7 @@ function FilterDropdown({
       {open && (
         <div
           className={`rounded-xl border border-zinc-100 bg-white shadow-elevated ${
-            md ? "w-36" : "min-w-[140px]"
+            mobile ? "min-w-[12rem]" : md ? "w-36" : "min-w-[140px]"
           }`}
         >
           <div className="flex flex-col gap-1 px-1.5 py-1.5">
@@ -155,16 +173,18 @@ function FilterDropdown({
                   key={o.label}
                   onClick={() => setActive(o.label)}
                   className={`flex items-center rounded-[10px] px-3 text-left transition-colors ${
-                    md ? "py-1" : "py-1.5"
+                    mobile ? "min-h-11 py-2" : md ? "py-1" : "py-1.5"
                   } ${isActive ? "bg-zinc-100" : "hover:bg-zinc-50"}`}
                 >
                   <span
                     className={`font-['Michelle',sans-serif] font-medium ${textCls} ${
-                      isActive ? "text-zinc-600" : "text-zinc-400"
+                      isActive ? (mobile ? "text-zinc-700" : "text-zinc-600") : "text-zinc-400"
                     }`}
                   >
                     {o.label}
-                    <span className={isActive ? "text-zinc-400" : "text-zinc-300"}> {o.count}</span>
+                    {o.count !== undefined && (
+                      <span className={isActive ? "text-zinc-400" : "text-zinc-300"}> {o.count}</span>
+                    )}
                   </span>
                 </button>
               );
@@ -305,6 +325,14 @@ export default function ComponentSection() {
           className="!items-start !justify-start"
         >
           <FilterDropdown size="sm" options={SHELF_OPTIONS} initialActive="2026" />
+        </Specimen>
+
+        <Specimen
+          label="Filter dropdown — mobile DS (bare, no gray bg)"
+          span={SPAN_WIDE}
+          className="!items-start !justify-start"
+        >
+          <FilterDropdown size="mobile" options={DS_SECTION_OPTIONS} initialActive="Components" />
         </Specimen>
 
         <Specimen label="Tooltip" span={SPAN_WIDE}>
