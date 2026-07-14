@@ -14,13 +14,23 @@ import { FilterDropdown } from "../../FilterDropdown";
 import Sidebar, { type SidebarNode } from "../../Sidebar";
 import Tooltip from "../../Tooltip";
 import LiquidGlassButton from "../../art/LiquidGlassButton";
-import { ChevronRightIcon } from "../../Chevron";
+import { Chevron, ChevronRightIcon } from "../../Chevron";
 import { Close } from "../../Close";
 import { iconSize } from "../../iconSizes";
 import { ArrowRightIcon } from "../../Arrow";
 import { PlusIcon, SendIcon } from "../../library/icons";
 import { Section, SubLabel, TagChip } from "../primitives";
 import type { Tag } from "../tokens";
+
+/**
+ * Sitewide ghost affordance — transparent resting surface, zinc wash on hover.
+ * Pair with the control’s DS radius (rounded-full / rounded-lg / rounded-md).
+ */
+const GHOST_SURFACE =
+  "bg-transparent transition-colors duration-200 hover:bg-zinc-100";
+/** Ghost text tint used when the control has no fill (links, mono, skip). */
+const GHOST_TEXT =
+  "bg-transparent text-zinc-500 transition-colors duration-200 hover:text-zinc-700";
 
 const X_LOGO_PATH =
   "M10.6862 7.6055L17.3844 0H15.8002L9.97941 6.60311L5.36277 0H0.178833L7.19548 9.9737L0.178833 17.9454H1.76308L7.90171 10.9761L12.7696 17.9454H17.9536L10.6858 7.6055H10.6862ZM8.7057 10.0639L7.99222 9.06869L2.33673 1.16544H4.60063L9.33802 7.5516L10.0515 8.54678L15.8011 16.8348H13.5372L8.7057 10.0643V10.0639Z";
@@ -515,16 +525,36 @@ export default function ComponentSection() {
 
       <SubLabel>Buttons</SubLabel>
       <div className={SPECIMEN_GRID}>
-        <Specimen label="Primary CTA" span={SPAN_WIDE}>
-          <button className="flex items-center justify-center gap-1.5 rounded-full border border-blue-400 bg-blue-500 px-4 py-1.5 transition-colors duration-200 ease-out hover:border-blue-300 hover:bg-blue-400">
+        <Specimen label="Primary CTA" span={SPAN_MID}>
+          <button
+            type="button"
+            className="flex items-center justify-center gap-1.5 rounded-full border border-blue-400 bg-blue-500 px-4 py-1.5 transition-colors duration-200 ease-out hover:border-blue-300 hover:bg-blue-400"
+          >
             <span className="font-['Michelle',sans-serif] text-base font-semibold text-white">
               Try It Out!
             </span>
           </button>
         </Specimen>
 
-        <Specimen label="View on X" span={SPAN_WIDE}>
-          <button className="flex items-center justify-center gap-1 rounded-full border border-blue-400 bg-blue-500 px-3 py-1 transition-colors duration-200 ease-out hover:border-blue-300 hover:bg-blue-400">
+        <Specimen
+          label="Primary ghost · bg-transparent · hover:bg-blue-50 · rounded-full"
+          span={SPAN_MID}
+        >
+          <button
+            type="button"
+            className="flex items-center justify-center gap-1.5 rounded-full border border-transparent bg-transparent px-4 py-1.5 text-blue-500 transition-colors duration-200 ease-out hover:bg-blue-50"
+          >
+            <span className="font-['Michelle',sans-serif] text-base font-semibold">
+              Try It Out!
+            </span>
+          </button>
+        </Specimen>
+
+        <Specimen label="View on X" span={SPAN_MID}>
+          <button
+            type="button"
+            className="flex items-center justify-center gap-1 rounded-full border border-blue-400 bg-blue-500 px-3 py-1 transition-colors duration-200 ease-out hover:border-blue-300 hover:bg-blue-400"
+          >
             <span className="font-['Michelle',sans-serif] text-sm font-semibold text-white whitespace-nowrap">
               View on
             </span>
@@ -537,21 +567,83 @@ export default function ComponentSection() {
           </button>
         </Specimen>
 
-        <Specimen label="Secondary button" span={SPAN_MID}>
-          <button className="rounded-full border border-[#e4e4e7] bg-[#fafafa] px-5 py-2.5 text-base font-medium text-zinc-700 transition-colors hover:bg-[#f4f4f5]">
+        <Specimen
+          label="Link ghost · no fill · hover:text-blue-500 (ExperimentModal)"
+          span={SPAN_MID}
+        >
+          <button
+            type="button"
+            className="group inline-flex items-center justify-center gap-1 rounded-full px-3 py-1 transition-colors duration-200 ease-out"
+          >
+            <span className="font-['Michelle',sans-serif] text-sm font-medium text-zinc-500 whitespace-nowrap transition-colors group-hover:text-blue-500">
+              sundays.rsvp
+            </span>
+            <span className="inline-flex items-center text-zinc-500 transition-colors group-hover:text-blue-500">
+              <ArrowUpRight size="12px" />
+            </span>
+          </button>
+        </Specimen>
+
+        <Specimen label="Secondary" span={SPAN_MID}>
+          <button
+            type="button"
+            className="rounded-full border border-[#e4e4e7] bg-[#fafafa] px-5 py-2.5 text-base font-medium text-zinc-700 transition-colors hover:bg-[#f4f4f5]"
+          >
             View all projects
           </button>
         </Specimen>
 
-        <Specimen label="Dark CTA (experiment)" span={SPAN_MID}>
-          <button className="rounded-full bg-zinc-900 px-5 py-2.5 font-mono text-[15px] font-medium tracking-[0.75px] text-white transition-colors hover:bg-zinc-700">
-            GENERATE
+        <Specimen
+          label="Secondary ghost · bg-transparent · hover:bg-zinc-100 · rounded-full"
+          span={SPAN_MID}
+        >
+          <button
+            type="button"
+            className={`rounded-full border border-transparent px-5 py-2.5 text-base font-medium text-zinc-700 ${GHOST_SURFACE}`}
+          >
+            View all projects
           </button>
         </Specimen>
 
         <Specimen label="Quiet action" span={SPAN_MID}>
-          <button className="rounded-lg bg-zinc-100 px-4 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-200">
+          <button
+            type="button"
+            className="rounded-lg bg-zinc-100 px-4 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-200"
+          >
             Try Again
+          </button>
+        </Specimen>
+
+        <Specimen
+          label="Quiet ghost · bg-transparent · hover:bg-zinc-100 · rounded-lg"
+          span={SPAN_MID}
+        >
+          <button
+            type="button"
+            className={`rounded-lg px-4 py-2 text-sm text-zinc-700 ${GHOST_SURFACE}`}
+          >
+            Try Again
+          </button>
+        </Specimen>
+
+        <Specimen label="Dark CTA (experiment)" span={SPAN_MID}>
+          <button
+            type="button"
+            className="rounded-full bg-zinc-900 px-5 py-2.5 font-mono text-[15px] font-medium tracking-[0.75px] text-white transition-colors hover:bg-zinc-700"
+          >
+            GENERATE
+          </button>
+        </Specimen>
+
+        <Specimen
+          label="Dark ghost (experiment) · bg-transparent · hover:bg-zinc-100"
+          span={SPAN_MID}
+        >
+          <button
+            type="button"
+            className={`rounded-full px-5 py-2.5 font-mono text-[15px] font-medium tracking-[0.75px] text-zinc-900 ${GHOST_SURFACE}`}
+          >
+            GENERATE
           </button>
         </Specimen>
 
@@ -559,35 +651,143 @@ export default function ComponentSection() {
           <ContactBadge className="shrink-0 gap-1.5 px-3 py-1.5" />
         </Specimen>
 
-        <Specimen label="Ghost text" span={SPAN_MID}>
-          <button className="text-left text-base leading-5 text-[#a1a1aa] transition-colors hover:text-[#71717a]">
+        <Specimen label="Ghost text · color-only hover" span={SPAN_MID}>
+          <button
+            type="button"
+            className={`text-left text-base leading-5 ${GHOST_TEXT}`}
+          >
             Read more
           </button>
         </Specimen>
 
-        <Specimen label="Ghost mono (experiment)" span={SPAN_WIDE}>
-          <button className="group flex items-center justify-center gap-3.5 px-6 py-2 transition-colors">
-            <span className="whitespace-nowrap font-mono text-[15px] font-semibold text-zinc-500 transition-colors group-hover:text-zinc-700">
+        <Specimen label="Ghost mono (experiment) · color-only hover" span={SPAN_WIDE}>
+          <button type="button" className={`group flex items-center justify-center gap-3.5 px-6 py-2 ${GHOST_TEXT}`}>
+            <span className="whitespace-nowrap font-mono text-[15px] font-semibold">
               Upload Actual Data
             </span>
           </button>
         </Specimen>
 
-        <Specimen label="Skip link" span={SPAN_NARROW}>
-          <button className="flex flex-col items-start gap-0.5 text-left text-xs font-medium leading-tight text-zinc-400 transition-colors hover:text-blue-500">
+        <Specimen label="Skip link · color-only hover" span={SPAN_NARROW}>
+          <button
+            type="button"
+            className="flex flex-col items-start gap-0.5 bg-transparent text-left text-xs font-medium leading-tight text-zinc-400 transition-colors hover:text-blue-500"
+          >
             <span>↓ SKIP TO</span>
             <span>DESIGNS</span>
           </button>
         </Specimen>
 
-        <Specimen label="Breadcrumb ghost" span={SPAN_NARROW}>
-          <button className="rounded-md px-1.5 py-0.5 text-sm font-medium text-[#52525b] transition-colors hover:bg-[#f4f4f5]">
+        <Specimen
+          label="Breadcrumb ghost · bg-transparent · hover:bg-zinc-100 · rounded-md"
+          span={SPAN_NARROW}
+        >
+          <button
+            type="button"
+            className={`rounded-md px-1.5 py-0.5 text-sm font-medium text-[#52525b] ${GHOST_SURFACE}`}
+          >
             Work
           </button>
         </Specimen>
+      </div>
 
-        <Specimen label="Icon" span={SPAN_NARROW}>
+      <SubLabel>Icon buttons</SubLabel>
+      <div className={SPECIMEN_GRID}>
+        <Specimen label="Primary · size-10 · rounded-full" span={SPAN_NARROW}>
           <button
+            type="button"
+            className="flex size-10 items-center justify-center rounded-full border border-blue-400 bg-blue-500 text-white transition-colors duration-200 hover:border-blue-300 hover:bg-blue-400"
+            aria-label="Submit"
+          >
+            <SendIcon className="-ml-0.5 w-5 pt-0.5" />
+          </button>
+        </Specimen>
+
+        <Specimen
+          label="Primary ghost · bg-transparent · hover:bg-blue-50 · rounded-full"
+          span={SPAN_NARROW}
+        >
+          <button
+            type="button"
+            className="flex size-10 items-center justify-center rounded-full bg-transparent text-blue-500 transition-colors duration-200 hover:bg-blue-50"
+            aria-label="Submit"
+          >
+            <SendIcon className="-ml-0.5 w-5 pt-0.5" />
+          </button>
+        </Specimen>
+
+        <Specimen label="Secondary · size-10 · rounded-full" span={SPAN_NARROW}>
+          <button
+            type="button"
+            className="flex size-10 items-center justify-center rounded-full border border-[#e4e4e7] bg-[#fafafa] text-zinc-700 transition-colors duration-200 hover:bg-[#f4f4f5]"
+            aria-label="Next"
+          >
+            <Chevron direction="right" size={iconSize("toolbar")} />
+          </button>
+        </Specimen>
+
+        <Specimen
+          label="Secondary ghost · bg-transparent · hover:bg-zinc-100 · rounded-full"
+          span={SPAN_NARROW}
+        >
+          <button
+            type="button"
+            className={`flex size-10 items-center justify-center rounded-full text-zinc-700 ${GHOST_SURFACE}`}
+            aria-label="Next"
+          >
+            <Chevron direction="right" size={iconSize("toolbar")} />
+          </button>
+        </Specimen>
+
+        <Specimen label="Quiet · size-10 · rounded-lg" span={SPAN_NARROW}>
+          <button
+            type="button"
+            className="flex size-10 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 transition-colors duration-200 hover:bg-zinc-200"
+            aria-label="Expand"
+          >
+            <Chevron direction="down" size={iconSize("toolbar")} />
+          </button>
+        </Specimen>
+
+        <Specimen
+          label="Quiet ghost · bg-transparent · hover:bg-zinc-100 · rounded-lg · sticky morph"
+          span={SPAN_NARROW}
+        >
+          <button
+            type="button"
+            className={`flex size-10 items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-500 ${GHOST_SURFACE}`}
+            aria-label="Open menu"
+          >
+            <Chevron direction="down" size={iconSize("toolbar")} />
+          </button>
+        </Specimen>
+
+        <Specimen label="Dark (experiment) · size-10 · rounded-full" span={SPAN_NARROW}>
+          <button
+            type="button"
+            className="flex size-10 items-center justify-center rounded-full bg-zinc-900 text-white transition-colors duration-200 hover:bg-zinc-700"
+            aria-label="Generate"
+          >
+            <PlusIcon className="h-3.5 w-3.5" />
+          </button>
+        </Specimen>
+
+        <Specimen
+          label="Dark ghost (experiment) · bg-transparent · hover:bg-zinc-100"
+          span={SPAN_NARROW}
+        >
+          <button
+            type="button"
+            className={`flex size-10 items-center justify-center rounded-full text-zinc-900 ${GHOST_SURFACE}`}
+            aria-label="Generate"
+          >
+            <PlusIcon className="h-3.5 w-3.5" />
+          </button>
+        </Specimen>
+
+        <Specimen label="Info · rounded-full · soft wash" span={SPAN_NARROW}>
+          <button
+            type="button"
             className="rounded-full p-2 text-[#a1a1aa] transition-colors duration-200 hover:bg-zinc-200/50"
             aria-label="Project info"
           >
@@ -595,36 +795,44 @@ export default function ComponentSection() {
           </button>
         </Specimen>
 
-        <Specimen label="Icon" span={SPAN_NARROW}>
+        <Specimen label="Expand · size-6 · rounded-lg ghost" span={SPAN_NARROW}>
           <button
-            className="flex size-6 items-center justify-center rounded-lg text-[#a1a1aa] transition-colors duration-200 hover:bg-zinc-200"
+            type="button"
+            className={`flex size-6 items-center justify-center rounded-lg text-[#a1a1aa] hover:text-zinc-600 ${GHOST_SURFACE}`}
             aria-label="Expand to full page"
           >
             <SpecimenExpandIcon />
           </button>
         </Specimen>
 
-        <Specimen label="Icon" span={SPAN_NARROW}>
+        <Specimen label="Add · size-9 · tinted fill" span={SPAN_NARROW}>
           <button
-            className="flex size-9 items-center justify-center rounded-full bg-zinc-500/10 text-zinc-400 transition-all duration-300 hover:bg-[rgba(0,0,0,0.1)]"
+            type="button"
+            className="flex size-9 items-center justify-center rounded-full bg-zinc-500/10 text-zinc-400 transition-all duration-200 hover:bg-[rgba(0,0,0,0.1)]"
             aria-label="Add book"
           >
             <PlusIcon className="h-3.5 w-3.5" />
           </button>
         </Specimen>
 
-        <Specimen label="Icon" span={SPAN_NARROW}>
+        <Specimen label="Modal close · size-8 · rounded-full" span={SPAN_NARROW} className="!bg-zinc-200/80">
           <button
-            className="flex size-10 items-center justify-center rounded-full border border-blue-400 bg-blue-500 text-white transition-colors hover:bg-blue-400"
-            aria-label="Submit"
+            type="button"
+            className="flex size-8 items-center justify-center rounded-full bg-white text-zinc-500 transition-colors duration-200 hover:bg-zinc-100"
+            aria-label="Close"
           >
-            <SendIcon className="-ml-0.5 w-5 pt-0.5" />
+            <Close size={iconSize("touch")} />
           </button>
         </Specimen>
 
-        <Specimen label="Modal close" span={SPAN_WIDE} className="!bg-zinc-200/80">
+        <Specimen
+          label="Modal close ghost · bg-transparent · hover:bg-zinc-100 · rounded-full"
+          span={SPAN_NARROW}
+          className="!bg-zinc-200/80"
+        >
           <button
-            className="flex size-8 items-center justify-center rounded-full bg-white text-zinc-500 transition-colors hover:bg-zinc-100"
+            type="button"
+            className={`flex size-8 items-center justify-center rounded-full text-zinc-500 ${GHOST_SURFACE}`}
             aria-label="Close"
           >
             <Close size={iconSize("touch")} />
