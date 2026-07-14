@@ -109,7 +109,7 @@ const DS_SECTION_OPTIONS: FilterOption[] = [
 
 /**
  * Live replica of the Library / About-shelf filter dropdown, plus the mobile
- * design-system section picker (`mobile`: bare trigger, no gray pill bg).
+ * design-system section picker (`mobile`: bare when closed, gray pill when open).
  * Corner-radius pattern is shared (rounded-full trigger, rounded-xl menu,
  * rounded-[10px] options); size/padding/background change between variants.
  */
@@ -136,7 +136,9 @@ function FilterDropdown({
         onClick={() => setOpen((o) => !o)}
         className={
           mobile
-            ? "flex min-h-11 w-full items-center justify-between gap-2 rounded-full px-3.5 py-2 transition-colors cursor-pointer"
+            ? `flex min-h-11 w-full items-center justify-between gap-2 rounded-full px-3.5 py-2 transition-colors cursor-pointer ${
+                open ? "bg-zinc-500/10" : ""
+              }`
             : `flex items-center gap-1.5 rounded-full bg-zinc-500/10 px-3 transition-colors cursor-pointer ${
                 md ? "py-1.5" : "py-1"
               }`

@@ -95,7 +95,9 @@ function MobileSectionMenu({
         aria-expanded={open}
         aria-label={`Current section: ${activeLabel}. Choose a section.`}
         onClick={() => setOpen((v) => !v)}
-        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-full px-3.5 py-2 transition-colors"
+        className={`flex min-h-11 w-full items-center justify-between gap-2 rounded-full px-3.5 py-2 transition-colors ${
+          open ? "bg-zinc-500/10" : ""
+        }`}
       >
         <span className="truncate font-medium tracking-[0.01em] text-zinc-600">{activeLabel}</span>
         <svg
