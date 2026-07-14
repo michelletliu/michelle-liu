@@ -285,8 +285,8 @@ function MobileSectionMenu({
   const openMenu = () => setOpen(true);
 
   const selectLeaf = (id: string) => {
-    onSelect(id);
     close();
+    window.setTimeout(() => onSelect(id), 0);
   };
 
   const floatingToggle =
@@ -567,6 +567,7 @@ export default function SystemPage() {
       if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       if (getComputedStyle(a).pointerEvents === "none") return;
       e.preventDefault();
+      markBlueprintDoorwayNav();
       window.scrollTo(0, 0);
       router.push("/");
     };
