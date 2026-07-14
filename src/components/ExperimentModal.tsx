@@ -28,10 +28,10 @@ const FilmPage = lazy(() => filmPagePromise);
 function ExpandIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 4H4V10" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M4 4L10 10" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M14 20H20V14" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M20 20L14 14" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M10 4H4V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M4 4L10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M14 20H20V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M20 20L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
@@ -58,7 +58,7 @@ const ChevronRightIcon = () => (
   <svg className="block size-full" viewBox="0 0 16 16" fill="none">
     <path
       d="M6 12L10 8L6 4"
-      stroke="#A1A1AA"
+      stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -91,7 +91,7 @@ function Breadcrumb({ projectName, onWorkClick, isScrolled = false, isPastHero =
         </span>
       </button>
 
-      <div className="shrink-0 size-4">
+      <div className="shrink-0 size-4 text-zinc-500">
         <ChevronRightIcon />
       </div>
 
@@ -380,7 +380,7 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
                     <path d={xLogoPath} />
                   </svg>
                   <span className="text-white inline-flex items-center">
-                    <ArrowUpRight size="12px" strokeWidth={1.3} />
+                    <ArrowUpRight size="12px" />
                   </span>
                 </a>
               )}
@@ -402,7 +402,7 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
                   <path d={xLogoPath} />
                 </svg>
                 <span className="text-white inline-flex items-center">
-                  <ArrowUpRight size="12px" strokeWidth={1.3} />
+                  <ArrowUpRight size="12px" />
                 </span>
               </a>
             )}
@@ -416,7 +416,7 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
                 sundays.rsvp
               </span>
               <span className="text-zinc-500 group-hover:text-blue-500 inline-flex items-center">
-                <ArrowUpRight size="12px" strokeWidth={1.3} />
+                <ArrowUpRight size="12px" />
               </span>
             </a>
           </div>
@@ -501,7 +501,7 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
               <path d={xLogoPath} />
             </svg>
             <span className="text-white inline-flex items-center">
-              <ArrowUpRight size="12px" strokeWidth={1.3} />
+              <ArrowUpRight size="12px" />
             </span>
           </a>
         )}
@@ -515,7 +515,7 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
             sundays.rsvp
           </span>
           <span className="text-zinc-500 group-hover:text-blue-500 inline-flex items-center">
-            <ArrowUpRight size="12px" strokeWidth={1.3} />
+            <ArrowUpRight size="12px" />
           </span>
         </a>
       </div>
@@ -935,7 +935,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
     <div 
       ref={popoverRef}
       className={clsx(
-        "bg-white flex flex-col shadow-xl border border-zinc-100 overflow-hidden transition-all duration-200 ease-out animate-[popoverIn_150ms_ease-out]",
+        "bg-white flex flex-col shadow-elevated border border-zinc-100 overflow-hidden transition-all duration-200 ease-out animate-[popoverIn_150ms_ease-out]",
         isMobile ? "rounded-2xl w-full max-h-[85vh] overflow-auto" 
           : isFullscreen ? "rounded-3xl w-[50vw] max-w-[700px]" 
           : "rounded-2xl w-[420px] max-h-[70vh] overflow-auto"
@@ -989,7 +989,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
                 <path d={xLogoPath} />
               </svg>
               <span className="text-white text-sm inline-flex items-center">
-                <ArrowUpRight size="12px" strokeWidth={1.3} />
+                <ArrowUpRight size="12px" />
               </span>
             </a>
           )}

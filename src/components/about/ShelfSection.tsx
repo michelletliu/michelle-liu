@@ -140,9 +140,10 @@ export default function ShelfSection({
     return () => observer.disconnect();
   }, [updateIndicator, yearFilters]);
 
-  // Build options for mobile FilterDropdown
+  // Build options for mobile FilterDropdown — star goes after the label in the menu
+  const dropdownTitle = title.startsWith("★ ") ? `${title.slice(2)} ★` : title;
   const mobileFilterOptions = [
-    { value: "", label: title, count },
+    { value: "", label: dropdownTitle, count },
     ...yearFilters.map((f) => ({ value: f.year, label: f.year, count: f.count })),
   ];
 
@@ -263,7 +264,7 @@ export default function ShelfSection({
                 rel="noopener noreferrer"
                 className="cursor-pointer transition-colors bg-white"
               >
-                <span className="font-['Michelle',sans-serif] text-sm md:text-base font-normal tracking-wide text-zinc-400 hover:text-blue-500 transition-colors whitespace-nowrap">
+                <span className="inline-flex items-center font-['Michelle',sans-serif] text-sm md:text-base font-normal tracking-wide text-zinc-400 hover:text-blue-500 transition-colors whitespace-nowrap">
                   {externalLink.label}<ArrowUpRight className="ml-1.5" />
                 </span>
               </a>

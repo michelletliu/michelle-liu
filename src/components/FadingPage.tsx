@@ -297,7 +297,7 @@ export default function FadingPage() {
         alt=""
         aria-hidden="true"
         draggable={false}
-        className="pointer-events-none absolute left-1/2 top-1/2 select-none"
+        className="pointer-events-none absolute left-1/2 top-1/2 select-none shadow-elevated"
         style={{
           transform: `translate(-50%, -50%) scale(${START_SCALE})`,
           opacity: 0,
@@ -306,8 +306,6 @@ export default function FadingPage() {
           width: "auto",
           height: "auto",
           borderRadius: "12px",
-          boxShadow:
-            "0 12px 40px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08)",
           willChange: "transform, opacity",
           transformOrigin: "center center",
         }}

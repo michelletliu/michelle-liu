@@ -3,11 +3,7 @@ import { Section, Grid, TokenCard } from "../primitives";
 
 export default function ShadowSection() {
   return (
-    <Section
-      id="shadows"
-      title="Shadows"
-      subtitle="Soft, low-opacity elevation. shadow-default (a zinc-tinted lift) is the workhorse; images and experiments layer their own."
-    >
+    <Section id="shadows" title="Shadows">
       <Grid min="240px">
         {shadows.map((s) => (
           <TokenCard

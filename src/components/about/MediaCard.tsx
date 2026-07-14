@@ -148,7 +148,7 @@ export default function MediaCard({
         ref={cardRef}
         className={clsx(
           "flex h-full min-h-[260px] md:min-h-[280px] flex-col items-start overflow-hidden rounded-3xl border border-zinc-100 bg-white transition-shadow duration-200",
-          "shadow-[0px_4px_16px_0px_rgba(212, 212, 216,0.65)]",
+          "shadow-default",
           "md:rounded-3xl",
           className
         )}
@@ -280,8 +280,8 @@ export default function MediaCard({
     // Put the shadow on the card itself so overflow-hidden does not clip it.
     shouldDetectWhiteBorder &&
       (hasDetectedWhiteBorder
-        ? "shadow-[0_3px_8px_rgba(0,0,0,0.1)]"
-        : "shadow-[0_3px_8px_rgba(0,0,0,0.05)]"),
+        ? "shadow-media"
+        : "shadow-soft"),
     // Cursor style - pointer if has link
     externalUrl ? "cursor-pointer" : "",
     className

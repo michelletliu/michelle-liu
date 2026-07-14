@@ -3,11 +3,7 @@ import { Section, SubLabel, TagChip } from "../primitives";
 
 export default function ColorSection() {
   return (
-    <Section
-      id="color"
-      title="Color"
-      subtitle="A tinted-neutral zinc scale carries the whole site; blue-500 is the single interactive accent. Everything else is status or one-off."
-    >
+    <Section id="color" title="Color">
       <div className="space-y-24">
         {colorGroups.map((group) => (
           <div key={group.id}>

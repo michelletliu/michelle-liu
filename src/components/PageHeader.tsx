@@ -1,7 +1,6 @@
 import React from "react";
-import Link from "next/link";
 import { ScrollReveal } from "./ScrollReveal";
-import BlueprintLogo from "./BlueprintLogo";
+import DesignSystemLogoLink from "./DesignSystemLogoLink";
 import grainTexture from "../assets/Rectangle Grain 1.png";
 
 type PageHeaderProps = {
@@ -41,17 +40,8 @@ export default function PageHeader({
         <div className="size-full">
           <div className="content-stretch flex flex-col items-start px-16 pt-8 pb-8 max-md:px-6 max-md:pt-8 max-md:pb-4 relative w-full">
             <div className="content-stretch flex items-start justify-between relative shrink-0 w-full">
-              {/* Logo doorway to the design system: red → gray blueprint on hover.
-                  Use a real Link so hover prefetches /design-system. */}
-              <Link
-                href="/design-system"
-                aria-label="Open the design system"
-                className="group relative -m-2 inline-block shrink-0 cursor-pointer overflow-visible p-2 transition-transform duration-200 ease-out hover:scale-[1.02] active:scale-95"
-              >
-                <span className="relative block size-8 md:size-11">
-                  <BlueprintLogo mode="hover" />
-                </span>
-              </Link>
+              {/* Logo doorway: mount + hover prefetch /design-system and warm heavy sections. */}
+              <DesignSystemLogoLink />
             </div>
           </div>
         </div>

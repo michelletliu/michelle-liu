@@ -9,6 +9,8 @@ type TooltipProps = {
   offset?: number;
   /** Force-hide and skip hover show (e.g. while a click popover is open) */
   disabled?: boolean;
+  /** Keep tooltip permanently visible (e.g. design-system specimens) */
+  forceOpen?: boolean;
 };
 
 // Tooltip warmup state - tracks if any tooltip is currently open
@@ -54,6 +56,7 @@ export default function Tooltip({
   position = 'bottom',
   offset = 6,
   disabled = false,
+  forceOpen = false,
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
@@ -87,7 +90,7 @@ export default function Tooltip({
   const handleMouseEnter = () => {
     // Skip tooltips on touch devices: tapping fires mouseenter without a
     // matching mouseleave, so tooltips would stick after each tap.
-    if (isTouchSession || disabled) return;
+    if (forceOpen || isTouchSession || disabled) return;
 
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
@@ -111,6 +114,8 @@ export default function Tooltip({
   };
 
   const handleMouseLeave = () => {
+    if (forceOpen) return;
+
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
@@ -137,8 +142,11 @@ export default function Tooltip({
 
   // Clicking the trigger should never leave a tooltip open/queued
   const handleMouseDown = () => {
+    if (forceOpen) return;
     hideImmediately();
   };
+
+  const showTooltip = forceOpen || (isVisible && !disabled);
 
   const positionStyles = position === 'bottom' 
     ? { top: `calc(100% + ${offset}px)`, '--transform-origin': 'center top' as string }
@@ -152,11 +160,11 @@ export default function Tooltip({
       onMouseDown={handleMouseDown}
     >
       {children}
-      {isVisible && !disabled && (
+      {showTooltip && (
         <div
           className="tooltip absolute left-1/2 -translate-x-1/2 px-2 py-1 bg-zinc-800 text-white text-sm font-medium rounded-lg whitespace-nowrap pointer-events-none z-[9999]"
-          data-ending-style={isEnding ? "" : undefined}
-          data-instant={isInstant ? "" : undefined}
+          data-ending-style={!forceOpen && isEnding ? "" : undefined}
+          data-instant={forceOpen || isInstant ? "" : undefined}
           style={positionStyles}
         >
           {label}

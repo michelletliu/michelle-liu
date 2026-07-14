@@ -44,11 +44,7 @@ function Demo({ kind }: { kind: string }) {
 
 export default function MotionSection() {
   return (
-    <Section
-      id="motion"
-      title="Motion"
-      subtitle="Quick, eased, restrained. Most transitions are 200–300ms with a soft cubic-bezier(0.16,1,0.3,1). Loops (shimmer, pulse) run slowly."
-    >
+    <Section id="motion" title="Motion">
       <style dangerouslySetInnerHTML={{ __html: demoStyles }} />
 
       <SubLabel note="Live loops — the demos below repeat continuously so you can see each curve.">

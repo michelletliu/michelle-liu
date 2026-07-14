@@ -52,6 +52,9 @@ export default function BlueprintLogo({
   const rootRef = useRef<HTMLSpanElement>(null);
   const reduceMotion = useReducedMotion();
   const [groupHovered, setGroupHovered] = useState(false);
+  // Hover mode: ignore sticky hover after nav until the pointer leaves once.
+  // Always mode arms immediately so gray→red still works on first hover.
+  const [hoverArmed, setHoverArmed] = useState(always);
   const prevBlueprint = useRef<boolean | null>(null);
 
   const roundedControls = useAnimationControls();
@@ -62,7 +65,10 @@ export default function BlueprintLogo({
     if (!group) return;
 
     const onEnter = () => setGroupHovered(true);
-    const onLeave = () => setGroupHovered(false);
+    const onLeave = () => {
+      setGroupHovered(false);
+      setHoverArmed(true);
+    };
     group.addEventListener("pointerenter", onEnter);
     group.addEventListener("pointerleave", onLeave);
     return () => {
@@ -71,7 +77,9 @@ export default function BlueprintLogo({
     };
   }, []);
 
-  const showBlueprint = always ? !groupHovered : groupHovered;
+  const showBlueprint = always
+    ? !groupHovered
+    : hoverArmed && groupHovered;
   const t = morphTransition(!!reduceMotion);
 
   const h1 = showBlueprint ? -OVERHANG : RAIL_INSET;

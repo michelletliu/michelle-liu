@@ -77,7 +77,7 @@ export function FilterDropdown({ options, activeValue, onChange, className, useP
         }
       }}
       className={clsx(
-        "bg-white rounded-xl shadow-lg border border-zinc-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200",
+        "bg-white rounded-xl shadow-elevated border border-zinc-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200",
         usePortal ? "fixed" : "absolute left-0 top-[calc(100%+4px)]"
       )}
       style={usePortal ? {
@@ -146,7 +146,7 @@ export function FilterDropdown({ options, activeValue, onChange, className, useP
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
-          strokeWidth={2}
+          strokeWidth={1.5}
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>

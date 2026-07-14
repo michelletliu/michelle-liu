@@ -615,7 +615,7 @@ function GenerateScreen({
 }) {
   return (
     <div className="absolute flex flex-col items-center gap-2 justify-center size-full">
-    <div className="bg-white flex flex-col gap-[16px] items-center px-[36px] py-[24px] rounded-3xl shadow-[0px_2px_8px_rgba(0,0,0,0.1)] max-w-[90%]">
+    <div className="bg-white flex flex-col gap-[16px] items-center px-[36px] py-[24px] rounded-3xl shadow-soft max-w-[90%]">
       <div className="bg-[rgba(116,116,128,0.08)] flex flex-col items-center justify-center p-[8px] relative rounded-full shrink-0 size-[80px]">
         <img src={phoneIconSvg} alt="Phone" className="w-[25px] h-[42px]" />
       </div>
@@ -626,7 +626,7 @@ function GenerateScreen({
       <div className="flex items-start relative shrink-0">
         <div className="bg-[rgba(118,118,128,0.12)] flex h-[36px] items-center justify-center overflow-clip px-[5px] py-[4px] relative rounded-[100px] shrink-0 w-[209px]">
           <div
-            className="absolute inset-y-[4px] left-[5px] w-[calc(50%-5px)] bg-white rounded-full shadow-[0px_2px_20px_rgba(0,0,0,0.06)]"
+            className="absolute inset-y-[4px] left-[5px] w-[calc(50%-5px)] bg-white rounded-full shadow-soft"
             style={{
               transform: period === 'weekly' ? 'translateX(100%)' : 'translateX(0)',
               transition: 'transform 200ms cubic-bezier(0.77, 0, 0.175, 1)',
@@ -690,7 +690,7 @@ function AppIcon({ appName, icon }: { appName: string; icon: string }) {
     "NOTION",
   ]);
   const whiteBackgroundShadow = whiteBackgroundApps.has(appName)
-    ? "shadow-[0px_2px_8px_rgba(0,0,0,0.15)]"
+    ? "shadow-media"
     : "";
   
   switch (appName) {
@@ -726,7 +726,7 @@ function AppIcon({ appName, icon }: { appName: string; icon: string }) {
       );
     case "SLACK":
       return (
-        <div className={`${baseStyles} rounded-[12px] shadow-[0px_2px_8px_rgba(0,0,0,0.15)]`}>
+        <div className={`${baseStyles} rounded-[12px] shadow-media`}>
           <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-[12px] size-full" src={icon} />
         </div>
       );
@@ -744,13 +744,13 @@ function AppIcon({ appName, icon }: { appName: string; icon: string }) {
       );
     case "NOTION":
       return (
-        <div className={`${baseStyles} rounded-[11px] shadow-[0px_2px_8px_rgba(0,0,0,0.15)]`}>
+        <div className={`${baseStyles} rounded-[11px] shadow-media`}>
           <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-[11px] size-full" src={icon} />
         </div>
       );
     case "YOUTUBE":
       return (
-        <div className={`${baseStyles} rounded-[12px] shadow-[0px_2px_8px_rgba(0,0,0,0.15)]`}>
+        <div className={`${baseStyles} rounded-[12px] shadow-media`}>
           <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-[12px] size-full" src={icon} />
         </div>
       );
@@ -857,7 +857,7 @@ function ReceiptScreen({
 
   return (
     <div className="receipt-screen-container flex flex-col gap-6 items-center w-[337px] max-w-[90%] pt-16 pb-24 animate-slide-in transition-transform duration-400 mx-auto">
-      <div ref={receiptRef} className="bg-white relative shadow-md shrink-0 w-full border border-zinc-100">
+      <div ref={receiptRef} className="bg-white relative shadow-soft shrink-0 w-full border border-zinc-100">
         <div className="flex flex-col items-center size-full">
           <div className="flex flex-col gap-[32px] items-center px-[24px] py-[32px] relative w-full">
             <div className="flex flex-col gap-[24px] items-center relative shrink-0 w-full">
@@ -1063,7 +1063,7 @@ function ShareSheet({ onClose }: { onClose: () => void }) {
           <div className="flex gap-4 justify-around">
             {shareApps.map((app, idx) => (
               <button key={idx} className="flex flex-col items-center gap-1">
-                <div className={`w-[60px] h-[60px] rounded-[15px] ${app.color} flex items-center justify-center text-3xl shadow-sm`}>
+                <div className={`w-[60px] h-[60px] rounded-[15px] ${app.color} flex items-center justify-center text-3xl shadow-soft`}>
                   {app.icon}
                 </div>
                 <span className="text-[11px] text-zinc-700 font-mono">
@@ -1329,7 +1329,7 @@ function UploadInstructions({
       
       {/* Modal Content */}
       <div 
-        className={`upload-modal-content relative bg-white rounded-3xl py-2 pb-4 w-full max-w-[440px] max-h-[90vh] overflow-y-auto shadow-[0px_10px_60px_rgba(0,0,0,0.03)] transition-all duration-300 ease-out ${
+        className={`upload-modal-content relative bg-white rounded-3xl py-2 pb-4 w-full max-w-[440px] max-h-[90vh] overflow-y-auto shadow-elevated transition-all duration-300 ease-out ${
           isVisible 
             ? 'opacity-100 translate-y-0' 
             : isClosing 
@@ -1381,7 +1381,7 @@ function UploadInstructions({
                 onClick={() => setError(null)}
                 className="flex-shrink-0 text-red-300 hover:text-red-600 transition-colors"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>

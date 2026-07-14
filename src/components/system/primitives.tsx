@@ -23,25 +23,18 @@ export function TagChip({ tag }: { tag: Tag }) {
 export function Section({
   id,
   title,
-  subtitle,
   children,
 }: {
   id: string;
   title: string;
-  subtitle?: string;
   children: ReactNode;
 }) {
   return (
     <section id={id} className="scroll-mt-24 border-t border-zinc-100 pt-16 pb-4">
-      <div className="mb-10 flex flex-col gap-2">
+      <div className="mb-10">
         <h2 className="font-['Michelle',sans-serif] text-2xl font-medium leading-relaxed tracking-tight text-zinc-900">
           {title}
         </h2>
-        {subtitle && (
-          <p className="max-w-2xl font-['Michelle',sans-serif] text-base font-normal leading-relaxed text-zinc-500 text-pretty">
-            {subtitle}
-          </p>
-        )}
       </div>
       {children}
     </section>
@@ -53,7 +46,7 @@ export function SubLabel({ children, note }: { children: ReactNode; note?: strin
   const id = typeof children === "string" ? subSlug(children) : undefined;
   return (
     <div id={id} className="mb-5 mt-20 scroll-mt-28 first:mt-0">
-      <h3 className="text-base font-medium leading-relaxed text-zinc-500">{children}</h3>
+      <h3 className="text-xl font-medium leading-relaxed text-zinc-700">{children}</h3>
       {note && (
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400 text-pretty">{note}</p>
       )}

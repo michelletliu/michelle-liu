@@ -47,7 +47,7 @@ export default function Gallery({
           <div
             key={index}
             className={clsx(
-              "aspect-[200/300] content-stretch flex flex-col items-start overflow-clip relative rounded-xl shadow-[0px_2px_8px_0px_#eaeaea] shrink-0",
+              "aspect-[200/300] content-stretch flex flex-col items-start overflow-clip relative rounded-xl shadow-soft shrink-0",
               isDesktop && "flex-[1_0_0] min-h-px min-w-px",
               isMobile && index < 2 && "row-[1]",
               isMobile && index >= 2 && "row-[2]",

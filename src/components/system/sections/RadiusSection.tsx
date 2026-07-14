@@ -1,13 +1,9 @@
-import { radii, oddRadii } from "../tokens";
+import { radii, oddRadii, subSlug } from "../tokens";
 import { Section, SubLabel, Grid, RowList, TokenCard, TokenRow } from "../primitives";
 
 export default function RadiusSection() {
   return (
-    <Section
-      id="radius"
-      title="Corner Radius"
-      subtitle="Generously rounded. 26px is the signature radius on project media & modals. A global squircle enhancement reshapes every corner where supported."
-    >
+    <Section id={subSlug("Border Radius")} title="Border Radius">
       <div className="mb-10 rounded-2xl bg-zinc-50 p-6">
         <h3 className="text-sm font-medium text-zinc-500">
           Squircle corner-shape
