@@ -8,3 +8,4 @@ dist/
 next-env.d.ts
 *.tsbuildinfo
 .superpowers/
+.claude/worktrees/

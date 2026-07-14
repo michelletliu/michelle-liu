@@ -690,7 +690,7 @@ export default function AboutPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <img src={academicCapIcon} alt="" className="w-4 h-4" />
-                    <span className="text-zinc-400">Art B.A. & Cognitive Science B.S.&nbsp;&nbsp;/&nbsp;&nbsp;UCLA</span>
+                    <span className="text-zinc-400">B.A. Art & B.S. Cognitive Science, UCLA</span>
                   </div>
                 </div>
               </ScrollReveal>
@@ -707,7 +707,7 @@ export default function AboutPage() {
                     constant pursuit of an intersection between passion, profession, & personal mission.
                   </p>
                   <p>
-                    3 words to describe me: <em>Golden Retriever Energy</em> (even on the bad days.)
+                    3 words to describe me: Golden Retriever Energy (even on the bad days.)
                   </p>
                 </div>
               </ScrollReveal>
