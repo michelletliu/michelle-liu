@@ -379,11 +379,11 @@ export default function ComponentSection() {
           <ProjectTitlePillSpecimen />
         </Specimen>
 
-        <Specimen label="Tag badges" span={SPAN_MID}>
+        <Specimen label="Tag badges" span={SPAN_WIDE}>
           <TagBadgesSpecimen />
         </Specimen>
 
-        <Specimen label="Filter pill" span={SPAN_MID}>
+        <Specimen label="Filter pill" span={SPAN_WIDE}>
           <FilterPillsSpecimen />
         </Specimen>
 
@@ -477,13 +477,13 @@ export default function ComponentSection() {
           </FieldShell>
         </Specimen>
 
-        <Specimen label="Focused" span={SPAN_MID}>
+        <Specimen label="Focused" span={SPAN_WIDE}>
           <FieldShell active className="max-w-[240px]">
             <FieldInput type="text" defaultValue="Michelle" aria-label="Focused input specimen" readOnly />
           </FieldShell>
         </Specimen>
 
-        <Specimen label="Muted (library)" span={SPAN_MID}>
+        <Specimen label="Muted (library)" span={SPAN_WIDE}>
           <FieldShell tone="muted" className="max-w-[240px]">
             <FieldInput
               type="text"
@@ -495,13 +495,13 @@ export default function ComponentSection() {
           </FieldShell>
         </Specimen>
 
-        <Specimen label="Disabled" span={SPAN_MID}>
+        <Specimen label="Disabled" span={SPAN_WIDE}>
           <FieldShell className="max-w-[240px]">
             <FieldInput type="text" placeholder="Unavailable" disabled aria-label="Disabled input specimen" />
           </FieldShell>
         </Specimen>
 
-        <Specimen label="Error" span={SPAN_MID}>
+        <Specimen label="Error" span={SPAN_WIDE}>
           <FieldShell error className="max-w-[240px]">
             <FieldInput type="password" placeholder="Enter" defaultValue="••••" aria-label="Error input specimen" readOnly />
           </FieldShell>
@@ -676,7 +676,7 @@ export default function ComponentSection() {
           </button>
         </Specimen>
 
-        <Specimen label="Book cover" span={SPAN_NARROW} className="!bg-zinc-100">
+        <Specimen label="Book cover" span={SPAN_MID} className="!bg-zinc-100">
           <button
             type="button"
             className="h-28 w-20 cursor-pointer rounded-sm bg-gradient-to-br from-zinc-300 to-zinc-400 shadow-media transition-transform duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02]"
@@ -684,7 +684,7 @@ export default function ComponentSection() {
           />
         </Specimen>
 
-        <Specimen label="Quote card" span={SPAN_WIDE} className="!bg-zinc-100">
+        <Specimen label="Quote card" span={SPAN_MID} className="!bg-zinc-100">
           <button
             type="button"
             className="flex h-24 w-48 cursor-pointer flex-col justify-center rounded-3xl border border-zinc-100 bg-white px-4 shadow-default shadow-default-hover transition-transform duration-200 hover:scale-[1.01]"
