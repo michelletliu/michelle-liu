@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Sidebar, { type SidebarNode } from "../Sidebar";
 import BlueprintLogo from "../BlueprintLogo";
@@ -15,6 +15,100 @@ import BorderSection from "./sections/BorderSection";
 import MaterialSection from "./sections/MaterialSection";
 import MotionSection from "./sections/MotionSection";
 import ComponentSection from "./sections/ComponentSection";
+
+/** Apple HIG–style pop-up button for mobile section navigation. */
+function MobileSectionMenu({
+  activeSection,
+  onSelect,
+}: {
+  activeSection: string;
+  onSelect: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const activeLabel =
+    tocSections.find((s) => s.id === activeSection)?.label ?? tocSections[0].label;
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`Current section: ${activeLabel}. Choose a section.`}
+        onClick={() => setOpen((v) => !v)}
+        className="flex min-h-11 min-w-[9.5rem] items-center justify-between gap-2 rounded-full bg-zinc-500/10 px-3.5 py-2 transition-colors"
+      >
+        <span className="truncate font-medium tracking-[0.01em] text-zinc-600">{activeLabel}</span>
+        <svg
+          className={`size-4 shrink-0 text-zinc-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+          aria-hidden="true"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          role="listbox"
+          aria-label="Sections"
+          className="absolute left-0 top-[calc(100%+4px)] z-50 max-h-[min(70dvh,28rem)] min-w-[12rem] overflow-y-auto rounded-xl border border-zinc-100 bg-white py-1.5 pl-1.5 pr-1.5 shadow-lg animate-in fade-in slide-in-from-top-1 duration-200"
+        >
+          <div className="flex flex-col gap-0.5">
+            {tocSections.map((s) => {
+              const isActive = activeSection === s.id;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  role="option"
+                  aria-selected={isActive}
+                  onClick={() => {
+                    onSelect(s.id);
+                    setOpen(false);
+                  }}
+                  className={`flex min-h-11 items-center rounded-[10px] px-3 py-2 text-left transition-colors ${
+                    isActive ? "bg-zinc-100" : "hover:bg-zinc-50"
+                  }`}
+                >
+                  <span
+                    className={`font-medium tracking-[0.01em] ${
+                      isActive ? "text-zinc-700" : "text-zinc-400"
+                    }`}
+                  >
+                    {s.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function SystemPage() {
   const [activeSection, setActiveSection] = useState<string>(tocSections[0].id);
@@ -113,28 +207,18 @@ export default function SystemPage() {
         href="/"
         aria-label="Back to home"
         onClick={() => window.scrollTo(0, 0)}
-        className="fixed left-6 top-8 z-50 size-8 overflow-visible transition-opacity duration-200 ease-out hover:opacity-70 md:left-16 md:size-11"
+        className="group fixed left-6 top-8 z-50 size-8 overflow-visible transition-transform duration-200 ease-out hover:scale-[1.02] active:scale-95 md:left-16 md:size-11"
       >
         <BlueprintLogo mode="always" />
         <span className="sr-only">Michelle Liu</span>
       </Link>
 
-      {/* Mobile TOC chip strip */}
+      {/* Mobile section menu — Apple HIG pop-up button; clears fixed logo */}
       <nav
         aria-label="Sections"
-        className="sticky top-0 z-40 flex gap-1.5 overflow-x-auto border-b border-zinc-100 bg-white/85 px-4 py-3 backdrop-blur-md lg:hidden"
+        className="sticky top-0 z-40 flex items-center border-b border-zinc-100 bg-white/85 py-2 pl-16 pr-4 backdrop-blur-md lg:hidden"
       >
-        {tocSections.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => scrollTo(s.id)}
-            className={`shrink-0 rounded-full px-3 py-1 text-sm transition-colors duration-200 ${
-              activeSection === s.id ? "bg-zinc-100 font-medium text-zinc-800" : "text-zinc-400 hover:text-zinc-600"
-            }`}
-          >
-            {s.label}
-          </button>
-        ))}
+        <MobileSectionMenu activeSection={activeSection} onSelect={scrollTo} />
       </nav>
 
       <div className="flex items-start gap-48 px-6 pt-24 md:px-16 lg:pt-28">
@@ -148,7 +232,7 @@ export default function SystemPage() {
           {[
           /* Intro */
           <section key="intro" id="intro" className="scroll-mt-24 pb-8">
-            <h1 className="max-w-3xl text-4xl font-medium leading-[1.1] tracking-tight text-zinc-900 text-balance">
+            <h1 className="max-w-3xl font-['Michelle',sans-serif] text-4xl font-medium leading-normal tracking-[0.0125em] text-[#3f3f46] text-balance">
               Design System
             </h1>
             <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-400">

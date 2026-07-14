@@ -36,7 +36,7 @@ export function LinksBackgroundImageAndText({
 }: LinksBackgroundImageAndTextProps) {
   const content = (
     <p
-      className={`font-['Michelle',sans-serif] leading-5 relative shrink-0 text-[#a1a1aa] text-base text-nowrap tracking-[0.16px] ${
+      className={`font-['Michelle',sans-serif] leading-5 relative shrink-0 text-[#a1a1aa] text-base text-nowrap tracking-[0.01em] ${
         href ? "hover:text-blue-500 transition-colors duration-200" : ""
       }`}
     >

@@ -49,7 +49,9 @@ export default function TypographySection() {
               .map((t) => (
                 <div key={t.name} className="flex items-center gap-4 py-3.5">
                   <div className="w-40 shrink-0 overflow-hidden">
-                    <span className={`${t.className} whitespace-nowrap text-zinc-700`}>Michelle</span>
+                    <span className={`${t.className} whitespace-nowrap text-zinc-700`}>
+                      {t.sample ?? "Michelle"}
+                    </span>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2.5">

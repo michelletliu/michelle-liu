@@ -30,7 +30,7 @@ type LinksBackgroundImageAndTextProps = {
 function LinksBackgroundImageAndText({ text }: LinksBackgroundImageAndTextProps) {
   return (
     <div className="content-stretch flex items-center justify-center px-[2px] py-0 relative rounded-[999px] shrink-0">
-      <p className="font-['Michelle',sans-serif] font-semibold leading-[20px] relative shrink-0 text-[#a1a1aa] text-[16px] text-nowrap tracking-[0.16px]">{text}</p>
+      <p className="font-['Michelle',sans-serif] font-semibold leading-[20px] relative shrink-0 text-[#a1a1aa] text-[16px] text-nowrap tracking-[0.01em]">{text}</p>
     </div>
   );
 }
@@ -41,7 +41,7 @@ type TagBackgroundImageAndTextProps = {
 function TagBackgroundImageAndText({ text }: TagBackgroundImageAndTextProps) {
   return (
     <div className="content-stretch flex items-center justify-center px-[12px] py-[4px] relative rounded-[999px] shrink-0">
-      <p className="font-['Michelle',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#a1a1aa] text-[16px] text-nowrap tracking-[0.16px]">{text}</p>
+      <p className="font-['Michelle',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#a1a1aa] text-[16px] text-nowrap tracking-[0.01em]">{text}</p>
     </div>
   );
 }
@@ -106,7 +106,7 @@ export default function V() {
             <div className="content-stretch flex flex-col gap-[12px] items-start pb-0 pt-[16px] px-[32px] relative w-full">
               <div className="content-stretch flex gap-[12px] items-start relative shrink-0">
                 <div className="bg-[rgba(107,114,128,0.1)] content-stretch flex items-center justify-center px-[12px] py-[4px] relative rounded-[999px] shrink-0" data-name="Tag">
-                  <p className="font-['Michelle',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#52525b] text-[16px] text-nowrap tracking-[0.16px]">WORK</p>
+                  <p className="font-['Michelle',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#52525b] text-[16px] text-nowrap tracking-[0.01em]">WORK</p>
                 </div>
                 <TagBackgroundImageAndText text="ART" />
                 <TagBackgroundImageAndText text="ABOUT" />

@@ -2750,7 +2750,7 @@ function ContentBlock({
                   <ul className="flex flex-col gap-3">
                     {section.bulletPoints.map((point, index) => (
                       <li key={index} className="flex items-start gap-3 text-zinc-600">
-                        <span className="text-zinc-600 mt-0.5 font-bold">•</span>
+                        <span className="text-zinc-600 mt-0.5 font-semibold">•</span>
                         <span className="flex-1 leading-normal">{point}</span>
                       </li>
                     ))}
@@ -2942,7 +2942,7 @@ function ContentBlock({
                     >
                       {/* Stat Value */}
                       <span 
-                        className="text-5xl font-light italic leading-none shrink-0"
+                        className="text-5xl font-normal italic leading-none shrink-0"
                         style={{ color: cardStatColor }}
                       >
                         {card.statValue}
