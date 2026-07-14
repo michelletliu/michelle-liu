@@ -71,7 +71,7 @@ function SearchMagnifierIcon({ size = iconSize("inline") }: { size?: string }) {
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className="inline-block shrink-0"
+      className="block shrink-0"
       aria-hidden
     >
       <circle
@@ -95,8 +95,11 @@ function SearchMagnifierIcon({ size = iconSize("inline") }: { size?: string }) {
 
 /** Hit target for the floating chevron↔X morph (bar slot + sheet slot + button). */
 const MORPH_CONTROL_BOX = "size-10";
-/** One glyph size for both morph states — no resize jump. */
-const MORPH_ICON_PX = iconSizes.toolbar;
+/**
+ * One glyph size for both morph states — touch (24), one step above toolbar,
+ * so the sticky chevron balances “Overview” and the open-state X matches it.
+ */
+const MORPH_ICON_PX = iconSizes.touch;
 
 /** Shared control: down-chevron morphs into Close X (and reverse). */
 function ChevronCloseMorph({ open }: { open: boolean }) {
@@ -181,15 +184,11 @@ function MobileSectionMenu({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const filterRef = useRef<HTMLInputElement>(null);
   const barSlotRef = useRef<HTMLSpanElement>(null);
-  const sheetSlotRef = useRef<HTMLSpanElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const wasOpenRef = useRef(false);
   const [togglePos, setTogglePos] = useState<{ top: number; left: number } | null>(
     null,
   );
-  /** 300ms only when open toggles; 0 while tracking scroll on the sticky bar. */
-  const [toggleMoveDuration, setToggleMoveDuration] = useState(0);
-  const prevOpenRef = useRef(open);
   const activeLabel =
     tocSections.find((s) => s.id === activeSection)?.label ?? tocSections[0].label;
 
@@ -199,20 +198,16 @@ function MobileSectionMenu({
     setMounted(true);
   }, []);
 
-  // One floating toggle — tracks bar/sheet slots; morphs chevron↔X in place.
+  // One floating toggle — always tracks the sticky-bar slot so open-state X
+  // keeps the same top/right + size-10 hit box as the closed chevron.
   useLayoutEffect(() => {
     if (!mounted) return;
     const measure = () => {
-      const slot = open ? sheetSlotRef.current : barSlotRef.current;
+      const slot = barSlotRef.current;
       if (!slot) return;
       const r = slot.getBoundingClientRect();
       setTogglePos({ top: r.top, left: r.left });
     };
-    if (prevOpenRef.current !== open) {
-      prevOpenRef.current = open;
-      setToggleMoveDuration(0.3);
-      window.setTimeout(() => setToggleMoveDuration(0), 300);
-    }
     measure();
     window.addEventListener("scroll", measure, { passive: true });
     window.addEventListener("resize", measure);
@@ -333,7 +328,7 @@ function MobileSectionMenu({
               ? { top: togglePos.top, left: togglePos.left }
               : { top: 0, left: 0 }
           }
-          transition={{ duration: toggleMoveDuration, ease: "easeOut" }}
+          transition={{ duration: 0, ease: "easeOut" }}
           style={
             !togglePos
               ? { opacity: 0, pointerEvents: "none" as const }
@@ -356,20 +351,30 @@ function MobileSectionMenu({
             aria-label="Design System sections"
             className="fixed inset-0 z-[60] flex flex-col bg-white animate-in fade-in duration-200 lg:hidden"
           >
-            <div className="flex items-center justify-between gap-4 px-5 pt-5 pb-3">
-              <h2 className="min-w-0 truncate text-base font-medium tracking-wide text-zinc-800">
-                Design System
-              </h2>
-              <span
-                ref={sheetSlotRef}
-                className={`${MORPH_CONTROL_BOX} shrink-0`}
-                aria-hidden
-              />
+            {/*
+              Mirror sticky bar chrome (pt-8 + h-8/h-10 + pr-5 size-10 slot) so
+              the reserved close slot sits under the shared floating control.
+            */}
+            <div className="px-5 pt-8 pb-3">
+              <div className="flex h-8 w-full items-center">
+                <div className="flex h-10 w-full items-center gap-3">
+                  <h2 className="min-w-0 flex-1 truncate text-base font-medium leading-none tracking-wide text-zinc-800">
+                    Design System
+                  </h2>
+                  <span
+                    className={`${MORPH_CONTROL_BOX} shrink-0`}
+                    aria-hidden
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="px-5 pb-3">
-              <FieldShell tone="muted" className="gap-2">
-                <span className="pointer-events-none ml-2.5 text-zinc-400" aria-hidden>
+              <FieldShell tone="muted" className="items-center gap-2">
+                <span
+                  className="pointer-events-none ml-2.5 flex shrink-0 items-center text-zinc-400"
+                  aria-hidden
+                >
                   <SearchMagnifierIcon />
                 </span>
                 <FieldInput
@@ -383,7 +388,7 @@ function MobileSectionMenu({
                   autoCorrect="off"
                   spellCheck={false}
                   aria-label="Filter sections"
-                  className="pr-3 font-medium tracking-[0.01em] text-zinc-700"
+                  className="pr-3 font-medium leading-5 tracking-[0.01em] text-zinc-700"
                 />
               </FieldShell>
             </div>

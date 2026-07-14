@@ -758,7 +758,7 @@ export default function ComponentSection() {
             className={`flex size-10 items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-500 ${GHOST_SURFACE}`}
             aria-label="Open menu"
           >
-            <Chevron direction="down" size={iconSize("toolbar")} />
+            <Chevron direction="down" size={iconSize("touch")} />
           </button>
         </Specimen>
 

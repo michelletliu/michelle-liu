@@ -3,8 +3,8 @@
  * Prefer `iconSize("toolbar")` over ad-hoc rem/`size-*` classes so
  * `strokeWidth={1.5}` + `vectorEffect="non-scaling-stroke"` stay consistent.
  *
- * Pairing rule: chevrons sit one step below the paired Close
- * (sheet Close = touch 24 → sticky/list chevrons = toolbar 20).
+ * Sticky morph (chevron↔Close) uses `touch` (24) for both states so size and
+ * hit box stay identical. List disclosure chevrons stay at `toolbar` (20).
  */
 export const iconSizes = {
   /** Dense / meta */
