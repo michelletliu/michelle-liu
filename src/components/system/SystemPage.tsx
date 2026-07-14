@@ -372,7 +372,7 @@ export default function SystemPage() {
         {/* Mobile section menu — clears fixed logo */}
         <nav
           aria-label="Sections"
-          className="sticky top-0 z-40 flex items-center border-b border-zinc-100 bg-white/85 py-2 pl-16 pr-4 backdrop-blur-md lg:hidden"
+          className="sticky top-0 z-40 flex items-center border-b border-zinc-100 bg-white/85 py-2 pl-18 pr-4 backdrop-blur-md lg:hidden"
         >
           <MobileSectionMenu activeSection={activeSection} onSelect={scrollTo} />
         </nav>
