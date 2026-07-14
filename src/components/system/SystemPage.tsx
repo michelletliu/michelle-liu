@@ -309,9 +309,6 @@ export default function SystemPage() {
   // Logo doorway + route entry: always land at the top of the DS.
   useEffect(() => {
     window.scrollTo(0, 0);
-    return () => {
-      clearBlueprintDoorwaySticky();
-    };
   }, []);
 
   // Capture-phase home navigation. Next/Link soft-nav can miss while the

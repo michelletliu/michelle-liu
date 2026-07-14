@@ -460,6 +460,6 @@ export const tocSubsections: Record<string, string[]> = {
   spacing: ["Gap scale", "Layout widths"],
   borders: ["Borders", "Focus states", "Border Radius"],
   motion: ["Animations", "Duration scale"],
-  icons: ["Stroke icons", "Filled icons", "Social"],
+  icons: ["Size", "Stroke icons", "Filled icons", "Social"],
   components: ["Navigation & pills", "Inputs", "Buttons", "Loaders", "Cards"],
 };
