@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import clsx from "clsx";
 import Sidebar, { type SidebarNode } from "../Sidebar";
 import BlueprintLogo from "../BlueprintLogo";
-import { markBlueprintDoorwayNav } from "../blueprintDoorwayNav";
+import { markBlueprintDoorwayNav, clearBlueprintDoorwaySticky } from "../blueprintDoorwayNav";
 import Footer from "../Footer";
 import { Chevron } from "../Chevron";
 import { Close } from "../Close";
@@ -541,6 +541,9 @@ export default function SystemPage() {
   // Logo doorway + route entry: always land at the top of the DS.
   useEffect(() => {
     window.scrollTo(0, 0);
+    return () => {
+      clearBlueprintDoorwaySticky();
+    };
   }, []);
 
   // Mobile sticky bar: show bottom hairline only once the bar is stuck
@@ -633,7 +636,7 @@ export default function SystemPage() {
       window.removeEventListener("resize", onScrollOrResize);
       io?.disconnect();
     };
-  }, []);
+  }, [logoHidden]);
 
   // Flat, document-ordered list of every scroll anchor (sections + subheadings).
   const anchors = useMemo(() => {
