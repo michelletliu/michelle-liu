@@ -127,12 +127,12 @@ function FilterDropdown({
   const textCls = md || mobile ? "text-base tracking-[0.01em]" : "text-sm tracking-wide";
 
   return (
-    <div className="flex flex-col items-start gap-1">
+    <div className={`flex flex-col gap-1 ${mobile ? "w-full min-w-0" : "items-start"}`}>
       <button
         onClick={() => setOpen((o) => !o)}
         className={
           mobile
-            ? "flex min-h-11 min-w-[9.5rem] items-center justify-between gap-2 rounded-full px-3.5 py-2 transition-colors cursor-pointer"
+            ? "flex min-h-11 w-full items-center justify-between gap-2 rounded-full px-3.5 py-2 transition-colors cursor-pointer"
             : `flex items-center gap-1.5 rounded-full bg-zinc-500/10 px-3 transition-colors cursor-pointer ${
                 md ? "py-1.5" : "py-1"
               }`
@@ -162,7 +162,7 @@ function FilterDropdown({
       {open && (
         <div
           className={`rounded-xl border border-zinc-100 bg-white shadow-elevated ${
-            mobile ? "min-w-[12rem]" : md ? "w-36" : "min-w-[140px]"
+            mobile ? "w-full" : md ? "w-36" : "min-w-[140px]"
           }`}
         >
           <div className="flex flex-col gap-1 px-1.5 py-1.5">

@@ -88,14 +88,14 @@ function MobileSectionMenu({
   }, [open]);
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative min-w-0 w-full">
       <button
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`Current section: ${activeLabel}. Choose a section.`}
         onClick={() => setOpen((v) => !v)}
-        className="flex min-h-11 min-w-[9.5rem] items-center justify-between gap-2 rounded-full px-3.5 py-2 transition-colors"
+        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-full px-3.5 py-2 transition-colors"
       >
         <span className="truncate font-medium tracking-[0.01em] text-zinc-600">{activeLabel}</span>
         <svg
@@ -114,7 +114,7 @@ function MobileSectionMenu({
         <div
           role="listbox"
           aria-label="Sections"
-          className="absolute left-0 top-[calc(100%+4px)] z-50 max-h-[min(70dvh,28rem)] min-w-[12rem] overflow-y-auto rounded-xl border border-zinc-100 bg-white py-1.5 pl-1.5 pr-1.5 shadow-elevated animate-in fade-in slide-in-from-top-1 duration-200"
+          className="absolute left-0 top-[calc(100%+4px)] z-50 max-h-[min(70dvh,28rem)] w-full overflow-y-auto rounded-xl border border-zinc-100 bg-white py-1.5 pl-1.5 pr-1.5 shadow-elevated animate-in fade-in slide-in-from-top-1 duration-200"
         >
           <div className="flex flex-col gap-0.5">
             {tocSections.map((s) => {
