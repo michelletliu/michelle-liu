@@ -3,7 +3,7 @@ import clsx from "clsx";
 import ShimmerImage from "../ShimmerImage";
 import quoteGraphic from "../../assets/quote gray 200.png";
 
-// Quote mark using the quote.png asset
+// Quote mark graphic
 const QuoteMark = ({ className }: { className?: string }) => (
   <div className={clsx("absolute pointer-events-none", className)}>
     <img
@@ -26,7 +26,7 @@ const CollapseArrowIcon = () => (
       fillRule="evenodd"
       clipRule="evenodd"
       d="M14.7803 14.7803C14.4874 15.0732 14.0126 15.0732 13.7197 14.7803L6.5 7.56066V13.25C6.5 13.6642 6.16421 14 5.75 14C5.33579 14 5 13.6642 5 13.25V5.75C5 5.33579 5.33579 5 5.75 5H13.25C13.6642 5 14 5.33579 14 5.75C14 6.16421 13.6642 6.5 13.25 6.5H7.56066L14.7803 13.7197C15.0732 14.0126 15.0732 14.4874 14.7803 14.7803Z"
-      fill="#A1A1AA"
+      fill="currentColor"
     />
   </svg>
 );
@@ -43,7 +43,7 @@ const ExpandArrowIcon = () => (
       fillRule="evenodd"
       clipRule="evenodd"
       d="M14.7803 14.7803C14.4874 15.0732 14.0126 15.0732 13.7197 14.7803L6.5 7.56066V13.25C6.5 13.6642 6.16421 14 5.75 14C5.33579 14 5 13.6642 5 13.25V5.75C5 5.33579 5.33579 5 5.75 5H13.25C13.6642 5 14 5.33579 14 5.75C14 6.16421 13.6642 6.5 13.25 6.5H7.56066L14.7803 13.7197C15.0732 14.0126 15.0732 14.4874 14.7803 14.7803Z"
-      fill="#A1A1AA"
+      fill="currentColor"
     />
   </svg>
 );
@@ -235,7 +235,7 @@ export default function Testimonial({
               className={clsx(
                 "relative shrink-0 cursor-pointer transition-all duration-300 ease-out",
                 isExpanded
-                  ? "size-6 hover:opacity-70"
+                  ? "size-6 text-zinc-500 hover:opacity-70"
                   : "leading-5 text-[#a1a1aa] text-base hover:text-[#71717a] text-left",
                 isDesktop && !isExpanded && "w-full md:max-w-[424px]"
               )}

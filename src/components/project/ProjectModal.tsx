@@ -18,7 +18,6 @@ import { TwoColumnImageSectionComponent } from "./TwoColumnImageSection";
 import { ScrollReveal } from "../ScrollReveal";
 import { useScrollLock } from "../../utils/useScrollLock";
 import lockIcon from "../../assets/lock.svg";
-import expandIcon from "../../assets/Expand.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
 import { posthog, posthogEnabled } from "../../lib/posthog";
 
@@ -206,7 +205,7 @@ const ChevronRightIcon = () => (
   <svg className="block size-full" viewBox="0 0 16 16" fill="none">
     <path
       d="M6 12L10 8L6 4"
-      stroke="#A1A1AA"
+      stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -242,7 +241,7 @@ function Breadcrumb({ projectName, onWorkClick, isScrolled = false, isPastHero =
       </button>
 
       {/* Chevron separator */}
-      <div className="shrink-0 size-4">
+      <div className="shrink-0 size-4 text-zinc-500">
         <ChevronRightIcon />
       </div>
 
@@ -463,9 +462,14 @@ const CloseIcon = () => (
   </svg>
 );
 
-// Back arrow icon - uses Expand.svg
+// Expand icon — inline SVG so strokeWidth 1.5 matches ExperimentModal / DS Icons
 const BackArrowIcon = () => (
-  <img src={expandIcon} alt="Expand" className="block size-full" />
+  <svg className="block size-full" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path d="M10 4H4V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M4 4L10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M14 20H20V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M20 20L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
 );
 
 // Arrow right icon SVG (for password input submit button)
@@ -480,7 +484,7 @@ const ArrowRightIcon = () => (
       fillRule="evenodd"
       clipRule="evenodd"
       d="M6 0C6.41421 0 6.75 0.335786 6.75 0.75V11.4393L10.7197 7.46967C11.0126 7.17678 11.4874 7.17678 11.7803 7.46967C12.0732 7.76256 12.0732 8.23744 11.7803 8.53033L6.53033 13.7803C6.23744 14.0732 5.76256 14.0732 5.46967 13.7803L0.21967 8.53033C-0.0732233 8.23744 -0.0732233 7.76256 0.21967 7.46967C0.512563 7.17678 0.987437 7.17678 1.28033 7.46967L5.25 11.4393V0.75C5.25 0.335786 5.58579 0 6 0Z"
-      fill="#A1A1AA"
+      fill="currentColor"
     />
   </svg>
 );
@@ -488,25 +492,25 @@ const ArrowRightIcon = () => (
 // Eye icon for showing password (zinc-400 to match arrow)
 const EyeIcon = () => (
   <svg className="block size-full" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 5.25C4.5 5.25 1.5 12 1.5 12C1.5 12 4.5 18.75 12 18.75C19.5 18.75 22.5 12 22.5 12C22.5 12 19.5 5.25 12 5.25Z" stroke="#A1A1AA" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 15.75C14.0711 15.75 15.75 14.0711 15.75 12C15.75 9.92893 14.0711 8.25 12 8.25C9.92893 8.25 8.25 9.92893 8.25 12C8.25 14.0711 9.92893 15.75 12 15.75Z" stroke="#A1A1AA" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 5.25C4.5 5.25 1.5 12 1.5 12C1.5 12 4.5 18.75 12 18.75C19.5 18.75 22.5 12 22.5 12C22.5 12 19.5 5.25 12 5.25Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 15.75C14.0711 15.75 15.75 14.0711 15.75 12C15.75 9.92893 14.0711 8.25 12 8.25C9.92893 8.25 8.25 9.92893 8.25 12C8.25 14.0711 9.92893 15.75 12 15.75Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
 // Eye-off icon for hiding password (zinc-400 to match arrow)
 const EyeOffIcon = () => (
   <svg className="block size-full" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14.12 14.12C13.5646 14.6755 12.7998 14.9855 12 14.9855C11.2002 14.9855 10.4354 14.6755 9.88 14.12C9.32457 13.5646 9.0145 12.7998 9.0145 12C9.0145 11.2002 9.32457 10.4354 9.88 9.88" stroke="#A1A1AA" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M4.5 4.5L19.5 19.5" stroke="#A1A1AA" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M9.75 5.5C10.485 5.34 11.235 5.25 12 5.25C19.5 5.25 22.5 12 22.5 12C22.02 12.945 21.42 13.815 20.73 14.61" stroke="#A1A1AA" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M17.94 17.94C16.23 19.17 14.16 19.875 12 19.875C4.5 19.875 1.5 13.125 1.5 13.125C2.505 11.205 3.975 9.54 5.775 8.355" stroke="#A1A1AA" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M14.12 14.12C13.5646 14.6755 12.7998 14.9855 12 14.9855C11.2002 14.9855 10.4354 14.6755 9.88 14.12C9.32457 13.5646 9.0145 12.7998 9.0145 12C9.0145 11.2002 9.32457 10.4354 9.88 9.88" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M4.5 4.5L19.5 19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M9.75 5.5C10.485 5.34 11.235 5.25 12 5.25C19.5 5.25 22.5 12 22.5 12C22.02 12.945 21.42 13.815 20.73 14.61" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M17.94 17.94C16.23 19.17 14.16 19.875 12 19.875C4.5 19.875 1.5 13.125 1.5 13.125C2.505 11.205 3.975 9.54 5.775 8.355" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
 // Laptop icon for mobile not available message
 const LaptopIcon = () => (
   <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="8" y="12" width="44" height="30" rx="2" stroke="#a1a1aa" strokeWidth="2" fill="none"/>
+    <rect x="8" y="12" width="44" height="30" rx="2" stroke="#a1a1aa" strokeWidth="1.5" fill="none"/>
     <rect x="12" y="16" width="36" height="22" rx="1" fill="#e4e4e7"/>
     <path d="M4 42h52v2a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-2z" fill="#d4d4d8"/>
   </svg>
@@ -581,7 +585,7 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
                 e.stopPropagation();
                 handleClose();
               }}
-              className={`fixed right-4 top-4 z-[10000] flex h-10 w-10 items-center justify-center transition-all duration-200 hover:scale-110 ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
+              className={`fixed right-4 top-4 z-[10000] flex h-10 w-10 items-center justify-center text-zinc-500 transition-all duration-200 hover:scale-110 ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
               aria-label="Close expanded image"
             >
               <svg
@@ -593,8 +597,8 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
               >
                 <path
                   d="M1 1L13 13M1 13L13 1"
-                  stroke="#a1a1aa"
-                  strokeWidth="2"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
                   strokeLinecap="round"
                 />
               </svg>
@@ -697,7 +701,7 @@ function PasswordInput({
             onClick={toggleShowPassword}
             disabled={isLoading}
             className={clsx(
-              "relative shrink-0 size-[18px] hover:opacity-70 transition-all duration-200",
+              "relative shrink-0 size-[18px] text-zinc-500 hover:opacity-70 transition-all duration-200",
               passwordValue.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"
             )}
           >
@@ -724,7 +728,7 @@ function PasswordInput({
           <button
             type="submit"
             disabled={isLoading}
-            className="relative shrink-0 size-[14px] rotate-[-90deg] hover:opacity-70 transition-opacity disabled:opacity-50"
+            className="relative shrink-0 size-[14px] rotate-[-90deg] text-zinc-500 hover:opacity-70 transition-opacity disabled:opacity-50"
           >
             {isLoading ? (
               <div className="w-3.5 h-3.5 border-2 border-zinc-300 border-t-zinc-500 rounded-full animate-spin" />
@@ -1595,7 +1599,7 @@ const CollapseArrowIcon = () => (
       fillRule="evenodd"
       clipRule="evenodd"
       d="M14.7803 14.7803C14.4874 15.0732 14.0126 15.0732 13.7197 14.7803L6.5 7.56066V13.25C6.5 13.6642 6.16421 14 5.75 14C5.33579 14 5 13.6642 5 13.25V5.75C5 5.33579 5.33579 5 5.75 5H13.25C13.6642 5 14 5.33579 14 5.75C14 6.16421 13.6642 6.5 13.25 6.5H7.56066L14.7803 13.7197C15.0732 14.0126 15.0732 14.4874 14.7803 14.7803Z"
-      fill="#A1A1AA"
+      fill="currentColor"
     />
   </svg>
 );
@@ -1612,7 +1616,7 @@ const ExpandArrowIcon = () => (
       fillRule="evenodd"
       clipRule="evenodd"
       d="M14.7803 14.7803C14.4874 15.0732 14.0126 15.0732 13.7197 14.7803L6.5 7.56066V13.25C6.5 13.6642 6.16421 14 5.75 14C5.33579 14 5 13.6642 5 13.25V5.75C5 5.33579 5.33579 5 5.75 5H13.25C13.6642 5 14 5.33579 14 5.75C14 6.16421 13.6642 6.5 13.25 6.5H7.56066L14.7803 13.7197C15.0732 14.0126 15.0732 14.4874 14.7803 14.7803Z"
-      fill="#A1A1AA"
+      fill="currentColor"
     />
   </svg>
 );
@@ -1788,7 +1792,7 @@ function TestimonialBlock({
               className={clsx(
                 "relative shrink-0 cursor-pointer transition-colors duration-300 ease-out",
                 isExpanded
-                  ? "size-6 hover:opacity-70"
+                  ? "size-6 text-zinc-500 hover:opacity-70"
                   : "leading-5 text-[#a1a1aa] text-base hover:text-[#71717a] text-left"
               )}
             >
@@ -1957,7 +1961,7 @@ function ContentBlock({
               <div className="content-stretch flex flex-col gap-8 items-start justify-center relative shrink-0">
                 {/* Lock Icon with shadow */}
                 <div className="relative shrink-0 size-[60px]">
-                  <div className="absolute inset-0 rounded-full bg-white shadow-[0px_1px_3px_0px_rgba(0,0,0,0.08),0px_1px_2px_-1px_rgba(0,0,0,0.08)] flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full bg-white shadow-soft flex items-center justify-center">
                     <img src={lockIcon} alt="" className="w-[19px] h-[28px]" />
                   </div>
                 </div>
@@ -2229,7 +2233,7 @@ function ContentBlock({
               {section.images?.map((image) => (
                 <div
                   key={image._key}
-                  className="flex flex-col items-center rounded-[24px] shadow-[0px_2px_8px_0px_#eaeaea] overflow-hidden max-w-110 w-full"
+                  className="flex flex-col items-center rounded-[24px] shadow-soft overflow-hidden max-w-110 w-full"
                 >
                   <ShimmerImage
                     className="block w-full h-auto object-contain"
@@ -2273,7 +2277,7 @@ function ContentBlock({
                 <div
                   key={image._key}
                   className={clsx(
-                    "content-stretch flex flex-col items-start min-h-px min-w-px overflow-hidden relative rounded-[26px] shadow-[0px_2px_8px_0px_#eaeaea] shrink-0",
+                    "content-stretch flex flex-col items-start min-h-px min-w-px overflow-hidden relative rounded-[26px] shadow-soft shrink-0",
                     shouldCenterOnMobile && "max-md:col-span-2 max-md:justify-self-center max-md:w-1/2"
                   )}
                 >

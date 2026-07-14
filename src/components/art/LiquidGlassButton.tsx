@@ -16,7 +16,10 @@ export default function LiquidGlassButton({
   return (
     <button
       {...props}
-      className={clsx("!rounded-full transition-transform duration-150 ease-out hover:scale-105", className)}
+      className={clsx(
+        "shadow-glass !rounded-full transition-transform duration-150 ease-out hover:scale-105",
+        className,
+      )}
       style={{
         width: size,
         height: size,
@@ -33,8 +36,6 @@ export default function LiquidGlassButton({
         backgroundColor: "rgba(255, 255, 255, 0.45)",
         backdropFilter: "blur(16px) saturate(180%)",
         WebkitBackdropFilter: "blur(16px) saturate(180%)",
-        boxShadow:
-          "0 4px 20px rgba(0, 0, 0, 0.12), inset 0 0.5px 0 rgba(255, 255, 255, 0.7)",
         ...style,
       }}
     >

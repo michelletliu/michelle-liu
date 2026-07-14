@@ -3,11 +3,7 @@ import { Section, SubLabel, RowList, TokenRow } from "../primitives";
 
 export default function BorderSection() {
   return (
-    <Section
-      id="borders"
-      title="Borders & focus"
-      subtitle="Hairline borders in the lightest zincs define most surfaces. Focus is a soft zinc-300 outline with 2px offset."
-    >
+    <Section id="borders" title="Borders">
       <SubLabel>Borders</SubLabel>
       <RowList>
         {borders.slice(0, 8).map((b) => (

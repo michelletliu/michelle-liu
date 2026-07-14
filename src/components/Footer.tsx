@@ -1,15 +1,50 @@
 import React, { useEffect, useState } from "react";
-import svgPaths from "../imports/svg-2tsxp86msm";
 import imgFinalSealLogo1 from "../assets/logo.png";
-import LumaLogo from "../assets/LumaLogo.svg";
-import { imgGroup } from "../imports/svg-poktt";
 import { ScrollReveal } from "./ScrollReveal";
 import { ArrowUpRight } from "./ArrowUpRight";
+import BlueprintLogo from "./BlueprintLogo";
 import { client } from "../sanity/client";
 import { OWNER_LOCATION_QUERY } from "../sanity/queries";
 import type { OwnerLocation } from "../sanity/types";
 import TextScramble from "./TextScramble";
-import { SocialLinksBackgroundImage, LinksBackgroundImageAndText } from "./SocialLinks";
+import { LinksBackgroundImageAndText, SocialIconLinks } from "./SocialLinks";
+
+type FooterProps = {
+  /** default: red seal; blueprint: gray outline logo (design-system) */
+  logoVariant?: "default" | "blueprint";
+};
+
+function FooterBrand({
+  logoVariant,
+  gapClassName,
+}: {
+  logoVariant: "default" | "blueprint";
+  gapClassName: string;
+}) {
+  return (
+    <a
+      href="/"
+      className={`group content-stretch flex ${gapClassName} items-center justify-center relative shrink-0 transition-opacity ${
+        logoVariant === "default" ? "hover:opacity-80" : ""
+      }`}
+    >
+      <div className="relative shrink-0 size-7">
+        {logoVariant === "blueprint" ? (
+          <BlueprintLogo mode="always" />
+        ) : (
+          <img
+            alt="Michelle Liu Logo"
+            className="object-contain size-full"
+            src={imgFinalSealLogo1}
+          />
+        )}
+      </div>
+      <p className="font-['Michelle',sans-serif] font-medium leading-normal relative shrink-0 text-[#3f3f46] text-3xl w-[212px]">
+        michelle liu
+      </p>
+    </a>
+  );
+}
 
 type ChangelogPayload = {
   latestCommitDate?: string | null;
@@ -134,7 +169,7 @@ function BlinkingTime({ time, h24, city }: { time: string; h24: number; city: st
   );
 }
 
-export default function Footer() {
+export default function Footer({ logoVariant = "default" }: FooterProps) {
   const latestCommitDate = useLatestCommitDate();
   const changelogText = latestCommitDate 
     ? `CHANGELOG: ${latestCommitDate}` 
@@ -155,18 +190,7 @@ export default function Footer() {
             <div className="hidden md:grid gap-5 grid-cols-[repeat(4,_minmax(0px,_1fr))] grid-rows-[repeat(1,_fit-content(100%))] relative shrink-0 w-full">
               {/* Column 1: Logo + Time */}
               <div className="[grid-area:1_/_1] content-stretch flex flex-col gap-0 items-start relative shrink-0">
-                <a href="/" className="content-stretch flex gap-3 items-center justify-center relative shrink-0 hover:opacity-80 transition-opacity">
-                  <div className="relative shrink-0 size-7">
-                    <img
-                      alt="Michelle Liu Logo"
-                      className="object-contain size-full"
-                      src={imgFinalSealLogo1}
-                    />
-                  </div>
-                  <p className="font-['Michelle',sans-serif] font-medium leading-normal relative shrink-0 text-[#3f3f46] text-3xl w-[212px]">
-                    michelle liu
-                  </p>
-                </a>
+                <FooterBrand logoVariant={logoVariant} gapClassName="gap-3" />
                 <p className="font-['Michelle',sans-serif] font-normal leading-5 text-[#b5bcc5] text-base">
                   <BlinkingTime time={localTime} h24={localH24} city={city} />
                 </p>
@@ -184,53 +208,14 @@ export default function Footer() {
                 <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start relative shrink-0 text-zinc-400 w-full">
                   <p className="leading-6 min-w-full relative shrink-0 text-base w-[min-content]">Let's work together!</p>
                   <p className="leading-6 relative shrink-0 text-base break-all">
-                    <a href="mailto:studio@liumichelle.com" className="group/email hover:text-blue-500 text-zinc-600 font-medium transition-colors duration-200">
+                    <a href="mailto:studio@liumichelle.com" className="group/email inline-flex items-center hover:text-blue-500 text-zinc-600 font-medium transition-colors duration-200">
                       <span>{`studio@liumichelle.com`}</span>
-                      <span className="font-['Michelle',sans-serif] font-semibold ml-1 opacity-0 group-hover/email:opacity-100 transition-opacity duration-150 ease-out"><ArrowUpRight /></span>
+                      <span className="ml-1 inline-flex items-center opacity-0 group-hover/email:opacity-100 transition-opacity duration-150 ease-out"><ArrowUpRight size="1em" /></span>
                     </a>
                   </p>
                 </div>
                 <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0">
-                  <div className="content-stretch flex gap-6 items-start relative shrink-0">
-                    <a href="https://www.instagram.com/studio.mliu" target="_blank" rel="noopener noreferrer" className="social-link">
-                      <SocialLinksBackgroundImage>
-                        <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #c4c9d0)" id="Vector" />
-                      </SocialLinksBackgroundImage>
-                    </a>
-                    <a href="https://x.com/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link">
-                      <div className="content-stretch flex items-center justify-center relative shrink-0 size-6">
-                        <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0">
-                          <div
-                            className="[grid-area:1_/_1] h-[17.219px] mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0px_-0.89px] mask-size-[19px_19px] ml-0 mt-[4.69%] relative w-[19px]"
-                            style={{ maskImage: `url('${imgGroup}')` }}
-                          >
-                            <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 19 18">
-                              <g id="Group">
-                                <path d={svgPaths.p16308a80} fill="var(--fill-0, #c4c9d0)" id="Vector" />
-                              </g>
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-                    </a>
-                    <a href="https://www.linkedin.com/in/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link social-link-linkedin">
-                      <div className="content-stretch flex items-center justify-center relative shrink-0 size-6">
-                        <SocialLinksBackgroundImage>
-                          <path d={svgPaths.p1e086000} fill="var(--fill-0, #c4c9d0)" id="Vector" stroke="var(--stroke-0, #c4c9d0)" />
-                        </SocialLinksBackgroundImage>
-                      </div>
-                    </a>
-                    <a href="https://lu.ma/user/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link">
-                      <div className="content-stretch flex items-center justify-center relative shrink-0 size-6">
-                        <img 
-                          src={LumaLogo} 
-                          alt="Luma" 
-                          className="size-6 transition-opacity"
-                          style={{ filter: 'brightness(0) saturate(100%) invert(85%) sepia(5%) saturate(300%) hue-rotate(180deg) brightness(95%)' }}
-                        />
-                      </div>
-                    </a>
-                  </div>
+                  <SocialIconLinks />
                 </div>
               </div>
             </div>
@@ -239,18 +224,7 @@ export default function Footer() {
             <div className="md:hidden content-stretch flex flex-col gap-10 items-start relative shrink-0 w-full">
               {/* Logo Section + Time */}
               <div className="content-stretch flex flex-col gap-0 items-start relative shrink-0">
-                <a href="/" className="content-stretch flex gap-2 items-center justify-center relative shrink-0 hover:opacity-80 transition-opacity">
-                  <div className="relative shrink-0 size-7">
-                    <img
-                      alt="Michelle Liu Logo"
-                      className="object-contain size-full"
-                      src={imgFinalSealLogo1}
-                    />
-                  </div>
-                  <p className="font-['Michelle',sans-serif] font-medium leading-normal relative shrink-0 text-[#3f3f46] text-3xl w-[212px]">
-                    michelle liu
-                  </p>
-                </a>
+                <FooterBrand logoVariant={logoVariant} gapClassName="gap-2" />
                 <p className="font-['Michelle',sans-serif] font-normal leading-5 text-[#b5bcc5] text-base">
                   <BlinkingTime time={localTime} h24={localH24} city={city} />
                 </p>
@@ -262,51 +236,14 @@ export default function Footer() {
                   <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start relative shrink-0 text-zinc-400 w-[326px]">
                     <p className="leading-6 relative shrink-0 text-base w-full">Let's work together!</p>
                     <p className="leading-6 relative shrink-0 text-base w-full break-all">
-                      <a href="mailto:studio@liumichelle.com" className="group/email hover:text-blue-500 text-zinc-600 font-medium transition-colors duration-200">
+                      <a href="mailto:studio@liumichelle.com" className="group/email inline-flex items-center hover:text-blue-500 text-zinc-600 font-medium transition-colors duration-200">
                         <span>{`studio@liumichelle.com`}</span>
-                        <span className="font-['Michelle',sans-serif] font-semibold ml-0 group-hover/email:ml-1.5 opacity-0 group-hover/email:opacity-100 transition-all duration-150 ease-out"><ArrowUpRight /></span>
+                        <span className="ml-0 group-hover/email:ml-1.5 inline-flex items-center opacity-0 group-hover/email:opacity-100 transition-all duration-150 ease-out"><ArrowUpRight size="1em" /></span>
                       </a>
                     </p>
                   </div>
                   <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0 w-[326px]">
-                    <div className="content-stretch flex gap-6 items-start relative shrink-0">
-                      <a href="https://www.instagram.com/studio.mliu" target="_blank" rel="noopener noreferrer" className="social-link">
-                        <SocialLinksBackgroundImage>
-                          <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #c4c9d0)" id="Vector" />
-                        </SocialLinksBackgroundImage>
-                      </a>
-                      <a href="https://x.com/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link">
-                        <div className="content-stretch flex items-center justify-center p-2.5 relative shrink-0 size-6">
-                          <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0">
-                            <div
-                              className="[grid-area:1_/_1] h-[17.219px] mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0px_-0.89px] mask-size-[19px_19px] ml-0 mt-[4.69%] relative w-[19px]"
-                              style={{ maskImage: `url('${imgGroup}')` }}
-                            >
-                              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 19 18">
-                                <g id="Group">
-                                  <path d={svgPaths.p16308a80} fill="var(--fill-0, #c4c9d0)" id="Vector" />
-                                </g>
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-                      </a>
-                      <a href="https://www.linkedin.com/in/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link social-link-linkedin">
-                        <div className="content-stretch flex items-center justify-center p-2.5 relative shrink-0 size-6">
-                          <SocialLinksBackgroundImage>
-                            <path d={svgPaths.p1e086000} fill="var(--fill-0, #c4c9d0)" id="Vector" stroke="var(--stroke-0, #c4c9d0)" />
-                          </SocialLinksBackgroundImage>
-                        </div>
-                      </a>
-                      <a href="https://lu.ma/user/michelletliu" target="_blank" rel="noopener noreferrer" className="social-link">
-                        <img 
-                          src={LumaLogo} 
-                          alt="Luma" 
-                          className="size-6 transition-opacity"
-                          style={{ filter: 'brightness(0) saturate(100%) invert(85%) sepia(5%) saturate(300%) hue-rotate(180deg) brightness(95%)' }}
-                        />
-                      </a>
-                    </div>
+                    <SocialIconLinks />
                   </div>
                 </div>
                 <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0 w-[338px]">

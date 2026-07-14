@@ -98,7 +98,7 @@ export default function Sidebar({
         }
 
         return (
-          <div key={node.id} className="flex flex-col gap-3 items-start">
+          <div key={node.id} className="flex flex-col items-start">
             {/* Group header — clickable, darker when its section is active. */}
             <button
               onClick={() => onSelect(node.id)}
@@ -114,22 +114,32 @@ export default function Sidebar({
               </span>
             </button>
 
-            {/* Collapsible children (indented) with smooth expand/collapse. */}
+            {/*
+              Expand via grid-rows 0fr→1fr (not max-height). Spacing lives inside
+              the clipped row so collapsed groups don't leave a residual gap.
+            */}
             <div
               className={clsx(
-                "flex flex-col gap-3 overflow-hidden transition-all duration-300 ease-in-out",
-                node.expanded ? "max-h-96 opacity-100 mt-0" : "max-h-0 opacity-0 -mt-3"
+                "grid w-full transition-[grid-template-rows,opacity] duration-200 ease-out",
+                node.expanded
+                  ? "grid-rows-[1fr] opacity-100"
+                  : "pointer-events-none grid-rows-[0fr] opacity-0"
               )}
+              aria-hidden={!node.expanded}
             >
-              {node.children.map((child) => (
-                <Leaf
-                  key={child.id}
-                  leaf={child}
-                  active={activeId === child.id}
-                  indented
-                  onSelect={onSelect}
-                />
-              ))}
+              <div className="min-h-0 overflow-hidden">
+                <div className="flex flex-col items-start gap-3 pt-3">
+                  {node.children.map((child) => (
+                    <Leaf
+                      key={child.id}
+                      leaf={child}
+                      active={activeId === child.id}
+                      indented
+                      onSelect={onSelect}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         );

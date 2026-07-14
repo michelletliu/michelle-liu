@@ -6,7 +6,7 @@ import lockIcon from "../../assets/lock.svg";
 const LockIcon = () => (
   <div className="relative shrink-0 size-[60px]">
     {/* Circle with subtle shadow */}
-    <div className="absolute inset-0 rounded-full bg-white shadow-[0px_1px_3px_0px_rgba(0,0,0,0.08),0px_1px_2px_-1px_rgba(0,0,0,0.08)] flex items-center justify-center">
+    <div className="absolute inset-0 rounded-full bg-white shadow-soft flex items-center justify-center">
       <img src={lockIcon} alt="" className="w-[19px] h-[28px]" />
     </div>
   </div>

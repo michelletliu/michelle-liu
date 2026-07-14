@@ -204,7 +204,7 @@ export default function SideQuestSection({
                 e.stopPropagation();
                 handleClose();
               }}
-              className={`fixed right-4 top-4 z-[10000] flex h-10 w-10 items-center justify-center transition-all duration-200 hover:scale-110 ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
+              className={`fixed right-4 top-4 z-[10000] flex h-10 w-10 items-center justify-center text-zinc-500 transition-all duration-200 hover:scale-110 ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
               aria-label="Close expanded image"
             >
               <svg
@@ -216,8 +216,8 @@ export default function SideQuestSection({
               >
                 <path
                   d="M1 1L13 13M1 13L13 1"
-                  stroke="#a1a1aa"
-                  strokeWidth="2"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
                   strokeLinecap="round"
                 />
               </svg>

@@ -1,6 +1,14 @@
-import { forwardRef, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+} from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useNavigate } from "@/lib/navigation";
 import clsx from "clsx";
 import { ScrollReveal } from "./ScrollReveal";
 
@@ -13,8 +21,9 @@ type NavigationTabsProps = {
 
 type TagBackgroundImageAndTextProps = {
   text: string;
+  href: string;
   active?: boolean;
-  onClick?: () => void;
+  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
   onPrefetch?: () => void;
   /** Render an SSR-visible static pill behind the text until the floating
    *  indicator has measured itself. Prevents a flash of unstyled active
@@ -34,11 +43,16 @@ const NAVIGATION_TABS: NavigationTabItem[] = [
   { id: "about", text: "About", href: "/about" },
 ];
 
-const TagBackgroundImageAndText = forwardRef<HTMLButtonElement, TagBackgroundImageAndTextProps>(
-  function TagBackgroundImageAndText({ text, active = false, onClick, onPrefetch, showStaticPill = false }, ref) {
+const TagBackgroundImageAndText = forwardRef<HTMLAnchorElement, TagBackgroundImageAndTextProps>(
+  function TagBackgroundImageAndText(
+    { text, href, active = false, onClick, onPrefetch, showStaticPill = false },
+    ref,
+  ) {
     return (
-      <button
+      <Link
         ref={ref}
+        href={href}
+        scroll={false}
         onClick={onClick}
         onMouseEnter={onPrefetch}
         onFocus={onPrefetch}
@@ -50,7 +64,7 @@ const TagBackgroundImageAndText = forwardRef<HTMLButtonElement, TagBackgroundIma
         {showStaticPill && (
           <span
             aria-hidden="true"
-            className="absolute inset-0 -z-10 rounded-full border border-white/50 bg-zinc-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.02)] md:backdrop-blur-md"
+            className="absolute inset-0 -z-10 rounded-full border border-white/50 bg-zinc-200/60 shadow-glass md:backdrop-blur-md"
           />
         )}
         <p
@@ -61,7 +75,7 @@ const TagBackgroundImageAndText = forwardRef<HTMLButtonElement, TagBackgroundIma
         >
           {text}
         </p>
-      </button>
+      </Link>
     );
   },
 );
@@ -71,10 +85,8 @@ const TagBackgroundImageAndText = forwardRef<HTMLButtonElement, TagBackgroundIma
  * Used across all main pages for consistent navigation
  */
 export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
-  const navigate = useNavigate();
   const router = useRouter();
   const prefetchedRef = useRef<Set<string>>(new Set());
-  const navigateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const prefetchTab = useCallback(
     (href: string) => {
@@ -97,7 +109,7 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
 
   const [displayedActiveTab, setDisplayedActiveTab] = useState(activeTab);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const tabRefs = useRef<Record<NavigationTab, HTMLButtonElement | null>>({
+  const tabRefs = useRef<Record<NavigationTab, HTMLAnchorElement | null>>({
     work: null,
     art: null,
     about: null,
@@ -112,9 +124,7 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
   });
   const [indicatorReady, setIndicatorReady] = useState(false);
 
-  // The slide happens on the previous route's still-mounted NavigationTabs
-  // via the optimistic update in handleTabClick. When this new instance
-  // mounts, the indicator just sits at the active tab — no second animation.
+  // Sync when the route's active tab prop changes (e.g. back/forward).
   useLayoutEffect(() => {
     setDisplayedActiveTab(activeTab);
   }, [activeTab]);
@@ -173,22 +183,17 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
     return () => observer.disconnect();
   }, [updateIndicator]);
 
-  useEffect(() => {
-    return () => {
-      if (navigateTimerRef.current) clearTimeout(navigateTimerRef.current);
-    };
-  }, []);
+  const handleTabClick = (event: MouseEvent<HTMLAnchorElement>, tab: NavigationTabItem) => {
+    if (tab.id === displayedActiveTab) {
+      event.preventDefault();
+      return;
+    }
 
-  const handleTabClick = (tab: NavigationTabItem) => {
-    if (tab.id === displayedActiveTab) return;
-
-    // Kick off the slide locally on this (still-mounted) instance so the
-    // animation starts on the same frame as the click. Delay navigation
-    // by the transition duration so the slide completes before this page
-    // unmounts and the new page's NavigationTabs mounts in place.
-    if (navigateTimerRef.current) clearTimeout(navigateTimerRef.current);
+    // Optimistic pill slide on this still-mounted instance. Navigation is
+    // handled by the Link itself (immediate) — a delayed router.push used to
+    // wait for the 300ms CSS transition, but that left the optimistic active
+    // state stuck when soft navigation from the timeout never completed.
     setDisplayedActiveTab(tab.id);
-    navigateTimerRef.current = setTimeout(() => navigate(tab.href), 300);
   };
 
   return (
@@ -200,7 +205,7 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
               <div
                 aria-hidden="true"
                 className={clsx(
-                  "absolute left-0 top-0 z-0 rounded-full border border-white/50 bg-zinc-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.02)] md:backdrop-blur-md motion-reduce:transition-none",
+                  "pointer-events-none absolute left-0 top-0 z-0 rounded-full border border-white/50 bg-zinc-200/60 shadow-glass md:backdrop-blur-md motion-reduce:transition-none",
                   indicatorReady && "transition-[transform,width,opacity] duration-300 ease-out",
                 )}
                 style={{
@@ -218,8 +223,9 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
                     tabRefs.current[tab.id] = element;
                   }}
                   text={tab.text}
+                  href={tab.href}
                   active={displayedActiveTab === tab.id}
-                  onClick={() => handleTabClick(tab)}
+                  onClick={(event) => handleTabClick(event, tab)}
                   onPrefetch={() => prefetchTab(tab.href)}
                   showStaticPill={displayedActiveTab === tab.id && !indicatorReady}
                 />

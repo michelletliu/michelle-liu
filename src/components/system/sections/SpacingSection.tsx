@@ -3,11 +3,7 @@ import { Section, SubLabel, RowList, TokenRow, TagChip } from "../primitives";
 
 export default function SpacingSection() {
   return (
-    <Section
-      id="spacing"
-      title="Spacing"
-      subtitle="Tailwind's 4px scale. Sections breathe with large gaps (up to 80px); the primary page gutter is 64px, collapsing to 24px on mobile."
-    >
+    <Section id="spacing" title="Spacing">
       <SubLabel>Gap scale</SubLabel>
       <RowList>
         {spacingScale.map((s) => {

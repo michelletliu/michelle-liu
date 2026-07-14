@@ -385,7 +385,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                     <a
                       href={experimentLink!.href}
                       onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-baseline gap-1.5 align-baseline text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                      className="inline-flex items-center gap-1.5 align-middle text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
                       {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     >
                       {experimentLink!.label}{experimentLink!.external && <ArrowUpRight />}
@@ -450,7 +450,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
               <a
                 href={experimentLink!.href}
                 onClick={(e) => e.stopPropagation()}
-                className="hidden md:inline-flex items-baseline gap-1.5 align-baseline text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                className="hidden md:inline-flex items-center gap-1.5 align-middle text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
                 {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
                 {experimentLink!.label}{experimentLink!.external && <ArrowUpRight />}
@@ -668,7 +668,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
                 <path d={svgPaths.p16308a80} />
               </svg>
               <span className="text-white inline-flex items-center">
-                <ArrowUpRight size="14px" strokeWidth={1.4} />
+                <ArrowUpRight size="14px" />
               </span>
             </a>
           )}

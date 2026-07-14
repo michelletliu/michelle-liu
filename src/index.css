@@ -81,13 +81,21 @@
   }
 }
 
-/* Custom shadow utility */
-.shadow-default {
-  box-shadow: 0px 4px 16px 0px rgba(212, 212, 216, 0.65);
+/* Canonical shadow tokens (≤6). Prefer these over arbitrary shadow-[…] values.
+   Defined in @theme so Tailwind variants (hover:, md:, etc.) work. */
+@theme {
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-default: 0px 4px 16px 0px rgba(212, 212, 216, 0.65);
+  --shadow-media: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-glass: 0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.02);
 }
 
+/* Hover companion for .shadow-default — add class alongside, not a separate elevation */
 .shadow-default-hover:hover {
-  box-shadow: 0px 4px 16px 0px rgba(161, 161, 170, 0.40) !important;
+  box-shadow: 0px 4px 16px 0px rgba(161, 161, 170, 0.4) !important;
 }
 
 /* Prevent horizontal scrolling on the page - use clip instead of hidden to preserve sticky */
@@ -271,25 +279,6 @@ video {
 }
 
 /* Shelf item fade up animation */
-@keyframes fadeUpRight {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-up-right {
-  opacity: 0;
-}
-
-.revealed .animate-fade-up-right {
-  animation: fadeUpRight 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
 @keyframes shelfItemFadeUp {
   from {
     opacity: 0;
@@ -337,18 +326,6 @@ video {
   animation: modalSlideOut 180ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
-/* Centered modal animation - scale up from center */
-@keyframes modalScaleIn {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
 /* Modal scale animation that preserves existing translate */
 @keyframes modalScaleInPreserve {
   0% {
@@ -379,18 +356,6 @@ video {
   animation: overlayFadeIn 200ms ease-out both;
 }
 
-/* Centered modal exit animation - scale down to center */
-@keyframes modalScaleOut {
-  0% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
-  }
-}
-
 @keyframes modalScaleOutPreserve {
   0% {
     opacity: 1;
@@ -404,37 +369,6 @@ video {
 
 .animate-modal-scale-out {
   animation: modalScaleOutPreserve 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
-}
-
-/* Flex-centered modal animations (no translate needed) */
-@keyframes modalScaleInFlex {
-  0% {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-modal-scale-in-flex {
-  animation: modalScaleInFlex 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes modalScaleOutFlex {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-}
-
-.animate-modal-scale-out-flex {
-  animation: modalScaleOutFlex 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 
 /* Overlay fade out */
@@ -644,21 +578,6 @@ video {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
-}
-
-@keyframes noteFieldIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.animate-note-field-in {
-  animation: noteFieldIn 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
 @keyframes blink {

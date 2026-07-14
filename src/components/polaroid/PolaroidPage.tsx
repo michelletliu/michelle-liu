@@ -487,7 +487,7 @@ export default function PolaroidPage() {
         {/* Polaroid Frame */}
         <div 
           ref={polaroidRef}
-          className={`content-stretch flex items-center justify-center relative rounded-sm md:rounded-md shadow-[0px_2px_12px_0px_rgba(0,0,0,0.08)] md:shadow-[0px_2.5px_16px_0px_rgba(0,0,0,0.08)] shrink-0 transition-transform duration-300 ease-out hover:rotate-2 ${
+          className={`content-stretch flex items-center justify-center relative rounded-sm md:rounded-md shadow-media shrink-0 transition-transform duration-300 ease-out hover:rotate-2 ${
             isPopupMode 
               ? 'h-[222px] md:h-[274px] w-[192px] md:w-[236px]' 
               : 'h-[320px] md:h-[393.22px] w-[274px] md:w-[337.288px]'
@@ -609,9 +609,9 @@ export default function PolaroidPage() {
                           }}
                           className="cursor-pointer block transition-all duration-150 ease-out animate-scale-in-fast"
                         >
-                          <div className="bg-zinc-50 hover:!bg-zinc-200 content-stretch flex gap-[12px] items-center px-6 py-3 rounded-[999px] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)] hover:shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)] transition-all duration-300 ease-in-out">
+                          <div className="bg-zinc-50 hover:!bg-zinc-200 content-stretch flex gap-[12px] items-center px-6 py-3 rounded-[999px] shadow-soft hover:shadow-media transition-all duration-300 ease-in-out">
                             <div aria-hidden="true" className="absolute border border-zinc-200/50 border-solid inset-0 pointer-events-none rounded-[999px]" />
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(60,60,67,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(60,60,67,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                               <polyline points="17 8 12 3 7 8" />
                               <line x1="12" y1="3" x2="12" y2="15" />
@@ -713,7 +713,7 @@ export default function PolaroidPage() {
           <div className="content-stretch flex items-center px-[8px] py-0 relative rounded-[16px] shrink-0 w-full justify-center">
             <div className="content-stretch flex md:flex-row flex-col gap-[10px] items-center justify-center relative shrink-0">
               {/* Color Palette */}
-              <div className="bg-white content-stretch flex items-center md:p-[10px] p-[8px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)] overflow-visible">
+              <div className="bg-white content-stretch flex items-center md:p-[10px] p-[8px] relative rounded-[1000px] shrink-0 shadow-soft overflow-visible">
                 <div aria-hidden="true" className="absolute border border-zinc-200/80 border-solid inset-0 pointer-events-none rounded-[1000px]" />
                 <div className="content-stretch flex md:gap-[18px] gap-[12px] items-center relative shrink-0 overflow-visible">
                   {colors.map((color) => (
@@ -730,7 +730,7 @@ export default function PolaroidPage() {
               {/* Toggle Buttons Container */}
               <div className="flex gap-[10px] items-center">
                 {/* Date Toggle Button */}
-                <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
+                <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-soft">
                   <div aria-hidden="true" className="absolute border border-zinc-200/80 border-solid inset-0 pointer-events-none rounded-[1000px]" />
                   <Tooltip label="Date" position="top" offset={1}>
                     <button
@@ -748,7 +748,7 @@ export default function PolaroidPage() {
                       aria-label="Toggle date"
                     >
                       <div className={`absolute inset-0 flex items-center justify-center transition-colors duration-300`}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={showDate && isDateFocused ? 'white' : showDate ? '#27272a' : 'black'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={showDate && isDateFocused ? 'white' : showDate ? '#27272a' : 'black'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                           <line x1="16" y1="2" x2="16" y2="6" />
                           <line x1="8" y1="2" x2="8" y2="6" />
@@ -760,7 +760,7 @@ export default function PolaroidPage() {
                 </div>
 
                 {/* Text Toggle Button */}
-                <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
+                <div className="bg-white content-stretch flex items-center p-[5px] relative rounded-[1000px] shrink-0 shadow-soft">
                   <div aria-hidden="true" className="absolute border border-zinc-200/80 border-solid inset-0 pointer-events-none rounded-[1000px]" />
                   <Tooltip label="Caption" position="top" offset={1}>
                     <button
@@ -785,7 +785,7 @@ export default function PolaroidPage() {
                       aria-label="Toggle text"
                     >
                       <div className={`absolute inset-0 flex items-center justify-center transition-colors duration-300`}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={showText && isTextFocused ? 'white' : showText ? '#27272a' : 'black'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={showText && isTextFocused ? 'white' : showText ? '#27272a' : 'black'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="4 7 4 4 20 4 20 7" />
                           <line x1="9" y1="20" x2="15" y2="20" />
                           <line x1="12" y1="4" x2="12" y2="20" />
@@ -804,7 +804,7 @@ export default function PolaroidPage() {
               className="flex items-center gap-[8px] px-6 py-3 text-[17px] text-[rgba(60,60,67,0.5)] cursor-pointer rounded-[999px] hover:bg-[rgba(0,0,0,0.05)] transition-colors"
               onClick={handleRestart}
             >
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                 <path d="M3 3v5h5" />
               </svg>
@@ -820,7 +820,7 @@ export default function PolaroidPage() {
               onClick={() => uploadedImage && setShowShareModal(true)}
               disabled={!uploadedImage}
             >
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
                 <polyline points="16 6 12 2 8 6" />
                 <line x1="12" y1="2" x2="12" y2="15" />
@@ -860,7 +860,7 @@ export default function PolaroidPage() {
                 {/* Mini Polaroid Preview */}
                 <div className="relative shrink-0 h-[198px] sm:h-[254.237px] w-[170px] sm:w-[218.074px]" style={{ perspective: '800px' }}>
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 transition-transform duration-300 ease-out scale-[0.78] sm:scale-100 origin-top hover:[transform:rotateY(-8deg)_rotateX(2deg)]" style={{ width: '218.074px', height: '254.237px' }}>
-                  <div className="absolute content-stretch flex items-center justify-center left-0 rounded-md shadow-[0px_2.192px_13.15px_0px_rgba(0,0,0,0.15)] top-0 w-[218.074px]">
+                  <div className="absolute content-stretch flex items-center justify-center left-0 rounded-md shadow-media top-0 w-[218.074px]">
                     <div className="h-[254.237px] relative rounded-md shrink-0 w-[218.074px]">
                       <div className="absolute contents left-0 top-0">
                         <div className="absolute contents left-0 top-0">
@@ -952,7 +952,7 @@ export default function PolaroidPage() {
                               copyLinkSuccess ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
                             }`}
                           >
-                            <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                             </svg>
@@ -962,7 +962,7 @@ export default function PolaroidPage() {
                               copyLinkSuccess ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
                             }`}
                           >
-                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                               <polyline points="20 6 9 17 4 12" />
                             </svg>
                           </div>
@@ -1003,7 +1003,7 @@ export default function PolaroidPage() {
                               downloadSuccess ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
                             }`}
                           >
-                            <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                               <polyline points="7 10 12 15 17 10" />
                               <line x1="12" y1="15" x2="12" y2="3" />
@@ -1014,7 +1014,7 @@ export default function PolaroidPage() {
                               downloadSuccess ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
                             }`}
                           >
-                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                               <polyline points="20 6 9 17 4 12" />
                             </svg>
                           </div>
@@ -1048,7 +1048,7 @@ export default function PolaroidPage() {
                 onClick={handleCloseShareModal}
                 className="absolute bg-white right-[17px] rounded-full size-[32px] top-[17px] cursor-pointer hover:bg-zinc-100 transition-colors flex items-center justify-center"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(20,20,20,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(20,20,20,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -1144,7 +1144,7 @@ export default function PolaroidPage() {
                   {/* Mini Polaroid Preview */}
                   <div className="relative shrink-0 h-[198px] sm:h-[254.237px] w-[170px] sm:w-[218.074px]" style={{ perspective: '800px' }}>
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 transition-transform duration-300 ease-out scale-[0.78] sm:scale-100 origin-top hover:[transform:rotateY(-8deg)_rotateX(2deg)]" style={{ width: '218.074px', height: '254.237px' }}>
-                    <div className="absolute content-stretch flex items-center justify-center left-0 rounded-md shadow-[0px_2.192px_13.15px_0px_rgba(0,0,0,0.15)] top-0 w-[218.074px]">
+                    <div className="absolute content-stretch flex items-center justify-center left-0 rounded-md shadow-media top-0 w-[218.074px]">
                       <div className="h-[254.237px] relative rounded-md shrink-0 w-[218.074px]">
                         <div className="absolute contents left-0 top-0">
                           <div className="absolute contents left-0 top-0">
@@ -1229,7 +1229,7 @@ export default function PolaroidPage() {
                                 copyLinkSuccess ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
                               }`}
                             >
-                              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                               </svg>
@@ -1239,7 +1239,7 @@ export default function PolaroidPage() {
                                 copyLinkSuccess ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
                               }`}
                             >
-                              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="20 6 9 17 4 12" />
                               </svg>
                             </div>
@@ -1280,7 +1280,7 @@ export default function PolaroidPage() {
                                 downloadSuccess ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
                               }`}
                             >
-                              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                                 <polyline points="7 10 12 15 17 10" />
                                 <line x1="12" y1="15" x2="12" y2="3" />
@@ -1291,7 +1291,7 @@ export default function PolaroidPage() {
                                 downloadSuccess ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
                               }`}
                             >
-                              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="20 6 9 17 4 12" />
                               </svg>
                             </div>
@@ -1325,7 +1325,7 @@ export default function PolaroidPage() {
                   onClick={handleCloseShareModal}
                   className="absolute bg-white right-[17px] rounded-full size-[32px] top-[17px] cursor-pointer hover:bg-zinc-100 transition-colors flex items-center justify-center"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(20,20,20,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(20,20,20,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
                   </svg>

@@ -63,18 +63,6 @@ export type MotionToken = {
   tag: Tag;
 };
 
-export type ExperimentIsland = {
-  id: string;
-  name: string;
-  tagline: string;
-  bg: string;
-  fonts: string[];
-  colors: { value: string; label: string }[];
-  radii: string[];
-  shadows: string[];
-  effects: string[];
-};
-
 // ---------------------------------------------------------------------------
 // COLORS
 // ---------------------------------------------------------------------------
@@ -137,7 +125,7 @@ export const colorGroups: ColorGroup[] = [
       { name: "CMS header bg", value: "#fdf2f8", usage: "Section header default (pink-50)", tag: "one-off" },
       { name: "CMS accent", value: "#ec4899", usage: "Stat / header accent (pink-500)", tag: "one-off" },
       { name: "Sky-50", value: "#f0f9ff", usage: "Polaroid project card bg", tag: "one-off" },
-      { name: "Shadow tint", value: "#eaeaea", usage: "Gallery / device mockup shadows", tag: "one-off" },
+      { name: "Shadow tint", value: "#eaeaea", usage: "Legacy device-mockup shadow color (snapped to shadow-soft)", tag: "one-off" },
       { name: "Lore lavender", value: "#e3dff4", usage: "Lore card image fallback", tag: "one-off" },
       { name: "--primary (legacy)", value: "#030213", usage: "shadcn token in globals.css only", tag: "one-off" },
       { name: "--muted-foreground", value: "#717182", usage: "shadcn token in globals.css", tag: "one-off" },
@@ -234,21 +222,49 @@ export const lineHeights: ScaleToken[] = [
 // ---------------------------------------------------------------------------
 
 export const shadows: ShadowToken[] = [
-  { name: "shadow-default", className: ".shadow-default", value: "0px 4px 16px 0px rgba(212, 212, 216,0.65)", usage: "Media cards, project link cards", tag: "canonical" },
-  { name: "shadow-default-hover", className: ".shadow-default-hover", value: "0px 4px 16px 0px rgba(161, 161, 170,0.40)", usage: "Hover state on default-shadow cards", tag: "canonical" },
-  { name: "Glass nav pill", value: "0 2px 8px rgba(0,0,0,0.06), inset 0 1px 1px rgba(255,255,255,0.9), inset 0 -1px 1px rgba(0,0,0,0.02)", usage: "Navigation active tab pill", tag: "canonical" },
-  { name: "Image · rest", value: "0 3px 8px rgba(0,0,0,0.05)", usage: "ShimmerImage default", tag: "canonical" },
-  { name: "Image · hover", value: "0 3px 8px rgba(0,0,0,0.1)", usage: "ShimmerImage / MediaCard hover", tag: "canonical" },
-  { name: "Book cover", value: "0px 4px 12px 0px rgba(0,0,0,0.1)", usage: "Library book covers", tag: "canonical" },
-  { name: "Community photo", value: "0px 4px 8px 0px rgba(0,0,0,0.15)", usage: "Community photo frames", tag: "canonical" },
-  { name: "Lightbox photo", value: "0px 8px 24px 0px rgba(0,0,0,0.15)", usage: "Community lightbox frame", tag: "canonical" },
-  { name: "Book detail modal", value: "0px 4px 36px 0px rgba(0,0,0,0.15)", usage: "Library book detail modal", tag: "one-off" },
-  { name: "Device mockup", value: "0px 2px 8px 0px #eaeaea", usage: "Gallery / device mockups", tag: "canonical" },
-  { name: "Lock icon", value: "0px 1px 3px 0px rgba(0,0,0,0.08), 0px 1px 2px -1px rgba(0,0,0,0.08)", usage: "Protected content lock", tag: "one-off" },
-  { name: "Polaroid frame", value: "0px 2.5px 16px 0px rgba(0,0,0,0.08)", usage: "Polaroid main frame", tag: "experiment" },
-  { name: "Screentime paper", value: "0px 10px 60px rgba(0,0,0,0.03)", usage: "Screentime upload modal", tag: "experiment" },
-  { name: "Liquid glass", value: "0 4px 20px rgba(0,0,0,0.12), inset 0 0.5px 0 rgba(255,255,255,0.7)", usage: "Art carousel glass buttons", tag: "experiment" },
-  { name: "Painting (Fading)", value: "0 12px 40px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.08)", usage: "Fading painting card", tag: "experiment" },
+  {
+    name: "shadow-soft",
+    className: ".shadow-soft",
+    value: "0 2px 8px rgba(0, 0, 0, 0.06)",
+    usage: "Hairline lift — locks, pills, segmented thumbs, image rest state",
+    tag: "canonical",
+  },
+  {
+    name: "shadow-default",
+    className: ".shadow-default",
+    value: "0px 4px 16px 0px rgba(212, 212, 216, 0.65)",
+    usage: "Zinc-tinted cards; pair with .shadow-default-hover on interactive cards",
+    tag: "canonical",
+  },
+  {
+    name: "shadow-default-hover",
+    className: ".shadow-default-hover",
+    value: "0px 4px 16px 0px rgba(161, 161, 170, 0.4)",
+    usage: "Hover companion for .shadow-default cards",
+    tag: "canonical",
+  },
+  {
+    name: "shadow-media",
+    className: ".shadow-media",
+    value: "0 4px 12px rgba(0, 0, 0, 0.1)",
+    usage: "Photos, book covers, device frames, Polaroids, community mats",
+    tag: "canonical",
+  },
+  {
+    name: "shadow-elevated",
+    className: ".shadow-elevated",
+    value: "0 8px 24px rgba(0, 0, 0, 0.12)",
+    usage: "Modals, dropdowns, popovers, lightbox, deep floats",
+    tag: "canonical",
+  },
+  {
+    name: "shadow-glass",
+    className: ".shadow-glass",
+    value:
+      "0 2px 8px rgba(0, 0, 0, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.9), inset 0 -1px 1px rgba(0, 0, 0, 0.02)",
+    usage: "Frosted nav pill + liquid-glass controls",
+    tag: "canonical",
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -330,9 +346,9 @@ export type MaterialToken = {
 export const materials: MaterialToken[] = [
   { name: "Header gradient", detail: "Multi-stop lavender→white, animated 8s (.header-gradient)", usage: "Page headers", tag: "canonical" },
   { name: "Grain overlay", detail: "PNG texture at opacity 0.8 over header gradient", usage: "Page header texture", tag: "canonical" },
-  { name: "Glass nav pill", detail: "bg-zinc-200/60 + backdrop-blur-md + triple inset shadow", usage: "Active nav tab", tag: "canonical" },
+  { name: "Glass nav pill", detail: "bg-zinc-200/60 + backdrop-blur-md + shadow-glass", usage: "Active nav tab", tag: "canonical" },
   { name: "Backdrop blur", detail: "backdrop-blur-sm / -md", usage: "Nav pill, project TOC overlay", tag: "canonical" },
-  { name: "Liquid glass", detail: "backdrop-filter: blur(16px) saturate(180%) + inset glow", usage: "Art carousel arrows", tag: "experiment" },
+  { name: "Liquid glass", detail: "backdrop-filter: blur(16px) saturate(180%) + shadow-glass", usage: "Art carousel arrows", tag: "experiment" },
   { name: "Shimmer", detail: "Gradient #f4f4f5→#e4e4e7→#fafafa, 2s ease-in-out loop", usage: "Image / skeleton loading", tag: "canonical" },
   { name: "Gradient text", detail: "violet/pink/blue/zinc stops, animated 6s", usage: "Intro accent text", tag: "one-off" },
   { name: "Text selection", detail: "color #3b82f6 on #dbeafe background", usage: "Global ::selection", tag: "canonical" },
@@ -356,7 +372,7 @@ export const motion: MotionToken[] = [
   { name: "fadeSlideDown", duration: "300ms", easing: "ease-out", keyframe: "slideDown", usage: "Close buttons", tag: "canonical" },
   { name: "modalScaleIn", duration: "280ms", easing: "cubic-bezier(0.16,1,0.3,1)", keyframe: "scale", usage: "Centered modals", tag: "canonical" },
   { name: "modalSlideIn", duration: "250ms", easing: "cubic-bezier(0.16,1,0.3,1)", keyframe: "slideDown", usage: "Dropdown modals", tag: "canonical" },
-  { name: "fadeUpRight", duration: "400ms", easing: "cubic-bezier(0.16,1,0.3,1)", keyframe: "slideUp", usage: "Shelf items", tag: "canonical" },
+  { name: "shelfItemFadeUp", duration: "400ms", easing: "ease-out", keyframe: "slideUp", usage: "Shelf items", tag: "canonical" },
   { name: "projectCardEnter", duration: "450ms", easing: "cubic-bezier(0.25,0.46,0.45,0.94)", keyframe: "slideUp", usage: "Project cards, hero", tag: "canonical" },
   { name: "scroll-reveal", duration: "500ms", easing: "ease-out", keyframe: "slideUp", usage: "On-scroll section reveal", tag: "canonical" },
   { name: "shimmer", duration: "2s", easing: "ease-in-out ∞", keyframe: "shimmer", usage: "Loading skeletons", tag: "canonical" },
@@ -375,122 +391,6 @@ export const durationScale: ScaleToken[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// EXPERIMENTS
-// ---------------------------------------------------------------------------
-
-export const experiments: ExperimentIsland[] = [
-  {
-    id: "polaroid",
-    name: "Polaroid",
-    tagline: "iOS-native precision — SF Pro UI, Courier imprint, tinted physical frame, Figma sub-pixel radii.",
-    bg: "#f0f9ff",
-    fonts: ["SF Pro", "Courier New"],
-    colors: [
-      { value: "#0088FF", label: "iOS blue" },
-      { value: "#FF383C", label: "red" },
-      { value: "#FF8D28", label: "orange" },
-      { value: "#FFCC00", label: "yellow" },
-      { value: "#34C759", label: "green" },
-      { value: "#00C3D0", label: "cyan" },
-      { value: "#6155F5", label: "purple" },
-    ],
-    radii: ["2.5px", "5.5px", "4.383px", "1000px"],
-    shadows: ["0px 2.5px 16px rgba(0,0,0,0.08)"],
-    effects: ["Color-tinted frame", "3D share preview (rotateY -8°)", "blur-[0.25px] paper edge", "hover:rotate-2"],
-  },
-  {
-    id: "screentime",
-    name: "Screentime",
-    tagline: "iOS device chrome meets thermal receipt — forced monospace everywhere, dashed dividers.",
-    bg: "#f4f4f5",
-    fonts: ["SF Mono (forced)"],
-    colors: [
-      { value: "#18181b", label: "zinc-900 CTA" },
-      { value: "#08f", label: "iOS blue" },
-      { value: "#f4f4f5", label: "bg" },
-      { value: "#333333", label: "action label" },
-    ],
-    radii: ["7px", "11px", "12px", "100px", "rounded-3xl"],
-    shadows: ["0px 2px 20px rgba(0,0,0,0.06)", "0px 10px 60px rgba(0,0,0,0.03)"],
-    effects: ["iOS status bar + home indicator", "Dashed SVG receipt rules", "Segmented control slide", "Phone-width layout"],
-  },
-  {
-    id: "sketchbook",
-    name: "Sketchbook",
-    tagline: "Minimal white gallery — soft drop-shadow sketches, RGB-interpolated page ticks, carousel depth.",
-    bg: "#ffffff",
-    fonts: ["Michelle (site sans)"],
-    colors: [
-      { value: "#27272a", label: "active tick" },
-      { value: "#d4d4d8", label: "idle tick" },
-      { value: "#a1a1aa", label: "hover tick" },
-    ],
-    radii: ["rounded-lg", "2.5px ticks", "rounded-full"],
-    shadows: ["drop-shadow-sm"],
-    effects: ["15vw edge vignette", "Carousel depth (0.5 opacity / 0.85 scale)", "RGB lerp page ticks", "Rubber-band drag"],
-  },
-  {
-    id: "film",
-    name: "Film Diary",
-    tagline: "Analog photo timeline — #fafafa darkroom paper, hashmark timeline, spring-scroll, blur-reveal captions.",
-    bg: "#fafafa",
-    fonts: ["Michelle (site sans)"],
-    colors: [
-      { value: "#27272a", label: "active mark" },
-      { value: "#e4e4e7", label: "idle mark" },
-      { value: "#fafafa", label: "paper" },
-    ],
-    radii: ["3px", "rounded-sm", "rounded-full"],
-    shadows: ["(none — edge gradients instead)"],
-    effects: ["11-stop edge dissolve", "Spring scroll snap", "Photo 72px→480px spring", "blur(4px)→0 captions"],
-  },
-  {
-    id: "fading",
-    name: "Fading",
-    tagline: "Canvas-driven destruction — paintings grow, then shatter into sampled-color dust. Almost zero CSS tokens.",
-    bg: "#ffffff",
-    fonts: ["(none — canvas)"],
-    colors: [
-      { value: "#ffffff", label: "ground" },
-      { value: "#000000", label: "shadow" },
-    ],
-    radii: ["12px"],
-    shadows: ["0 12px 40px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.08)"],
-    effects: ["Full-screen canvas particles", "Sampled-RGB dust", "gravity 0.0012 / drag 0.9986", "grow 6s → shatter 3.8s"],
-  },
-  {
-    id: "art",
-    name: "Art",
-    tagline: "Portfolio masonry — glassmorphism carousel controls, shimmer loaders, wide-tracking nav.",
-    bg: "#ffffff",
-    fonts: ["Michelle", "site sans"],
-    colors: [
-      { value: "#3b82f6", label: "active nav" },
-      { value: "#a1a1aa", label: "muted" },
-      { value: "rgba(255,255,255,0.45)", label: "glass fill" },
-    ],
-    radii: ["rounded-2xl", "rounded-xl", "rounded-full"],
-    shadows: ["0 4px 20px rgba(0,0,0,0.12) + inset glow"],
-    effects: ["backdrop blur(16px) saturate(180%)", "Shimmer loaders", "Infinite scroll loop", "Accordion sidebar"],
-  },
-  {
-    id: "experiment-modal",
-    name: "Experiment Modal",
-    tagline: "Site-chrome shell — Michelle metadata, per-experiment background bleed, frosted top gradient.",
-    bg: "#ffffff",
-    fonts: ["Michelle"],
-    colors: [
-      { value: "#18181b", label: "body" },
-      { value: "#a1a1aa", label: "labels" },
-      { value: "#3b82f6", label: "CTA" },
-    ],
-    radii: ["26px", "16px", "12px", "rounded-full"],
-    shadows: ["shadow-xl (info popover)"],
-    effects: ["hsla top frost gradient", "Per-experiment bg bleed", "translate-y slide in/out", "popoverIn 150ms"],
-  },
-];
-
-// ---------------------------------------------------------------------------
 // TABLE OF CONTENTS
 // ---------------------------------------------------------------------------
 
@@ -499,11 +399,11 @@ export const tocSections: { id: string; label: string }[] = [
   { id: "color", label: "Color" },
   { id: "typography", label: "Typography" },
   { id: "shadows", label: "Shadows" },
-  { id: "radius", label: "Corner Radius" },
   { id: "spacing", label: "Spacing" },
-  { id: "borders", label: "Borders & focus" },
+  { id: "borders", label: "Borders" },
   { id: "materials", label: "Materials & effects" },
   { id: "motion", label: "Motion" },
+  { id: "icons", label: "Iconography" },
   { id: "components", label: "Components" },
 ];
 
@@ -535,9 +435,9 @@ export const tocSubsections: Record<string, string[]> = {
     "Letter-spacing",
     "Line-height",
   ],
-  radius: ["Radius scale", "Experiment radii"],
   spacing: ["Gap scale", "Layout widths"],
-  borders: ["Borders", "Focus states"],
+  borders: ["Borders", "Focus states", "Border Radius"],
   motion: ["Animations", "Duration scale"],
+  icons: ["UI icons", "Social"],
   components: ["Navigation & pills", "Buttons", "Loaders", "Cards"],
 };

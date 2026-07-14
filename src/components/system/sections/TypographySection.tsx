@@ -10,11 +10,7 @@ import { Section, SubLabel, RowList, TokenRow, TagChip } from "../primitives";
 
 export default function TypographySection() {
   return (
-    <Section
-      id="typography"
-      title="Typography"
-      subtitle="Michelle (a self-hosted Figtree variable font) does almost all the work. SF Pro and monospaces appear only inside specific experiments."
-    >
+    <Section id="typography" title="Typography">
       <SubLabel note="The 'Michelle' variable font covers weights 300–900, roman + italic.">
         Font families
       </SubLabel>

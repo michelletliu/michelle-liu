@@ -111,8 +111,8 @@ const ShimmerImage = forwardRef<HTMLImageElement, ShimmerImageProps>(
           reserveAspectRatio && "w-full",
           detectWhiteBorder &&
             (hasDetectedWhiteBorder
-              ? "shadow-[0_3px_8px_rgba(0,0,0,0.1)]"
-              : "shadow-[0_3px_8px_rgba(0,0,0,0.05)]"),
+              ? "shadow-media"
+              : "shadow-soft"),
           rounded,
           wrapperClassName,
         )}
