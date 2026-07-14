@@ -7,6 +7,8 @@ type TooltipProps = {
   position?: 'top' | 'bottom';
   /** Offset from the element in pixels */
   offset?: number;
+  /** Force-hide and skip hover show (e.g. while a click popover is open) */
+  disabled?: boolean;
 };
 
 // Tooltip warmup state - tracks if any tooltip is currently open
@@ -50,35 +52,42 @@ export default function Tooltip({
   label, 
   children, 
   position = 'bottom',
-  offset = 6 
+  offset = 6,
+  disabled = false,
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const [isInstant, setIsInstant] = useState(false);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const hideImmediately = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsVisible(false);
+    setIsEnding(false);
+    setIsInstant(false);
+    setTooltipWarmup(false);
+  };
+
+  // Force-hide when disabled (e.g. click opened a popover instead)
+  useEffect(() => {
+    if (disabled) hideImmediately();
+  }, [disabled]);
+
   // Force-hide on any touch anywhere — defensive cleanup in case a tooltip
   // got stuck open from a synthetic mouseenter on tap.
   useEffect(() => {
     if (!isVisible) return;
-    const hide = () => {
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current);
-        hoverTimeoutRef.current = null;
-      }
-      setIsVisible(false);
-      setIsEnding(false);
-      setIsInstant(false);
-      setTooltipWarmup(false);
-    };
-    window.addEventListener('touchstart', hide, { passive: true });
-    return () => window.removeEventListener('touchstart', hide);
+    window.addEventListener('touchstart', hideImmediately, { passive: true });
+    return () => window.removeEventListener('touchstart', hideImmediately);
   }, [isVisible]);
 
   const handleMouseEnter = () => {
     // Skip tooltips on touch devices: tapping fires mouseenter without a
     // matching mouseleave, so tooltips would stick after each tap.
-    if (isTouchSession) return;
+    if (isTouchSession || disabled) return;
 
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
@@ -126,6 +135,11 @@ export default function Tooltip({
     }
   };
 
+  // Clicking the trigger should never leave a tooltip open/queued
+  const handleMouseDown = () => {
+    hideImmediately();
+  };
+
   const positionStyles = position === 'bottom' 
     ? { top: `calc(100% + ${offset}px)`, '--transform-origin': 'center top' as string }
     : { bottom: `calc(100% + ${offset}px)`, '--transform-origin': 'center bottom' as string };
@@ -135,9 +149,10 @@ export default function Tooltip({
       className="relative inline-flex"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
     >
       {children}
-      {isVisible && (
+      {isVisible && !disabled && (
         <div
           className="tooltip absolute left-1/2 -translate-x-1/2 px-2 py-1 bg-zinc-800 text-white text-sm font-medium rounded-lg whitespace-nowrap pointer-events-none z-[9999]"
           data-ending-style={isEnding ? "" : undefined}
