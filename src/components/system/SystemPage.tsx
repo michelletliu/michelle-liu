@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Sidebar, { type SidebarNode } from "../Sidebar";
+import BlueprintLogo from "../BlueprintLogo";
 import { fadeUpStyles } from "../../styles/animations";
 import { tocSections, tocSubsections, subSlug } from "./tokens";
 import ColorSection from "./sections/ColorSection";
@@ -112,9 +113,10 @@ export default function SystemPage() {
         href="/"
         aria-label="Back to home"
         onClick={() => window.scrollTo(0, 0)}
-        className="fixed left-6 top-8 z-50 transition-opacity duration-200 ease-out hover:opacity-70 md:left-16"
+        className="fixed left-6 top-8 z-50 size-8 overflow-visible transition-opacity duration-200 ease-out hover:opacity-70 md:left-16 md:size-11"
       >
-        <img src="/logo.png" alt="Michelle Liu" className="h-8 w-8 object-contain md:h-11 md:w-11" />
+        <BlueprintLogo mode="always" />
+        <span className="sr-only">Michelle Liu</span>
       </Link>
 
       {/* Mobile TOC chip strip */}
