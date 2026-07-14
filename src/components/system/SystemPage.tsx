@@ -122,7 +122,9 @@ function MobileSectionMenu({
       setFilter("");
       if (wasOpenRef.current) {
         wasOpenRef.current = false;
-        triggerRef.current?.focus();
+        if (window.innerWidth < 1024) {
+          triggerRef.current?.focus();
+        }
       }
       return;
     }
