@@ -98,6 +98,7 @@ export default function BlueprintLogo({
             // Pointer isn't on the doorway — normal first-hover arming.
             stickyLockRef.current = false;
             clearBlueprintDoorwaySticky();
+            setGroupHovered(false);
             setHoverArmed(true);
           });
         });
