@@ -320,13 +320,13 @@ function MobileSectionMenu({
             className="fixed inset-0 z-[60] flex flex-col bg-white animate-in fade-in duration-200 lg:hidden"
           >
             {/*
-              Mirror sticky bar chrome (pt-8 + h-8/h-10 + pr-5 size-10 slot) so
+              Mirror sticky bar chrome (py-3 + h-8/h-10 + pr-5 size-10 slot) so
               the reserved close slot sits under the shared floating control.
             */}
-            <div className="px-5 pt-8 pb-3">
-              <div className="flex h-8 w-full items-center">
-                <div className="flex h-10 w-full items-center gap-3">
-                  <h2 className="min-w-0 flex-1 truncate text-base font-medium leading-none tracking-wide text-zinc-800">
+            <div className="px-5 py-3">
+              <div className="flex h-8 w-full items-center overflow-visible">
+                <div className="flex h-10 w-full items-center gap-3 overflow-visible">
+                  <h2 className="min-w-0 flex-1 overflow-visible text-base font-medium leading-normal tracking-wide text-zinc-800">
                     Design System
                   </h2>
                   <span
@@ -366,7 +366,7 @@ function MobileSectionMenu({
               {rows.length === 0 ? (
                 <p className="px-3 py-6 text-sm text-zinc-400">No matching sections</p>
               ) : (
-                <ul className="flex flex-col gap-1 py-1">
+                <ul className="flex flex-col gap-px py-1">
                   {rows.map((row) => {
                     if (row.kind === "item") {
                       const active = activeId === row.id;
@@ -436,7 +436,7 @@ function MobileSectionMenu({
                           aria-hidden={!expanded}
                         >
                           <div className="min-h-0 overflow-hidden">
-                            <ul className="flex flex-col gap-1 pb-1 pt-0.5">
+                            <ul className="flex flex-col gap-px pb-1 pt-0.5">
                               {row.children.map((child) => {
                                 const active = activeId === child.id;
                                 return (
@@ -481,10 +481,11 @@ function MobileSectionMenu({
       {/*
         Outer h-8 matches the mobile seal hit target (size-8). Inner h-10
         matches the morph control and centers within that band so Overview +
-        chevron share the seal's vertical midline.
+        chevron share the seal's vertical midline. leading-normal keeps
+        descenders (e.g. “g”) from clipping under truncate.
       */}
-      <div className="flex h-8 w-full items-center">
-        <div className="flex h-10 w-full items-center gap-3">
+      <div className="flex h-8 w-full items-center overflow-visible">
+        <div className="flex h-10 w-full items-center gap-3 overflow-visible">
           <button
             ref={triggerRef}
             type="button"
@@ -492,7 +493,7 @@ function MobileSectionMenu({
             aria-expanded={open}
             aria-label={`Current section: ${activeLabel}. Open section menu.`}
             onClick={openMenu}
-            className="min-w-0 flex-1 truncate text-left text-base font-medium leading-none tracking-wide text-zinc-800 transition-colors duration-200"
+            className="min-w-0 flex-1 truncate text-left text-base font-medium leading-normal tracking-wide text-zinc-800 transition-colors duration-200"
           >
             {activeLabel}
           </button>
@@ -760,7 +761,7 @@ export default function SystemPage() {
         aria-label="Back to home"
         aria-hidden={logoHidden}
         tabIndex={logoHidden ? -1 : undefined}
-        className={`group fixed left-6 top-8 z-50 size-8 overflow-visible transition-[opacity,transform] duration-200 ease-out [@media(hover:hover)]:hover:scale-[1.02] active:scale-95 md:left-16 md:size-11 ${
+        className={`group fixed left-6 top-3 z-50 size-8 overflow-visible transition-[opacity,transform] duration-200 ease-out [@media(hover:hover)]:hover:scale-[1.02] active:scale-95 md:left-16 md:top-8 md:size-11 ${
           logoHidden ? "pointer-events-none opacity-0" : "opacity-100"
         }`}
       >
@@ -774,10 +775,10 @@ export default function SystemPage() {
       */}
       <div ref={zoneRef} className="relative">
         {/*
-          Mobile section menu — shares the seal's top + height (top-8 / size-8)
-          so the Overview + chevron band centers on the seal (48px). Inner row
-          stays h-10 for the morph control and overflows ±4px inside that band.
-          pl-18 clears the seal; pb-3 breathes under the row.
+          Mobile section menu — shares the seal's top + height (top-3 / size-8)
+          so the Overview + chevron band centers on the seal. Inner row stays
+          h-10 for the morph control and overflows ±4px inside that band.
+          pl-18 clears the seal; py-3 matches the sheet header chrome.
           Bottom hairline only when stuck (sentinel leaves the viewport).
         */}
         <div
@@ -788,7 +789,7 @@ export default function SystemPage() {
         <nav
           aria-label="Sections"
           className={clsx(
-            "sticky top-0 z-40 bg-white/90 pl-18 pr-5 pt-8 pb-3 backdrop-blur-md transition-[border-color] duration-200 lg:hidden",
+            "sticky top-0 z-40 bg-white/90 py-3 pl-18 pr-5 backdrop-blur-md transition-[border-color] duration-200 lg:hidden",
             mobileNavStuck ? "border-b border-zinc-100" : "border-b border-transparent",
           )}
         >
