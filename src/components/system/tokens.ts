@@ -461,5 +461,12 @@ export const tocSubsections: Record<string, string[]> = {
   borders: ["Borders", "Focus states", "Border Radius"],
   motion: ["Animations", "Duration scale"],
   icons: ["Size", "Stroke icons", "Filled icons", "Social"],
-  components: ["Navigation & pills", "Inputs", "Buttons", "Loaders", "Cards"],
+  components: [
+    "Navigation & pills",
+    "Inputs",
+    "Buttons",
+    "Icon buttons",
+    "Loaders",
+    "Cards",
+  ],
 };
