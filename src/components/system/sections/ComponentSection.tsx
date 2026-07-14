@@ -42,13 +42,14 @@ function SpecimenExpandIcon() {
  * Shared bento tile for component specimens.
  * - Soft zinc-50 rounded card behind every specimen
  * - `h-full` + grid `items-stretch` → equal height within a row
- * - `span` varies width (bento); never clips content (no overflow-hidden)
+ * - Mobile (< lg): full content-column width; lg+: variable bento spans
+ * - Never clips content (no overflow-hidden)
  */
 function Specimen({
   label,
   children,
   className = "",
-  span = "col-span-2 md:col-span-4",
+  span = "col-span-1 lg:col-span-4",
 }: {
   label: string;
   children: ReactNode;
@@ -57,7 +58,7 @@ function Specimen({
   span?: string;
 }) {
   return (
-    <div className={`flex h-full min-w-0 flex-col gap-3 ${span}`}>
+    <div className={`flex h-full min-w-0 w-full flex-col gap-3 ${span}`}>
       <div
         className={`flex min-h-40 w-full flex-1 items-center justify-center gap-4 overflow-visible rounded-2xl bg-zinc-50 px-6 py-8 ${className}`}
       >
@@ -68,16 +69,19 @@ function Specimen({
   );
 }
 
-/** 12-col bento: variable widths, equal row height via items-stretch. */
-const SPECIMEN_GRID = "grid grid-cols-2 items-stretch gap-x-5 gap-y-8 md:grid-cols-12";
+/**
+ * Mobile: single column so every zinc-50 card fills the content width
+ * (page px-6 / md:px-16 padding still applies). lg+: 12-col bento packing.
+ */
+const SPECIMEN_GRID = "grid grid-cols-1 items-stretch gap-y-8 lg:grid-cols-12 lg:gap-x-5";
 /** ~1/4 — icon / compact controls */
-const SPAN_NARROW = "col-span-1 md:col-span-3";
+const SPAN_NARROW = "col-span-1 lg:col-span-3";
 /** ~1/3 — default mid-size specimens */
-const SPAN_MID = "col-span-2 md:col-span-4";
+const SPAN_MID = "col-span-1 lg:col-span-4";
 /** ~1/2 — primary CTAs, dual controls */
-const SPAN_WIDE = "col-span-2 md:col-span-6";
+const SPAN_WIDE = "col-span-1 lg:col-span-6";
 /** ~2/3 — long copy (e.g. Contact CTA) */
-const SPAN_XWIDE = "col-span-2 md:col-span-8";
+const SPAN_XWIDE = "col-span-1 lg:col-span-8";
 
 const LIBRARY_OPTIONS = [
   { label: "favorites", count: 8 },
