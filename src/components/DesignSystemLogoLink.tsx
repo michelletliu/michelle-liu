@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import BlueprintLogo from "./BlueprintLogo";
+import { markBlueprintDoorwayNav } from "./blueprintDoorwayNav";
 
 /** Warm the design-system route + its heavy section chunks. */
 function warmDesignSystem() {
@@ -61,7 +62,10 @@ export default function DesignSystemLogoLink() {
         router.prefetch("/design-system");
         warmDesignSystem();
       }}
-      onClick={() => window.scrollTo(0, 0)}
+      onClick={() => {
+        markBlueprintDoorwayNav();
+        window.scrollTo(0, 0);
+      }}
       className="group relative -m-2 inline-block shrink-0 cursor-pointer overflow-visible p-2 transition-transform duration-200 ease-out hover:scale-[1.02] active:scale-95"
     >
       <span className="relative block size-8 md:size-11">
