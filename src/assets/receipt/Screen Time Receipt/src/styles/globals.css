@@ -126,13 +126,13 @@
 
   body {
     @apply text-foreground;
-    background-color: #f3f4f6;
+    background-color: #f4f4f5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   
   html {
-    background-color: #f3f4f6;
+    background-color: #f4f4f5;
   }
 }
 

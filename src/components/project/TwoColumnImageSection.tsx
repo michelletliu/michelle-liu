@@ -85,7 +85,7 @@ export function TwoColumnImageSectionComponent({
                 />
               </div>
               {section.leftImageCaption && (
-                <p className="text-sm text-center text-gray-500">
+                <p className="text-sm text-center text-zinc-500">
                   {section.leftImageCaption}
                 </p>
               )}
@@ -110,7 +110,7 @@ export function TwoColumnImageSectionComponent({
                 />
               </div>
               {section.rightImageCaption && (
-                <p className="text-sm text-center text-gray-500">
+                <p className="text-sm text-center text-zinc-500">
                   {section.rightImageCaption}
                 </p>
               )}
@@ -137,7 +137,7 @@ export function TwoColumnImageSectionComponent({
                 />
               </div>
               {section.leftImageCaption && (
-                <p className="text-sm text-center text-gray-500">
+                <p className="text-sm text-center text-zinc-500">
                   {section.leftImageCaption}
                 </p>
               )}
@@ -150,7 +150,7 @@ export function TwoColumnImageSectionComponent({
             {(section.label || section.heading) && (
               <div className="flex flex-col gap-3">
                 {section.label && (
-                  <p className="leading-5 uppercase text-[#9ca3af] text-base">
+                  <p className="leading-5 uppercase text-[#a1a1aa] text-base">
                     {section.label}
                   </p>
                 )}
@@ -164,7 +164,7 @@ export function TwoColumnImageSectionComponent({
 
             {/* Description */}
             {section.description && section.description.length > 0 && (
-              <div className="leading-normal max-w-120 pb-1 text-[#4b5563] text-base whitespace-pre-wrap prose prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
+              <div className="leading-normal max-w-120 pb-1 text-[#52525b] text-base whitespace-pre-wrap prose prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
                 <PortableText value={section.description} components={portableTextComponents} />
               </div>
             )}
@@ -185,7 +185,7 @@ export function TwoColumnImageSectionComponent({
                 />
               </div>
               {section.rightImageCaption && (
-                <p className="text-sm text-center text-gray-500">
+                <p className="text-sm text-center text-zinc-500">
                   {section.rightImageCaption}
                 </p>
               )}
@@ -205,7 +205,7 @@ export function TwoColumnImageSectionComponent({
             {(section.label || section.heading) && (
               <div className="flex flex-col gap-3">
                 {section.label && (
-                  <p className="leading-5 uppercase text-[#9ca3af] text-base">
+                  <p className="leading-5 uppercase text-[#a1a1aa] text-base">
                     {section.label}
                   </p>
                 )}
@@ -219,7 +219,7 @@ export function TwoColumnImageSectionComponent({
 
             {/* Description */}
             {section.description && section.description.length > 0 && (
-              <div className="leading-normal pb-1 text-[#4b5563] max-w-120 text-base whitespace-pre-wrap prose prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
+              <div className="leading-normal pb-1 text-[#52525b] max-w-120 text-base whitespace-pre-wrap prose prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
                 <PortableText value={section.description} components={portableTextComponents} />
               </div>
             )}
@@ -239,7 +239,7 @@ export function TwoColumnImageSectionComponent({
                   />
                 </div>
                 {section.leftImageCaption && (
-                  <p className="text-sm text-center text-gray-500">
+                  <p className="text-sm text-center text-zinc-500">
                     {section.leftImageCaption}
                   </p>
                 )}
@@ -262,7 +262,7 @@ export function TwoColumnImageSectionComponent({
                 />
               </div>
               {section.rightImageCaption && (
-                <p className="text-sm text-center text-gray-500">
+                <p className="text-sm text-center text-zinc-500">
                   {section.rightImageCaption}
                 </p>
               )}

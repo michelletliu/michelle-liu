@@ -16,7 +16,7 @@ function Demo({ kind }: { kind: string }) {
     case "shimmer":
       return <div className="animate-shimmer h-8 w-16 rounded-lg" />;
     case "spin":
-      return <div className="h-7 w-7 animate-spin rounded-full border-2 border-gray-200 border-t-gray-400" />;
+      return <div className="h-7 w-7 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-400" />;
     case "pulse":
       return (
         <span className="relative flex h-4 w-4 items-center justify-center">
@@ -57,20 +57,20 @@ export default function MotionSection() {
       <div className="grid gap-x-6 gap-y-9" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
         {motion.map((m) => (
           <div key={m.name} className="flex flex-col gap-3">
-            <div className="flex h-20 items-center justify-center rounded-xl bg-gray-50">
+            <div className="flex h-20 items-center justify-center rounded-xl bg-zinc-50">
               <Demo kind={m.keyframe} />
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between gap-2">
-                <code className="font-mono text-sm text-gray-700">{m.name}</code>
+                <code className="font-mono text-sm text-zinc-700">{m.name}</code>
                 <TagChip tag={m.tag} />
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-400">
+              <div className="flex items-center gap-2 text-sm text-zinc-400">
                 <span className="tabular-nums">{m.duration}</span>
-                <span className="text-gray-300">·</span>
+                <span className="text-zinc-300">·</span>
                 <span className="truncate">{m.easing}</span>
               </div>
-              <span className="text-sm leading-snug text-gray-400">{m.usage}</span>
+              <span className="text-sm leading-snug text-zinc-400">{m.usage}</span>
             </div>
           </div>
         ))}

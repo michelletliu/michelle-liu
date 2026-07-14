@@ -49,7 +49,7 @@ function InfoIcon() {
 function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center w-full h-full min-h-[400px]">
-      <div className="w-8 h-8 border-2 border-gray-200 border-t-gray-400 rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-zinc-200 border-t-zinc-400 rounded-full animate-spin" />
     </div>
   );
 }
@@ -58,7 +58,7 @@ const ChevronRightIcon = () => (
   <svg className="block size-full" viewBox="0 0 16 16" fill="none">
     <path
       d="M6 12L10 8L6 4"
-      stroke="#9CA3AF"
+      stroke="#A1A1AA"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -82,11 +82,11 @@ function Breadcrumb({ projectName, onWorkClick, isScrolled = false, isPastHero =
       <button
         onClick={onWorkClick}
         className={clsx(
-          "flex items-center justify-center py-0.5 rounded-md transition-all duration-300 ease-out hover:bg-[#f3f4f6]",
+          "flex items-center justify-center py-0.5 rounded-md transition-all duration-300 ease-out hover:bg-[#f4f4f5]",
           isScrolled ? "opacity-0 pointer-events-none w-0 px-0 overflow-hidden" : "opacity-100 px-1.5 ml-2"
         )}
       >
-        <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#4b5563] whitespace-nowrap">
+        <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#52525b] whitespace-nowrap">
           Work
         </span>
       </button>
@@ -96,7 +96,7 @@ function Breadcrumb({ projectName, onWorkClick, isScrolled = false, isPastHero =
       </div>
 
       <div className="flex items-center justify-center px-1 py-0.5">
-        <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#1f2937]">
+        <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#27272a]">
           {projectName}
         </span>
       </div>
@@ -133,14 +133,14 @@ function ToolsSection({ categories, large = false, noLine = false }: { categorie
             large ? "flex-[1_0_0] min-h-px min-w-px gap-3 leading-5" : "gap-2"
           )}>
             <p className={clsx(
-              "relative shrink-0 text-[#9ca3af]",
+              "relative shrink-0 text-[#a1a1aa]",
               large ? "font-medium text-base" : "leading-5 text-sm"
             )}>
               {category.label}
             </p>
             <div className={clsx(
               "content-stretch flex flex-col items-start relative shrink-0",
-              large ? "text-gray-700 leading-5" : "leading-[0] text-[#6b7280]"
+              large ? "text-zinc-700 leading-5" : "leading-[0] text-[#71717a]"
             )}>
               {category.tools.map((tool, toolIdx) => (
                 <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
@@ -154,10 +154,10 @@ function ToolsSection({ categories, large = false, noLine = false }: { categorie
       <div className="font-['Michelle',sans-serif] font-normal flex flex-col gap-1.5 relative shrink-0 text-sm w-full mt-2 md:hidden">
         {categories.map((category, idx) => (
           <div key={idx} className="flex items-baseline gap-6">
-            <p className="leading-5 shrink-0 text-[#9ca3af] w-[72px]">
+            <p className="leading-5 shrink-0 text-[#a1a1aa] w-[72px]">
               {category.label}
             </p>
-            <p className="leading-5 text-[#6b7280] tracking-[-0.31px]">
+            <p className="leading-5 text-[#71717a] tracking-[-0.31px]">
               {category.tools.join(', ')}
             </p>
           </div>
@@ -229,14 +229,14 @@ function GenericExperimentEmbed({ project }: { project: ExperimentProject }) {
   );
 
   return (
-    <div className="font-['Michelle',sans-serif] min-h-full w-full box-border flex flex-col gap-6 px-6 py-16 md:px-16 md:py-20 text-[#111827]">
+    <div className="font-['Michelle',sans-serif] min-h-full w-full box-border flex flex-col gap-6 px-6 py-16 md:px-16 md:py-20 text-[#18181b]">
       <header className="flex flex-col gap-2 max-w-2xl">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <h1 className="text-2xl md:text-3xl font-normal">{project.title}</h1>
-          <span className="text-[#9ca3af] text-xl">•</span>
-          <span className="text-[#9ca3af] text-xl">{project.year}</span>
+          <span className="text-[#a1a1aa] text-xl">•</span>
+          <span className="text-[#a1a1aa] text-xl">{project.year}</span>
         </div>
-        <p className="text-base leading-relaxed text-[#6b7280]">
+        <p className="text-base leading-relaxed text-[#71717a]">
           {project.description}
         </p>
         {project.tryItOutHref?.trim() ? (
@@ -247,7 +247,7 @@ function GenericExperimentEmbed({ project }: { project: ExperimentProject }) {
         ) : null}
       </header>
       {hasMedia ? (
-        <div className="relative w-full max-w-4xl aspect-video overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 shrink-0">
+        <div className="relative w-full max-w-4xl aspect-video overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-100 shrink-0">
           {project.imageSrc?.trim() ? (
             <ShimmerImage
               alt=""
@@ -307,7 +307,7 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
   return (
     <>
     <div className={clsx(
-      "font-['Michelle',sans-serif] w-full box-border flex flex-col text-[#111827]",
+      "font-['Michelle',sans-serif] w-full box-border flex flex-col text-[#18181b]",
       isFullscreen ? 'min-h-screen' : 'min-h-full px-6 pt-6 pb-8 md:px-[8%] md:py-32 xl:px-[175px]'
     )}>
       {isFullscreen && (
@@ -346,10 +346,10 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
             <div className="flex flex-col min-w-0 md:gap-2">
               <div className="flex flex-wrap items-baseline gap-x-[6px] gap-y-1">
                 <h1 className={clsx("font-medium", isFullscreen ? "text-xl" : "text-xl md:text-2xl")}>{project.title}</h1>
-                <span className={clsx("text-[#9ca3af] font-normal", isFullscreen ? "text-xl" : "text-xl md:text-2xl")}>•</span>
-                <span className={clsx("text-[#9ca3af] font-normal", isFullscreen ? "text-xl" : "text-xl md:text-2xl")}>{project.year}</span>
+                <span className={clsx("text-[#a1a1aa] font-normal", isFullscreen ? "text-xl" : "text-xl md:text-2xl")}>•</span>
+                <span className={clsx("text-[#a1a1aa] font-normal", isFullscreen ? "text-xl" : "text-xl md:text-2xl")}>{project.year}</span>
               </div>
-              <p className="text-base leading-5 text-[#6b7280] md:text-gray-700">
+              <p className="text-base leading-5 text-[#71717a] md:text-zinc-700">
                 {project.description}
               </p>
             </div>
@@ -361,7 +361,7 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
                   rel="noopener noreferrer"
                   className="group inline-flex items-center justify-center p-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
                 >
-                  <svg className="w-[18px] h-[18px] text-gray-500 group-hover:text-blue-500 transition-colors duration-200" viewBox="0 0 311 312" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="w-[18px] h-[18px] text-zinc-500 group-hover:text-blue-500 transition-colors duration-200" viewBox="0 0 311 312" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                     <path d="M157.178 95.3252C166.553 96.9853 174.365 99.4267 180.615 102.649C186.865 105.774 192.285 109.681 196.875 114.368C208.789 126.185 216.699 139.222 220.605 153.479C224.512 167.64 224.463 181.8 220.459 195.96C216.553 210.12 208.74 223.06 197.021 234.778L146.924 285.022C135.303 296.644 122.412 304.407 108.252 308.313C94.0918 312.317 79.8828 312.366 65.625 308.46C51.4648 304.554 38.4277 296.644 26.5137 284.729C14.6973 272.913 6.83594 259.925 2.92969 245.765C-0.976562 231.507 -0.976562 217.298 2.92969 203.138C6.93359 188.978 14.7461 176.038 26.3672 164.319L69.4336 121.399C68.6523 126.185 68.5059 131.214 68.9941 136.487C69.5801 141.663 70.8984 146.546 72.9492 151.136L44.2383 179.847C35.7422 188.343 30.0781 197.718 27.2461 207.972C24.4141 218.226 24.4141 228.528 27.2461 238.88C30.0781 249.134 35.7422 258.558 44.2383 267.151C52.7344 275.647 62.1094 281.263 72.3633 283.997C82.7148 286.829 93.0176 286.829 103.271 283.997C113.525 281.165 122.9 275.501 131.396 267.005L179.297 219.251C187.793 210.755 193.408 201.38 196.143 191.126C198.975 180.872 198.975 170.618 196.143 160.364C193.311 150.013 187.646 140.54 179.15 131.946C174.365 127.161 168.652 123.353 162.012 120.52C155.469 117.688 147.363 115.882 137.695 115.101L157.178 95.3252ZM153.516 216.028C144.141 214.368 136.328 211.976 130.078 208.851C123.828 205.628 118.408 201.673 113.818 196.985C101.904 185.169 93.9941 172.181 90.0879 158.02C86.1816 143.763 86.1816 129.554 90.0879 115.394C94.0918 101.233 101.953 88.2939 113.672 76.5752L163.623 26.4775C175.342 14.7588 188.281 6.94625 202.441 3.04C216.602 -0.963903 230.762 -1.01273 244.922 2.89352C259.18 6.79977 272.266 14.7099 284.18 26.624C295.996 38.4404 303.857 51.4775 307.764 65.7353C311.67 79.8955 311.621 94.0556 307.617 108.216C303.711 122.376 295.947 135.315 284.326 147.034L241.26 189.954C242.041 185.169 242.139 180.188 241.553 175.013C241.064 169.837 239.795 164.905 237.744 160.218L266.455 131.507C274.951 123.011 280.615 113.636 283.447 103.382C286.279 93.1279 286.279 82.8252 283.447 72.4736C280.615 62.2197 274.951 52.8447 266.455 44.3486C257.959 35.7549 248.584 30.0908 238.33 27.2588C228.076 24.4268 217.773 24.4268 207.422 27.2588C197.168 30.0908 187.793 35.7549 179.297 44.251L131.396 92.1025C122.9 100.599 117.236 109.974 114.404 120.228C111.572 130.482 111.572 140.784 114.404 151.136C117.236 161.39 122.9 170.813 131.396 179.407C136.182 184.192 141.943 188.001 148.682 190.833C155.42 193.665 160.547 195.374 164.062 195.96L153.516 216.028Z" />
                   </svg>
                 </a>
@@ -412,10 +412,10 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
               rel="noopener noreferrer"
               className="group inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
             >
-              <span className="font-['Michelle',sans-serif] font-medium leading-normal text-sm text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
+              <span className="font-['Michelle',sans-serif] font-medium leading-normal text-sm text-zinc-500 group-hover:text-blue-500 whitespace-nowrap">
                 sundays.rsvp
               </span>
-              <span className="text-gray-500 group-hover:text-blue-500 inline-flex items-center">
+              <span className="text-zinc-500 group-hover:text-blue-500 inline-flex items-center">
                 <ArrowUpRight size="12px" strokeWidth={1.3} />
               </span>
             </a>
@@ -424,7 +424,7 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
         {project.toolCategories && project.toolCategories.length > 0 ? (
           <ToolsSection categories={project.toolCategories} large />
         ) : null}
-        <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 shrink-0 mt-2">
+        <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-100 shrink-0 mt-2">
           {project.imageSrc?.trim() ? (
             <ShimmerImage
               alt=""
@@ -473,14 +473,14 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
           <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
             {project.title}
           </p>
-          <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
+          <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base">
             •
           </p>
-          <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-base">
+          <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#a1a1aa] text-base">
             {project.year}
           </p>
         </div>
-        <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] text-sm">
+        <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#71717a] text-sm">
           {project.description}
         </p>
       </div>
@@ -511,10 +511,10 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
           rel="noopener noreferrer"
           className="group inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
         >
-          <span className="font-['Michelle',sans-serif] font-medium leading-normal text-sm text-gray-500 group-hover:text-blue-500 whitespace-nowrap">
+          <span className="font-['Michelle',sans-serif] font-medium leading-normal text-sm text-zinc-500 group-hover:text-blue-500 whitespace-nowrap">
             sundays.rsvp
           </span>
-          <span className="text-gray-500 group-hover:text-blue-500 inline-flex items-center">
+          <span className="text-zinc-500 group-hover:text-blue-500 inline-flex items-center">
             <ArrowUpRight size="12px" strokeWidth={1.3} />
           </span>
         </a>
@@ -532,7 +532,7 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
 
       {/* Video/Image content area */}
       {project.imageSrc && (
-        <div className="relative rounded-[16px] border border-gray-100 border-solid w-[calc(100%-3rem)] aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 mt-3 mx-6">
+        <div className="relative rounded-[16px] border border-zinc-100 border-solid w-[calc(100%-3rem)] aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0 mt-3 mx-6">
           <ShimmerImage
             alt=""
             className="absolute object-cover size-full"
@@ -809,7 +809,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
               <Tooltip label="Expand" position="bottom">
                 <button
                   onClick={handleExpand}
-                  className="cursor-pointer transition-colors duration-200 hover:bg-gray-100 text-[#9ca3af] rounded-sm p-1"
+                  className="cursor-pointer transition-colors duration-200 hover:bg-zinc-100 text-[#a1a1aa] rounded-sm p-1"
                   aria-label="Expand to full page"
                 >
                   <ExpandIcon />
@@ -829,8 +829,8 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
                 <button
                   onClick={() => setShowInfoModal(!showInfoModal)}
                   className={clsx(
-                    "cursor-pointer transition-colors duration-200 text-[#9ca3af] rounded-full p-2 -m-1",
-                    showInfoModal ? "bg-gray-200/50" : "hover:bg-gray-200/50"
+                    "cursor-pointer transition-colors duration-200 text-[#a1a1aa] rounded-full p-2 -m-1",
+                    showInfoModal ? "bg-zinc-200/50" : "hover:bg-zinc-200/50"
                   )}
                   aria-label="Project info"
                   data-info-button
@@ -933,7 +933,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
     <div 
       ref={popoverRef}
       className={clsx(
-        "bg-white flex flex-col shadow-xl border border-gray-100 overflow-hidden transition-all duration-200 ease-out animate-[popoverIn_150ms_ease-out]",
+        "bg-white flex flex-col shadow-xl border border-zinc-100 overflow-hidden transition-all duration-200 ease-out animate-[popoverIn_150ms_ease-out]",
         isMobile ? "rounded-2xl w-full max-h-[85vh] overflow-auto" 
           : isFullscreen ? "rounded-3xl w-[50vw] max-w-[700px]" 
           : "rounded-2xl w-[420px] max-h-[70vh] overflow-auto"
@@ -953,17 +953,17 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
               <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
                 {project.title}
               </p>
-              <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
+              <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base">
                 •
               </p>
-              <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-base">
+              <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#a1a1aa] text-base">
                 {project.year}
               </p>
             </div>
 
             {/* Description - hidden in popup mode, shown in fullscreen */}
             {isFullscreen && (
-              <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base">
+              <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#71717a] text-base">
                 {project.description}
               </p>
             )}
@@ -1000,7 +1000,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
 
         {/* Video/Image content area */}
         <div className={clsx(
-          "relative border border-gray-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0",
+          "relative border border-zinc-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0",
           isFullscreen ? "rounded-[16px] mt-3" : "rounded-[12px] mt-1"
         )}>
           <ShimmerImage
@@ -1043,11 +1043,11 @@ function ToolsSectionCompact({ categories, isFullscreen = false }: { categories:
       )}>
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-1 items-start justify-start relative shrink-0">
-            <p className={clsx("relative shrink-0 text-[#9ca3af]", isFullscreen ? "leading-5 text-sm" : "leading-4 text-sm")}>
+            <p className={clsx("relative shrink-0 text-[#a1a1aa]", isFullscreen ? "leading-5 text-sm" : "leading-4 text-sm")}>
               {category.label}
             </p>
             <div className={clsx(
-              "content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#6b7280]",
+              "content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#71717a]",
               isFullscreen ? "gap-1" : "gap-0.5"
             )}>
               {category.tools.map((tool, toolIdx) => (

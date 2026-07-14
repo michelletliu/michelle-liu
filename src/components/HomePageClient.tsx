@@ -109,7 +109,7 @@ const staticProjects: Project[] = [
     imageSrc: "https://image.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI/thumbnail.png?width=1920",
     videoSrc: "https://stream.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI.m3u8",
     xLink: "https://x.com/michelletliu/status/2000987498550383032",
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#f4f4f5",
     toolCategories: [
       { label: 'Design', tools: ['Figma'] },
       { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -254,7 +254,7 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
     return (
       <div
         ref={containerRef}
-        className="aspect-[678/367.625] relative isolate rounded-[26px] shrink-0 w-full overflow-hidden bg-[#e5e7eb]"
+        className="aspect-[678/367.625] relative isolate rounded-[26px] shrink-0 w-full overflow-hidden bg-[#e4e4e7]"
       >
         {/* High-res thumbnail shown once fully loaded, fades out when video is ready */}
         {imageSrc && (
@@ -288,7 +288,7 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
         {/* Shimmer overlay covers progressive decode until the thumbnail (or video, if no thumbnail) is fully ready */}
         <div
           className={clsx(
-            "absolute inset-0 rounded-[26px] bg-[#e5e7eb] animate-shimmer transition-opacity duration-500 ease-out pointer-events-none z-20",
+            "absolute inset-0 rounded-[26px] bg-[#e4e4e7] animate-shimmer transition-opacity duration-500 ease-out pointer-events-none z-20",
             (imageSrc ? imageLoaded : videoLoaded) ? "opacity-0" : "opacity-100"
           )}
         />
@@ -300,9 +300,9 @@ const ProjectMedia = React.memo(function ProjectMedia({ imageSrc, videoSrc }: Pr
     return (
       <div 
         ref={containerRef}
-        className="aspect-[678/367.625] relative isolate rounded-[26px] shrink-0 w-full overflow-hidden bg-[#e5e7eb]"
+        className="aspect-[678/367.625] relative isolate rounded-[26px] shrink-0 w-full overflow-hidden bg-[#e4e4e7]"
       >
-        <div className="absolute inset-0 rounded-[26px] bg-[#e5e7eb] animate-shimmer" />
+        <div className="absolute inset-0 rounded-[26px] bg-[#e4e4e7] animate-shimmer" />
       </div>
     );
   }
@@ -372,15 +372,15 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
           <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
           <div aria-hidden="true" className="absolute border border-zinc-100 inset-0 pointer-events-none rounded-[26px]" />
           <div className="absolute bottom-0 left-0 p-3 hidden md:block">
-            <div className="bg-white border border-[#f3f4f6] border-solid flex items-center justify-center px-3 pt-[5px] pb-[4.8px] rounded-full">
-              <p className="font-['Michelle',sans-serif] font-medium tracking-[0.005em] leading-[1.4] text-[#111827] text-base">
+            <div className="bg-white border border-[#f4f4f5] border-solid flex items-center justify-center px-3 pt-[5px] pb-[4.8px] rounded-full">
+              <p className="font-['Michelle',sans-serif] font-medium tracking-[0.005em] leading-[1.4] text-[#18181b] text-base">
                 <span>{project.title}</span>
                 {!hasTryItOut && (
-                  <span className="text-[#9ca3af]"> • {project.year}</span>
+                  <span className="text-[#a1a1aa]"> • {project.year}</span>
                 )}
                 {hasTryItOut && (
                   <>
-                    <span className="text-[#9ca3af] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
+                    <span className="text-[#a1a1aa] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
                     <a
                       href={experimentLink!.href}
                       onClick={(e) => e.stopPropagation()}
@@ -396,18 +396,18 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
           </div>
         </div>
         <div className="hidden md:flex content-stretch items-start px-[13px] py-0 -mt-1.5 -mb-0.5 relative shrink-0 w-full">
-          <p className="font-['Michelle',sans-serif] font-normal leading-[1.4] text-[#9ca3af] text-base tracking-[0.005em] text-left project-hover-text">{project.description}</p>
+          <p className="font-['Michelle',sans-serif] font-normal leading-[1.4] text-[#a1a1aa] text-base tracking-[0.005em] text-left project-hover-text">{project.description}</p>
         </div>
         <div className="md:hidden content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.01em] gap-1">
           <div className="flex items-center w-full">
-            <p className="relative shrink-0 text-[#111827] text-left project-hover-text">
+            <p className="relative shrink-0 text-[#18181b] text-left project-hover-text">
               <span>{project.title}</span>
               {!hasTryItOut && (
-                <span className="text-[#9ca3af]"> • {project.year}</span>
+                <span className="text-[#a1a1aa]"> • {project.year}</span>
               )}
               {hasTryItOut && experimentLink!.external && (
                 <>
-                  <span className="text-[#9ca3af]"> • </span>
+                  <span className="text-[#a1a1aa]"> • </span>
                   <a
                     href={experimentLink!.href}
                     onClick={(e) => e.stopPropagation()}
@@ -424,14 +424,14 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
               <a
                 href={experimentLink!.href}
                 onClick={(e) => e.stopPropagation()}
-                className="ml-auto inline-flex items-center shrink-0 text-gray-400 hover:text-gray-500"
+                className="ml-auto inline-flex items-center shrink-0 text-zinc-400 hover:text-zinc-500"
                 aria-label={experimentLink!.label}
               >
                 <TouchIcon />
               </a>
             )}
           </div>
-          <p className="relative shrink-0 text-[#9ca3af] w-full text-left font-normal leading-[1.3]">{project.description}</p>
+          <p className="relative shrink-0 text-[#a1a1aa] w-full text-left font-normal leading-[1.3]">{project.description}</p>
         </div>
       </button>
     );
@@ -450,15 +450,15 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
         <div aria-hidden="true" className="absolute border border-zinc-100 inset-0 pointer-events-none rounded-[26px]" />
       </div>
       <div className="content-stretch flex font-['Michelle',sans-serif] -mt-1 font-normal items-baseline leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.005em] w-full">
-        <p className="relative text-[#111827] text-left project-hover-text">
+        <p className="relative text-[#18181b] text-left project-hover-text">
           <span>{project.title}</span>
           {!hasTryItOut && (
-            <span className="text-[#9ca3af]"> • {project.year}</span>
+            <span className="text-[#a1a1aa]"> • {project.year}</span>
           )}
           {hasTryItOut && (
             <>
-              <span className="text-[#9ca3af] md:hidden"> • {project.year}</span>
-              <span className="text-[#9ca3af] hidden md:inline md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
+              <span className="text-[#a1a1aa] md:hidden"> • {project.year}</span>
+              <span className="text-[#a1a1aa] hidden md:inline md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
               <a
                 href={experimentLink!.href}
                 onClick={(e) => e.stopPropagation()}
@@ -478,7 +478,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
               "md:hidden inline-flex items-baseline gap-1.5 ml-auto shrink-0 text-base",
               experimentLink!.external
                 ? "text-blue-400 hover:text-blue-300"
-                : "text-gray-400 hover:text-gray-500"
+                : "text-zinc-400 hover:text-zinc-500"
             )}
             {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             aria-label={experimentLink!.label}
@@ -517,10 +517,10 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
       <div className="font-['Michelle',sans-serif] font-normal gap-4 grid-cols-4 relative shrink-0 text-base w-full mt-2 hidden md:grid">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
-            <p className="leading-5 relative shrink-0 text-[#9ca3af]">
+            <p className="leading-5 relative shrink-0 text-[#a1a1aa]">
               {category.label}
             </p>
-            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#4b5563] tracking-[-0.31px]">
+            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#52525b] tracking-[-0.31px]">
               {category.tools.map((tool, toolIdx) => (
                 <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
                   <p className="leading-[21px] whitespace-nowrap">{tool}</p>
@@ -533,10 +533,10 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
       <div className="font-['Michelle',sans-serif] font-normal flex flex-col gap-1.5 relative shrink-0 text-sm w-full mt-2 md:hidden">
         {categories.map((category, idx) => (
           <div key={idx} className="flex items-baseline gap-6">
-            <p className="leading-5 shrink-0 text-[#9ca3af] w-[72px]">
+            <p className="leading-5 shrink-0 text-[#a1a1aa] w-[72px]">
               {category.label}
             </p>
-            <p className="leading-5 text-[#4b5563] tracking-[-0.31px]">
+            <p className="leading-5 text-[#52525b] tracking-[-0.31px]">
               {category.tools.join(', ')}
             </p>
           </div>
@@ -614,17 +614,17 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
                   <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
                     {project.title}
                   </p>
-                  <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base tracking-[0.005em]">
+                  <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base tracking-[0.005em]">
                     •
                   </p>
-                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-xl">
+                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#a1a1aa] text-xl">
                     {project.year}
                   </p>
                 </div>
               </div>
               
               <div className="content-stretch flex gap-2 items-start relative w-full">
-                <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base tracking-[0.005em]">
+                <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#71717a] text-base tracking-[0.005em]">
                   {project.description}
                 </p>
               </div>
@@ -642,17 +642,17 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
                   <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-black">
                     {project.title}
                   </p>
-                  <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base tracking-[0.005em]">
+                  <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base tracking-[0.005em]">
                     •
                   </p>
-                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-xl">
+                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#a1a1aa] text-xl">
                     {project.year}
                   </p>
                 </div>
               </div>
               
               <div className="content-stretch flex gap-2 items-start relative w-full">
-                <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] text-base tracking-[0.005em]">
+                <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#71717a] text-base tracking-[0.005em]">
                   {project.description}
                 </p>
               </div>
@@ -689,7 +689,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
             <ToolsSection categories={project.toolCategories} />
           )}
 
-          <div className="relative rounded-[16px] w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 mt-3">
+          <div className="relative rounded-[16px] w-full aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0 mt-3">
             <ShimmerImage
               alt=""
               className="absolute object-cover size-full"
@@ -981,7 +981,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                     <br aria-hidden="true" />
                     {`Previously at `}
                   </span>
-                  <span className="text-[#374151]" style={{ fontVariationSettings: "'wdth' 100" }}>
+                  <span className="text-[#3f3f46]" style={{ fontVariationSettings: "'wdth' 100" }}>
                     <span className="sr-only">Apple</span>
                     <svg 
                       className="inline w-[0.9em] h-[0.9em]" 
@@ -994,9 +994,9 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                     </svg>
                   </span>
                   <span>{`, `}</span>
-                  <span className="text-[#374151]">Roblox</span>
+                  <span className="text-[#3f3f46]">Roblox</span>
                   <span>{`, & `}</span>
-                  <span className="text-[#374151]">NASA</span>
+                  <span className="text-[#3f3f46]">NASA</span>
                   <span>.</span>
                 </span>
                 <ContactBadge

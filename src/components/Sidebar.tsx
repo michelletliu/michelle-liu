@@ -7,7 +7,7 @@ import clsx from "clsx";
  *
  * Structure is fully declarative: pass `nodes` (flat items and/or collapsible
  * groups), the currently active leaf id, and an `onSelect` handler. Groups
- * expand/collapse with the same animation and colour their header gray when
+ * expand/collapse with the same animation and colour their header zinc when
  * their section is active; active leaves render blue.
  */
 
@@ -24,7 +24,7 @@ export type SidebarNode =
       kind: "group";
       id: string;
       label: string;
-      /** Header turns gray-500 when this group's section is active. */
+      /** Header turns zinc-500 when this group's section is active. */
       active: boolean;
       /** Whether the children are expanded into view. */
       expanded: boolean;
@@ -66,11 +66,11 @@ function Leaf({
       <span
         className={clsx(
           LEAF_TEXT,
-          active ? "text-blue-500" : "text-gray-400 hover:text-gray-500"
+          active ? "text-blue-500" : "text-zinc-400 hover:text-zinc-500"
         )}
       >
         {leaf.label}
-        {showCount && <span className="text-gray-300 ml-1">{leaf.count}</span>}
+        {showCount && <span className="text-zinc-300 ml-1">{leaf.count}</span>}
       </span>
     </button>
   );
@@ -107,7 +107,7 @@ export default function Sidebar({
               <span
                 className={clsx(
                   "text-base font-medium tracking-wide leading-5 transition-colors",
-                  node.active ? "text-gray-500" : "text-gray-400 hover:text-gray-500"
+                  node.active ? "text-zinc-500" : "text-zinc-400 hover:text-zinc-500"
                 )}
               >
                 {node.label}

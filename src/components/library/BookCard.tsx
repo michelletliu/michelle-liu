@@ -30,12 +30,12 @@ export function BookCard({ book, onClick }: BookCardProps) {
         <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-medium justify-center relative shrink-0 text-base text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
           <p className="leading-normal line-clamp-2">{formatText(book.title)}</p>
         </div>
-        <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-base text-gray-500" style={{ fontVariationSettings: "'wdth' 100" }}>
+        <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center relative shrink-0 text-base text-zinc-500" style={{ fontVariationSettings: "'wdth' 100" }}>
           <p className="leading-normal">{book.author}</p>
         </div>
         <p className="font-['Michelle',sans-serif] leading-normal not-italic relative shrink-0 text-sm sm:text-base lg:text-lg text-black text-nowrap">
-          <span className="text-gray-500">{"★".repeat(book.rating)}</span>
-          <span className="text-gray-200">{"★".repeat(5 - book.rating)}</span>
+          <span className="text-zinc-500">{"★".repeat(book.rating)}</span>
+          <span className="text-zinc-200">{"★".repeat(5 - book.rating)}</span>
         </p>
       </div>
     </button>

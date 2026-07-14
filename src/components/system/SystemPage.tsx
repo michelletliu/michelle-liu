@@ -105,7 +105,7 @@ export default function SystemPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-white font-['Michelle',sans-serif] text-base text-gray-500">
+    <div className="min-h-dvh bg-white font-['Michelle',sans-serif] text-base text-zinc-500">
       <style>{fadeUpStyles}</style>
       {/* Fixed logo home link */}
       <Link
@@ -120,14 +120,14 @@ export default function SystemPage() {
       {/* Mobile TOC chip strip */}
       <nav
         aria-label="Sections"
-        className="sticky top-0 z-40 flex gap-1.5 overflow-x-auto border-b border-gray-100 bg-white/85 px-4 py-3 backdrop-blur-md lg:hidden"
+        className="sticky top-0 z-40 flex gap-1.5 overflow-x-auto border-b border-zinc-100 bg-white/85 px-4 py-3 backdrop-blur-md lg:hidden"
       >
         {tocSections.map((s) => (
           <button
             key={s.id}
             onClick={() => scrollTo(s.id)}
             className={`shrink-0 rounded-full px-3 py-1 text-sm transition-colors duration-200 ${
-              activeSection === s.id ? "bg-gray-100 font-medium text-gray-800" : "text-gray-400 hover:text-gray-600"
+              activeSection === s.id ? "bg-zinc-100 font-medium text-zinc-800" : "text-zinc-400 hover:text-zinc-600"
             }`}
           >
             {s.label}
@@ -146,24 +146,24 @@ export default function SystemPage() {
           {[
           /* Intro */
           <section key="intro" id="intro" className="scroll-mt-24 pb-8">
-            <h1 className="max-w-3xl text-4xl font-medium leading-[1.1] tracking-tight text-gray-900 text-balance">
+            <h1 className="max-w-3xl text-4xl font-medium leading-[1.1] tracking-tight text-zinc-900 text-balance">
               Design System
             </h1>
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-400">
+            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-400">
               <span className="inline-flex items-center gap-2">
-                <span className="rounded-md bg-gray-100 px-1.5 py-0.5 text-sm font-medium text-gray-600">
+                <span className="rounded-lg bg-zinc-100 px-1.5 py-0.5 text-sm font-medium text-zinc-600">
                   Canonical
                 </span>
                 Core system
               </span>
               <span className="inline-flex items-center gap-2">
-                <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-sm font-medium text-amber-600">
+                <span className="rounded-lg bg-amber-100 px-1.5 py-0.5 text-sm font-medium text-amber-600">
                   One-off
                 </span>
                 Appears once / legacy
               </span>
               <span className="inline-flex items-center gap-2">
-                <span className="rounded-md bg-blue-100 px-1.5 py-0.5 text-sm font-medium text-blue-600">
+                <span className="rounded-lg bg-blue-100 px-1.5 py-0.5 text-sm font-medium text-blue-600">
                   Experiment
                 </span>
                 Specific to an experiment

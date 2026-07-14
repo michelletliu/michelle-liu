@@ -73,7 +73,7 @@ export function GenerateScreen({ period, onPeriodChange, onGenerate, onUploadCli
 
       <button
         onClick={onUploadClick}
-        className="bg-white content-stretch flex items-center justify-center px-[20px] py-[10px] relative rounded-[999px] shrink-0 cursor-pointer hover:bg-gray-300 transition-colors w-full"
+        className="bg-white content-stretch flex items-center justify-center px-[20px] py-[10px] relative rounded-[999px] shrink-0 cursor-pointer hover:bg-zinc-300 transition-colors w-full"
       >
         <p className="font-['SF_Mono:Regular',sans-serif] leading-[normal] not-italic relative shrink-0 text-[15px] text-center text-nowrap text-[#404040] tracking-[0.75px]">UPLOAD YOUR DATA</p>
       </button>

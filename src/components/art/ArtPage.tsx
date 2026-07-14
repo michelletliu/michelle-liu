@@ -327,7 +327,7 @@ export default function ArtPage() {
         variant="art"
         heroAnimationPlayed={heroAnimationPlayed}
         nameAddon={
-          <p className="font-['Michelle',sans-serif] font-normal text-gray-500 text-xl whitespace-pre-wrap">
+          <p className="font-['Michelle',sans-serif] font-normal text-zinc-500 text-xl whitespace-pre-wrap">
             b. 2004
           </p>
         }
@@ -386,10 +386,10 @@ export default function ArtPage() {
           {error && !isLoading && (
             <div className="flex items-center justify-center w-full py-20">
               <div className="flex flex-col items-center gap-4 text-center">
-                <p className="text-gray-600 text-base">{error}</p>
+                <p className="text-zinc-600 text-base">{error}</p>
                 <button 
                   onClick={() => window.location.reload()}
-                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 text-sm transition-colors"
+                  className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 rounded-lg text-zinc-700 text-sm transition-colors"
                 >
                   Try Again
                 </button>
@@ -414,7 +414,7 @@ export default function ArtPage() {
                     />
                   </ScrollReveal>
                 ) : (
-                  <p className="text-gray-400 text-sm py-8">No paintings yet.</p>
+                  <p className="text-zinc-400 text-sm py-8">No paintings yet.</p>
                 )}
               </section>
 
@@ -432,7 +432,7 @@ export default function ArtPage() {
                     />
                   </ScrollReveal>
                 ) : (
-                  <p className="text-gray-400 text-sm py-8">No conceptual pieces yet.</p>
+                  <p className="text-zinc-400 text-sm py-8">No conceptual pieces yet.</p>
                 )}
               </section>
 
@@ -449,7 +449,7 @@ export default function ArtPage() {
                     />
                   </ScrollReveal>
                 ) : (
-                  <p className="text-gray-400 text-sm py-8">No graphite drawings yet.</p>
+                  <p className="text-zinc-400 text-sm py-8">No graphite drawings yet.</p>
                 )}
               </section>
 
@@ -473,7 +473,7 @@ export default function ArtPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-400 text-sm py-8">No sketchbooks yet.</p>
+                  <p className="text-zinc-400 text-sm py-8">No sketchbooks yet.</p>
                 )}
               </section>
 
@@ -497,7 +497,7 @@ export default function ArtPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-400 text-sm py-8">No murals yet.</p>
+                  <p className="text-zinc-400 text-sm py-8">No murals yet.</p>
                 )}
               </section>
             </>

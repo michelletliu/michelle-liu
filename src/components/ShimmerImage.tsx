@@ -138,7 +138,7 @@ const ShimmerImage = forwardRef<HTMLImageElement, ShimmerImageProps>(
         {hasDetectedWhiteBorder && (
           <div
             className={clsx(
-              "pointer-events-none absolute inset-0 z-[2] border border-gray-50",
+              "pointer-events-none absolute inset-0 z-[2] border border-zinc-50",
               rounded,
             )}
           />

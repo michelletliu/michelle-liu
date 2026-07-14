@@ -15,16 +15,16 @@ export default function SpacingSection() {
           return (
             <div key={s.name} className="flex items-center gap-4 py-3.5">
               <div className="flex w-24 shrink-0 items-center">
-                <div className="h-2.5 rounded-full bg-gray-300" style={{ width: `${px}px` }} />
+                <div className="h-2.5 rounded-full bg-zinc-300" style={{ width: `${px}px` }} />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2.5">
-                  <code className="font-mono text-sm text-gray-700">{s.name}</code>
+                  <code className="font-mono text-sm text-zinc-700">{s.name}</code>
                   <TagChip tag={s.tag} />
                 </div>
-                <p className="mt-0.5 truncate text-sm text-gray-400">{s.usage}</p>
+                <p className="mt-0.5 truncate text-sm text-zinc-400">{s.usage}</p>
               </div>
-              <code className="shrink-0 font-mono text-sm tabular-nums text-gray-400">
+              <code className="shrink-0 font-mono text-sm tabular-nums text-zinc-400">
                 {s.value}
               </code>
             </div>

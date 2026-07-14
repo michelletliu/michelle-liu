@@ -18,18 +18,18 @@ export default function TypographySection() {
       <SubLabel note="The 'Michelle' variable font covers weights 300–900, roman + italic.">
         Font families
       </SubLabel>
-      <div className="flex flex-col divide-y divide-gray-100">
+      <div className="flex flex-col divide-y divide-zinc-100">
         {fontFamilies.map((f) => (
           <div key={f.name} className="py-5 first:pt-0">
             <div className="flex items-baseline justify-between gap-3">
-              <span className="text-2xl text-gray-700" style={{ fontFamily: f.stack }}>
+              <span className="text-2xl text-zinc-700" style={{ fontFamily: f.stack }}>
                 {f.name} — The quick brown fox
               </span>
               <TagChip tag={f.tag} />
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
-              <code className="font-mono text-sm text-gray-400">{f.stack}</code>
-              <span className="text-sm text-gray-400">{f.usage}</span>
+              <code className="font-mono text-sm text-zinc-400">{f.stack}</code>
+              <span className="text-sm text-zinc-400">{f.usage}</span>
             </div>
           </div>
         ))}
@@ -40,7 +40,7 @@ export default function TypographySection() {
       </SubLabel>
       {(["body", "heading"] as const).map((role) => (
         <div key={role} className="mb-8 last:mb-0">
-          <p className="mb-1 text-xs font-medium text-gray-400">
+          <p className="mb-1 text-xs font-medium text-zinc-400">
             {role === "body" ? "Body" : "Heading"}
           </p>
           <RowList>
@@ -49,16 +49,16 @@ export default function TypographySection() {
               .map((t) => (
                 <div key={t.name} className="flex items-center gap-4 py-3.5">
                   <div className="w-40 shrink-0 overflow-hidden">
-                    <span className={`${t.className} whitespace-nowrap text-gray-700`}>Michelle</span>
+                    <span className={`${t.className} whitespace-nowrap text-zinc-700`}>Michelle</span>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2.5">
-                      <code className="font-mono text-sm text-gray-700">{t.name}</code>
+                      <code className="font-mono text-sm text-zinc-700">{t.name}</code>
                       <TagChip tag={t.tag} />
                     </div>
-                    <p className="mt-0.5 truncate text-sm text-gray-400">{t.usage}</p>
+                    <p className="mt-0.5 truncate text-sm text-zinc-400">{t.usage}</p>
                   </div>
-                  <code className="shrink-0 font-mono text-sm tabular-nums text-gray-400">{t.px}</code>
+                  <code className="shrink-0 font-mono text-sm tabular-nums text-zinc-400">{t.px}</code>
                 </div>
               ))}
           </RowList>
@@ -79,19 +79,19 @@ export default function TypographySection() {
         {fontWeights.map((w) => (
           <div key={w.name} className="flex items-center gap-4 py-3.5">
             <span
-              className="w-40 shrink-0 text-base text-gray-700"
+              className="w-40 shrink-0 text-base text-zinc-700"
               style={{ fontWeight: Number(w.value) }}
             >
               Michelle
             </span>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2.5">
-                <code className="font-mono text-sm text-gray-700">{w.name}</code>
+                <code className="font-mono text-sm text-zinc-700">{w.name}</code>
                 <TagChip tag={w.tag} />
               </div>
-              <p className="mt-0.5 truncate text-sm text-gray-400">{w.usage}</p>
+              <p className="mt-0.5 truncate text-sm text-zinc-400">{w.usage}</p>
             </div>
-            <code className="shrink-0 font-mono text-sm tabular-nums text-gray-400">{w.value}</code>
+            <code className="shrink-0 font-mono text-sm tabular-nums text-zinc-400">{w.value}</code>
           </div>
         ))}
       </RowList>

@@ -105,7 +105,7 @@ export default function PageHeader({
                 aria-label="Open the design system"
               >
                 <FinalSealLogoBackgroundImage additionalClassNames="absolute inset-0 size-full transition-opacity duration-300 ease-out group-hover:opacity-0" />
-                <BlueprintSeal className="absolute inset-0 size-full text-gray-400 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100" />
+                <BlueprintSeal className="absolute inset-0 size-full text-zinc-400 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100" />
               </motion.button>
             </div>
           </div>
@@ -120,13 +120,13 @@ export default function PageHeader({
               <ScrollReveal variant="fade" rootMargin="0px" disabled>
                 {nameAddon ? (
                   <div className="flex gap-3 items-baseline w-full">
-                    <p className="font-['Michelle',sans-serif] tracking-[0.0125em] font-medium leading-normal text-[#374151] text-4xl max-md:text-4xl">
+                    <p className="font-['Michelle',sans-serif] tracking-[0.0125em] font-medium leading-normal text-[#3f3f46] text-4xl max-md:text-4xl">
                       michelle liu
                     </p>
                     {nameAddon}
                   </div>
                 ) : (
-                  <p className="font-['Michelle',sans-serif] tracking-[0.0125em] font-medium leading-normal relative shrink-0 text-[#374151] text-4xl w-full max-md:text-4xl">
+                  <p className="font-['Michelle',sans-serif] tracking-[0.0125em] font-medium leading-normal relative shrink-0 text-[#3f3f46] text-4xl w-full max-md:text-4xl">
                     michelle liu
                   </p>
                 )}
@@ -134,7 +134,7 @@ export default function PageHeader({
               {children && (
                 <div
                   key={variant}
-                  className="font-['Michelle',sans-serif] font-normal tracking-wide leading-6 max-md:leading-5.5 text-[#9ca3af] text-lg max-md:text-base w-full max-md:max-w-86 whitespace-pre-wrap mt-1 max-md:mt-1"
+                  className="font-['Michelle',sans-serif] font-normal tracking-wide leading-6 max-md:leading-5.5 text-[#a1a1aa] text-lg max-md:text-base w-full max-md:max-w-86 whitespace-pre-wrap mt-1 max-md:mt-1"
                   style={{
                     animation: "projectCardEnter 360ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
                   }}

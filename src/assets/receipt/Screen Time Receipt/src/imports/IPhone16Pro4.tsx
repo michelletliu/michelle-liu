@@ -106,8 +106,8 @@ function Helper({ text, text1 }: HelperProps) {
 
 export default function IPhone16Pro() {
   return (
-    <div className="bg-[#f3f4f6] relative size-full" data-name="iPhone 16 Pro - 4">
-      <div className="absolute bg-gradient-to-b from-[#f3f4f6] from-[32.87%] h-[108px] left-1/2 to-[rgba(243,244,246,0)] top-0 translate-x-[-50%] w-[402px]" data-name="Status bar - iPhone" />
+    <div className="bg-[#f4f4f5] relative size-full" data-name="iPhone 16 Pro - 4">
+      <div className="absolute bg-gradient-to-b from-[#f4f4f5] from-[32.87%] h-[108px] left-1/2 to-[rgba(244, 244, 245,0)] top-0 translate-x-[-50%] w-[402px]" data-name="Status bar - iPhone" />
       <div className="absolute content-stretch flex gap-[154px] items-center justify-center left-1/2 pb-[19px] pt-[21px] px-[16px] top-0 translate-x-[-50%] w-[402px]" data-name="Status bar - iPhone">
         <div className="basis-0 content-stretch flex grow h-[22px] items-center justify-center min-h-px min-w-px pb-0 pt-[2px] px-0 relative shrink-0" data-name="Time">
           <p className="font-['SF_Pro:Semibold',sans-serif] font-[590] leading-[22px] relative shrink-0 text-[17px] text-black text-center text-nowrap" style={{ fontVariationSettings: "'wdth' 100" }}>

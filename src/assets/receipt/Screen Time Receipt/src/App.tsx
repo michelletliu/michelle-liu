@@ -174,8 +174,8 @@ export default function App() {
   };
 
   return (
-    <div className="bg-[#f3f4f6] relative min-h-screen w-full" data-name="Screen Time Receipt App">
-      <div className="relative w-full max-w-[402px] min-h-screen mx-auto bg-[#f3f4f6]">
+    <div className="bg-[#f4f4f5] relative min-h-screen w-full" data-name="Screen Time Receipt App">
+      <div className="relative w-full max-w-[402px] min-h-screen mx-auto bg-[#f4f4f5]">
         <StatusBar />
         <HomeIndicator additionalClassNames="bottom-0" />
         

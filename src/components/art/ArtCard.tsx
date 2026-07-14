@@ -29,7 +29,7 @@ export default function ArtCard({ className, data, onClick }: ArtCardProps) {
     >
       {/* Image container with shimmer placeholder */}
       <div
-        className="relative w-full rounded-2xl overflow-hidden bg-gray-100"
+        className="relative w-full rounded-2xl overflow-hidden bg-zinc-100"
         style={{ aspectRatio: data.aspectRatio ?? 0.8 }}
       >
         {/* Shimmer placeholder - visible while image is loading */}
@@ -52,11 +52,11 @@ export default function ArtCard({ className, data, onClick }: ArtCardProps) {
       </div>
       {/* Caption */}
       <p className="font-medium leading-[1.4] px-2 text-sm">
-        <span className="text-gray-500">{data.title}</span>
+        <span className="text-zinc-500">{data.title}</span>
         {data.metadata && (
           <>
-            <span className="text-gray-400">{", "}</span>
-            <span className="text-gray-400">{data.metadata}</span>
+            <span className="text-zinc-400">{", "}</span>
+            <span className="text-zinc-400">{data.metadata}</span>
           </>
         )}
       </p>

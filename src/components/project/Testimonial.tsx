@@ -26,7 +26,7 @@ const CollapseArrowIcon = () => (
       fillRule="evenodd"
       clipRule="evenodd"
       d="M14.7803 14.7803C14.4874 15.0732 14.0126 15.0732 13.7197 14.7803L6.5 7.56066V13.25C6.5 13.6642 6.16421 14 5.75 14C5.33579 14 5 13.6642 5 13.25V5.75C5 5.33579 5.33579 5 5.75 5H13.25C13.6642 5 14 5.33579 14 5.75C14 6.16421 13.6642 6.5 13.25 6.5H7.56066L14.7803 13.7197C15.0732 14.0126 15.0732 14.4874 14.7803 14.7803Z"
-      fill="#9CA3AF"
+      fill="#A1A1AA"
     />
   </svg>
 );
@@ -43,7 +43,7 @@ const ExpandArrowIcon = () => (
       fillRule="evenodd"
       clipRule="evenodd"
       d="M14.7803 14.7803C14.4874 15.0732 14.0126 15.0732 13.7197 14.7803L6.5 7.56066V13.25C6.5 13.6642 6.16421 14 5.75 14C5.33579 14 5 13.6642 5 13.25V5.75C5 5.33579 5.33579 5 5.75 5H13.25C13.6642 5 14 5.33579 14 5.75C14 6.16421 13.6642 6.5 13.25 6.5H7.56066L14.7803 13.7197C15.0732 14.0126 15.0732 14.4874 14.7803 14.7803Z"
-      fill="#9CA3AF"
+      fill="#A1A1AA"
     />
   </svg>
 );
@@ -132,7 +132,7 @@ export default function Testimonial({
       >
         {/* Header Section */}
         <div className="content-stretch flex flex-col gap-5 items-start relative shrink-0 w-full">
-          <p className="leading-5 relative shrink-0 text-[#9ca3af] uppercase text-base">
+          <p className="leading-5 relative shrink-0 text-[#a1a1aa] uppercase text-base">
             {label}
           </p>
           <p className="leading-7 min-w-full relative shrink-0 text-2xl text-black whitespace-pre-wrap">
@@ -175,7 +175,7 @@ export default function Testimonial({
               )}
             >
               <p className="relative shrink-0 text-black">{authorName}</p>
-              <p className="relative shrink-0 text-[#9ca3af]">{authorTitle}</p>
+              <p className="relative shrink-0 text-[#a1a1aa]">{authorTitle}</p>
             </div>
           </div>
 
@@ -205,7 +205,7 @@ export default function Testimonial({
                     : "opacity-100 max-h-[500px] scale-100"
                 )}
               >
-                <p className="leading-[26px] text-[#1f2937] text-xl whitespace-pre-wrap">
+                <p className="leading-[26px] text-[#27272a] text-xl whitespace-pre-wrap">
                   {shortQuote}
                 </p>
               </div>
@@ -219,7 +219,7 @@ export default function Testimonial({
                     : "opacity-0 max-h-0 pointer-events-none absolute top-0 left-0 scale-95"
                 )}
               >
-                <div className="leading-[26px] text-[#1f2937] text-xl whitespace-pre-wrap">
+                <div className="leading-[26px] text-[#27272a] text-xl whitespace-pre-wrap">
                   {fullQuote.map((paragraph, index) => (
                     <p key={index} className={index < fullQuote.length - 1 ? "mb-6" : ""}>
                       {paragraph}
@@ -236,7 +236,7 @@ export default function Testimonial({
                 "relative shrink-0 cursor-pointer transition-all duration-300 ease-out",
                 isExpanded
                   ? "size-6 hover:opacity-70"
-                  : "leading-5 text-[#9ca3af] text-base hover:text-[#6b7280] text-left",
+                  : "leading-5 text-[#a1a1aa] text-base hover:text-[#71717a] text-left",
                 isDesktop && !isExpanded && "w-full md:max-w-[424px]"
               )}
             >

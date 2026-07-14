@@ -102,13 +102,13 @@ export default function SideQuestSection({
           {/* Header */}
           <div className="flex flex-col">
             {label && (
-              <p className="text-[#9ca3af] uppercase text-base pb-2">{label}</p>
+              <p className="text-[#a1a1aa] uppercase text-base pb-2">{label}</p>
             )}
             {title && (
               <h3 className="text-2xl text-black">{renderHighlightedText(title, highlightedText, highlightColor)}</h3>
             )}
             {subtitle && (
-              <p className="text-gray-500 text-xl">{subtitle}</p>
+              <p className="text-zinc-500 text-xl">{subtitle}</p>
             )}
           </div>
 
@@ -136,7 +136,7 @@ export default function SideQuestSection({
           {teamMembers && teamMembers.length > 0 && (
             <div className="flex flex-col gap-2">
               {teamLabel && (
-                <p className="text-[#9ca3af] uppercase text-base">{teamLabel}</p>
+                <p className="text-[#a1a1aa] uppercase text-base">{teamLabel}</p>
               )}
               <div className="flex flex-col">
                 {teamMembers.map((member) => (
@@ -146,12 +146,12 @@ export default function SideQuestSection({
                         href={member.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-gray-500 underline decoration-white underline-offset-2 hover:decoration-gray-300 transition-colors transition-100ms"
+                        className="text-zinc-500 underline decoration-white underline-offset-2 hover:decoration-zinc-300 transition-colors transition-100ms"
                       >
                         {member.name}
                       </a>
                     ) : (
-                      <span className="text-gray-500  underline decoration-[#d1d5db] underline-offset-2">
+                      <span className="text-zinc-500  underline decoration-[#d4d4d8] underline-offset-2">
                         {member.name}
                       </span>
                     )}
@@ -163,7 +163,7 @@ export default function SideQuestSection({
 
           {/* Description */}
           {description && description.length > 0 && (
-            <div className="leading-normal text-gray-700 prose prose-p:my-4 first:prose-p:mt-0 last:prose-p:mb-0">
+            <div className="leading-normal text-zinc-700 prose prose-p:my-4 first:prose-p:mt-0 last:prose-p:mb-0">
               <PortableText 
                 value={description}
                 components={{
@@ -197,7 +197,7 @@ export default function SideQuestSection({
             className={`fixed inset-0 z-[9999] flex items-center justify-center p-4 transition-opacity duration-200 ease-out ${isClosing ? 'opacity-0' : 'animate-[fadeIn_200ms_ease-out]'}`}
             onClick={handleClose}
           >
-            <div className="absolute inset-0 bg-gray-100/95" />
+            <div className="absolute inset-0 bg-zinc-100/95" />
 
             <button
               onClick={(e) => {
@@ -216,7 +216,7 @@ export default function SideQuestSection({
               >
                 <path
                   d="M1 1L13 13M1 13L13 1"
-                  stroke="#9ca3af"
+                  stroke="#a1a1aa"
                   strokeWidth="2"
                   strokeLinecap="round"
                 />
@@ -235,7 +235,7 @@ export default function SideQuestSection({
               
               {imageCaption && (
                 <p
-                  className={`mt-6 max-w-[600px] text-center font-['Michelle'] text-base font-normal leading-relaxed text-gray-600 ${isClosing ? '' : 'animate-[fadeSlideUp_300ms_ease-out_100ms_both]'}`}
+                  className={`mt-6 max-w-[600px] text-center font-['Michelle'] text-base font-normal leading-relaxed text-zinc-600 ${isClosing ? '' : 'animate-[fadeSlideUp_300ms_ease-out_100ms_both]'}`}
                   style={{ fontVariationSettings: "'opsz' 9" }}
                 >
                   {imageCaption}

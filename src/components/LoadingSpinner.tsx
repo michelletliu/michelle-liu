@@ -26,11 +26,11 @@ export default function LoadingSpinner({
     <div className={clsx("flex items-center gap-3", className)}>
       <div
         className={clsx(
-          "border-gray-200 border-t-gray-400 rounded-full animate-spin",
+          "border-zinc-200 border-t-zinc-400 rounded-full animate-spin",
           sizeClasses[size]
         )}
       />
-      {label && <span className="text-gray-400 text-sm">{label}</span>}
+      {label && <span className="text-zinc-400 text-sm">{label}</span>}
     </div>
   );
 }

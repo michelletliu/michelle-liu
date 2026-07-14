@@ -399,15 +399,15 @@ export default function LibraryPage({
             <div className="relative" ref={dropdownRef}>
                 <button 
                   onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                  className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors cursor-pointer bg-gray-500/10"
+                  className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors cursor-pointer bg-zinc-500/10"
                 >
-                  <span className="font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap text-gray-500">
+                  <span className="font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap text-zinc-500">
                     {activeFilter}
-                    <span className="text-gray-400"> ({filteredBooks.length})</span>
+                    <span className="text-zinc-400"> ({filteredBooks.length})</span>
                   </span>
                   <svg
                     className={clsx(
-                      "size-4 text-gray-400 transition-transform duration-200",
+                      "size-4 text-zinc-400 transition-transform duration-200",
                       showFilterDropdown && "rotate-180"
                     )}
                     fill="none"
@@ -421,7 +421,7 @@ export default function LibraryPage({
                 
                 <div 
                   className={clsx(
-                    "absolute left-0 top-[calc(100%+4px)] bg-white rounded-xl shadow-lg border border-gray-100 z-50 w-36 transition-all duration-200 ease-out",
+                    "absolute left-0 top-[calc(100%+4px)] bg-white rounded-xl shadow-lg border border-zinc-100 z-50 w-36 transition-all duration-200 ease-out",
                     showFilterDropdown ? "pointer-events-auto" : "pointer-events-none",
                     isDropdownVisible 
                       ? "opacity-100 translate-y-0" 
@@ -448,15 +448,15 @@ export default function LibraryPage({
                             }}
                             className={clsx(
                               "flex items-center px-3 py-1 rounded-[10px] transition-colors text-left",
-                              isActive ? "bg-gray-100" : "hover:bg-gray-50"
+                              isActive ? "bg-zinc-100" : "hover:bg-zinc-50"
                             )}
                           >
                             <span className={clsx(
                               "font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em]",
-                              isActive ? "text-gray-600" : "text-gray-400"
+                              isActive ? "text-zinc-600" : "text-zinc-400"
                             )}>
                               {option.label}
-                              <span className={isActive ? "text-gray-400" : "text-gray-300"}>
+                              <span className={isActive ? "text-zinc-400" : "text-zinc-300"}>
                                 {" "}({count})
                               </span>
                             </span>
@@ -476,9 +476,9 @@ export default function LibraryPage({
                   setShowAddBookModal(true);
                 }
               }}
-              className="bg-gray-500/10 content-stretch flex items-center justify-center rounded-full size-[36px] hover:bg-[rgba(0,0,0,0.1)] transition-all duration-300"
+              className="bg-zinc-500/10 content-stretch flex items-center justify-center rounded-full size-[36px] hover:bg-[rgba(0,0,0,0.1)] transition-all duration-300"
             >
-              <div className={`flex items-center justify-center text-gray-400 transition-transform duration-300 ${showAddBookModal ? 'rotate-45' : 'rotate-0'}`}>
+              <div className={`flex items-center justify-center text-zinc-400 transition-transform duration-300 ${showAddBookModal ? 'rotate-45' : 'rotate-0'}`}>
                 <PlusIcon className="w-[14px] h-[14px]" />
               </div>
             </button>

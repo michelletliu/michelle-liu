@@ -17,15 +17,15 @@ export default function NotFound() {
 
       {/* Content */}
       <div className="flex flex-col items-center gap-6 text-center">
-        <p className="font-['SF_Pro:Regular',sans-serif] text-7xl md:text-9xl leading-none text-gray-200">
+        <p className="font-['SF_Pro:Regular',sans-serif] text-7xl md:text-9xl leading-none text-zinc-200">
           404
         </p>
         <div className="flex flex-col gap-1">
-          <p className="font-['Michelle',sans-serif] text-lg text-gray-400">
+          <p className="font-['Michelle',sans-serif] text-lg text-zinc-400">
             Oh no!
           </p>
-          <p className="font-['Michelle',sans-serif] text-lg text-gray-400">
-            Please <a href="mailto:studio@liumichelle.com" className="text-gray-600 font-medium hover:text-blue-500 transition-colors duration-200">email me</a> if there was an error :')
+          <p className="font-['Michelle',sans-serif] text-lg text-zinc-400">
+            Please <a href="mailto:studio@liumichelle.com" className="text-zinc-600 font-medium hover:text-blue-500 transition-colors duration-200">email me</a> if there was an error :')
           </p>
         </div>
       </div>

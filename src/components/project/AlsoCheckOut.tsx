@@ -43,11 +43,11 @@ function ProjectCard({ project, className, onClick }: ProjectCardProps) {
         </div>
       </div>
       <div className="flex flex-col font-medium items-start px-2 gap-0 text-base tracking-[0.005em] w-full">
-        <p className="text-[#111827] w-full">
+        <p className="text-[#18181b] w-full">
           <span>{project.title} </span>
-          <span className="text-gray-400">• {project.year}</span>
+          <span className="text-zinc-400">• {project.year}</span>
         </p>
-        <p className="text-[#9ca3af] w-full leading-tight font-normal text-base project-card-text opacity-0 translate-y-1 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:translate-y-0 max-md:opacity-100 max-md:translate-y-0">
+        <p className="text-[#a1a1aa] w-full leading-tight font-normal text-base project-card-text opacity-0 translate-y-1 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:translate-y-0 max-md:opacity-100 max-md:translate-y-0">
           {project.description}
         </p>
       </div>
@@ -78,7 +78,7 @@ export default function AlsoCheckOut({
     <div className="flex flex-col items-start justify-center py-10 sm:py-16 px-8 md:px-[8%] xl:px-[175px] w-full max-w-[1440px] mx-auto">
       <div className={clsx("flex flex-col gap-8 sm:gap-10 items-start w-full", onViewAll && "mb-10 sm:mb-16")}>
         {/* Section Title */}
-        <p className="font-medium text-gray-400 text-base">
+        <p className="font-medium text-zinc-400 text-base">
           Also check out...
         </p>
 

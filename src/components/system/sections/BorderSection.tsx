@@ -6,7 +6,7 @@ export default function BorderSection() {
     <Section
       id="borders"
       title="Borders & focus"
-      subtitle="Hairline borders in the lightest grays define most surfaces. Focus is a soft gray-300 outline with 2px offset."
+      subtitle="Hairline borders in the lightest zincs define most surfaces. Focus is a soft zinc-300 outline with 2px offset."
     >
       <SubLabel>Borders</SubLabel>
       <RowList>
@@ -17,20 +17,20 @@ export default function BorderSection() {
 
       <SubLabel note="Global :focus-visible and the interactive focus ring.">Focus states</SubLabel>
       <div className="grid gap-6 sm:grid-cols-2">
-        <div className="flex flex-col items-center gap-4 rounded-2xl bg-gray-50 p-8">
+        <div className="flex flex-col items-center gap-4 rounded-2xl bg-zinc-50 p-8">
           <button
-            className="rounded-lg bg-white px-4 py-2 text-sm text-gray-600"
-            style={{ outline: "2px solid #d1d5db", outlineOffset: "2px" }}
+            className="rounded-lg bg-white px-4 py-2 text-sm text-zinc-600"
+            style={{ outline: "2px solid #d4d4d8", outlineOffset: "2px" }}
           >
             :focus-visible
           </button>
-          <code className="font-mono text-sm text-gray-400">outline 2px #d1d5db, offset 2px</code>
+          <code className="font-mono text-sm text-zinc-400">outline 2px #d4d4d8, offset 2px</code>
         </div>
-        <div className="flex flex-col items-center gap-4 rounded-2xl bg-gray-50 p-8">
-          <button className="rounded-2xl bg-white px-4 py-2 text-sm text-gray-600 ring-2 ring-gray-400 ring-offset-2 ring-offset-gray-50">
-            ring-gray-400
+        <div className="flex flex-col items-center gap-4 rounded-2xl bg-zinc-50 p-8">
+          <button className="rounded-2xl bg-white px-4 py-2 text-sm text-zinc-600 ring-2 ring-zinc-400 ring-offset-2 ring-offset-zinc-50">
+            ring-zinc-400
           </button>
-          <code className="font-mono text-sm text-gray-400">ring-2 ring-gray-400 offset-2</code>
+          <code className="font-mono text-sm text-zinc-400">ring-2 ring-zinc-400 offset-2</code>
         </div>
       </div>
     </Section>

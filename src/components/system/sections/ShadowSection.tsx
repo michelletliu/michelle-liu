@@ -6,7 +6,7 @@ export default function ShadowSection() {
     <Section
       id="shadows"
       title="Shadows"
-      subtitle="Soft, low-opacity elevation. shadow-default (a gray-tinted lift) is the workhorse; images and experiments layer their own."
+      subtitle="Soft, low-opacity elevation. shadow-default (a zinc-tinted lift) is the workhorse; images and experiments layer their own."
     >
       <Grid min="240px">
         {shadows.map((s) => (

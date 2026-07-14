@@ -36,7 +36,7 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
 
   const sharedClassName = clsx(
     "group flex w-full flex-col items-start text-left",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2",
     className
   );
 
@@ -66,22 +66,22 @@ export default function LoreCard({ className, data, onClick }: LoreCardProps) {
         {/* Headline row with arrow */}
         <div className="flex w-full items-center justify-between">
           <div className="flex flex-col gap-0 max-md:gap-1">
-            <span className="text-gray-600 text-base font-medium leading-5">
+            <span className="text-zinc-600 text-base font-medium leading-5">
               {data.headline}
-              {data.date && <span className="hidden md:inline text-gray-400 text-base font-normal"> • {data.date}</span>}
+              {data.date && <span className="hidden md:inline text-zinc-400 text-base font-normal"> • {data.date}</span>}
             </span>
             {data.date && (
-              <span className="md:hidden text-gray-400 font-normal text-base leading-tight">{data.date}</span>
+              <span className="md:hidden text-zinc-400 font-normal text-base leading-tight">{data.date}</span>
             )}
           </div>
           {/* Arrow - hidden on mobile, hover on desktop */}
-          <span className="hidden text-gray-700 text-sm opacity-0 transition-opacity duration-200 ease-out md:inline md:group-hover:opacity-100">
+          <span className="hidden text-zinc-700 text-sm opacity-0 transition-opacity duration-200 ease-out md:inline md:group-hover:opacity-100">
             <ArrowUpRight />
           </span>
         </div>
         {/* Description - always visible on mobile, fade up on hover for desktop */}
         {data.description && (
-          <p className="whitespace-pre-wrap max-md:pt-1 pt-0.5 font-normal text-sm  sm:text-base tracking-[0.005em] leading-5 max-md:leading-[1.45] text-gray-400 md:opacity-0 md:translate-y-1 md:transition-all md:duration-300 md:ease-out md:group-hover:opacity-100 md:group-hover:translate-y-0">{data.description}</p>
+          <p className="whitespace-pre-wrap max-md:pt-1 pt-0.5 font-normal text-sm  sm:text-base tracking-[0.005em] leading-5 max-md:leading-[1.45] text-zinc-400 md:opacity-0 md:translate-y-1 md:transition-all md:duration-300 md:ease-out md:group-hover:opacity-100 md:group-hover:translate-y-0">{data.description}</p>
         )}
       </div>
     </>

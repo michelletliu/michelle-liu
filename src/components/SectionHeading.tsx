@@ -15,11 +15,11 @@ export default function SectionHeading({
 }: SectionHeadingProps) {
   return (
     <div className={`flex flex-col ${className}`}>
-      <h2 className="font-['Michelle',sans-serif] font-medium text-gray-600 text-3xl leading-normal shrink-0">
+      <h2 className="font-['Michelle',sans-serif] font-medium text-zinc-600 text-3xl leading-normal shrink-0">
         {title}
       </h2>
       {subtitle && (
-        <p className="font-['Michelle',sans-serif] tracking-wide font-normal text-gray-400 text-lg">
+        <p className="font-['Michelle',sans-serif] tracking-wide font-normal text-zinc-400 text-lg">
           {subtitle}
         </p>
       )}

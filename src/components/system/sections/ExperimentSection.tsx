@@ -20,8 +20,8 @@ export default function ExperimentSection() {
               style={{ backgroundColor: e.bg }}
             >
               <div className="min-w-0">
-                <h3 className="text-base font-medium text-gray-800">{e.name}</h3>
-                <p className="mt-1 max-w-2xl text-sm leading-snug text-gray-500 text-pretty">
+                <h3 className="text-base font-medium text-zinc-800">{e.name}</h3>
+                <p className="mt-1 max-w-2xl text-sm leading-snug text-zinc-500 text-pretty">
                   {e.tagline}
                 </p>
               </div>
@@ -40,44 +40,44 @@ export default function ExperimentSection() {
             {/* Detail grid */}
             <div className="grid gap-x-6 gap-y-5 bg-white p-6 sm:grid-cols-2 lg:grid-cols-4">
               <div>
-                <h4 className="mb-2.5 text-xs font-medium text-gray-400">
+                <h4 className="mb-2.5 text-xs font-medium text-zinc-400">
                   Fonts
                 </h4>
                 <ul className="flex flex-col gap-1">
                   {e.fonts.map((f) => (
-                    <li key={f} className="text-sm text-gray-500">{f}</li>
+                    <li key={f} className="text-sm text-zinc-500">{f}</li>
                   ))}
                 </ul>
               </div>
               <div>
-                <h4 className="mb-2.5 text-xs font-medium text-gray-400">
+                <h4 className="mb-2.5 text-xs font-medium text-zinc-400">
                   Radii
                 </h4>
                 <ul className="flex flex-wrap gap-1">
                   {e.radii.map((r) => (
-                    <li key={r} className="rounded-md bg-gray-100 px-2 py-0.5 font-mono text-sm text-gray-500">
+                    <li key={r} className="rounded-md bg-zinc-100 px-2 py-0.5 font-mono text-sm text-zinc-500">
                       {r}
                     </li>
                   ))}
                 </ul>
               </div>
               <div>
-                <h4 className="mb-2.5 text-xs font-medium text-gray-400">
+                <h4 className="mb-2.5 text-xs font-medium text-zinc-400">
                   Shadows
                 </h4>
                 <ul className="flex flex-col gap-1">
                   {e.shadows.map((s) => (
-                    <li key={s} className="break-words font-mono text-sm leading-snug text-gray-400">{s}</li>
+                    <li key={s} className="break-words font-mono text-sm leading-snug text-zinc-400">{s}</li>
                   ))}
                 </ul>
               </div>
               <div>
-                <h4 className="mb-2.5 text-xs font-medium text-gray-400">
+                <h4 className="mb-2.5 text-xs font-medium text-zinc-400">
                   Effects
                 </h4>
                 <ul className="flex flex-col gap-1">
                   {e.effects.map((fx) => (
-                    <li key={fx} className="text-sm leading-snug text-gray-500 text-pretty">• {fx}</li>
+                    <li key={fx} className="text-sm leading-snug text-zinc-500 text-pretty">• {fx}</li>
                   ))}
                 </ul>
               </div>

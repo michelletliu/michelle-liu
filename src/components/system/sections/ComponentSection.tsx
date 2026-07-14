@@ -9,11 +9,11 @@ function Specimen({ label, children, className = "" }: { label: string; children
   return (
     <div className="flex flex-col gap-3">
       <div
-        className={`flex min-h-[128px] flex-1 items-center justify-center gap-4 rounded-xl bg-gray-50 p-6 ring-1 ring-inset ring-black/5 ${className}`}
+        className={`flex min-h-[128px] flex-1 items-center justify-center gap-4 rounded-xl bg-zinc-50 p-6 ring-1 ring-inset ring-black/5 ${className}`}
       >
         {children}
       </div>
-      <div className="text-sm text-gray-400">{label}</div>
+      <div className="text-sm text-zinc-400">{label}</div>
     </div>
   );
 }
@@ -61,16 +61,16 @@ function FilterDropdown({
     <div className="flex flex-col items-start gap-1">
       <button
         onClick={() => setOpen((o) => !o)}
-        className={`flex items-center gap-1.5 rounded-full bg-gray-500/10 px-3 transition-colors cursor-pointer ${
+        className={`flex items-center gap-1.5 rounded-full bg-zinc-500/10 px-3 transition-colors cursor-pointer ${
           md ? "py-1.5" : "py-1"
         }`}
       >
-        <span className={`font-['Michelle',sans-serif] font-medium text-gray-500 ${textCls}`}>
+        <span className={`font-['Michelle',sans-serif] font-medium text-zinc-500 ${textCls}`}>
           {active}
-          <span className="text-gray-400"> {activeCount}</span>
+          <span className="text-zinc-400"> {activeCount}</span>
         </span>
         <svg
-          className={`size-4 text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`size-4 text-zinc-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -82,7 +82,7 @@ function FilterDropdown({
 
       {open && (
         <div
-          className={`rounded-xl border border-gray-100 bg-white shadow-lg ${
+          className={`rounded-xl border border-zinc-100 bg-white shadow-lg ${
             md ? "w-36" : "min-w-[140px]"
           }`}
         >
@@ -95,15 +95,15 @@ function FilterDropdown({
                   onClick={() => setActive(o.label)}
                   className={`flex items-center rounded-[10px] px-3 text-left transition-colors ${
                     md ? "py-1" : "py-1.5"
-                  } ${isActive ? "bg-gray-100" : "hover:bg-gray-50"}`}
+                  } ${isActive ? "bg-zinc-100" : "hover:bg-zinc-50"}`}
                 >
                   <span
                     className={`font-['Michelle',sans-serif] font-medium ${textCls} ${
-                      isActive ? "text-gray-600" : "text-gray-400"
+                      isActive ? "text-zinc-600" : "text-zinc-400"
                     }`}
                   >
                     {o.label}
-                    <span className={isActive ? "text-gray-400" : "text-gray-300"}> {o.count}</span>
+                    <span className={isActive ? "text-zinc-400" : "text-zinc-300"}> {o.count}</span>
                   </span>
                 </button>
               );
@@ -197,22 +197,22 @@ export default function ComponentSection() {
 
         <Specimen label="Nav tabs — glass active pill">
           <div className="flex gap-1">
-            <span className="rounded-full border border-white/50 bg-gray-200/60 px-3.5 pb-1 pt-[5px] text-lg font-medium tracking-[0.005em] text-[#4b5563] shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.02)] backdrop-blur-md">
+            <span className="rounded-full border border-white/50 bg-zinc-200/60 px-3.5 pb-1 pt-[5px] text-lg font-medium tracking-[0.005em] text-[#52525b] shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.02)] backdrop-blur-md">
               Work
             </span>
-            <span className="rounded-full border border-transparent px-3.5 pb-1 pt-[5px] text-lg font-medium tracking-[0.005em] text-[#9ca3af]">
+            <span className="rounded-full border border-transparent px-3.5 pb-1 pt-[5px] text-lg font-medium tracking-[0.005em] text-[#a1a1aa]">
               Art
             </span>
-            <span className="rounded-full border border-transparent px-3.5 pb-1 pt-[5px] text-lg font-medium tracking-[0.005em] text-[#9ca3af]">
+            <span className="rounded-full border border-transparent px-3.5 pb-1 pt-[5px] text-lg font-medium tracking-[0.005em] text-[#a1a1aa]">
               About
             </span>
           </div>
         </Specimen>
 
         <Specimen label="Project title pill">
-          <div className="flex items-center justify-center rounded-full border border-[#f3f4f6] bg-white px-3 pb-[4.8px] pt-[5px]">
-            <p className="text-base font-medium tracking-[0.005em] text-[#111827]">
-              Polaroid <span className="text-[#9ca3af]">• 2024</span>
+          <div className="flex items-center justify-center rounded-full border border-[#f4f4f5] bg-white px-3 pb-[4.8px] pt-[5px]">
+            <p className="text-base font-medium tracking-[0.005em] text-[#18181b]">
+              Polaroid <span className="text-[#a1a1aa]">• 2024</span>
             </p>
           </div>
         </Specimen>
@@ -227,9 +227,9 @@ export default function ComponentSection() {
 
         <Specimen label="Filter pill (active / rest)">
           <div className="flex gap-2">
-            <span className="rounded-full bg-gray-500/10 px-3 py-1.5 text-sm text-gray-600">All</span>
-            <span className="rounded-full px-3 py-1.5 text-sm text-gray-400">Books</span>
-            <span className="rounded-full px-3 py-1.5 text-sm text-gray-400">Film</span>
+            <span className="rounded-full bg-zinc-500/10 px-3 py-1.5 text-sm text-zinc-600">All</span>
+            <span className="rounded-full px-3 py-1.5 text-sm text-zinc-400">Books</span>
+            <span className="rounded-full px-3 py-1.5 text-sm text-zinc-400">Film</span>
           </div>
         </Specimen>
 
@@ -242,7 +242,7 @@ export default function ComponentSection() {
         </Specimen>
 
         <Specimen label="Tooltip">
-          <div className="rounded-[8px] bg-gray-800 px-2.5 py-1.5 text-sm text-white shadow-lg">
+          <div className="rounded-[8px] bg-zinc-800 px-2.5 py-1.5 text-sm text-white shadow-lg">
             Tooltip label
           </div>
         </Specimen>
@@ -258,7 +258,7 @@ export default function ComponentSection() {
         </Specimen>
 
         <Specimen label="Social / meta link">
-          <a className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-blue-500">
+          <a className="inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-blue-500">
             Read more <ArrowUpRight />
           </a>
         </Specimen>
@@ -275,7 +275,7 @@ export default function ComponentSection() {
         </Specimen>
 
         <Specimen label="Secondary button">
-          <button className="rounded-full border border-[#e5e7eb] bg-gray-50 px-5 py-2.5 text-sm font-medium text-gray-700">
+          <button className="rounded-full border border-[#e4e4e7] bg-zinc-50 px-5 py-2.5 text-sm font-medium text-zinc-700">
             View all projects
           </button>
         </Specimen>
@@ -290,9 +290,9 @@ export default function ComponentSection() {
       <SubLabel>Loaders</SubLabel>
       <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
         <Specimen label="Spinner — sm / md / lg">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-200 border-t-gray-400" />
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-gray-400" />
-          <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-gray-200 border-t-gray-400" />
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-400" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-400" />
+          <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-zinc-200 border-t-zinc-400" />
         </Specimen>
 
         <Specimen label="Shimmer skeleton">
@@ -304,13 +304,13 @@ export default function ComponentSection() {
         </Specimen>
 
         <Specimen label="Film loading dots">
-          <div className="flex items-end gap-1.5 text-gray-400">
+          <div className="flex items-end gap-1.5 text-zinc-400">
             <span className="text-sm">Loading</span>
             <span className="mb-0.5 flex gap-0.5">
               {[0, 0.2, 0.4].map((d) => (
                 <span
                   key={d}
-                  className="h-1 w-1 rounded-full bg-gray-400"
+                  className="h-1 w-1 rounded-full bg-zinc-400"
                   style={{ animation: `sys-pulse 1.4s ease-in-out ${d}s infinite` }}
                 />
               ))}
@@ -321,20 +321,20 @@ export default function ComponentSection() {
 
       <SubLabel>Cards</SubLabel>
       <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
-        <Specimen label="Card — shadow-default" className="!bg-gray-100">
-          <div className="flex h-24 w-48 flex-col justify-end rounded-3xl border border-gray-100 bg-white p-4 shadow-[0px_4px_16px_0px_rgba(209,213,219,0.65)]">
-            <span className="text-sm font-medium text-gray-700">Media card</span>
-            <span className="text-xs text-gray-400">rounded-3xl · shadow-default</span>
+        <Specimen label="Card — shadow-default" className="!bg-zinc-100">
+          <div className="flex h-24 w-48 flex-col justify-end rounded-3xl border border-zinc-100 bg-white p-4 shadow-[0px_4px_16px_0px_rgba(212, 212, 216,0.65)]">
+            <span className="text-sm font-medium text-zinc-700">Media card</span>
+            <span className="text-xs text-zinc-400">rounded-3xl · shadow-default</span>
           </div>
         </Specimen>
 
-        <Specimen label="Book cover" className="!bg-gray-100">
-          <div className="h-28 w-20 rounded-sm bg-gradient-to-br from-gray-300 to-gray-400 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)]" />
+        <Specimen label="Book cover" className="!bg-zinc-100">
+          <div className="h-28 w-20 rounded-sm bg-gradient-to-br from-zinc-300 to-zinc-400 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.1)]" />
         </Specimen>
 
-        <Specimen label="Quote card" className="!bg-gray-100">
-          <div className="flex h-24 w-48 flex-col justify-center rounded-3xl border border-gray-100 bg-white px-4 shadow-[0px_4px_16px_0px_rgba(209,213,219,0.65)]">
-            <span className="text-2xl tracking-[0.01em] text-gray-700">“delightful.”</span>
+        <Specimen label="Quote card" className="!bg-zinc-100">
+          <div className="flex h-24 w-48 flex-col justify-center rounded-3xl border border-zinc-100 bg-white px-4 shadow-[0px_4px_16px_0px_rgba(212, 212, 216,0.65)]">
+            <span className="text-2xl tracking-[0.01em] text-zinc-700">“delightful.”</span>
           </div>
         </Specimen>
       </div>

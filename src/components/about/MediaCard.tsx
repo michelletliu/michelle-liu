@@ -147,8 +147,8 @@ export default function MediaCard({
       <div
         ref={cardRef}
         className={clsx(
-          "flex h-full min-h-[260px] md:min-h-[280px] flex-col items-start overflow-hidden rounded-3xl border border-gray-100 bg-white transition-shadow duration-200",
-          "shadow-[0px_4px_16px_0px_rgba(209,213,219,0.65)]",
+          "flex h-full min-h-[260px] md:min-h-[280px] flex-col items-start overflow-hidden rounded-3xl border border-zinc-100 bg-white transition-shadow duration-200",
+          "shadow-[0px_4px_16px_0px_rgba(212, 212, 216,0.65)]",
           "md:rounded-3xl",
           className
         )}
@@ -166,7 +166,7 @@ export default function MediaCard({
 
           {/* Quote Title */}
           {data?.quoteTitle && (
-            <p className="whitespace-pre-wrap font-['Michelle'] -mb-1 text-2xl tracking-[0.01em] font-medium text-gray-700">
+            <p className="whitespace-pre-wrap font-['Michelle'] -mb-1 text-2xl tracking-[0.01em] font-medium text-zinc-700">
               {data.quoteTitle}
             </p>
           )}
@@ -174,7 +174,7 @@ export default function MediaCard({
           {/* Quote Text & Author */}
           <div className="flex flex-col items-start text-base tracking-[0.005em] md:text-base">
             {data?.quoteText && (
-              <p className="font-['Michelle'] font-normal text-gray-500 mb-0.5">
+              <p className="font-['Michelle'] font-normal text-zinc-500 mb-0.5">
                 <QuoteTextWithUnderline
                   text={data.quoteText}
                   underlinedText={data.quoteUnderlinedText}
@@ -183,7 +183,7 @@ export default function MediaCard({
               </p>
             )}
             {data?.quoteAuthor && (
-              <p className="font-['Michelle'] font-normal text-gray-400">
+              <p className="font-['Michelle'] font-normal text-zinc-400">
                 {data.quoteAuthor}
               </p>
             )}
@@ -269,14 +269,14 @@ export default function MediaCard({
   // Shared class names for both anchor and button
   const sharedClasses = clsx(
     "relative overflow-hidden transition-transform hover:scale-[1.01]",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2",
     // Aspect ratio: Music/square albums vs portrait books/movies (210:271 from Figma)
     isSquare ? "aspect-square" : "aspect-[210/310]",
     // Border radius based on variant
     variant === "default" && "rounded-xl md:rounded-md",
     variant === "expanded" && "rounded-lg md:rounded-md",
     // Placeholder background when no image
-    !hasImage && "bg-gray-300",
+    !hasImage && "bg-zinc-300",
     // Put the shadow on the card itself so overflow-hidden does not clip it.
     shouldDetectWhiteBorder &&
       (hasDetectedWhiteBorder
@@ -308,7 +308,7 @@ export default function MediaCard({
         />
       )}
       {hasDetectedWhiteBorder && (
-        <div className="pointer-events-none absolute inset-0 z-[2] rounded-[inherit] border border-gray-50" />
+        <div className="pointer-events-none absolute inset-0 z-[2] rounded-[inherit] border border-zinc-50" />
       )}
     </>
   );

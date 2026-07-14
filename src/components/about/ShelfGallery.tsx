@@ -85,18 +85,18 @@ export default function ShelfGallery({
                     onClick={() => handleCategoryClick(category.id)}
                     className={clsx(
                       "flex shrink-0 cursor-pointer items-center justify-center rounded-full px-3 py-1 transition-colors",
-                      isActive ? "bg-gray-500/10" : "hover:bg-gray-500/5"
+                      isActive ? "bg-zinc-500/10" : "hover:bg-zinc-500/5"
                     )}
                   >
                     <span
                       className={clsx(
                         "font-['Michelle',sans-serif] text-base font-semibold tracking-wide",
-                        isActive ? "text-gray-500" : "text-gray-400"
+                        isActive ? "text-zinc-500" : "text-zinc-400"
                       )}
                     >
                       {category.label}
                       {category.count !== undefined && (
-                        <span className="text-gray-400"> ({category.count})</span>
+                        <span className="text-zinc-400"> ({category.count})</span>
                       )}
                     </span>
                   </button>
@@ -111,19 +111,19 @@ export default function ShelfGallery({
                   className={clsx(
                     "flex shrink-0 cursor-pointer items-center justify-center rounded-full px-3 py-1 transition-colors",
                     isActive
-                      ? "bg-gray-500/10"
-                      : "hover:bg-gray-500/5"
+                      ? "bg-zinc-500/10"
+                      : "hover:bg-zinc-500/5"
                   )}
                 >
                   <span
                     className={clsx(
                       "font-['Michelle',sans-serif] text-base font-semibold tracking-wide",
-                      isActive ? "text-gray-500" : "text-gray-400"
+                      isActive ? "text-zinc-500" : "text-zinc-400"
                     )}
                   >
                     {category.label}
                     {category.count !== undefined && (
-                      <span className={isActive ? "text-gray-400" : "text-gray-300"}>
+                      <span className={isActive ? "text-zinc-400" : "text-zinc-300"}>
                         {" "}({category.count})
                       </span>
                     )}
@@ -139,9 +139,9 @@ export default function ShelfGallery({
               href={externalLink.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex shrink-0 cursor-pointer items-center justify-center rounded-full px-0.5 transition-colors hover:text-gray-600"
+              className="flex shrink-0 cursor-pointer items-center justify-center rounded-full px-0.5 transition-colors hover:text-zinc-600"
             >
-              <span className="text-base font-normal leading-5 tracking-wide text-gray-400">
+              <span className="text-base font-normal leading-5 tracking-wide text-zinc-400">
                 {externalLink.label} <ArrowUpRight />
               </span>
             </a>

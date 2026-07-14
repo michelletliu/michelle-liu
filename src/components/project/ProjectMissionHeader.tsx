@@ -61,7 +61,7 @@ export default function ProjectMissionHeader({
             isMobile && "w-full"
           )}
         >
-          <p className="leading-5 text-[#9ca3af] text-base">
+          <p className="leading-5 text-[#a1a1aa] text-base">
             {label}
           </p>
           <p className="leading-7 text-2xl text-black whitespace-pre-wrap text-pretty">
@@ -96,7 +96,7 @@ export default function ProjectMissionHeader({
               isMobile && "w-full px-0"
             )}
           >
-            <div className="text-[#4b5563] text-base whitespace-pre-wrap">
+            <div className="text-[#52525b] text-base whitespace-pre-wrap">
               {description.map((paragraph, index) => (
                 <p key={index} className={index < description.length - 1 ? "mb-4" : ""}>
                   {paragraph}
@@ -106,7 +106,7 @@ export default function ProjectMissionHeader({
 
             {/* Italic Note */}
             {note && (
-              <p className="text-[#9ca3af] text-base italic">
+              <p className="text-[#a1a1aa] text-base italic">
                 {note}
               </p>
             )}
@@ -116,7 +116,7 @@ export default function ProjectMissionHeader({
         {/* Italic Note (when no description) */}
         {!hasDescription && note && (
           <p className={clsx(
-            "text-[#9ca3af] text-base italic mt-8 px-8",
+            "text-[#a1a1aa] text-base italic mt-8 px-8",
             isDesktop && "w-[410px]",
             isMobile && "w-full px-0"
           )}>
@@ -152,7 +152,7 @@ export default function ProjectMissionHeader({
           isMobile && "w-full"
         )}
       >
-        <p className="relative shrink-0 text-[#9ca3af] text-base">
+        <p className="relative shrink-0 text-[#a1a1aa] text-base">
           {label}
         </p>
         <p className=" min-w-full leading-normal relative shrink-0 text-2xl text-black whitespace-pre-wrap text-pretty">
@@ -164,7 +164,7 @@ export default function ProjectMissionHeader({
       {isOverview && hasDescription && (
         <div
           className={clsx(
-            "leading-5 relative text-[#4b5563] text-base whitespace-pre-wrap",
+            "leading-5 relative text-[#52525b] text-base whitespace-pre-wrap",
             isDesktop && "col-start-3",
             isMobile && "w-full"
           )}
