@@ -178,9 +178,9 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
               {item.detail && (
                 <>
                   {item.title && (
-                    <span className="text-zinc-500">{", "}</span>
+                    <span className="text-zinc-400">{", "}</span>
                   )}
-                  <span className="text-zinc-500">{item.detail}</span>
+                  <span className="text-zinc-400">{item.detail}</span>
                 </>
               )}
             </p>
