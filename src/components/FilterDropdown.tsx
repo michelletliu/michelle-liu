@@ -77,7 +77,7 @@ export function FilterDropdown({ options, activeValue, onChange, className, useP
         }
       }}
       className={clsx(
-        "bg-white rounded-xl shadow-lg border border-gray-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200",
+        "bg-white rounded-xl shadow-lg border border-zinc-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200",
         usePortal ? "fixed" : "absolute left-0 top-[calc(100%+4px)]"
       )}
       style={usePortal ? {
@@ -98,16 +98,16 @@ export function FilterDropdown({ options, activeValue, onChange, className, useP
               }}
               className={clsx(
                 "flex items-center px-3 py-1 rounded-[10px] transition-colors text-left",
-                isActive ? "bg-gray-100" : "hover:bg-gray-50"
+                isActive ? "bg-zinc-100" : "hover:bg-zinc-50"
               )}
             >
               <span className={clsx(
                 "font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em]",
-                isActive ? "text-gray-600" : "text-gray-400"
+                isActive ? "text-zinc-600" : "text-zinc-400"
               )}>
                 {option.label}
                 {option.count !== undefined && (
-                  <span className={isActive ? "text-gray-400" : "text-gray-300"}>
+                  <span className={isActive ? "text-zinc-400" : "text-zinc-300"}>
                     {" "}({option.count})
                   </span>
                 )}
@@ -130,17 +130,17 @@ export function FilterDropdown({ options, activeValue, onChange, className, useP
           }
           setOpen(!open);
         }}
-        className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors cursor-pointer bg-gray-500/10"
+        className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors cursor-pointer bg-zinc-500/10"
       >
-        <span className="font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap text-gray-500">
+        <span className="font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap text-zinc-500">
           {activeOption?.label ?? activeValue}
           {activeOption?.count !== undefined && (
-            <span className="text-gray-400"> ({activeOption.count})</span>
+            <span className="text-zinc-400"> ({activeOption.count})</span>
           )}
         </span>
         <svg
           className={clsx(
-            "size-4 text-gray-400 transition-transform duration-200",
+            "size-4 text-zinc-400 transition-transform duration-200",
             open && "rotate-180"
           )}
           fill="none"

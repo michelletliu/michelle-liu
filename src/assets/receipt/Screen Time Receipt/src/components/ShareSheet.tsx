@@ -41,13 +41,13 @@ export function ShareSheet({ onClose }: ShareSheetProps) {
           <h3 className="font-['SF_Mono:Semibold',sans-serif] text-[15px]">Screen Time Receipt</h3>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-zinc-100 rounded-full transition-colors"
           >
             <X size={20} />
           </button>
         </div>
         
-        <p className="text-center text-[13px] text-gray-500 font-['SF_Mono:Regular',sans-serif] py-2">Weekly Time Summary</p>
+        <p className="text-center text-[13px] text-zinc-500 font-['SF_Mono:Regular',sans-serif] py-2">Weekly Time Summary</p>
         
         <div className="px-4 py-3">
           <div className="flex gap-4 overflow-x-auto pb-2">
@@ -59,7 +59,7 @@ export function ShareSheet({ onClose }: ShareSheetProps) {
                 <div className="w-[60px] h-[60px] rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-3xl">
                   {contact.emoji}
                 </div>
-                <span className="text-[11px] text-gray-700 font-['SF_Pro:Regular',sans-serif] truncate w-full text-center" style={{ fontVariationSettings: "'wdth' 100" }}>
+                <span className="text-[11px] text-zinc-700 font-['SF_Pro:Regular',sans-serif] truncate w-full text-center" style={{ fontVariationSettings: "'wdth' 100" }}>
                   {contact.name}
                 </span>
               </button>
@@ -77,7 +77,7 @@ export function ShareSheet({ onClose }: ShareSheetProps) {
                 <div className={`w-[60px] h-[60px] rounded-[15px] ${app.color} flex items-center justify-center text-3xl shadow-sm`}>
                   {app.icon}
                 </div>
-                <span className="text-[11px] text-gray-700 font-['SF_Pro:Regular',sans-serif]" style={{ fontVariationSettings: "'wdth' 100" }}>
+                <span className="text-[11px] text-zinc-700 font-['SF_Pro:Regular',sans-serif]" style={{ fontVariationSettings: "'wdth' 100" }}>
                   {app.name}
                 </span>
               </button>
@@ -89,11 +89,11 @@ export function ShareSheet({ onClose }: ShareSheetProps) {
           {actions.map((action, idx) => (
             <button
               key={idx}
-              className="flex items-center gap-3 w-full py-3 px-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-3 w-full py-3 px-2 hover:bg-zinc-100 rounded-lg transition-colors"
               onClick={() => handleAction(action.name)}
             >
               <span className="text-2xl">{action.icon}</span>
-              <span className="text-[15px] text-gray-900 font-['SF_Pro:Regular',sans-serif]" style={{ fontVariationSettings: "'wdth' 100" }}>
+              <span className="text-[15px] text-zinc-900 font-['SF_Pro:Regular',sans-serif]" style={{ fontVariationSettings: "'wdth' 100" }}>
                 {action.name}
               </span>
             </button>
@@ -101,10 +101,10 @@ export function ShareSheet({ onClose }: ShareSheetProps) {
         </div>
 
         <div className="px-4 pt-3">
-          <p className="text-[11px] text-gray-500 font-['SF_Mono:Regular',sans-serif] text-center">
+          <p className="text-[11px] text-zinc-500 font-['SF_Mono:Regular',sans-serif] text-center">
             􀇾 Add to Reading List
           </p>
-          <p className="text-[11px] text-gray-500 font-['SF_Mono:Regular',sans-serif] text-center mt-1">
+          <p className="text-[11px] text-zinc-500 font-['SF_Mono:Regular',sans-serif] text-center mt-1">
             📚 Add Bookmark
           </p>
         </div>

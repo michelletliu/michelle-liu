@@ -130,7 +130,7 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
       <div onClick={(e) => e.stopPropagation()} className={`absolute right-0 top-[calc(100%+12px)] z-50 bg-white rounded-[16px] w-[calc(100vw-64px)] sm:w-[420px] max-w-[420px] ${isClosing ? 'animate-modal-out' : 'animate-modal-in'}`}>
         <div
           aria-hidden="true"
-          className="absolute border border-gray-50 border-solid inset-0 pointer-events-none rounded-[16px] shadow-sm"
+          className="absolute border border-zinc-50 border-solid inset-0 pointer-events-none rounded-[16px] shadow-sm"
         />
         <div className="content-stretch flex flex-col items-start p-5 pt-4.5 pb-5 relative w-full">
           <div
@@ -140,7 +140,7 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
             <p className="font-normal">
               Have a book suggestion?
               <br />
-              <span className="text-gray-500 font-normal">Drop it here! I'll check it out :) </span>
+              <span className="text-zinc-500 font-normal">Drop it here! I'll check it out :) </span>
             </p>
           </div>
 
@@ -165,7 +165,7 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
                       onKeyDown={handleKeyDown}
                       onFocus={() => setFocusedField("title")}
                       placeholder="Book Title"
-                      className="w-full bg-transparent outline-none font-['SF_Pro:Regular',sans-serif] font-normal text-base text-[rgba(0,0,0,0.8)] placeholder:text-gray-400 transition-opacity duration-300"
+                      className="w-full bg-transparent outline-none font-['SF_Pro:Regular',sans-serif] font-normal text-base text-[rgba(0,0,0,0.8)] placeholder:text-zinc-400 transition-opacity duration-300"
                       style={inputFont}
                       autoFocus
                     />
@@ -207,7 +207,7 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
                   isNoteFieldVisible ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"
                 }`}
               >
-                <div className="h-px bg-gray-100 w-[calc(100%-50px)]" />
+                <div className="h-px bg-zinc-100 w-[calc(100%-50px)]" />
                 <p
                   className="font-['SF_Pro:Regular',sans-serif] font-normal text-base text-black mt-3"
                   style={inputFont}
@@ -226,7 +226,7 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
                         onKeyDown={handleKeyDown}
                         onFocus={() => setFocusedField("note")}
                         placeholder="Say Hi"
-                        className="w-full bg-transparent outline-none font-['SF_Pro:Regular',sans-serif] font-normal text-base text-[rgba(0,0,0,0.8)] placeholder:text-gray-400 transition-opacity duration-300"
+                        className="w-full bg-transparent outline-none font-['SF_Pro:Regular',sans-serif] font-normal text-base text-[rgba(0,0,0,0.8)] placeholder:text-zinc-400 transition-opacity duration-300"
                         style={inputFont}
                       />
                     </div>

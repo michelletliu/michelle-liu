@@ -100,6 +100,7 @@ export default function LibraryPage({
   const [isLoading, setIsLoading] = useState(true);
   const logoRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const didInitFilterRef = useRef(false);
 
   const slugify = (value: string) =>
     value
@@ -189,6 +190,39 @@ export default function LibraryPage({
     
     fetchBooks();
   }, []);
+
+  // Sync the active filter with the URL (?shelf=). On first load, adopt a valid
+  // ?shelf= value from the URL; afterwards, keep the URL in sync with the active
+  // filter (re-asserting it after book open/close navigations drop the query).
+  // "favorites" is the default shelf, so it stays out of the URL for a clean link.
+  useEffect(() => {
+    const path = location.pathname;
+    const isLibraryPath =
+      path === "/library" ||
+      path.startsWith("/library/") ||
+      path.startsWith("/project/library");
+    if (!isLibraryPath) return;
+
+    // First pass: adopt the filter from the URL, then let state settle.
+    if (!didInitFilterRef.current) {
+      if (isLoading) return;
+      didInitFilterRef.current = true;
+      const shelf = searchParams.get("shelf");
+      if (shelf && filterOptions.some((option) => option.value === shelf)) {
+        setActiveFilter(shelf);
+        return;
+      }
+    }
+
+    const current = searchParams.get("shelf");
+    const desired = activeFilter === "favorites" ? null : activeFilter;
+    if ((current ?? null) === (desired ?? null)) return;
+
+    const next = new URLSearchParams(searchParams.toString());
+    if (desired) next.set("shelf", desired);
+    else next.delete("shelf");
+    setSearchParams(next, { replace: true });
+  }, [activeFilter, isLoading, filterOptions, location.pathname, searchParams, setSearchParams]);
 
   // Filter books based on active filter (favorites, all, or by year)
   const filteredBooks = activeFilter === 'all' 
@@ -324,7 +358,7 @@ export default function LibraryPage({
           <div className="flex items-start justify-between w-full">
           {/* Title and Filter */}
           <div className="flex flex-col gap-3 items-start shrink-0">
-            <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-[34px] relative shrink-0 text-[28px] text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
+            <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-[34px] relative shrink-0 text-3xl text-black" style={{ fontVariationSettings: "'wdth' 100" }}>
               library
             </p>
             <FilterDropdown
@@ -347,9 +381,9 @@ export default function LibraryPage({
                   setShowAddBookModal(true);
                 }
               }}
-              className="bg-gray-500/10 content-stretch flex items-center justify-center rounded-full size-[36px] hover:bg-[rgba(0,0,0,0.1)] transition-all duration-300"
+              className="bg-zinc-500/10 content-stretch flex items-center justify-center rounded-full size-[36px] hover:bg-[rgba(0,0,0,0.1)] transition-all duration-300"
             >
-              <div className={`flex items-center justify-center text-gray-400 transition-transform duration-300 ${showAddBookModal ? 'rotate-45' : 'rotate-0'}`}>
+              <div className={`flex items-center justify-center text-zinc-400 transition-transform duration-300 ${showAddBookModal ? 'rotate-45' : 'rotate-0'}`}>
                 <PlusIcon className="w-[14px] h-[14px]" />
               </div>
             </button>
@@ -369,13 +403,13 @@ export default function LibraryPage({
           {isLoading ? (
             <div className="flex items-center justify-center min-h-[300px]">
               <div className="flex flex-col items-center gap-4">
-                <div className="w-8 h-8 border-2 border-[#e7e5e4] border-t-[#57534e] rounded-full animate-spin" />
-                <p className="font-['SF_Pro:Regular',sans-serif] text-[16px] text-[rgba(0,0,0,0.4)]">Loading books...</p>
+                <div className="w-8 h-8 border-2 border-zinc-200 border-t-zinc-600 rounded-full animate-spin" />
+                <p className="font-['SF_Pro:Regular',sans-serif] text-base text-[rgba(0,0,0,0.4)]">Loading books...</p>
               </div>
             </div>
           ) : filteredBooks.length === 0 ? (
             <div className="flex items-center justify-center min-h-[300px]">
-              <p className="font-['SF_Pro:Regular',sans-serif] text-[18px] text-[rgba(0,0,0,0.4)]">
+              <p className="font-['SF_Pro:Regular',sans-serif] text-lg text-[rgba(0,0,0,0.4)]">
                 No books on this shelf yet.
               </p>
             </div>

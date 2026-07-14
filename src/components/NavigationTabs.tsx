@@ -50,13 +50,13 @@ const TagBackgroundImageAndText = forwardRef<HTMLButtonElement, TagBackgroundIma
         {showStaticPill && (
           <span
             aria-hidden="true"
-            className="absolute inset-0 -z-10 rounded-full border border-white/50 bg-gray-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.02)] md:backdrop-blur-md"
+            className="absolute inset-0 -z-10 rounded-full border border-white/50 bg-zinc-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.02)] md:backdrop-blur-md"
           />
         )}
         <p
           className={clsx(
-            "font-['Michelle',sans-serif] font-medium leading-normal tracking-[0.005em] relative z-10 shrink-0 text-[1.07em] text-nowrap transition-colors duration-200 ease-out",
-            active ? "text-[#4b5563]" : "text-[#9ca3af] group-hover:text-[#4b5563]"
+            "font-['Michelle',sans-serif] font-medium leading-normal tracking-[0.005em] relative z-10 shrink-0 text-lg text-nowrap transition-colors duration-200 ease-out",
+            active ? "text-[#52525b]" : "text-[#a1a1aa] group-hover:text-[#52525b]"
           )}
         >
           {text}
@@ -200,7 +200,7 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
               <div
                 aria-hidden="true"
                 className={clsx(
-                  "absolute left-0 top-0 z-0 rounded-full border border-white/50 bg-gray-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.02)] md:backdrop-blur-md motion-reduce:transition-none",
+                  "absolute left-0 top-0 z-0 rounded-full border border-white/50 bg-zinc-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.02)] md:backdrop-blur-md motion-reduce:transition-none",
                   indicatorReady && "transition-[transform,width,opacity] duration-300 ease-out",
                 )}
                 style={{

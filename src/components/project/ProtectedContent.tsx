@@ -24,7 +24,7 @@ const ArrowRightIcon = () => (
       fillRule="evenodd"
       clipRule="evenodd"
       d="M6 0C6.41421 0 6.75 0.335786 6.75 0.75V11.4393L10.7197 7.46967C11.0126 7.17678 11.4874 7.17678 11.7803 7.46967C12.0732 7.76256 12.0732 8.23744 11.7803 8.53033L6.53033 13.7803C6.23744 14.0732 5.76256 14.0732 5.46967 13.7803L0.21967 8.53033C-0.0732233 8.23744 -0.0732233 7.76256 0.21967 7.46967C0.512563 7.17678 0.987437 7.17678 1.28033 7.46967L5.25 11.4393V0.75C5.25 0.335786 5.58579 0 6 0Z"
-      fill="#9CA3AF"
+      fill="#A1A1AA"
     />
   </svg>
 );
@@ -74,7 +74,7 @@ export default function ProtectedContent({
       )}
     >
       <div className={clsx(
-        "bg-gray-200 content-stretch flex flex-col items-center justify-center overflow-clip px-16 relative rounded-[26px] shrink-0 w-full",
+        "bg-zinc-200 content-stretch flex flex-col items-center justify-center overflow-clip px-16 relative rounded-[26px] shrink-0 w-full",
         isMobile ? "py-32" : "py-16"
       )}>
         <div
@@ -94,7 +94,7 @@ export default function ProtectedContent({
               <p className="leading-7 relative shrink-0 text-2xl text-black">
                 {isPassword ? "This case study is password-protected." : "Confidential"}
               </p>
-              <p className="leading-6 relative shrink-0 text-[#6b7280] text-lg">
+              <p className="leading-6 relative shrink-0 text-[#71717a] text-lg">
                 {projectSlug === "apple" ? (
                   <>
                     Please{" "}
@@ -139,7 +139,7 @@ export default function ProtectedContent({
               <div 
                 className={clsx(
                   "bg-white border border-solid content-stretch flex items-center justify-between pl-4 pr-3 py-2 relative rounded-full shrink-0 w-full transition-colors duration-200",
-                  error ? "border-[#f87171]" : "border-transparent focus-within:border-[#d1d5db]"
+                  error ? "border-[#f87171]" : "border-transparent focus-within:border-[#d4d4d8]"
                 )}
               >
                 <input
@@ -147,7 +147,7 @@ export default function ProtectedContent({
                   placeholder="Enter"
                   value={passwordValue}
                   onChange={(e) => setPasswordValue(e.target.value)}
-                  className="leading-5 relative shrink-0 text-[#9ca3af] text-base bg-transparent border-none outline-none flex-1 placeholder:text-[#9ca3af]"
+                  className="leading-5 relative shrink-0 text-[#a1a1aa] text-base bg-transparent border-none outline-none flex-1 placeholder:text-[#a1a1aa]"
                 />
                 <button
                   type="submit"

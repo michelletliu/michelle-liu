@@ -142,7 +142,7 @@ export default function ShelfSection({
 
   // Build options for mobile FilterDropdown
   const mobileFilterOptions = [
-    { value: "", label: title },
+    { value: "", label: title, count },
     ...yearFilters.map((f) => ({ value: f.year, label: f.year, count: f.count })),
   ];
 
@@ -166,14 +166,17 @@ export default function ShelfSection({
                 onClick={() => onYearChange?.("")}
                 className={clsx(
                   "flex shrink-0 items-center justify-center rounded-full px-3 py-1 transition-colors cursor-pointer",
-                  !activeYear ? "bg-gray-500/10" : "hover:bg-gray-500/5"
+                  !activeYear ? "bg-zinc-500/10" : "hover:bg-zinc-500/5"
                 )}
               >
                 <span className={clsx(
                   "font-['Michelle',sans-serif] font-medium text-base tracking-wide whitespace-nowrap",
-                  !activeYear ? "text-gray-500" : "text-gray-400"
+                  !activeYear ? "text-zinc-500" : "text-zinc-400"
                 )}>
                   {title}
+                  {count !== undefined && (
+                    <span className={!activeYear ? "text-zinc-400" : "text-zinc-300"}> ({count})</span>
+                  )}
                 </span>
               </button>
             )}
@@ -187,7 +190,7 @@ export default function ShelfSection({
               <div
                 aria-hidden="true"
                 className={clsx(
-                  "absolute left-0 top-0 z-0 rounded-full bg-gray-500/10 motion-reduce:transition-none",
+                  "absolute left-0 top-0 z-0 rounded-full bg-zinc-500/10 motion-reduce:transition-none",
                   indicatorReady && "transition-[transform,width,opacity] duration-300 ease-out"
                 )}
                 style={{
@@ -207,9 +210,12 @@ export default function ShelfSection({
               >
                 <span className={clsx(
                   "font-['Michelle',sans-serif] font-medium text-base tracking-wide whitespace-nowrap transition-colors duration-200 ease-out",
-                  !activeYear ? "text-gray-500" : "text-gray-400 group-hover:text-gray-500"
+                  !activeYear ? "text-zinc-500" : "text-zinc-400 group-hover:text-zinc-500"
                 )}>
                   {title}
+                  {count !== undefined && (
+                    <span className={!activeYear ? "text-zinc-400" : "text-zinc-300"}> ({count})</span>
+                  )}
                 </span>
               </button>
 
@@ -230,12 +236,12 @@ export default function ShelfSection({
                     <span
                       className={clsx(
                         "font-['Michelle',sans-serif] text-base font-medium tracking-wide whitespace-nowrap transition-colors duration-200 ease-out",
-                        isActive ? "text-gray-600" : "text-gray-400 group-hover:text-gray-500"
+                        isActive ? "text-zinc-600" : "text-zinc-400 group-hover:text-zinc-500"
                       )}
                     >
                       {filter.year}
                       {filter.count !== undefined && (
-                        <span className={isActive ? "text-gray-400" : "text-gray-300"}>
+                        <span className={isActive ? "text-zinc-400" : "text-zinc-300"}>
                           {" "}({filter.count})
                         </span>
                       )}
@@ -257,7 +263,7 @@ export default function ShelfSection({
                 rel="noopener noreferrer"
                 className="cursor-pointer transition-colors bg-white"
               >
-                <span className="font-['Michelle',sans-serif] text-base font-normal tracking-wide text-gray-400 hover:text-blue-500 transition-colors whitespace-nowrap">
+                <span className="font-['Michelle',sans-serif] text-sm md:text-base font-normal tracking-wide text-zinc-400 hover:text-blue-500 transition-colors whitespace-nowrap">
                   {externalLink.label}<ArrowUpRight className="ml-1.5" />
                 </span>
               </a>
@@ -313,7 +319,7 @@ export default function ShelfSection({
           )
         ) : (
           <div className="flex w-full items-start py-2 animate-shelf-item-fade-up">
-            <p className="text-gray-400 text-sm py-4">
+            <p className="text-zinc-400 text-sm py-4">
               No {mediaType}s added yet. Add them in Sanity Studio.
             </p>
           </div>

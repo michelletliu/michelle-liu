@@ -163,7 +163,7 @@ export default function Footer() {
                       src={imgFinalSealLogo1}
                     />
                   </div>
-                  <p className="font-['Michelle',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-[32px] w-[212px]">
+                  <p className="font-['Michelle',sans-serif] font-medium leading-normal relative shrink-0 text-[#3f3f46] text-3xl w-[212px]">
                     michelle liu
                   </p>
                 </a>
@@ -181,10 +181,10 @@ export default function Footer() {
               
               {/* Column 4: Contact + Social */}
               <div className="[grid-area:1_/_4] content-stretch flex flex-col gap-4 items-start relative shrink-0">
-                <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start relative shrink-0 text-gray-400 w-full">
+                <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start relative shrink-0 text-zinc-400 w-full">
                   <p className="leading-6 min-w-full relative shrink-0 text-base w-[min-content]">Let's work together!</p>
                   <p className="leading-6 relative shrink-0 text-base break-all">
-                    <a href="mailto:studio@liumichelle.com" className="group/email hover:text-blue-500 text-gray-600 font-medium transition-colors duration-200">
+                    <a href="mailto:studio@liumichelle.com" className="group/email hover:text-blue-500 text-zinc-600 font-medium transition-colors duration-200">
                       <span>{`studio@liumichelle.com`}</span>
                       <span className="font-['Michelle',sans-serif] font-bold ml-1 opacity-0 group-hover/email:opacity-100 transition-opacity duration-150 ease-out"><ArrowUpRight /></span>
                     </a>
@@ -247,7 +247,7 @@ export default function Footer() {
                       src={imgFinalSealLogo1}
                     />
                   </div>
-                  <p className="font-['Michelle',sans-serif] font-medium leading-normal relative shrink-0 text-[#374151] text-[32px] w-[212px]">
+                  <p className="font-['Michelle',sans-serif] font-medium leading-normal relative shrink-0 text-[#3f3f46] text-3xl w-[212px]">
                     michelle liu
                   </p>
                 </a>
@@ -259,10 +259,10 @@ export default function Footer() {
               {/* Contact + Social + Nav */}
               <div className="content-stretch flex flex-col gap-10 items-start relative shrink-0">
                 <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0">
-                  <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start relative shrink-0 text-gray-400 w-[326px]">
+                  <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start relative shrink-0 text-zinc-400 w-[326px]">
                     <p className="leading-6 relative shrink-0 text-base w-full">Let's work together!</p>
                     <p className="leading-6 relative shrink-0 text-base w-full break-all">
-                      <a href="mailto:studio@liumichelle.com" className="group/email hover:text-blue-500 text-gray-600 font-medium transition-colors duration-200">
+                      <a href="mailto:studio@liumichelle.com" className="group/email hover:text-blue-500 text-zinc-600 font-medium transition-colors duration-200">
                         <span>{`studio@liumichelle.com`}</span>
                         <span className="font-['Michelle',sans-serif] font-bold ml-0 group-hover/email:ml-1.5 opacity-0 group-hover/email:opacity-100 transition-all duration-150 ease-out"><ArrowUpRight /></span>
                       </a>
@@ -318,11 +318,11 @@ export default function Footer() {
             </div>
           </ScrollReveal>
           <ScrollReveal variant="fade" delay={200} className="content-stretch flex flex-col gap-0.5 items-center relative shrink-0">
-            <p className="font-['Michelle',sans-serif] font-normal leading-7 relative shrink-0 text-gray-400 text-sm">
+            <p className="font-['Michelle',sans-serif] font-normal leading-7 relative shrink-0 text-zinc-400 text-sm">
               <span>{`Built with Next.js & `}</span>
               <span className="group">
                 <a
-                  className="[text-underline-position:from-font] cursor-pointer font-medium text-gray-600 group-hover:!text-emerald-600 transition-colors"
+                  className="[text-underline-position:from-font] cursor-pointer font-medium text-zinc-600 group-hover:!text-emerald-600 transition-colors"
                   href="https://www.rockysmatcha.com/blogs/matcha-guide/how-to-make-matcha-guide"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -330,18 +330,18 @@ export default function Footer() {
                   rocky's matcha
                 </a>
                 <span>{` lattes.`}</span>
-                <span className="text-gray-400">{` ☕︎`}</span>
+                <span className="text-zinc-400">{` ☕︎`}</span>
               </span>
             </p>
             <a 
               href="https://github.com/michelletliu/michelle-liu"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-gray-600 transition-colors"
+              className="hover:text-zinc-600 transition-colors"
             >
               <TextScramble 
                 text={changelogText}
-                className="font-['Michelle',sans-serif] font-normal leading-5 tracking-wider relative shrink-0 text-[#9ca3af] text-xs text-nowrap"
+                className="font-['Michelle',sans-serif] font-normal leading-5 tracking-wider relative shrink-0 text-[#a1a1aa] text-xs text-nowrap"
               />
             </a>
           </ScrollReveal>

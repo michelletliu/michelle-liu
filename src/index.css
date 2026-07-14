@@ -83,11 +83,11 @@
 
 /* Custom shadow utility */
 .shadow-default {
-  box-shadow: 0px 4px 16px 0px rgba(209, 213, 219, 0.65);
+  box-shadow: 0px 4px 16px 0px rgba(212, 212, 216, 0.65);
 }
 
 .shadow-default-hover:hover {
-  box-shadow: 0px 4px 16px 0px rgba(156, 163, 175, 0.40) !important;
+  box-shadow: 0px 4px 16px 0px rgba(161, 161, 170, 0.40) !important;
 }
 
 /* Prevent horizontal scrolling on the page - use clip instead of hidden to preserve sticky */
@@ -98,7 +98,7 @@ body {
 
 /* Aesthetic focus rings - subtle radius and offset for keyboard navigation */
 *:focus-visible {
-  outline: 2px solid #d1d5db; /* gray-300 */
+  outline: 2px solid #d4d4d8; /* zinc-300 */
   outline-offset: 2px;
   border-radius: 2px;
 }
@@ -256,11 +256,11 @@ video {
 .animate-shimmer {
   background: linear-gradient(
     105deg,
-    #f3f4f6 0%,
-    #e5e7eb 25%,
-    #f9fafb 50%,
-    #e5e7eb 75%,
-    #f3f4f6 100%
+    #f4f4f5 0%,
+    #e4e4e7 25%,
+    #fafafa 50%,
+    #e4e4e7 75%,
+    #f4f4f5 100%
   );
   background-size: 200% 100%;
   animation: shimmer 2s ease-in-out infinite;

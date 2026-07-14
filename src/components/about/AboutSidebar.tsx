@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import Sidebar, { type SidebarNode } from "../Sidebar";
 
 // Sidebar navigation categories
 export type AboutCategory = "hi" | "experience" | "community" | "philosophy" | "shelf" | "lore";
@@ -36,8 +36,8 @@ export type AboutSidebarProps = {
   shelfCounts?: Partial<Record<ShelfSubcategory, number>>;
 };
 
-export default function AboutSidebar({ 
-  activeCategory, 
+export default function AboutSidebar({
+  activeCategory,
   onCategoryClick,
   communityItems = [],
   activeCommunityId,
@@ -46,185 +46,72 @@ export default function AboutSidebar({
   onShelfSubcategoryClick,
   shelfCounts,
 }: AboutSidebarProps) {
-  const categoriesBeforeCommunity: { id: AboutCategory; label: string }[] = [
-    { id: "hi", label: "Hi!" },
-    { id: "experience", label: "Experience" },
+  const isCommunityActive = activeCategory === "community";
+  const isShelfActive = activeCategory === "shelf";
+
+  // Only communities with a sidebar name are shown.
+  const visibleCommunities = communityItems.filter((c) => c.sidebarName);
+
+  const nodes: SidebarNode[] = [
+    { kind: "item", id: "hi", label: "Hi!" },
+    { kind: "item", id: "experience", label: "Experience" },
+    {
+      kind: "group",
+      id: "community",
+      label: "Community",
+      active: isCommunityActive,
+      expanded: isCommunityActive && visibleCommunities.length > 0,
+      children: visibleCommunities.map((c) => ({ id: c.id, label: c.sidebarName })),
+    },
+    { kind: "item", id: "philosophy", label: "Philosophy" },
+    {
+      kind: "group",
+      id: "shelf",
+      label: "Shelf",
+      active: isShelfActive,
+      expanded: isShelfActive,
+      children: SHELF_SUBCATEGORIES.map((s) => ({
+        id: s.id,
+        label: s.label,
+        count: shelfCounts?.[s.id],
+      })),
+    },
+    { kind: "item", id: "lore", label: "Lore" },
   ];
 
-  // Check if community is active
-  const isCommunityActive = activeCategory === "community";
-  // Check if shelf is active
-  const isShelfActive = activeCategory === "shelf";
-  
-  // Filter communities that have sidebar names
-  const visibleCommunities = communityItems.filter(c => c.sidebarName);
+  // Which leaf reads as active depends on the current section.
+  let activeId: string = activeCategory;
+  if (isCommunityActive && activeCommunityId) activeId = activeCommunityId;
+  if (isShelfActive && activeShelfSubcategory) activeId = activeShelfSubcategory;
 
-  return (
-    <nav className="flex flex-col gap-3 items-start">
-      {/* Main categories before COMMUNITY */}
-      {categoriesBeforeCommunity.map((cat) => (
-        <button
-          key={cat.id}
-          onClick={() => onCategoryClick(cat.id)}
-          className="flex items-center px-0.5 py-0 cursor-pointer"
-        >
-          <span
-            className={clsx(
-              "text-base font-medium tracking-wide leading-5 transition-colors",
-              activeCategory === cat.id
-                ? "text-blue-500"
-                : "text-gray-400 hover:text-gray-500"
-            )}
-          >
-            {cat.label}
-          </span>
-        </button>
-      ))}
+  const handleSelect = (id: string) => {
+    switch (id) {
+      case "hi":
+      case "experience":
+      case "philosophy":
+      case "lore":
+        onCategoryClick(id as AboutCategory);
+        break;
+      case "community":
+        onCategoryClick("community");
+        if (visibleCommunities.length > 0) onCommunityClick?.(visibleCommunities[0].id);
+        break;
+      case "shelf":
+        onCategoryClick("shelf");
+        onShelfSubcategoryClick?.("books");
+        break;
+      case "books":
+      case "music":
+      case "movies":
+        onCategoryClick("shelf");
+        onShelfSubcategoryClick?.(id as ShelfSubcategory);
+        break;
+      default:
+        // Community child (Sanity id)
+        onCategoryClick("community");
+        onCommunityClick?.(id);
+    }
+  };
 
-      {/* COMMUNITY Header - clickable, darker when community is active */}
-      <button
-        onClick={() => {
-          onCategoryClick("community");
-          // Select first community if available
-          if (visibleCommunities.length > 0) {
-            onCommunityClick?.(visibleCommunities[0].id);
-          }
-        }}
-        className="flex items-center px-0.5 py-0 cursor-pointer"
-      >
-        <span
-          className={clsx(
-            "text-base font-medium tracking-wide leading-5 transition-colors",
-            isCommunityActive ? "text-gray-500" : "text-gray-400 hover:text-gray-500"
-          )}
-        >
-          Community
-        </span>
-      </button>
-
-      {/* Community Subcategories (indented) - with smooth collapse/expand animation */}
-      {visibleCommunities.length > 0 && (
-        <div
-          className={clsx(
-            "flex flex-col gap-3 overflow-hidden transition-all duration-300 ease-in-out",
-            isCommunityActive ? "max-h-96 opacity-100 mt-0" : "max-h-0 opacity-0 -mt-3"
-          )}
-        >
-          {visibleCommunities.map((community) => {
-            const isActive = activeCommunityId === community.id;
-
-            return (
-              <button
-                key={community.id}
-                onClick={() => {
-                  onCategoryClick("community");
-                  onCommunityClick?.(community.id);
-                }}
-                className="flex items-center px-0.5 py-0 rounded-full cursor-pointer transition-colors pl-3"
-              >
-                <span
-                  className={clsx(
-                    "text-base font-medium tracking-wide leading-5 text-left transition-colors",
-                    isActive ? "text-blue-500" : "text-gray-400 hover:text-gray-500"
-                  )}
-                >
-                  {community.sidebarName}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* PHILOSOPHY */}
-      <button
-        onClick={() => onCategoryClick("philosophy")}
-        className="flex items-center px-0.5 py-0 cursor-pointer"
-      >
-        <span
-          className={clsx(
-            "text-base font-medium tracking-wide leading-5 transition-colors",
-            activeCategory === "philosophy"
-              ? "text-blue-500"
-              : "text-gray-400 hover:text-gray-500"
-          )}
-        >
-          Philosophy
-        </span>
-      </button>
-
-      {/* SHELF Header - clickable, darker when shelf is active */}
-      <button
-        onClick={() => {
-          onCategoryClick("shelf");
-          // Also trigger first subcategory when clicking header
-          onShelfSubcategoryClick?.("books");
-        }}
-        className="flex items-center px-0.5 py-0 cursor-pointer"
-      >
-        <span
-          className={clsx(
-            "text-base font-medium tracking-wide leading-5 transition-colors",
-            isShelfActive ? "text-gray-500" : "text-gray-400 hover:text-gray-500"
-          )}
-        >
-          Shelf
-        </span>
-      </button>
-
-      {/* Shelf Subcategories (indented) - with smooth collapse/expand animation */}
-      <div
-        className={clsx(
-          "flex flex-col gap-3 overflow-hidden transition-all duration-300 ease-in-out",
-          isShelfActive ? "max-h-40 opacity-100 mt-0" : "max-h-0 opacity-0 -mt-3"
-        )}
-      >
-        {SHELF_SUBCATEGORIES.map((subcat) => {
-          const isActive = activeShelfSubcategory === subcat.id;
-          const count = shelfCounts?.[subcat.id];
-          const showCount = count !== undefined && count > 0;
-
-          return (
-            <button
-              key={subcat.id}
-              onClick={() => {
-                onCategoryClick("shelf");
-                onShelfSubcategoryClick?.(subcat.id);
-              }}
-              className="flex items-center px-0.5 py-0 rounded-full cursor-pointer transition-colors pl-3"
-            >
-              <span
-                className={clsx(
-                  "text-base font-medium tracking-wide leading-5 text-left transition-colors",
-                  isActive ? "text-blue-500" : "text-gray-400 hover:text-gray-500"
-                )}
-              >
-                {subcat.label}
-                {showCount && (
-                  <span className="text-gray-300 ml-1">({count})</span>
-                )}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* LORE */}
-      <button
-        onClick={() => onCategoryClick("lore")}
-        className="flex items-center px-0.5 py-0 cursor-pointer"
-      >
-        <span
-          className={clsx(
-            "text-base font-medium tracking-wide leading-5 transition-colors",
-            activeCategory === "lore"
-              ? "text-blue-500"
-              : "text-gray-400 hover:text-gray-500"
-          )}
-        >
-          Lore
-        </span>
-      </button>
-    </nav>
-  );
+  return <Sidebar nodes={nodes} activeId={activeId} onSelect={handleSelect} />;
 }

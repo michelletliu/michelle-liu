@@ -23,7 +23,7 @@ export default function StartupCard({ className, data }: StartupCardProps) {
         className
       )}
     >
-      <div className="relative size-12 md:size-16 shrink-0 overflow-hidden rounded-full bg-gray-100">
+      <div className="relative size-12 md:size-16 shrink-0 overflow-hidden rounded-full bg-zinc-100">
         {data.logoSrc ? (
           <img
             src={data.logoSrc}
@@ -31,11 +31,11 @@ export default function StartupCard({ className, data }: StartupCardProps) {
             className="h-full w-full object-cover transition-transform duration-200 ease-out group-hover:scale-[1.04]"
           />
         ) : (
-          <div className="h-full w-full bg-gray-200" />
+          <div className="h-full w-full bg-zinc-200" />
         )}
       </div>
 
-      <span className="whitespace-nowrap text-sm md:text-base text-gray-600 font-medium tracking-[0.005em] text-center transition-colors duration-200 group-hover:text-blue-500">
+      <span className="whitespace-nowrap text-sm md:text-base text-zinc-600 font-medium tracking-[0.005em] text-center transition-colors duration-200 group-hover:text-blue-500">
         {data.name}
       </span>
     </div>
@@ -47,7 +47,7 @@ export default function StartupCard({ className, data }: StartupCardProps) {
         href={data.link}
         target="_blank"
         rel="noopener noreferrer"
-        className="block md:flex-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
+        className="block md:flex-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2"
       >
         {content}
       </a>

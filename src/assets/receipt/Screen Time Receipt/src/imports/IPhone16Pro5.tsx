@@ -216,7 +216,7 @@ function Separator() {
 
 export default function IPhone16Pro() {
   return (
-    <div className="bg-[#f3f4f6] relative size-full" data-name="iPhone 16 Pro - 5">
+    <div className="bg-[#f4f4f5] relative size-full" data-name="iPhone 16 Pro - 5">
       <div className="absolute content-stretch flex gap-[154px] items-center justify-center left-1/2 pb-[19px] pt-[21px] px-[16px] top-0 translate-x-[-50%] w-[402px]" data-name="Status bar - iPhone">
         <div className="basis-0 content-stretch flex grow h-[22px] items-center justify-center min-h-px min-w-px pb-0 pt-[2px] px-0 relative shrink-0" data-name="Time">
           <p className="font-['SF_Pro:Semibold',sans-serif] font-[590] leading-[22px] relative shrink-0 text-[17px] text-black text-center text-nowrap" style={{ fontVariationSettings: "'wdth' 100" }}>
@@ -465,7 +465,7 @@ export default function IPhone16Pro() {
               <div className="content-stretch flex flex-col items-center pb-0 pl-[12px] pr-0 pt-[14px] relative self-stretch shrink-0" data-name="Thumbnail">
                 <div className="pointer-events-none relative rounded-[16px] shrink-0 size-[64px]" data-name="Thumbnail">
                   <div aria-hidden="true" className="absolute inset-0 rounded-[16px]">
-                    <div className="absolute bg-[#f3f4f6] inset-0 rounded-[16px]" />
+                    <div className="absolute bg-[#f4f4f5] inset-0 rounded-[16px]" />
                     <ThumbnailBackgroundImage />
                     <ThumbnailBackgroundImage additionalClassNames="mix-blend-multiply" />
                   </div>

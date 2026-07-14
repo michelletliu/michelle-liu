@@ -329,7 +329,7 @@ html {
 
 .gradient-text-animated {
   transition: 0.1s;
-  background: linear-gradient(-60deg, violet, #FFD2F2, #ECCBFF, #AADBFD, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af, #9ca3af);
+  background: linear-gradient(-60deg, violet, #FFD2F2, #ECCBFF, #AADBFD, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa);
   background-size: 125% 125%;
   animation: gradient-intro 6s ease infinite;
   -webkit-background-clip: text;
@@ -581,8 +581,8 @@ p a:hover {
   display: inline;
   background-image: linear-gradient(
     to right,
-    #d1d5db 0%,
-    #d1d5db 100%
+    #d4d4d8 0%,
+    #d4d4d8 100%
   );
   background-repeat: no-repeat;
   background-position: 0 100%;

@@ -56,6 +56,13 @@ export const shelfItem = defineType({
       type: 'string',
     }),
     defineField({
+      name: 'dateStarted',
+      title: 'Date Started',
+      description: 'Optional date started reading. Not available from Goodreads — set manually. When present, the Library shows "started → finished".',
+      type: 'date',
+      hidden: ({document}) => document?.mediaType !== 'book',
+    }),
+    defineField({
       name: 'dateRead',
       title: 'Date Read',
       description: 'Specific date finished reading (from Goodreads)',

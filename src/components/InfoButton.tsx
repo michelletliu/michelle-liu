@@ -5,7 +5,7 @@ import ShimmerVideo from './ShimmerVideo';
 import { ArrowUpRight } from './ArrowUpRight';
 import { useScrollLock } from '../utils/useScrollLock';
 
-// Info icon SVG component - gray-400 color, 20px
+// Info icon SVG component - zinc-400 color, 20px
 function InfoIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -53,13 +53,13 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   return (
     <>
       <PopupLine />
-      <div className="font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 text-[15px] w-full mt-2 hidden md:grid">
+      <div className="font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 text-base w-full mt-2 hidden md:grid">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
-            <p className="leading-5 text-sm relative shrink-0 text-[#9ca3af]">
+            <p className="leading-5 text-sm relative shrink-0 text-[#a1a1aa]">
               {category.label}
             </p>
-            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#6b7280]">
+            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#71717a]">
               {category.tools.map((tool, toolIdx) => (
                 <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
                   <p className="leading-[21px] whitespace-nowrap">{tool}</p>
@@ -72,10 +72,10 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
       <div className="font-['Michelle',sans-serif] font-normal flex flex-col gap-1.5 relative shrink-0 text-sm w-full mt-2 md:hidden">
         {categories.map((category, idx) => (
           <div key={idx} className="flex items-baseline gap-6">
-            <p className="leading-5 shrink-0 text-[#9ca3af] w-[72px]">
+            <p className="leading-5 shrink-0 text-[#a1a1aa] w-[72px]">
               {category.label}
             </p>
-            <p className="leading-5 text-[#6b7280] tracking-[-0.31px]">
+            <p className="leading-5 text-[#71717a] tracking-[-0.31px]">
               {category.tools.join(', ')}
             </p>
           </div>
@@ -173,7 +173,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
       {/* Info Button - fixed top right */}
       <button
         onClick={handleOpen}
-        className="fixed top-8 right-8 md:right-16 z-50 cursor-pointer transition-colors duration-200 hover:bg-gray-200/50 rounded-full p-2 -m-1 text-gray-400"
+        className="fixed top-8 right-8 md:right-16 z-50 cursor-pointer transition-colors duration-200 hover:bg-zinc-200/50 rounded-full p-2 -m-1 text-zinc-400"
         aria-label="Project info"
       >
         <InfoIcon />
@@ -211,16 +211,16 @@ export default function InfoButton({ project }: InfoButtonProps) {
                     <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-black">
                       {project.title}
                     </p>
-                    <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#9ca3af] text-base">
+                    <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base">
                       •
                     </p>
-                    <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#9ca3af] text-base">
+                    <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#a1a1aa] text-base">
                       {project.year}
                     </p>
                   </div>
 
                   {/* Description */}
-                  <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#6b7280] max-md:text-sm md:text-base">
+                  <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#71717a] max-md:text-sm md:text-base">
                     {project.description}
                   </p>
                 </div>
@@ -233,7 +233,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                     rel="noopener noreferrer"
                     className="hidden md:flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
                   >
-                    <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
+                    <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
                       View on
                     </span>
                     <svg
@@ -257,7 +257,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   rel="noopener noreferrer"
                   className="md:hidden self-start mb-2 bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 mt-1.5 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
                 >
-                  <span className="font-['Manrope',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
+                  <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
                     View on
                   </span>
                   <svg 
@@ -279,7 +279,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
 
               {/* Video/Image content area */}
               {project.imageSrc && (
-              <div className="relative rounded-[16px] border border-gray-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-gray-100 shrink-0 mt-3">
+              <div className="relative rounded-[16px] border border-zinc-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0 mt-3">
                 <ShimmerImage
                   alt=""
                   className="absolute object-cover size-full"

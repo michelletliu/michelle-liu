@@ -19,7 +19,7 @@ const DEFAULT_SCREENTIME_PROJECT = {
   videoSrc: 'https://stream.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI.m3u8',
   xLink: 'https://x.com/michelletliu/status/2000987498550383032',
   tryItOutHref: '/screentime',
-  backgroundColor: '#f3f4f6',
+  backgroundColor: '#f4f4f5',
   toolCategories: [
     { label: 'Design', tools: ['Figma'] },
     { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -557,7 +557,7 @@ function StatusBar() {
   
   return (
     <div className="md:hidden">
-      <div className="absolute bg-gradient-to-b from-[#f3f4f6] from-[32.87%] h-[108px] left-1/2 to-transparent top-0 -translate-x-1/2 w-[402px] max-w-full" />
+      <div className="absolute bg-gradient-to-b from-[#f4f4f5] from-[32.87%] h-[108px] left-1/2 to-transparent top-0 -translate-x-1/2 w-[402px] max-w-full" />
       <div className="absolute flex gap-[154px] items-center justify-center left-1/2 pb-[19px] pt-[21px] px-[16px] top-0 -translate-x-1/2 w-[402px] max-w-full">
         <div className="basis-0 flex grow h-[22px] items-center justify-center min-h-px min-w-px pb-0 pt-[2px] px-0 relative shrink-0">
           <p className="font-mono font-semibold leading-[22px] relative shrink-0 text-[17px] text-black text-center text-nowrap">
@@ -673,7 +673,7 @@ function GenerateScreen({
           className="flex items-center justify-center gap-3.5 px-6 py-2 relative shrink-0 cursor-pointer transition-colors group"
         >
           <img src={uploadIconSvg} alt="" className="h-[15px] w-auto opacity-50 group-hover:opacity-70 transition-opacity" />
-          <p className="font-mono leading-normal font-semibold relative shrink-0 text-[15px] text-center text-nowrap text-gray-500 group-hover:text-gray-700 transition-colors">Upload Actual Data</p>
+          <p className="font-mono leading-normal font-semibold relative shrink-0 text-[15px] text-center text-nowrap text-zinc-500 group-hover:text-zinc-700 transition-colors">Upload Actual Data</p>
         </button>
     </div>
   );
@@ -863,10 +863,10 @@ function ReceiptScreen({
             <div className="flex flex-col gap-[24px] items-center relative shrink-0 w-full">
               <div className="flex flex-col font-mono gap-[4px] items-center relative shrink-0 text-center w-[201px] max-w-full">
                 <p className="leading-[22px] min-w-full relative shrink-0 text-[17px] text-black font-semibold">DIGITAL RECEIPT</p>
-                <p className="leading-[22px] relative shrink-0 text-[13px] text-gray-400 text-nowrap">
+                <p className="leading-[22px] relative shrink-0 text-[13px] text-zinc-400 text-nowrap">
                   {data.period === 'weekly' ? 'Weekly' : 'Daily'} Screen Time Summary
                 </p>
-                <div className="leading-[22px] relative shrink-0 text-[13px] text-gray-500 text-nowrap">
+                <div className="leading-[22px] relative shrink-0 text-[13px] text-zinc-500 text-nowrap">
                   <p className="mb-0">{data.startDate} - {data.endDate}</p>
                   <p>Generated {data.generatedTime}</p>
                 </div>
@@ -947,8 +947,8 @@ function ReceiptScreen({
                 </div>
               </div>
               <div className="flex flex-col font-mono gap-[16px] items-start relative shrink-0 text-center w-full ">
-                <p className="leading-[22px] relative shrink-0 text-[17px] font-semibold text-gray-500 w-full">{recommendation.main}</p>
-                <div className="leading-[22px] relative shrink-0 text-[15px] text-gray-400 font-medium w-full whitespace-pre-line">
+                <p className="leading-[22px] relative shrink-0 text-[17px] font-semibold text-zinc-500 w-full">{recommendation.main}</p>
+                <div className="leading-[22px] relative shrink-0 text-[15px] text-zinc-400 font-medium w-full whitespace-pre-line">
                   <p className="mb-0">Recommendation:</p>
                   <p>{recommendation.message}</p>
                 </div>
@@ -966,7 +966,7 @@ function ReceiptScreen({
               saveSuccess ? 'bg-[#08f]' : isSaving ? 'bg-[#ededed]' : 'bg-[#ededed] group-hover:bg-[#e0e0e0]'
             }`}>
               {isSaving ? (
-                <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-zinc-300 border-t-zinc-500 rounded-full animate-spin" />
               ) : saveSuccess ? (
                 <img src={savedCheckSvg} alt="Saved" className="w-[22px] h-[21px]" />
               ) : (
@@ -1042,7 +1042,7 @@ function ShareSheet({ onClose }: { onClose: () => void }) {
           <h3 className="font-mono text-[15px] font-semibold">Screen Time Receipt</h3>
         </div>
         
-        <p className="text-center text-[13px] text-gray-400 font-mono py-2">Weekly Time Summary</p>
+        <p className="text-center text-[13px] text-zinc-400 font-mono py-2">Weekly Time Summary</p>
         
         <div className="px-8 py-3">
           <div className="flex gap-4 overflow-x-auto pb-2">
@@ -1051,7 +1051,7 @@ function ShareSheet({ onClose }: { onClose: () => void }) {
                 <div className="w-[60px] h-[60px] rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-3xl">
                   {contact.emoji}
                 </div>
-                <span className="text-[11px] text-gray-700 font-mono truncate w-full text-center">
+                <span className="text-[11px] text-zinc-700 font-mono truncate w-full text-center">
                   {contact.name}
                 </span>
               </button>
@@ -1066,7 +1066,7 @@ function ShareSheet({ onClose }: { onClose: () => void }) {
                 <div className={`w-[60px] h-[60px] rounded-[15px] ${app.color} flex items-center justify-center text-3xl shadow-sm`}>
                   {app.icon}
                 </div>
-                <span className="text-[11px] text-gray-700 font-mono">
+                <span className="text-[11px] text-zinc-700 font-mono">
                   {app.name}
                 </span>
               </button>
@@ -1078,11 +1078,11 @@ function ShareSheet({ onClose }: { onClose: () => void }) {
           {actions.map((action, idx) => (
             <button
               key={idx}
-              className="flex items-center gap-3 w-full py-3 px-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-3 w-full py-3 px-2 hover:bg-zinc-100 rounded-lg transition-colors"
               onClick={() => handleAction(action.name)}
             >
               <span className="text-2xl">{action.icon}</span>
-              <span className="text-[15px] text-gray-900 font-mono">
+              <span className="text-[15px] text-zinc-900 font-mono">
                 {action.name}
               </span>
             </button>
@@ -1352,7 +1352,7 @@ function UploadInstructions({
           <div className="space-y-3.5">
             <h3 className="text-base text-black">iPhone</h3>
             <div className="border-t border-zinc-100" />
-            <ol className="space-y-1 pl-10 list-decimal text-gray-500 leading-normal">
+            <ol className="space-y-1 pl-10 list-decimal text-zinc-500 leading-normal">
               <li>Open <strong>Settings</strong></li>
               <li>Scroll down and tap <strong>Screen Time</strong></li>
               <li>Tap <strong>See All Activity</strong></li>
@@ -1363,7 +1363,7 @@ function UploadInstructions({
           <div className="space-y-3.5">
             <h3 className="text-base text-black">Android</h3>
             <div className="border-t border-zinc-100" />
-            <ol className="space-y-1 pl-10 list-decimal text-gray-500 leading-normal">
+            <ol className="space-y-1 pl-10 list-decimal text-zinc-500 leading-normal">
               <li>Open <strong>Settings</strong></li>
               <li>Tap <strong>Digital Wellbeing & parental controls</strong></li>
               <li>Take a screenshot (Power + Volume Down)</li>
@@ -1390,7 +1390,7 @@ function UploadInstructions({
           )}
 
           <label className="flex items-center justify-center">
-            <div className={`${isProcessing ? 'bg-gray-400' : 'bg-gray-900 hover:bg-gray-800'} transition-colors flex items-center justify-center px-5 pt-3.5 pb-[13.5px] rounded-full cursor-pointer`}>
+            <div className={`${isProcessing ? 'bg-zinc-400' : 'bg-zinc-900 hover:bg-zinc-800'} transition-colors flex items-center justify-center px-5 pt-3.5 pb-[13.5px] rounded-full cursor-pointer`}>
               <p className="text-[15px] leading-none text-center text-white tracking-[0.75px]">
                 {isProcessing ? 'PROCESSING...' : 'UPLOAD SCREENSHOT'}
               </p>
@@ -1536,12 +1536,12 @@ export default function ScreentimePage() {
           isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
         }`}
         style={{ 
-          backgroundColor: projectInfo.backgroundColor || '#f3f4f6',
+          backgroundColor: projectInfo.backgroundColor || '#f4f4f5',
           transitionDuration: isExiting ? '280ms' : '300ms',
           transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out'
         }}
       >
-        <div className="relative w-full max-w-[402px] mx-auto bg-gray-100">
+        <div className="relative w-full max-w-[402px] mx-auto bg-zinc-100">
           {/* Hide status bar on mobile - users already have their real one */}
           <div className="hidden md:block">
             <StatusBar />

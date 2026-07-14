@@ -2,6 +2,18 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import type { Book } from "./types";
 import ShimmerImage from "../ShimmerImage";
+import { ArrowRightIcon } from "./icons";
+
+// Format a YYYY-MM-DD date string. Force UTC so the stored calendar date isn't
+// shifted a day earlier when rendered in a negative-offset timezone.
+function formatBookDate(date: string): string {
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
 
 interface BookDetailModalProps {
   book: Book;
@@ -71,7 +83,7 @@ function parseInlineFormatting(text: string, keyPrefix: string): React.ReactNode
     } else if (tag === 'b') {
       result.push(<span key={key} className="font-semibold">{innerContent}</span>);
     } else if (tag === 'l') {
-      result.push(<span key={key} className="text-gray-400 text-sm not-italic uppercase">{innerContent}</span>);
+      result.push(<span key={key} className="text-zinc-400 text-sm not-italic uppercase">{innerContent}</span>);
     }
     
     remaining = afterOpenTag.slice(closeIndex + closeTag.length);
@@ -212,7 +224,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                 {formatText(book.title)}
               </h2>
               <p 
-                className="font-['SF_Pro:Regular',sans-serif] text-lg text-gray-500"
+                className="font-['SF_Pro:Regular',sans-serif] text-lg text-zinc-500"
                 style={{ fontVariationSettings: "'wdth' 100" }}
               >
                 {book.author}
@@ -225,14 +237,14 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
             {book.rating > 0 && (
               <div className="flex items-center">
                 <span 
-                  className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-gray-400 w-[100px] shrink-0"
+                  className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-zinc-400 w-[100px] shrink-0"
                   style={{ fontVariationSettings: "'wdth' 100" }}
                 >
                   Rating
                 </span>
-                <span className="font-['DM_Sans:Medium','Noto_Sans_Symbols2:Regular',sans-serif] text-lg">
-                  <span className="text-gray-600">{"★".repeat(book.rating)}</span>
-                  <span className="text-gray-200">{"★".repeat(5 - book.rating)}</span>
+                <span className="font-['Michelle',sans-serif] text-lg">
+                  <span className="text-zinc-600">{"★".repeat(book.rating)}</span>
+                  <span className="text-zinc-200">{"★".repeat(5 - book.rating)}</span>
                 </span>
               </div>
             )}
@@ -241,19 +253,19 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
             {(book.isFavorite || book.year) && (
               <div className="flex items-center">
                 <span 
-                  className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-gray-400 w-[100px] shrink-0"
+                  className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-zinc-400 w-[100px] shrink-0"
                   style={{ fontVariationSettings: "'wdth' 100" }}
                 >
                   Shelf
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {book.isFavorite && (
-                    <span className="bg-gray-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-base text-gray-600" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <span className="bg-zinc-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-base text-zinc-600" style={{ fontVariationSettings: "'wdth' 100" }}>
                       favorites
                     </span>
                   )}
                   {book.year && (
-                    <span className="bg-gray-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-base text-gray-600" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <span className="bg-zinc-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-base text-zinc-600" style={{ fontVariationSettings: "'wdth' 100" }}>
                       {book.year}
                     </span>
                   )}
@@ -262,34 +274,35 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
             )}
             
             {/* Dates Read */}
-            {(book.dateStarted || book.dateFinished || book.dateRead) && (
-              <div className="flex items-start">
-                <span 
-                  className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-gray-400 w-[100px] shrink-0"
-                  style={{ fontVariationSettings: "'wdth' 100" }}
-                >
-                  {book.dateStarted && book.dateFinished ? 'Dates Read' : 'Date Read'}
-                </span>
-                <span 
-                  className="font-['SF_Pro:Regular',sans-serif] text-base text-gray-600"
-                  style={{ fontVariationSettings: "'wdth' 100" }}
-                >
-                  {book.dateStarted && book.dateFinished ? (
-                    <>
-                      {new Date(book.dateStarted).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                      {' → '}
-                      {new Date(book.dateFinished).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                    </>
-                  ) : (
-                    new Date(book.dateFinished || book.dateRead || '').toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })
-                  )}
-                </span>
-              </div>
-            )}
+            {(() => {
+              const finished = book.dateFinished || book.dateRead;
+              const hasRange = Boolean(book.dateStarted && finished);
+              if (!book.dateStarted && !finished) return null;
+              return (
+                <div className="flex items-start">
+                  <span 
+                    className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-zinc-400 w-[100px] shrink-0"
+                    style={{ fontVariationSettings: "'wdth' 100" }}
+                  >
+                    {hasRange ? 'Dates Read' : 'Date Read'}
+                  </span>
+                  <span 
+                    className="font-['SF_Pro:Regular',sans-serif] text-base text-zinc-600"
+                    style={{ fontVariationSettings: "'wdth' 100" }}
+                  >
+                    {hasRange ? (
+                      <span className="inline-flex items-center">
+                        {formatBookDate(book.dateStarted!)}
+                        <ArrowRightIcon className="mx-1.5 size-4 shrink-0 text-zinc-400" />
+                        {formatBookDate(finished!)}
+                      </span>
+                    ) : (
+                      formatBookDate((finished || book.dateStarted)!)
+                    )}
+                  </span>
+                </div>
+              );
+            })()}
             
             </div>
           </div>
@@ -328,7 +341,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                 {formatText(book.title)}
               </h2>
               <p 
-                className="font-['SF_Pro:Regular',sans-serif] text-lg text-gray-500"
+                className="font-['SF_Pro:Regular',sans-serif] text-lg text-zinc-500"
                 style={{ fontVariationSettings: "'wdth' 100" }}
               >
                 {book.author}
@@ -341,14 +354,14 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
               {book.rating > 0 && (
                 <div className="flex flex-row gap-6 md:gap-8 lg:gap-10 items-center">
                   <span 
-                    className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-gray-400 w-[88px] shrink-0"
+                    className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-zinc-400 w-[88px] shrink-0"
                     style={{ fontVariationSettings: "'wdth' 100" }}
                   >
                     Rating
                   </span>
-                  <span className="font-['DM_Sans:Medium','Noto_Sans_Symbols2:Regular',sans-serif] text-[19px] md:text-xl">
-                    <span className="text-gray-600">{"★".repeat(book.rating)}</span>
-                    <span className="text-gray-200">{"★".repeat(5 - book.rating)}</span>
+                  <span className="font-['Michelle',sans-serif] text-xl">
+                    <span className="text-zinc-600">{"★".repeat(book.rating)}</span>
+                    <span className="text-zinc-200">{"★".repeat(5 - book.rating)}</span>
                   </span>
                 </div>
               )}
@@ -357,19 +370,19 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
               {(book.isFavorite || book.year) && (
                 <div className="flex flex-row gap-6 md:gap-8 lg:gap-10 items-center">
                   <span 
-                    className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-gray-400 w-[88px] shrink-0"
+                    className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-zinc-400 w-[88px] shrink-0"
                     style={{ fontVariationSettings: "'wdth' 100" }}
                   >
                     Shelf
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {book.isFavorite && (
-                      <span className="bg-gray-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-[16px] text-gray-600" style={{ fontVariationSettings: "'wdth' 100" }}>
+                      <span className="bg-zinc-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-base text-zinc-600" style={{ fontVariationSettings: "'wdth' 100" }}>
                         favorites
                       </span>
                     )}
                     {book.year && (
-                      <span className="bg-gray-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-[16px] text-gray-600" style={{ fontVariationSettings: "'wdth' 100" }}>
+                      <span className="bg-zinc-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-base text-zinc-600" style={{ fontVariationSettings: "'wdth' 100" }}>
                         {book.year}
                       </span>
                     )}
@@ -377,35 +390,36 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                 </div>
               )}
               
-              {/* Date Read */}
-              {(book.dateStarted || book.dateFinished || book.dateRead) && (
-                <div className="flex flex-row gap-6 md:gap-8 lg:gap-10 items-center">
-                  <span 
-                    className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-gray-400 w-[88px] shrink-0"
-                    style={{ fontVariationSettings: "'wdth' 100" }}
-                  >
-                    {book.dateStarted && book.dateFinished ? 'Dates Read' : 'Date Read'}
-                  </span>
-                  <span 
-                    className="font-['SF_Pro:Regular',sans-serif] text-base text-gray-600"
-                    style={{ fontVariationSettings: "'wdth' 100" }}
-                  >
-                    {book.dateStarted && book.dateFinished ? (
-                      <>
-                        {new Date(book.dateStarted).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                        {' → '}
-                        {new Date(book.dateFinished).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                      </>
-                    ) : (
-                      new Date(book.dateFinished || book.dateRead || '').toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      })
-                    )}
-                  </span>
-                </div>
-              )}
+              {/* Dates Read */}
+              {(() => {
+                const finished = book.dateFinished || book.dateRead;
+                const hasRange = Boolean(book.dateStarted && finished);
+                if (!book.dateStarted && !finished) return null;
+                return (
+                  <div className="flex flex-row gap-6 md:gap-8 lg:gap-10 items-center">
+                    <span 
+                      className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-zinc-400 w-[88px] shrink-0"
+                      style={{ fontVariationSettings: "'wdth' 100" }}
+                    >
+                      {hasRange ? 'Dates Read' : 'Date Read'}
+                    </span>
+                    <span 
+                      className="font-['SF_Pro:Regular',sans-serif] text-base text-zinc-600"
+                      style={{ fontVariationSettings: "'wdth' 100" }}
+                    >
+                      {hasRange ? (
+                        <span className="inline-flex items-center">
+                          {formatBookDate(book.dateStarted!)}
+                          <ArrowRightIcon className="mx-1.5 size-4 shrink-0 text-zinc-400" />
+                          {formatBookDate(finished!)}
+                        </span>
+                      ) : (
+                        formatBookDate((finished || book.dateStarted)!)
+                      )}
+                    </span>
+                  </div>
+                );
+              })()}
               
             </div>
           </div>
@@ -420,7 +434,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
         {book.review && (
           <div className="flex flex-col gap-3 sm:gap-6 w-full">
             <span 
-              className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-gray-400"
+              className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-zinc-400"
               style={{ fontVariationSettings: "'wdth' 100" }}
             >
               Review

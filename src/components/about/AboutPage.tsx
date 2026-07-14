@@ -144,12 +144,12 @@ function ProfilePhoto({ imageSrc, caption }: { imageSrc?: string; caption?: Reac
               className="w-full h-auto rounded-lg transition-transform duration-200 ease-out hover:scale-[0.99]"
             />
           ) : (
-            <div className="w-full aspect-[3/4] bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg" />
+            <div className="w-full aspect-[3/4] bg-gradient-to-br from-zinc-200 to-zinc-300 rounded-lg" />
           )}
         </div>
         {caption && (
           <div className="px-6">
-            <p className="text-sm text-gray-400 text-center">
+            <p className="text-sm text-zinc-400 text-center">
               {caption}
             </p>
           </div>
@@ -161,7 +161,7 @@ function ProfilePhoto({ imageSrc, caption }: { imageSrc?: string; caption?: Reac
           className={`fixed inset-0 z-[99999] isolate flex items-center justify-center p-4 transition-opacity duration-200 ease-out ${isClosing ? 'opacity-0' : 'animate-[fadeIn_200ms_ease-out]'}`}
           onClick={handleClose}
         >
-          <div className="absolute inset-0 bg-gray-100/95" />
+          <div className="absolute inset-0 bg-zinc-100/95" />
 
           <button
             onClick={(e) => {
@@ -172,7 +172,7 @@ function ProfilePhoto({ imageSrc, caption }: { imageSrc?: string; caption?: Reac
             aria-label="Close expanded photo"
           >
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L13 13M1 13L13 1" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" />
+              <path d="M1 1L13 13M1 13L13 1" stroke="#a1a1aa" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
 
@@ -190,7 +190,7 @@ function ProfilePhoto({ imageSrc, caption }: { imageSrc?: string; caption?: Reac
               </div>
               {caption && (
                 <p
-                  className={`mt-6 max-w-[600px] text-center font-['DM_Sans'] text-base tracking-[0.005em] font-normal leading-relaxed text-gray-500 [&_a]:text-gray-800 [&_a:hover]:text-gray-900 ${isClosing ? '' : 'animate-[fadeSlideUp_300ms_ease-out_100ms_both]'}`}
+                  className={`mt-6 max-w-[600px] text-center font-['Michelle',sans-serif] text-base tracking-[0.005em] font-normal leading-relaxed text-zinc-500 [&_a]:text-zinc-800 [&_a:hover]:text-zinc-900 ${isClosing ? '' : 'animate-[fadeSlideUp_300ms_ease-out_100ms_both]'}`}
                   style={{ fontVariationSettings: "'opsz' 9" }}
                 >
                   {caption}
@@ -663,7 +663,7 @@ export default function AboutPage() {
                           href="https://artsandculture.google.com/story/artist-spotlight-hung-liu-national-museum-of-women-in-the-arts/3wVRJQ12cc4OEA?hl=en"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-gray-600 hover:text-gray-700 transition-colors"
+                          className="text-zinc-600 hover:text-zinc-700 transition-colors"
                         >
                           Hung Liu
                         </a>
@@ -676,34 +676,34 @@ export default function AboutPage() {
             {/* Bio Content */}
             <div className="flex flex-col pt-8 gap-6 flex-1">
               <ScrollReveal variant="fade" delay={150}>
-                <h2 className="font-['Michelle',sans-serif] font-medium text-gray-600 text-3xl md:text-3xl">
+                <h2 className="font-['Michelle',sans-serif] font-medium text-zinc-600 text-3xl md:text-3xl">
                   Hi, I'm Michelle!
                 </h2>
               </ScrollReveal>
 
               {/* Location & Education */}
               <ScrollReveal variant="fade" delay={200}>
-                <div className="flex flex-wrap gap-2 md:gap-6 text-base tracking-[0.005em] text-gray-400">
+                <div className="flex flex-wrap gap-2 md:gap-6 text-base tracking-[0.005em] text-zinc-400">
                   <div className="flex items-center gap-2">
                     <img src={mapPinIcon} alt="" className="w-4 h-4" />
-                    <span className="text-gray-400">LA&nbsp;&nbsp;/&nbsp;&nbsp;NYC</span>
+                    <span className="text-zinc-400">LA&nbsp;&nbsp;/&nbsp;&nbsp;NYC</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <img src={academicCapIcon} alt="" className="w-4 h-4" />
-                    <span className="text-gray-400">B.A. Art & B.S. Cognitive Science, UCLA</span>
+                    <span className="text-zinc-400">B.A. Art & B.S. Cognitive Science, UCLA</span>
                   </div>
                 </div>
               </ScrollReveal>
 
               {/* Bio Paragraphs */}
               <ScrollReveal variant="fade" delay={250}>
-                <div className="flex flex-col gap-4 text-gray-600 text-base tracking-[0.005em] leading-relaxed">
+                <div className="flex flex-col gap-4 text-zinc-600 text-base tracking-[0.005em] leading-relaxed">
                   <p>
                     I love art, business, technology, & the ways that they can work together to
                     create extraordinary products for people.
                   </p>
                   <p>
-                    I view myself as an artist at heart, designing where beauty meets tactile utility. I like to think of it as my <a href="https://en.wikipedia.org/wiki/Ikigai" target="_blank" rel="noopener noreferrer" className="text-gray-600 font-semibold no-underline hover:text-blue-600 transition-colors">ikigai</a>: the
+                    I view myself as an artist at heart, designing where beauty meets tactile utility. I like to think of it as my <a href="https://en.wikipedia.org/wiki/Ikigai" target="_blank" rel="noopener noreferrer" className="text-zinc-600 font-semibold no-underline hover:text-blue-600 transition-colors">ikigai</a>: the
                     constant pursuit of an intersection between passion, profession, & personal mission.
                   </p>
                   <p>
@@ -723,7 +723,7 @@ export default function AboutPage() {
           <section ref={experienceRef} className="flex flex-col gap-16 md:flex-row md:justify-between md:gap-0 w-full scroll-mt-8">
             <ScrollReveal variant="fade">
               <div className="flex flex-col">
-                <h2 className="font-['Michelle',sans-serif] font-medium text-gray-700 text-3xl leading-normal shrink-0">
+                <h2 className="font-['Michelle',sans-serif] font-medium text-zinc-700 text-3xl leading-normal shrink-0">
                   Experience
                 </h2>
               </div>
@@ -743,11 +743,11 @@ export default function AboutPage() {
                   <div className="flex flex-col gap-8 pt-4">
                     <ScrollReveal delay={experiences.length * 80}>
                       <div className="flex flex-col">
-                        <p className="text-base md:text-lg font-medium text-gray-700 tracking-[0.005em]">
+                        <p className="text-base md:text-lg font-medium text-zinc-700 tracking-[0.005em]">
                           Freelance
                         </p>
-                        <p className="text-base text-gray-500 tracking-[0.005em]">
-                          Design Contracts<span className="text-gray-400 font-normal">, 2023 - Present</span>
+                        <p className="text-base text-zinc-500 tracking-[0.005em]">
+                          Design Contracts<span className="text-zinc-400 font-normal">, 2023 - Present</span>
                         </p>
                       </div>
                     </ScrollReveal>
@@ -756,7 +756,7 @@ export default function AboutPage() {
                 )}
               </div>
             ) : (
-              <p className="text-gray-400 text-sm py-4">Add experience items in Sanity Studio.</p>
+              <p className="text-zinc-400 text-sm py-4">Add experience items in Sanity Studio.</p>
             )}
           </section>
 
@@ -764,10 +764,10 @@ export default function AboutPage() {
           <section ref={communityRef} className="flex flex-col gap-8 w-full scroll-mt-8 max-md:mt-10">
             <ScrollReveal variant="fade">
               <div className="flex flex-col">
-                <h2 className="font-['Michelle',sans-serif] font-medium text-gray-600 text-3xl leading-normal shrink-0">
+                <h2 className="font-['Michelle',sans-serif] font-medium text-zinc-600 text-3xl leading-normal shrink-0">
                   My Communities
                 </h2>
-                <p className="font-['Michelle',sans-serif] tracking-wide font-normal text-gray-400 text-lg flex items-center gap-1.5">
+                <p className="font-['Michelle',sans-serif] tracking-wide font-normal text-zinc-400 text-lg flex items-center gap-1.5">
                   The people who make it all worth it
                   <img src={heartIcon} alt="" className="w-[12px] h-[12px]" style={{ filter: 'brightness(0) saturate(100%) invert(83%) sepia(8%) saturate(293%) hue-rotate(177deg) brightness(91%) contrast(87%)' }} />
                 </p>
@@ -796,7 +796,7 @@ export default function AboutPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400 text-sm py-4">Add community items in Sanity Studio.</p>
+              <p className="text-zinc-400 text-sm py-4">Add community items in Sanity Studio.</p>
             )}
           </section>
 
@@ -814,7 +814,7 @@ export default function AboutPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400 text-sm py-4">Add quotes in Sanity Studio.</p>
+              <p className="text-zinc-400 text-sm py-4">Add quotes in Sanity Studio.</p>
             )}
           </section>
 
@@ -908,7 +908,7 @@ export default function AboutPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400 text-sm py-4">Add lore items in Sanity Studio.</p>
+              <p className="text-zinc-400 text-sm py-4">Add lore items in Sanity Studio.</p>
             )}
           </section>
         </div>

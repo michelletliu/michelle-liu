@@ -30,7 +30,7 @@ type LinksBackgroundImageAndTextProps = {
 function LinksBackgroundImageAndText({ text }: LinksBackgroundImageAndTextProps) {
   return (
     <div className="content-stretch flex items-center justify-center px-[2px] py-0 relative rounded-[999px] shrink-0">
-      <p className="font-['Michelle',sans-serif] font-semibold leading-[20px] relative shrink-0 text-[#9ca3af] text-[16px] text-nowrap tracking-[0.16px]">{text}</p>
+      <p className="font-['Michelle',sans-serif] font-semibold leading-[20px] relative shrink-0 text-[#a1a1aa] text-[16px] text-nowrap tracking-[0.16px]">{text}</p>
     </div>
   );
 }
@@ -41,7 +41,7 @@ type TagBackgroundImageAndTextProps = {
 function TagBackgroundImageAndText({ text }: TagBackgroundImageAndTextProps) {
   return (
     <div className="content-stretch flex items-center justify-center px-[12px] py-[4px] relative rounded-[999px] shrink-0">
-      <p className="font-['Michelle',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#9ca3af] text-[16px] text-nowrap tracking-[0.16px]">{text}</p>
+      <p className="font-['Michelle',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#a1a1aa] text-[16px] text-nowrap tracking-[0.16px]">{text}</p>
     </div>
   );
 }
@@ -76,24 +76,24 @@ export default function V() {
           <div className="size-full">
             <div className="content-stretch flex flex-col gap-[36px] items-start pb-[16px] pt-[44px] px-[32px] relative w-full">
               <div className="content-stretch flex flex-col gap-[20px] items-start relative shrink-0 w-full">
-                <p className="font-['Michelle',sans-serif] font-medium leading-[normal] relative shrink-0 text-[#374151] text-[64px] w-full">michelle liu</p>
-                <p className="font-['Michelle',sans-serif] font-normal leading-[28px] not-italic relative shrink-0 text-[#6b7280] text-[0px] text-[20px] w-full">
-                  <span className="font-['Michelle',sans-serif] text-[#9ca3af]">{`Designing useful products to spark moments of `}</span>
-                  <span className="font-['Michelle',sans-serif] text-[#9ca3af]">delight</span>
-                  <span className="font-['Michelle',sans-serif] text-[#9ca3af]">{` & `}</span>
-                  <span className="font-['Michelle',sans-serif] text-[#9ca3af]">human connection.</span>
-                  <span className="font-['Michelle',sans-serif] text-[#9ca3af]">
+                <p className="font-['Michelle',sans-serif] font-medium leading-[normal] relative shrink-0 text-[#3f3f46] text-[64px] w-full">michelle liu</p>
+                <p className="font-['Michelle',sans-serif] font-normal leading-[28px] not-italic relative shrink-0 text-[#71717a] text-[0px] text-[20px] w-full">
+                  <span className="font-['Michelle',sans-serif] text-[#a1a1aa]">{`Designing useful products to spark moments of `}</span>
+                  <span className="font-['Michelle',sans-serif] text-[#a1a1aa]">delight</span>
+                  <span className="font-['Michelle',sans-serif] text-[#a1a1aa]">{` & `}</span>
+                  <span className="font-['Michelle',sans-serif] text-[#a1a1aa]">human connection.</span>
+                  <span className="font-['Michelle',sans-serif] text-[#a1a1aa]">
                     <br aria-hidden="true" />
                     {`Previously at `}
                   </span>
-                  <span className="font-['Michelle',sans-serif] text-[#374151]" style={{ fontVariationSettings: "'wdth' 100" }}>
+                  <span className="font-['Michelle',sans-serif] text-[#3f3f46]" style={{ fontVariationSettings: "'wdth' 100" }}>
                     
                   </span>
-                  <span className="font-['Michelle',sans-serif] text-[#9ca3af]">{`, `}</span>
-                  <span className="font-['Michelle',sans-serif] text-[#374151]">Roblox</span>
-                  <span className="font-['Michelle',sans-serif] text-[#9ca3af]">{`, & `}</span>
-                  <span className="font-['Michelle',sans-serif] text-[#374151]">NASA</span>
-                  <span className="font-['Michelle',sans-serif] text-[#9ca3af]">.</span>
+                  <span className="font-['Michelle',sans-serif] text-[#a1a1aa]">{`, `}</span>
+                  <span className="font-['Michelle',sans-serif] text-[#3f3f46]">Roblox</span>
+                  <span className="font-['Michelle',sans-serif] text-[#a1a1aa]">{`, & `}</span>
+                  <span className="font-['Michelle',sans-serif] text-[#3f3f46]">NASA</span>
+                  <span className="font-['Michelle',sans-serif] text-[#a1a1aa]">.</span>
                 </p>
               </div>
             </div>
@@ -106,7 +106,7 @@ export default function V() {
             <div className="content-stretch flex flex-col gap-[12px] items-start pb-0 pt-[16px] px-[32px] relative w-full">
               <div className="content-stretch flex gap-[12px] items-start relative shrink-0">
                 <div className="bg-[rgba(107,114,128,0.1)] content-stretch flex items-center justify-center px-[12px] py-[4px] relative rounded-[999px] shrink-0" data-name="Tag">
-                  <p className="font-['Michelle',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#4b5563] text-[16px] text-nowrap tracking-[0.16px]">WORK</p>
+                  <p className="font-['Michelle',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#52525b] text-[16px] text-nowrap tracking-[0.16px]">WORK</p>
                 </div>
                 <TagBackgroundImageAndText text="ART" />
                 <TagBackgroundImageAndText text="ABOUT" />
@@ -122,11 +122,11 @@ export default function V() {
               </AppleCoverBackgroundImage>
             </div>
             <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
-              <p className="relative shrink-0 text-[#111827] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+              <p className="relative shrink-0 text-[#18181b] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
                 <span>{`Apple `}</span>
-                <span className="text-[#9ca3af]">• 2025</span>
+                <span className="text-[#a1a1aa]">• 2025</span>
               </p>
-              <p className="relative shrink-0 text-[#9ca3af] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">Designing new features to drive engagement and user delight.</p>
+              <p className="relative shrink-0 text-[#a1a1aa] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">Designing new features to drive engagement and user delight.</p>
             </div>
           </div>
           <div className="[grid-area:1_/_2] group content-stretch flex flex-col gap-[12px] items-start relative self-start shrink-0 w-[678px]" data-name="Project Card">
@@ -136,11 +136,11 @@ export default function V() {
               </AppleCoverBackgroundImage>
             </div>
             <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
-              <p className="relative shrink-0 text-[#111827] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+              <p className="relative shrink-0 text-[#18181b] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
                 <span>{`Roblox `}</span>
-                <span className="text-[#9ca3af]">• 2024</span>
+                <span className="text-[#a1a1aa]">• 2024</span>
               </p>
-              <p className="relative shrink-0 text-[#9ca3af] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">Reimagining the future of social gameplay and user communication.</p>
+              <p className="relative shrink-0 text-[#a1a1aa] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">Reimagining the future of social gameplay and user communication.</p>
             </div>
           </div>
           <div className="[grid-area:2_/_1] group content-stretch flex flex-col gap-[12px] items-start relative self-start shrink-0 w-[678px]" data-name="Project Card">
@@ -150,11 +150,11 @@ export default function V() {
               </AppleCoverBackgroundImage>
             </div>
             <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
-              <p className="relative shrink-0 text-[#111827] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+              <p className="relative shrink-0 text-[#18181b] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
                 <span>{`Adobe `}</span>
-                <span className="text-[#9ca3af]">• 2023</span>
+                <span className="text-[#a1a1aa]">• 2023</span>
               </p>
-              <p className="relative shrink-0 text-[#9ca3af] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">Product strategy to drive user acquisition on college campuses.</p>
+              <p className="relative shrink-0 text-[#a1a1aa] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">Product strategy to drive user acquisition on college campuses.</p>
             </div>
           </div>
           <div className="[grid-area:2_/_2] group content-stretch flex flex-col gap-[12px] items-start relative self-start shrink-0 w-[678px]" data-name="Project Card">
@@ -164,11 +164,11 @@ export default function V() {
               </AppleCoverBackgroundImage>
             </div>
             <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
-              <p className="relative shrink-0 text-[#111827] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+              <p className="relative shrink-0 text-[#18181b] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
                 <span>{`NASA JPL `}</span>
-                <span className="text-[#9ca3af]">• 2023-24</span>
+                <span className="text-[#a1a1aa]">• 2023-24</span>
               </p>
-              <p className="relative shrink-0 text-[#9ca3af] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">{`Daring (& designing) mighty things at NASA's in-house DesignLab.`}</p>
+              <p className="relative shrink-0 text-[#a1a1aa] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">{`Daring (& designing) mighty things at NASA's in-house DesignLab.`}</p>
             </div>
           </div>
           <div className="[grid-area:3_/_1] group content-stretch flex flex-col gap-[12px] items-start relative self-start shrink-0 w-[678px]" data-name="Project Card">
@@ -178,11 +178,11 @@ export default function V() {
               </AppleCoverBackgroundImage>
             </div>
             <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
-              <p className="relative shrink-0 text-[#111827] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+              <p className="relative shrink-0 text-[#18181b] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
                 <span>{`Polaroid Studio `}</span>
-                <span className="text-[#9ca3af]">• 2025</span>
+                <span className="text-[#a1a1aa]">• 2025</span>
               </p>
-              <p className="relative shrink-0 text-[#9ca3af] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">Designing new features to drive engagement and user delight.</p>
+              <p className="relative shrink-0 text-[#a1a1aa] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">Designing new features to drive engagement and user delight.</p>
             </div>
           </div>
           <div className="[grid-area:3_/_2] group content-stretch flex flex-col gap-[12px] items-start relative self-start shrink-0 w-[678px]" data-name="Project Card">
@@ -192,11 +192,11 @@ export default function V() {
               </AppleCoverBackgroundImage>
             </div>
             <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
-              <p className="relative shrink-0 text-[#111827] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+              <p className="relative shrink-0 text-[#18181b] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
                 <span>{`Screentime Receipt `}</span>
-                <span className="text-[#9ca3af]">• 2025</span>
+                <span className="text-[#a1a1aa]">• 2025</span>
               </p>
-              <p className="relative shrink-0 text-[#9ca3af] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">Designing new features to drive engagement and user delight.</p>
+              <p className="relative shrink-0 text-[#a1a1aa] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">Designing new features to drive engagement and user delight.</p>
             </div>
           </div>
           <div className="[grid-area:4_/_1] group content-stretch flex flex-col gap-[12px] items-start relative self-start shrink-0 w-[678px]" data-name="Project Card">
@@ -206,11 +206,11 @@ export default function V() {
               </AppleCoverBackgroundImage>
             </div>
             <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
-              <p className="relative shrink-0 text-[#111827] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+              <p className="relative shrink-0 text-[#18181b] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
                 <span>{`Digital Sketchbook `}</span>
-                <span className="text-[#9ca3af]">• 2024</span>
+                <span className="text-[#a1a1aa]">• 2024</span>
               </p>
-              <p className="relative shrink-0 text-[#9ca3af] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">Designing new features to drive engagement and user delight.</p>
+              <p className="relative shrink-0 text-[#a1a1aa] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">Designing new features to drive engagement and user delight.</p>
             </div>
           </div>
           <div className="[grid-area:4_/_2] group content-stretch flex flex-col gap-[12px] items-start relative self-start shrink-0 w-[678px]" data-name="Project Card">
@@ -220,11 +220,11 @@ export default function V() {
               </AppleCoverBackgroundImage>
             </div>
             <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-medium items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-[16px]">
-              <p className="relative shrink-0 text-[#111827] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+              <p className="relative shrink-0 text-[#18181b] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
                 <span>{`Personal Library `}</span>
-                <span className="text-[#9ca3af]">• 2025</span>
+                <span className="text-[#a1a1aa]">• 2025</span>
               </p>
-              <p className="relative shrink-0 text-[#9ca3af] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">Designing new features to drive engagement and user delight.</p>
+              <p className="relative shrink-0 text-[#a1a1aa] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">Designing new features to drive engagement and user delight.</p>
             </div>
           </div>
         </div>
@@ -240,9 +240,9 @@ export default function V() {
                     <div className="overflow-clip relative shrink-0 size-[28px]" data-name="Logo">
                       <FinalSealLogoBackgroundImage additionalClassNames="h-[41.289px] top-[-6.64px] w-[28.84px]" />
                     </div>
-                    <p className="font-['Michelle',sans-serif] font-medium leading-[normal] relative shrink-0 text-[#374151] text-[32px] w-[212px]">michelle liu</p>
+                    <p className="font-['Michelle',sans-serif] font-medium leading-[normal] relative shrink-0 text-[#3f3f46] text-[32px] w-[212px]">michelle liu</p>
                   </div>
-                  <p className="font-['Michelle',sans-serif] font-normal leading-[28px] relative shrink-0 text-[#9ca3af] text-[16px] text-nowrap">
+                  <p className="font-['Michelle',sans-serif] font-normal leading-[28px] relative shrink-0 text-[#a1a1aa] text-[16px] text-nowrap">
                     <span>{`Built with Next.js & `}</span>
                     <a className="[text-underline-position:from-font] cursor-pointer decoration-solid underline" href="https://www.rockysmatcha.com/">
                       <span className="[text-underline-position:from-font] decoration-solid leading-[28px]" href="https://www.rockysmatcha.com/">
@@ -259,7 +259,7 @@ export default function V() {
                     <LinksBackgroundImageAndText text="ABOUT" />
                   </div>
                   <div className="content-stretch flex flex-col gap-[44px] items-start relative shrink-0">
-                    <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start relative shrink-0 text-[#9ca3af] w-[326px]">
+                    <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start relative shrink-0 text-[#a1a1aa] w-[326px]">
                       <p className="leading-[24px] relative shrink-0 text-[16px] w-full">Let's work together!</p>
                       <p className="leading-[24px] relative shrink-0 text-[0px] text-[16px] w-full">
                         <span>{`studio@liumichelle.com `}</span>
@@ -269,21 +269,21 @@ export default function V() {
                     <div className="content-stretch flex flex-col gap-[20px] items-start relative shrink-0 w-[326px]">
                       <div className="content-stretch flex gap-[44px] items-start relative shrink-0" data-name="Social Links">
                         <SocialLinksBackgroundImage>
-                          <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #6B7280)" id="Vector" />
+                          <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #71717A)" id="Vector" />
                         </SocialLinksBackgroundImage>
                         <div className="content-stretch flex items-center justify-center p-[10px] relative shrink-0 size-[24px]" data-name="Social Links">
                           <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0" data-name="Clip path group">
                             <div className="[grid-area:1_/_1] h-[17.219px] mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0px_-0.89px] mask-size-[19px_19px] ml-0 mt-[4.69%] relative w-[19px]" data-name="Group" style={{ maskImage: `url('${imgGroup}')` }}>
                               <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 19 18">
                                 <g id="Group">
-                                  <path d={svgPaths.p16308a80} fill="var(--fill-0, #6B7280)" id="Vector" />
+                                  <path d={svgPaths.p16308a80} fill="var(--fill-0, #71717A)" id="Vector" />
                                 </g>
                               </svg>
                             </div>
                           </div>
                         </div>
                         <SocialLinksBackgroundImage>
-                          <path d={svgPaths.p2f12fba0} id="Vector" stroke="var(--stroke-0, #6B7280)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                          <path d={svgPaths.p2f12fba0} id="Vector" stroke="var(--stroke-0, #71717A)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
                         </SocialLinksBackgroundImage>
                       </div>
                     </div>
@@ -291,7 +291,7 @@ export default function V() {
                 </div>
               </div>
             </div>
-            <p className="font-['Michelle',sans-serif] font-normal leading-[20px] relative shrink-0 text-[#9ca3af] text-[14px] text-nowrap">CHANGELOG: 12-16-25</p>
+            <p className="font-['Michelle',sans-serif] font-normal leading-[20px] relative shrink-0 text-[#a1a1aa] text-[14px] text-nowrap">CHANGELOG: 12-16-25</p>
           </div>
         </div>
       </div>

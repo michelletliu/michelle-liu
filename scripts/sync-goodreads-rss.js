@@ -1,9 +1,12 @@
 /**
  * Sync books from a Goodreads "read" shelf RSS feed into Sanity shelfItem docs.
  *
- * - Creates new book shelfItems that don't exist yet (matched by cleaned title).
+ * - Creates new book shelfItems that don't exist yet (matched by Goodreads
+ *   book id when available, otherwise cleaned title + author disambiguation).
  * - Backfills ONLY missing metadata (rating, dateRead, review, goodreadsUrl, cover)
  *   on existing books, so it never clobbers values curated by hand in Studio.
+ * - When several Sanity books share a title, author must uniquely match;
+ *   otherwise the feed item is skipped or created — never patched onto matches[0].
  *
  * Dry-run when SANITY_TOKEN is not set: prints what it would do and writes a
  * scripts/goodreads-sync-preview.json for review.
@@ -22,7 +25,13 @@ const { createClient } = require('@sanity/client');
 
 const USER_ID = process.env.GOODREADS_USER_ID || '126741914';
 const SHELF = process.env.GOODREADS_SHELF || 'read';
-const FEED_URL = `https://www.goodreads.com/review/list_rss/${USER_ID}?shelf=${SHELF}`;
+// Goodreads list_rss returns at most PAGE_SIZE items per request; paginate with &page=.
+const PAGE_SIZE = 100;
+const FEED_BASE = `https://www.goodreads.com/review/list_rss/${USER_ID}?shelf=${SHELF}`;
+
+function feedUrl(page) {
+  return `${FEED_BASE}&page=${page}`;
+}
 
 const client = createClient({
   projectId: 'am3v0x1c',
@@ -58,12 +67,55 @@ function cleanTitle(title) {
   return (title || '').replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
 }
 
+// Matching key: drop the "(series/edition)" suffix AND the ": subtitle" so the
+// feed's long titles (e.g. "Being Mortal: Medicine and What Matters in the End")
+// match existing library entries stored under the short title ("Being Mortal").
 function matchKey(title) {
   return cleanTitle(title)
+    .split(':')[0]
     .toLowerCase()
     .replace(/[^\w\s]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/** True when two author strings refer to the same person after normalization. */
+function authorsMatch(a, b) {
+  if (!a || !b) return false;
+  const tokensA = matchKey(a).split(' ').filter(Boolean);
+  const tokensB = matchKey(b).split(' ').filter(Boolean);
+  if (tokensA.length === 0 || tokensB.length === 0) return false;
+
+  const [shorter, longer] =
+    tokensA.length <= tokensB.length ? [tokensA, tokensB] : [tokensB, tokensA];
+
+  // Single-token names only match an exact single-token peer (avoid "John" → any John*).
+  if (shorter.length === 1) {
+    return longer.length === 1 && shorter[0] === longer[0];
+  }
+
+  // Every token of the shorter name must appear in the longer
+  // ("Mary Shelley" ↔ "Mary Wollstonecraft Shelley").
+  return shorter.every((t) => longer.includes(t));
+}
+
+/**
+ * Pick the Sanity shelfItem for a Goodreads feed item.
+ * When several books share a normalized title, author must disambiguate —
+ * never fall back to matches[0], which can write metadata to the wrong doc.
+ */
+function findExistingMatch(matches, item) {
+  if (!matches || matches.length === 0) return null;
+  if (matches.length === 1) return matches[0];
+
+  // Multiple books share this title — require a unique author match.
+  if (!item.author) return null;
+
+  const byAuthor = matches.filter(
+    (mm) => mm.author && authorsMatch(mm.author, item.author)
+  );
+  if (byAuthor.length === 1) return byAuthor[0];
+  return null;
 }
 
 // Extract a single tag's value from an <item> block; unwraps CDATA.
@@ -92,6 +144,21 @@ function isFavoriteShelf(shelves) {
     .some((s) => s === 'favorites' || s === 'favourites' || s === 'favorite');
 }
 
+// Pull the Goodreads numeric book id out of whatever identity a stored doc
+// carries: its goodreadsUrl (.../book/show/{id}) or its deterministic _id
+// (shelfItem-book-gr-{id}). Lets us match on stable identity, not title text.
+function bookIdFromDoc(doc) {
+  if (doc.goodreadsUrl) {
+    const m = doc.goodreadsUrl.match(/\/book\/show\/(\d+)/);
+    if (m) return m[1];
+  }
+  if (doc._id) {
+    const m = doc._id.match(/shelfItem-book-gr-(\d+)/);
+    if (m) return m[1];
+  }
+  return null;
+}
+
 function parseFeed(xml) {
   const items = [];
   const re = /<item>([\s\S]*?)<\/item>/g;
@@ -104,7 +171,10 @@ function parseFeed(xml) {
 
     const rating = parseInt(tag(b, 'user_rating') || '0', 10) || 0;
     const readDate = parseDate(tag(b, 'user_read_at'));
-    const addedDate = parseDate(tag(b, 'user_date_added'));
+    // Only sync books with a real finish date. This matches the original
+    // library curation and skips date-less catalogued books (childhood/school
+    // reads, want-to-read carryovers) that were never actually logged as read.
+    if (!readDate) continue;
     const cover = tag(b, 'book_large_image_url') || tag(b, 'book_image_url');
 
     items.push({
@@ -113,8 +183,8 @@ function parseFeed(xml) {
       matchKey: matchKey(rawTitle),
       author: decodeEntities(tag(b, 'author_name')),
       rating,
-      dateRead: readDate ? readDate.iso : null,
-      year: (readDate || addedDate || {}).year || null,
+      dateRead: readDate.iso,
+      year: readDate.year,
       review: cleanReview(tag(b, 'user_review')),
       goodreadsUrl: bookId ? `https://www.goodreads.com/book/show/${bookId}` : null,
       // Goodreads serves a "nophoto" placeholder when a book has no cover.
@@ -125,22 +195,48 @@ function parseFeed(xml) {
   return items;
 }
 
-async function fetchFeed() {
-  const res = await fetch(FEED_URL, {
+async function fetchFeedPage(page) {
+  const url = feedUrl(page);
+  const res = await fetch(url, {
     headers: { 'User-Agent': 'michelle-liu-goodreads-sync/1.0' },
   });
   if (!res.ok) {
-    throw new Error(`Goodreads feed returned ${res.status} ${res.statusText}`);
+    throw new Error(`Goodreads feed returned ${res.status} ${res.statusText} (${url})`);
   }
   return res.text();
 }
 
-async function main() {
-  console.log(`Goodreads sync - feed: ${FEED_URL}\n`);
+// list_rss caps each response at ~100 items. Walk page=1,2,... until a page
+// returns fewer than PAGE_SIZE (or zero), then dedupe by bookId.
+async function fetchAllFeedBooks() {
+  const all = [];
+  const seen = new Set();
+  let page = 1;
 
-  const xml = await fetchFeed();
-  const feedBooks = parseFeed(xml);
-  console.log(`Parsed ${feedBooks.length} books from the "${SHELF}" shelf`);
+  while (true) {
+    const xml = await fetchFeedPage(page);
+    const items = parseFeed(xml);
+    console.log(`  page ${page}: ${items.length} items`);
+
+    for (const item of items) {
+      const key = item.bookId || item.matchKey;
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      all.push(item);
+    }
+
+    if (items.length < PAGE_SIZE) break;
+    page += 1;
+  }
+
+  return all;
+}
+
+async function main() {
+  console.log(`Goodreads sync - feed: ${FEED_BASE} (paginated)\n`);
+
+  const feedBooks = await fetchAllFeedBooks();
+  console.log(`Parsed ${feedBooks.length} books from the "${SHELF}" shelf\n`);
 
   const existing = await client.fetch(`
     *[_type == "shelfItem" && mediaType == "book"]{
@@ -150,8 +246,14 @@ async function main() {
   `);
   console.log(`Found ${existing.length} existing book shelfItems in Sanity\n`);
 
+  // Index existing docs by stable Goodreads id AND by normalized title. The
+  // id index is authoritative so a title edited by hand in Studio can't slip
+  // past the match and spawn a duplicate shelfItem-book-gr-{id} document.
+  const byBookId = new Map();
   const byTitle = new Map();
   for (const book of existing) {
+    const bookId = bookIdFromDoc(book);
+    if (bookId) byBookId.set(bookId, book);
     const key = matchKey(book.title);
     if (!byTitle.has(key)) byTitle.set(key, []);
     byTitle.get(key).push(book);
@@ -160,20 +262,34 @@ async function main() {
   const creates = [];
   const patches = [];
 
+  function buildCreateDoc(item) {
+    const doc = {
+      _id: item.bookId ? `shelfItem-book-gr-${item.bookId}` : undefined,
+      _type: 'shelfItem',
+      title: item.title,
+      mediaType: 'book',
+      author: item.author || undefined,
+      year: item.year || undefined,
+      isFeatured: false,
+      isPublished: true,
+      order: 0,
+    };
+    if (item.rating > 0) doc.rating = item.rating;
+    if (item.dateRead) doc.dateRead = item.dateRead;
+    if (item.review) doc.review = item.review;
+    if (item.goodreadsUrl) doc.goodreadsUrl = item.goodreadsUrl;
+    if (item.cover) doc.externalCoverUrl = item.cover;
+    if (item.isFavorite) doc.isLibraryFavorite = true;
+    return doc;
+  }
+
   for (const item of feedBooks) {
-    const matches = byTitle.get(item.matchKey);
+    // Prefer identity match; fall back to normalized title.
+    const idMatch = item.bookId ? byBookId.get(item.bookId) : null;
+    const matches = idMatch ? [idMatch] : byTitle.get(item.matchKey) || [];
+    const match = findExistingMatch(matches, item);
 
-    if (matches && matches.length > 0) {
-      // Disambiguate by author's first name when a title has multiple matches.
-      let match = matches[0];
-      if (matches.length > 1 && item.author) {
-        const first = matchKey(item.author).split(' ')[0];
-        const byAuthor = matches.find(
-          (mm) => mm.author && matchKey(mm.author).includes(first)
-        );
-        if (byAuthor) match = byAuthor;
-      }
-
+    if (match) {
       // Backfill only fields that are currently empty in Sanity.
       const set = {};
       if (item.rating > 0 && (match.rating == null || match.rating === 0)) set.rating = item.rating;
@@ -186,25 +302,19 @@ async function main() {
       if (Object.keys(set).length > 0) {
         patches.push({ _id: match._id, title: match.title, set });
       }
+    } else if (matches.length > 1 && !item.author) {
+      // Same title, no author on the feed item — do not guess among candidates.
+      console.log(
+        `  ! Skipping ambiguous title "${item.title}" — ${matches.length} matches, no author to disambiguate`
+      );
     } else {
-      const doc = {
-        _id: item.bookId ? `shelfItem-book-gr-${item.bookId}` : undefined,
-        _type: 'shelfItem',
-        title: item.title,
-        mediaType: 'book',
-        author: item.author || undefined,
-        year: item.year || undefined,
-        isFeatured: false,
-        isPublished: true,
-        order: 0,
-      };
-      if (item.rating > 0) doc.rating = item.rating;
-      if (item.dateRead) doc.dateRead = item.dateRead;
-      if (item.review) doc.review = item.review;
-      if (item.goodreadsUrl) doc.goodreadsUrl = item.goodreadsUrl;
-      if (item.cover) doc.externalCoverUrl = item.cover;
-      if (item.isFavorite) doc.isLibraryFavorite = true;
-      creates.push(doc);
+      // No title match, or author didn't match any candidate (different book).
+      if (matches.length > 1) {
+        console.log(
+          `  ! Ambiguous title "${item.title}" by ${item.author} — no author match among ${matches.length}; creating new doc`
+        );
+      }
+      creates.push(buildCreateDoc(item));
     }
   }
 
@@ -250,7 +360,17 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error('Goodreads sync failed:', err.message);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('Goodreads sync failed:', err.message);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  matchKey,
+  authorsMatch,
+  findExistingMatch,
+  cleanTitle,
+  parseFeed,
+};

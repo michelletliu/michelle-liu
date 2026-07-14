@@ -69,7 +69,7 @@ function formatDate(dateString: string): string {
 function PlaceholderImage({ index }: { index: number }) {
   const colors = [
     'bg-gradient-to-br from-amber-50 to-amber-100',
-    'bg-gradient-to-br from-stone-50 to-stone-100',
+    'bg-gradient-to-br from-zinc-50 to-zinc-100',
     'bg-gradient-to-br from-slate-50 to-slate-100',
     'bg-gradient-to-br from-zinc-50 to-zinc-100',
     'bg-gradient-to-br from-neutral-50 to-neutral-100',
@@ -82,7 +82,7 @@ function PlaceholderImage({ index }: { index: number }) {
     )}>
       <div className="text-center p-4">
         <div className="text-5xl mb-3 opacity-60">📓</div>
-        <p className="text-gray-400 text-xs">Sketch {index + 1}</p>
+        <p className="text-zinc-400 text-xs">Sketch {index + 1}</p>
       </div>
     </div>
   );
@@ -674,10 +674,10 @@ export default function SketchbookPage() {
       <div className={`text-center px-6 shrink-0 relative transition-[padding] duration-300 ease-out ${isFullscreen ? 'pb-16' : 'pb-4 max-[650px]:pb-16'}`}>
         {/* Current entry text */}
         <motion.div style={{ opacity: currentDateOpacity }}>
-          <h1 className="text-lg font-medium text-gray-900 h-7">
+          <h1 className="text-lg font-medium text-zinc-900 h-7">
             {currentEntry?.location || ''}
           </h1>
-          <p className="text-gray-400 text-lg h-6">
+          <p className="text-zinc-400 text-lg h-6">
             {currentEntry && formatDate(currentEntry.date)}
           </p>
         </motion.div>
@@ -686,10 +686,10 @@ export default function SketchbookPage() {
           className="absolute inset-0 flex flex-col items-center justify-start"
           style={{ opacity: nextDateOpacity }}
         >
-          <h1 className="text-lg font-medium text-gray-900 h-7">
+          <h1 className="text-lg font-medium text-zinc-900 h-7">
             {entries[currentIndex + 1]?.location || ''}
           </h1>
-          <p className="text-gray-400 text-lg h-6">
+          <p className="text-zinc-400 text-lg h-6">
             {entries[currentIndex + 1] && formatDate(entries[currentIndex + 1].date)}
           </p>
         </motion.div>
@@ -698,10 +698,10 @@ export default function SketchbookPage() {
           className="absolute inset-0 flex flex-col items-center justify-start"
           style={{ opacity: prevDateOpacity }}
         >
-          <h1 className="text-lg font-medium text-gray-900 h-7">
+          <h1 className="text-lg font-medium text-zinc-900 h-7">
             {entries[currentIndex - 1]?.location || ''}
           </h1>
-          <p className="text-gray-400 text-lg h-6">
+          <p className="text-zinc-400 text-lg h-6">
             {entries[currentIndex - 1] && formatDate(entries[currentIndex - 1].date)}
           </p>
         </motion.div>
@@ -723,7 +723,7 @@ export default function SketchbookPage() {
         
         {loading ? (
           <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-300" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-300" />
           </div>
         ) : (
           <div 

@@ -90,7 +90,7 @@ export default function ProjectHeroHeader({
                 "whitespace-pre-wrap"
               )}
             >
-              <p className="font-medium relative shrink-0 text-gray-400">
+              <p className="font-medium relative shrink-0 text-zinc-400">
                 {item.label}
               </p>
               <p className="font-normal relative leading-relaxed shrink-0 text-black">

@@ -130,15 +130,15 @@ function createPortableTextComponents(highlightedText?: string, highlightColor?:
 
   return {
     block: {
-      h1: ({ children }) => <h1 className="text-3xl font-normal mb-4 mt-8 first:mt-0 text-gray-900">{applyHighlight(children)}</h1>,
-      h2: ({ children }) => <h2 className="text-2xl font-normal mb-3 mt-6 first:mt-0 text-gray-900">{applyHighlight(children)}</h2>,
-      h3: ({ children }) => <h3 className="text-xl font-normal mb-3 mt-5 first:mt-0 text-gray-900">{applyHighlight(children)}</h3>,
+      h1: ({ children }) => <h1 className="text-3xl font-normal mb-4 mt-8 first:mt-0 text-zinc-900">{applyHighlight(children)}</h1>,
+      h2: ({ children }) => <h2 className="text-2xl font-normal mb-3 mt-6 first:mt-0 text-zinc-900">{applyHighlight(children)}</h2>,
+      h3: ({ children }) => <h3 className="text-xl font-normal mb-3 mt-5 first:mt-0 text-zinc-900">{applyHighlight(children)}</h3>,
       h4: ({ children }) => {
         // If this h4 contains the highlight text, apply color to the whole element and remove text color class
         if (shouldHighlight(children)) {
-          return <h4 className="font-normal mb-2 mt-4 first:mt-0 text-gray-900" style={{ fontSize: '1.125rem', lineHeight: '1.75rem', color }}>{children}</h4>;
+          return <h4 className="font-normal mb-2 mt-4 first:mt-0 text-zinc-900" style={{ fontSize: '1.125rem', lineHeight: '1.75rem', color }}>{children}</h4>;
         }
-        return <h4 className="text-lg font-normal mb-2 mt-4 first:mt-0 text-gray-900">{children}</h4>;
+        return <h4 className="text-lg font-normal mb-2 mt-4 first:mt-0 text-zinc-900">{children}</h4>;
       },
       normal: ({ children }) => {
         // Check if the paragraph is empty (preserves multiple line breaks)
@@ -160,7 +160,7 @@ function createPortableTextComponents(highlightedText?: string, highlightColor?:
         return <strong className="font-semibold">{children}</strong>;
       },
       em: ({ children }) => <em className="italic">{children}</em>,
-      code: ({ children }) => <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>,
+      code: ({ children }) => <code className="bg-zinc-100 px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>,
     },
     list: {
       bullet: ({ children }) => <ul className="list-disc ml-5 space-y-2 mb-4">{children}</ul>,
@@ -206,7 +206,7 @@ const ChevronRightIcon = () => (
   <svg className="block size-full" viewBox="0 0 16 16" fill="none">
     <path
       d="M6 12L10 8L6 4"
-      stroke="#9CA3AF"
+      stroke="#A1A1AA"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -232,11 +232,11 @@ function Breadcrumb({ projectName, onWorkClick, isScrolled = false, isPastHero =
       <button
         onClick={onWorkClick}
         className={clsx(
-          "flex items-center justify-center py-0.5 rounded-md transition-all duration-300 ease-out hover:bg-[#f3f4f6]",
+          "flex items-center justify-center py-0.5 rounded-md transition-all duration-300 ease-out hover:bg-[#f4f4f5]",
           isScrolled ? "opacity-0 pointer-events-none w-0 px-0 overflow-hidden" : "opacity-100 px-1.5 ml-2"
         )}
       >
-        <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#4b5563] whitespace-nowrap">
+        <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#52525b] whitespace-nowrap">
           Work
         </span>
       </button>
@@ -248,7 +248,7 @@ function Breadcrumb({ projectName, onWorkClick, isScrolled = false, isPastHero =
 
       {/* Project name - not clickable */}
       <div className="flex items-center justify-center px-1 py-0.5">
-        <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#1f2937]">
+        <span className="font-['Michelle:Medium',sans-serif] font-medium text-sm leading-normal text-[#27272a]">
           {projectName}
         </span>
       </div>
@@ -480,35 +480,35 @@ const ArrowRightIcon = () => (
       fillRule="evenodd"
       clipRule="evenodd"
       d="M6 0C6.41421 0 6.75 0.335786 6.75 0.75V11.4393L10.7197 7.46967C11.0126 7.17678 11.4874 7.17678 11.7803 7.46967C12.0732 7.76256 12.0732 8.23744 11.7803 8.53033L6.53033 13.7803C6.23744 14.0732 5.76256 14.0732 5.46967 13.7803L0.21967 8.53033C-0.0732233 8.23744 -0.0732233 7.76256 0.21967 7.46967C0.512563 7.17678 0.987437 7.17678 1.28033 7.46967L5.25 11.4393V0.75C5.25 0.335786 5.58579 0 6 0Z"
-      fill="#9CA3AF"
+      fill="#A1A1AA"
     />
   </svg>
 );
 
-// Eye icon for showing password (gray-400 to match arrow)
+// Eye icon for showing password (zinc-400 to match arrow)
 const EyeIcon = () => (
   <svg className="block size-full" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 5.25C4.5 5.25 1.5 12 1.5 12C1.5 12 4.5 18.75 12 18.75C19.5 18.75 22.5 12 22.5 12C22.5 12 19.5 5.25 12 5.25Z" stroke="#9CA3AF" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 15.75C14.0711 15.75 15.75 14.0711 15.75 12C15.75 9.92893 14.0711 8.25 12 8.25C9.92893 8.25 8.25 9.92893 8.25 12C8.25 14.0711 9.92893 15.75 12 15.75Z" stroke="#9CA3AF" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 5.25C4.5 5.25 1.5 12 1.5 12C1.5 12 4.5 18.75 12 18.75C19.5 18.75 22.5 12 22.5 12C22.5 12 19.5 5.25 12 5.25Z" stroke="#A1A1AA" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 15.75C14.0711 15.75 15.75 14.0711 15.75 12C15.75 9.92893 14.0711 8.25 12 8.25C9.92893 8.25 8.25 9.92893 8.25 12C8.25 14.0711 9.92893 15.75 12 15.75Z" stroke="#A1A1AA" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
-// Eye-off icon for hiding password (gray-400 to match arrow)
+// Eye-off icon for hiding password (zinc-400 to match arrow)
 const EyeOffIcon = () => (
   <svg className="block size-full" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14.12 14.12C13.5646 14.6755 12.7998 14.9855 12 14.9855C11.2002 14.9855 10.4354 14.6755 9.88 14.12C9.32457 13.5646 9.0145 12.7998 9.0145 12C9.0145 11.2002 9.32457 10.4354 9.88 9.88" stroke="#9CA3AF" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M4.5 4.5L19.5 19.5" stroke="#9CA3AF" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M9.75 5.5C10.485 5.34 11.235 5.25 12 5.25C19.5 5.25 22.5 12 22.5 12C22.02 12.945 21.42 13.815 20.73 14.61" stroke="#9CA3AF" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M17.94 17.94C16.23 19.17 14.16 19.875 12 19.875C4.5 19.875 1.5 13.125 1.5 13.125C2.505 11.205 3.975 9.54 5.775 8.355" stroke="#9CA3AF" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M14.12 14.12C13.5646 14.6755 12.7998 14.9855 12 14.9855C11.2002 14.9855 10.4354 14.6755 9.88 14.12C9.32457 13.5646 9.0145 12.7998 9.0145 12C9.0145 11.2002 9.32457 10.4354 9.88 9.88" stroke="#A1A1AA" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M4.5 4.5L19.5 19.5" stroke="#A1A1AA" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M9.75 5.5C10.485 5.34 11.235 5.25 12 5.25C19.5 5.25 22.5 12 22.5 12C22.02 12.945 21.42 13.815 20.73 14.61" stroke="#A1A1AA" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M17.94 17.94C16.23 19.17 14.16 19.875 12 19.875C4.5 19.875 1.5 13.125 1.5 13.125C2.505 11.205 3.975 9.54 5.775 8.355" stroke="#A1A1AA" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
 // Laptop icon for mobile not available message
 const LaptopIcon = () => (
   <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="8" y="12" width="44" height="30" rx="2" stroke="#9ca3af" strokeWidth="2" fill="none"/>
-    <rect x="12" y="16" width="36" height="22" rx="1" fill="#e5e7eb"/>
-    <path d="M4 42h52v2a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-2z" fill="#d1d5db"/>
+    <rect x="8" y="12" width="44" height="30" rx="2" stroke="#a1a1aa" strokeWidth="2" fill="none"/>
+    <rect x="12" y="16" width="36" height="22" rx="1" fill="#e4e4e7"/>
+    <path d="M4 42h52v2a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-2z" fill="#d4d4d8"/>
   </svg>
 );
 
@@ -574,7 +574,7 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
             className={`fixed inset-0 z-[9999] flex items-center justify-center p-4 transition-opacity duration-200 ease-out ${isClosing ? 'opacity-0' : 'animate-[fadeIn_200ms_ease-out]'}`}
             onClick={handleClose}
           >
-            <div className="absolute inset-0 bg-gray-100/95" />
+            <div className="absolute inset-0 bg-zinc-100/95" />
 
             <button
               onClick={(e) => {
@@ -593,7 +593,7 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
               >
                 <path
                   d="M1 1L13 13M1 13L13 1"
-                  stroke="#9ca3af"
+                  stroke="#a1a1aa"
                   strokeWidth="2"
                   strokeLinecap="round"
                 />
@@ -680,7 +680,7 @@ function PasswordInput({
         "bg-white border border-solid content-stretch flex items-center justify-between pl-4 pr-3 py-2 relative rounded-full shrink-0 w-full transition-colors duration-200",
         error
           ? "border-[#f87171] focus-within:border-[#f87171]"
-          : "border-transparent focus-within:border-[#d1d5db]"
+          : "border-transparent focus-within:border-[#d4d4d8]"
       )}>
         <input
           type={showPassword ? "text" : "password"}
@@ -688,7 +688,7 @@ function PasswordInput({
           value={passwordValue}
           onChange={handleInputChange}
           disabled={isLoading}
-          className="leading-5 relative shrink-0 text-black text-base bg-transparent border-none outline-none flex-1 placeholder:text-[#9ca3af] disabled:opacity-50"
+          className="leading-5 relative shrink-0 text-black text-base bg-transparent border-none outline-none flex-1 placeholder:text-[#a1a1aa] disabled:opacity-50"
         />
         <div className="flex items-center gap-2.5">
           {/* Show/Hide password toggle - only visible when there's input */}
@@ -727,7 +727,7 @@ function PasswordInput({
             className="relative shrink-0 size-[14px] rotate-[-90deg] hover:opacity-70 transition-opacity disabled:opacity-50"
           >
             {isLoading ? (
-              <div className="w-3.5 h-3.5 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
+              <div className="w-3.5 h-3.5 border-2 border-zinc-300 border-t-zinc-500 rounded-full animate-spin" />
             ) : (
               <ArrowRightIcon />
             )}
@@ -1212,7 +1212,7 @@ export default function ProjectModal({
               <Tooltip label="Expand">
                 <button
                   onClick={handleExpandToFullscreen}
-                  className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-lg hover:bg-gray-200 transition-colors duration-200 ease-out text-[#9ca3af]"
+                  className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-lg hover:bg-zinc-200 transition-colors duration-200 ease-out text-[#a1a1aa]"
                 >
                   <div className="relative shrink-0 size-[18px]">
                     <BackArrowIcon />
@@ -1227,15 +1227,15 @@ export default function ProjectModal({
             href="#final-designs"
             onClick={handleSkipToFinalDesigns}
             className={clsx(
-              "fixed z-[100] font-medium text-gray-400 hover:text-blue-500 cursor-pointer leading-tight",
+              "fixed z-[100] font-medium text-zinc-400 hover:text-blue-500 cursor-pointer leading-tight",
               "transition-all duration-300 ease-in-out",
               showSkipLink ? "opacity-100" : "opacity-0 pointer-events-none",
               isFullscreen ? "top-16 left-16 max-md:left-6" : "top-16 left-8"
             )}
           >
             <div className="flex flex-col gap-0.5 items-start">
-              <span className="text-[0.8rem]">↓ SKIP TO</span>
-              <span className="text-[0.8rem]">DESIGNS</span>
+              <span className="text-xs">↓ SKIP TO</span>
+              <span className="text-xs">DESIGNS</span>
             </div>
           </a>
 
@@ -1286,7 +1286,7 @@ export default function ProjectModal({
           )}
           {loading && (
             <div className="flex items-center justify-center min-h-[80vh] sm:min-h-[90vh]">
-              <div className="text-gray-400">Loading...</div>
+              <div className="text-zinc-400">Loading...</div>
             </div>
           )}
 
@@ -1302,7 +1302,7 @@ export default function ProjectModal({
               {isUnlocked && isMobile && projectId !== 'nasa' && (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center">
                   <LaptopIcon />
-                  <p className="text-[#6b7280] text-base leading-6 px-12 mt-4">
+                  <p className="text-[#71717a] text-base leading-6 px-12 mt-4">
                     This page isn't available on mobile yet. You can view it on desktop instead! {";)"}
                   </p>
                 </div>
@@ -1350,10 +1350,10 @@ export default function ProjectModal({
                       {project.metadata.map((item) => (
                         <ScrollReveal key={item._key} variant="fade" delay={160} rootMargin="0px" className="flex-[1_0_0] min-h-px min-w-px">
                           <div className="content-stretch flex flex-col gap-3 items-start leading-5 relative shrink-0 text-base whitespace-pre-wrap">
-                            <p className="font-medium relative shrink-0 text-[#9ca3af]">
+                            <p className="font-medium relative shrink-0 text-[#a1a1aa]">
                               {item.label}
                             </p>
-                            <p className="font-normal relative shrink-0 text-gray-700">
+                            <p className="font-normal relative shrink-0 text-zinc-700">
                               {item.value.map((v, i) => (
                                 <React.Fragment key={i}>
                                   {v}
@@ -1363,7 +1363,7 @@ export default function ProjectModal({
                               {item.subValue && (
                                 <>
                                   <br />
-                                  <span className="italic text-gray-600">{item.subValue}</span>
+                                  <span className="italic text-zinc-600">{item.subValue}</span>
                                 </>
                               )}
                             </p>
@@ -1383,7 +1383,7 @@ export default function ProjectModal({
                 {project.heroVideo ? (
                   <ScrollReveal delay={480} rootMargin="0px" className="w-full">
                     <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
-                      <div className="aspect-[1090/591] relative rounded-[26px] shrink-0 w-full overflow-hidden bg-gray-100">
+                      <div className="aspect-[1090/591] relative rounded-[26px] shrink-0 w-full overflow-hidden bg-zinc-100">
                         {/* Fallback image while video loads */}
                         {project.heroImage && (
                           <ShimmerImage
@@ -1448,9 +1448,9 @@ export default function ProjectModal({
                               }
                             }
                           }}
-                          className="text-left text-[0.8rem] max-w-12 text-gray-700 hover:text-black transition-colors"
+                          className="text-left text-xs max-w-12 text-zinc-700 hover:text-black transition-colors"
                         >
-                          <span className="font-medium text-[#9ca3af] mr-2">{item.number}</span>
+                          <span className="font-medium text-[#a1a1aa] mr-2">{item.number}</span>
                           <span>{item.title}</span>
                         </button>
                       ))}
@@ -1570,7 +1570,7 @@ export default function ProjectModal({
 
           {!loading && !error && !project && (
             <div className="flex items-center justify-center py-32">
-              <div className="text-gray-400">Project not found</div>
+              <div className="text-zinc-400">Project not found</div>
             </div>
           )}
 
@@ -1595,7 +1595,7 @@ const CollapseArrowIcon = () => (
       fillRule="evenodd"
       clipRule="evenodd"
       d="M14.7803 14.7803C14.4874 15.0732 14.0126 15.0732 13.7197 14.7803L6.5 7.56066V13.25C6.5 13.6642 6.16421 14 5.75 14C5.33579 14 5 13.6642 5 13.25V5.75C5 5.33579 5.33579 5 5.75 5H13.25C13.6642 5 14 5.33579 14 5.75C14 6.16421 13.6642 6.5 13.25 6.5H7.56066L14.7803 13.7197C15.0732 14.0126 15.0732 14.4874 14.7803 14.7803Z"
-      fill="#9CA3AF"
+      fill="#A1A1AA"
     />
   </svg>
 );
@@ -1612,7 +1612,7 @@ const ExpandArrowIcon = () => (
       fillRule="evenodd"
       clipRule="evenodd"
       d="M14.7803 14.7803C14.4874 15.0732 14.0126 15.0732 13.7197 14.7803L6.5 7.56066V13.25C6.5 13.6642 6.16421 14 5.75 14C5.33579 14 5 13.6642 5 13.25V5.75C5 5.33579 5.33579 5 5.75 5H13.25C13.6642 5 14 5.33579 14 5.75C14 6.16421 13.6642 6.5 13.25 6.5H7.56066L14.7803 13.7197C15.0732 14.0126 15.0732 14.4874 14.7803 14.7803Z"
-      fill="#9CA3AF"
+      fill="#A1A1AA"
     />
   </svg>
 );
@@ -1682,7 +1682,7 @@ function TestimonialBlock({
       <div className="content-stretch flex flex-col gap-[100px] max-md:gap-16 items-start relative shrink-0 w-full">
         {/* Header Section */}
         <div className="content-stretch flex flex-col gap-5 items-start relative shrink-0 w-full">
-          <p className="leading-5 relative shrink-0 text-[#9ca3af] uppercase text-base">
+          <p className="leading-5 relative shrink-0 text-[#a1a1aa] uppercase text-base">
             {sectionLabel}
           </p>
           <p className="leading-7 min-w-full relative shrink-0 text-2xl text-black whitespace-pre-wrap">
@@ -1712,7 +1712,7 @@ function TestimonialBlock({
             )}
           >
             {/* Avatar */}
-            <div className="relative rounded-full shrink-0 size-[120px] overflow-hidden bg-gray-100">
+            <div className="relative rounded-full shrink-0 size-[120px] overflow-hidden bg-zinc-100">
               {authorImage && (
                 <ShimmerImage
                   className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
@@ -1727,7 +1727,7 @@ function TestimonialBlock({
             {/* Name and Title */}
             <div className="content-stretch flex flex-col gap-1 items-start leading-5 relative shrink-0 text-base max-md:flex-1">
               <p className="relative shrink-0 text-black">{authorName}</p>
-              <p className="relative shrink-0 text-[#9ca3af]">{authorSubtitle}</p>
+              <p className="relative shrink-0 text-[#a1a1aa]">{authorSubtitle}</p>
             </div>
           </div>
 
@@ -1762,14 +1762,14 @@ function TestimonialBlock({
             <div className="relative w-[424px] max-md:w-full">
               {/* Short Quote - shown when collapsed */}
               {!isExpanded && (
-                <div className="leading-normal text-[#1f2937] text-xl whitespace-pre-wrap">
+                <div className="leading-normal text-[#27272a] text-xl whitespace-pre-wrap">
                   <p>{quote}</p>
                 </div>
               )}
 
               {/* Full Quote - shown when expanded */}
               {isExpanded && (
-                <div className="leading-normal text-[#1f2937] text-xl whitespace-pre-wrap">
+                <div className="leading-normal text-[#27272a] text-xl whitespace-pre-wrap">
                   {fullQuote?.map((paragraph, index) => (
                     <p
                       key={index}
@@ -1789,7 +1789,7 @@ function TestimonialBlock({
                 "relative shrink-0 cursor-pointer transition-colors duration-300 ease-out",
                 isExpanded
                   ? "size-6 hover:opacity-70"
-                  : "leading-5 text-[#9ca3af] text-base hover:text-[#6b7280] text-left"
+                  : "leading-5 text-[#a1a1aa] text-base hover:text-[#71717a] text-left"
               )}
             >
               {!isExpanded ? (
@@ -1860,7 +1860,7 @@ function ContentBlock({
           <div ref={missionRef} className="flex flex-col items-center px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
             {/* Label + Title */}
             <div className="flex flex-col gap-5 items-center text-center w-[410px] max-md:w-full">
-              <p className="leading-5 text-[#9ca3af] uppercase text-base">
+              <p className="leading-5 text-[#a1a1aa] uppercase text-base">
                 {section.sectionLabel || "The Mission"}
               </p>
               <p className="leading-7 text-2xl text-black whitespace-pre-wrap text-pretty">
@@ -1880,13 +1880,13 @@ function ContentBlock({
             {/* Description */}
             {hasDescription && (
               <div className="flex flex-col gap-8 mt-8 w-[410px] max-md:w-full px-8 max-md:px-0">
-                <div className="leading-normal text-[#4b5563] text-base whitespace-pre-wrap prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
+                <div className="leading-normal text-[#52525b] text-base whitespace-pre-wrap prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
                   <PortableText value={section.missionDescription} components={portableTextComponents} />
                 </div>
 
                 {/* Italic Note */}
                 {section.missionNote && (
-                  <p className="text-[#9ca3af] text-base italic leading-5">
+                  <p className="text-[#a1a1aa] text-base italic leading-5">
                     {section.missionNote}
                   </p>
                 )}
@@ -1895,7 +1895,7 @@ function ContentBlock({
 
             {/* Italic Note (when no description) */}
             {!hasDescription && section.missionNote && (
-              <p className="text-[#9ca3af] text-base italic leading-5 mt-8 w-[410px] max-md:w-full px-8 max-md:px-0">
+              <p className="text-[#a1a1aa] text-base italic leading-5 mt-8 w-[410px] max-md:w-full px-8 max-md:px-0">
                 {section.missionNote}
               </p>
             )}
@@ -1919,7 +1919,7 @@ function ContentBlock({
             !hasDescription && "max-w-[646px] w-full",
             hasDescription && "col-start-1"
           )}>
-            <p className="leading-5 relative shrink-0 text-[#9ca3af] uppercase text-base">
+            <p className="leading-5 relative shrink-0 text-[#a1a1aa] uppercase text-base">
               {section.sectionLabel || "The Mission"}
             </p>
             <p className="leading-normal w-full relative shrink-0 text-xl text-black whitespace-pre-wrap text-pretty">
@@ -1929,7 +1929,7 @@ function ContentBlock({
 
           {/* Right: Description - only shown when there is description content */}
           {hasDescription && (
-            <div className="leading-normal relative text-[#4b5563] text-base whitespace-pre-wrap col-start-3 max-md:col-start-auto max-md:w-full prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
+            <div className="leading-normal relative text-[#52525b] text-base whitespace-pre-wrap col-start-3 max-md:col-start-auto max-md:w-full prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0">
               <PortableText value={section.missionDescription} components={portableTextComponents} />
             </div>
           )}
@@ -1949,7 +1949,7 @@ function ContentBlock({
       const hasPassword = !!section.showPasswordProtection;
       return (
         <div className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
-          <div className="bg-gray-100 content-stretch flex flex-col items-center justify-center overflow-clip p-16 max-md:px-8 max-md:py-16 relative rounded-[26px] shrink-0 w-full">
+          <div className="bg-zinc-100 content-stretch flex flex-col items-center justify-center overflow-clip p-16 max-md:px-8 max-md:py-16 relative rounded-[26px] shrink-0 w-full">
             <div className={clsx(
               "content-stretch flex flex-col items-start relative shrink-0 w-full",
               hasPassword && "gap-8"
@@ -1967,13 +1967,13 @@ function ContentBlock({
                   <p className="leading-7 relative shrink-0 text-2xl text-black">
                     {(section.title || (projectId === "apple" ? "This work is confidential." : hasPassword ? "This case study is password-protected." : "Confidential")).replace(/\n/g, ' ')}
                   </p>
-                  <p className="leading-6 relative shrink-0 text-[#9ca3af] text-lg">
+                  <p className="leading-6 relative shrink-0 text-[#a1a1aa] text-lg">
                     {projectId === "apple" ? "Please " : hasPassword ? "Curious? Feel free to " : (section.message || "Interested? Please ")}
                     {section.contactEmail ? (
                       <>
                         <a
                           href={`mailto:${section.contactEmail}`}
-                          className="font-medium text-gray-500 hover:text-blue-500 transition-colors"
+                          className="font-medium text-zinc-500 hover:text-blue-500 transition-colors"
                         >
                           email me
                         </a>
@@ -2034,7 +2034,7 @@ function ContentBlock({
           <div className="flex flex-col">
             <div
               className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full"
-              style={{ backgroundColor: section.backgroundColor || '#f9fafb' }}
+              style={{ backgroundColor: section.backgroundColor || '#fafafa' }}
             >
               <div className={clsx("content-stretch flex flex-col justify-between relative shrink-0 w-full", verticalPadding)}>
                 {/* Text content in two-column grid - only render if there's text */}
@@ -2060,7 +2060,7 @@ function ContentBlock({
 
                       {/* Problem Label */}
                       {section.problemLabel && (
-                        <p className="leading-5 relative shrink-0 uppercase text-[#9ca3af] text-base">
+                        <p className="leading-5 relative shrink-0 uppercase text-[#a1a1aa] text-base">
                           {section.problemLabel}
                         </p>
                       )}
@@ -2075,7 +2075,7 @@ function ContentBlock({
 
                     {/* Right column: Description */}
                     {section.description && section.description.length > 0 && (
-                      <div className="leading-normal max-w-120 relative text-gray-600 text-base col-start-3 max-md:col-start-auto max-md:w-full prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 [&>p]:whitespace-pre-wrap">
+                      <div className="leading-normal max-w-120 relative text-zinc-600 text-base col-start-3 max-md:col-start-auto max-md:w-full prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 [&>p]:whitespace-pre-wrap">
                         <PortableText value={section.description} components={createPortableTextComponents(section.descriptionHighlightedText, section.descriptionHighlightColor)} />
                       </div>
                     )}
@@ -2126,7 +2126,7 @@ function ContentBlock({
         <div className="flex flex-col">
         <div
           className="content-stretch flex flex-col items-start px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full"
-          style={{ backgroundColor: section.backgroundColor || '#f9fafb' }}
+          style={{ backgroundColor: section.backgroundColor || '#fafafa' }}
         >
           <div className={clsx(
             "content-stretch flex flex-col gap-14 relative shrink-0 w-full md:flex-row md:gap-20",
@@ -2156,7 +2156,7 @@ function ContentBlock({
               
               {/* Problem Label */}
               {section.problemLabel && (
-                <p className="leading-5 relative shrink-0 uppercase text-[#9ca3af] text-base">
+                <p className="leading-5 relative shrink-0 uppercase text-[#a1a1aa] text-base">
                   {section.problemLabel}
                 </p>
               )}
@@ -2170,7 +2170,7 @@ function ContentBlock({
 
               {/* Description */}
             {section.description && section.description.length > 0 && (
-                <div className="pt-2 max-w-120 max-md:max-w-none prose prose-p:my-6 max-md:prose-p:mt-0 max-md:prose-p:mb-3 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 text-gray-600 [&>p]:whitespace-pre-wrap">
+                <div className="pt-2 max-w-120 max-md:max-w-none prose prose-p:my-6 max-md:prose-p:mt-0 max-md:prose-p:mb-3 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 text-zinc-600 [&>p]:whitespace-pre-wrap">
                   <PortableText value={section.description} components={createPortableTextComponents(section.descriptionHighlightedText, section.descriptionHighlightColor)} />
                 </div>
               )}
@@ -2178,7 +2178,7 @@ function ContentBlock({
             )}
 
             {/* Right: Image/Video and Description */}
-            <div className="leading-5 flex-1 relative text-[#4b5563] text-base whitespace-pre-wrap items-center justify-center flex flex-col gap-8">
+            <div className="leading-5 flex-1 relative text-[#52525b] text-base whitespace-pre-wrap items-center justify-center flex flex-col gap-8">
               {/* Video */}
               {hasVideo && (
                 <div className={clsx("overflow-hidden rounded-[26px] mx-auto inline-flex", mediaWidthClass)}>
@@ -2237,7 +2237,7 @@ function ContentBlock({
                     src={urlFor(image).width(1200).quality(85).url()}
                   />
                   {image.caption && (
-                    <p className="w-full px-4 py-3 text-sm text-gray-600 text-center">
+                    <p className="w-full px-4 py-3 text-sm text-zinc-600 text-center">
                       {image.caption}
                     </p>
                   )}
@@ -2247,7 +2247,7 @@ function ContentBlock({
 
             {/* Caption/Title below gallery */}
             {section.title && (
-              <p className="font-normal pt-2 leading-5 relative shrink-0 text-gray-400 text-base text-center w-full">
+              <p className="font-normal pt-2 leading-5 relative shrink-0 text-zinc-400 text-base text-center w-full">
                 {section.title}
               </p>
             )}
@@ -2289,7 +2289,7 @@ function ContentBlock({
           
           {/* Caption/Title below gallery */}
           {section.title && (
-            <p className="font-normal pt-4 leading-5 relative shrink-0 text-gray-400 text-base text-center w-full">
+            <p className="font-normal pt-4 leading-5 relative shrink-0 text-zinc-400 text-base text-center w-full">
               {section.title}
             </p>
           )}
@@ -2310,7 +2310,7 @@ function ContentBlock({
           )}>
             <div className="w-[49%] shrink-0 content-stretch flex flex-col gap-3 items-start relative max-md:w-full">
               {section.label && (
-                <p className="leading-5 relative uppercase shrink-0 text-[#9ca3af] text-base">
+                <p className="leading-5 relative uppercase shrink-0 text-[#a1a1aa] text-base">
                   {section.label}
                 </p>
               )}
@@ -2321,7 +2321,7 @@ function ContentBlock({
               )}
             </div>
             {hasBody && (
-              <div className="flex-1 leading-normal relative text-[#4b5563] text-base max-md:w-full prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 [&>p]:whitespace-pre-wrap">
+              <div className="flex-1 leading-normal relative text-[#52525b] text-base max-md:w-full prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 [&>p]:whitespace-pre-wrap">
                 <PortableText value={section.body} components={portableTextComponents} />
               </div>
             )}
@@ -2336,7 +2336,7 @@ function ContentBlock({
             isTextSectionEmpty ? "py-5 max-md:py-3" : "py-10 max-md:py-6"
           )}>
             {section.label && (
-              <p className="leading-5 relative shrink-0 uppercase text-[#9ca3af] text-base text-center">
+              <p className="leading-5 relative shrink-0 uppercase text-[#a1a1aa] text-base text-center">
                 {section.label}
               </p>
             )}
@@ -2346,7 +2346,7 @@ function ContentBlock({
               </p>
             )}
             {hasCenteredBody && (
-              <div className="leading-normal relative text-[#4b5563] text-base text-center prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 max-w-[600px] [&>p]:whitespace-pre-wrap">
+              <div className="leading-normal relative text-[#52525b] text-base text-center prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 max-w-[600px] [&>p]:whitespace-pre-wrap">
                 <PortableText value={section.body} components={portableTextComponents} />
               </div>
             )}
@@ -2361,7 +2361,7 @@ function ContentBlock({
           )}>
             <div className="content-stretch flex flex-col gap-3 items-start relative col-start-1">
               {section.label && (
-                <p className="leading-5 relative shrink-0 uppercase text-[#9ca3af] text-base">
+                <p className="leading-5 relative shrink-0 uppercase text-[#a1a1aa] text-base">
                   {section.label}
                 </p>
               )}
@@ -2371,7 +2371,7 @@ function ContentBlock({
                 </p>
               )}
               {section.body && (
-                <div className="leading-normal pt-4 relative text-[#4b5563] max-w-100 text-base prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 w-full [&>p]:whitespace-pre-wrap">
+                <div className="leading-normal pt-4 relative text-[#52525b] max-w-100 text-base prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 w-full [&>p]:whitespace-pre-wrap">
                   <PortableText value={section.body} components={portableTextComponents} />
                 </div>
               )}
@@ -2385,7 +2385,7 @@ function ContentBlock({
           isTextSectionEmpty ? "py-5 max-md:py-3" : "py-10 max-md:py-6"
         )}>
           {section.label && (
-            <p className="leading-5 relative shrink-0 uppercase text-[#9ca3af] text-base">
+            <p className="leading-5 relative shrink-0 uppercase text-[#a1a1aa] text-base">
               {section.label}
             </p>
           )}
@@ -2395,7 +2395,7 @@ function ContentBlock({
             </p>
           )}
           {section.body && (
-            <div className="leading-normal relative text-[#4b5563] text-base prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 [&>p]:whitespace-pre-wrap">
+            <div className="leading-normal relative text-[#52525b] text-base prose prose-p:my-6 prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 first:prose-p:mt-0 last:prose-p:mb-0 [&>p]:whitespace-pre-wrap">
               <PortableText value={section.body} components={portableTextComponents} />
             </div>
           )}
@@ -2441,7 +2441,7 @@ function ContentBlock({
             />
           </div>
           {section.caption && (
-            <p className={clsx("mt-3 text-center text-gray-400", sizeClass)}>{section.caption}</p>
+            <p className={clsx("mt-3 text-center text-zinc-400", sizeClass)}>{section.caption}</p>
           )}
         </div>
       );
@@ -2606,7 +2606,7 @@ function ContentBlock({
                 <p className="text-xl text-black">{section.title}</p>
               )}
               {section.caption && (
-                <p className="text-base text-[#9ca3af]">{section.caption}</p>
+                <p className="text-base text-[#a1a1aa]">{section.caption}</p>
               )}
             </div>
           )}
@@ -2726,7 +2726,7 @@ function ContentBlock({
                 {/* Section Number + Heading */}
                 <div className="flex flex-row gap-2 items-center">
                   {section.sectionNumber && (
-                    <p className="text-xl font-normal text-gray-400">
+                    <p className="text-xl font-normal text-zinc-400">
                       {section.sectionNumber}
                     </p>
                   )}
@@ -2740,7 +2740,7 @@ function ContentBlock({
 
                 {/* Subheading */}
                 {section.subheading && (
-                  <p className="text-base text-gray-500 max-w-100 leading-normal whitespace-pre-line">
+                  <p className="text-base text-zinc-500 max-w-100 leading-normal whitespace-pre-line">
                     {section.subheading}
                   </p>
                 )}
@@ -2749,8 +2749,8 @@ function ContentBlock({
                 {section.bulletPoints && section.bulletPoints.length > 0 && (
                   <ul className="flex flex-col gap-3">
                     {section.bulletPoints.map((point, index) => (
-                      <li key={index} className="flex items-start gap-3 text-gray-600">
-                        <span className="text-gray-600 mt-0.5 font-bold">•</span>
+                      <li key={index} className="flex items-start gap-3 text-zinc-600">
+                        <span className="text-zinc-600 mt-0.5 font-bold">•</span>
                         <span className="flex-1 leading-normal">{point}</span>
                       </li>
                     ))}
@@ -2786,13 +2786,13 @@ function ContentBlock({
                   
                   <div className="flex flex-col gap-1">
                   {/* Title */}
-                  <h4 className="text-xl font-medium text-gray-700">
+                  <h4 className="text-xl font-medium text-zinc-700">
                     {learning.title}
                   </h4>
                   
                   {/* Description */}
                   {learning.description && (
-                    <p className="text-base text-gray-400 leading-relaxed">
+                    <p className="text-base text-zinc-400 leading-relaxed">
                       {learning.description}
                     </p>
                   )}
@@ -2836,7 +2836,7 @@ function ContentBlock({
             
             {/* Subtitle */}
             {section.subtitle && (
-              <p className="text-lg -mt-1 text-gray-400 font-normal whitespace-pre-wrap">
+              <p className="text-lg -mt-1 text-zinc-400 font-normal whitespace-pre-wrap">
                 {section.subtitle}
               </p>
             )}
@@ -2859,14 +2859,14 @@ function ContentBlock({
             <div className="max-md:w-full px-8 md:px-[8%] xl:px-[175px] flex flex-col ">
               {/* Heading */}
               {section.heading && (
-                <h2 className="text-lg font-normal text-gray-600 whitespace-pre-wrap">
+                <h2 className="text-lg font-normal text-zinc-600 whitespace-pre-wrap">
                   {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                 </h2>
               )}
 
               {/* Text Content */}
               {section.textContent && section.textContent.length > 0 && (
-                <div className="text-base text-gray-600 leading-normal prose prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2">
+                <div className="text-base text-zinc-600 leading-normal prose prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2">
                   <PortableText value={section.textContent} components={portableTextComponents} />
                 </div>
               )}
@@ -2891,7 +2891,7 @@ function ContentBlock({
 
       case "statsCardSection":
         const statsStatColor = section.statColor || '#ec4899';
-        const statsTitleColor = section.titleColor || '#9ca3af';
+        const statsTitleColor = section.titleColor || '#a1a1aa';
         
         // Layout classes
         const statsLayoutMap = {
@@ -2950,7 +2950,7 @@ function ContentBlock({
                       
                       {/* Description */}
                       {card.description && (
-                        <p className="text-base text-gray-700 leading-snug pt-2">
+                        <p className="text-base text-zinc-700 leading-snug pt-2">
                           {renderStatsDescription(card.description)}
                         </p>
                       )}
@@ -2976,13 +2976,13 @@ function ContentBlock({
         // Card style classes
         const getCardStyleClasses = (style: string, cardBgColor?: string) => {
           if (style === 'with-border') {
-            return 'border border-gray-50 shadow-default rounded-3xl';
+            return 'border border-zinc-50 shadow-default rounded-3xl';
           }
           if (style === 'no-bg') {
             return '';
           }
           // with-bg (default)
-          return cardBgColor ? 'rounded-3xl' : 'bg-gray-50 rounded-3xl';
+          return cardBgColor ? 'rounded-3xl' : 'bg-zinc-50 rounded-3xl';
         };
         
         // Aspect ratio classes
@@ -3012,7 +3012,7 @@ function ContentBlock({
                 "grid w-full",
                 highlightLayout,
                 section.layout === 'stacked' ? 'px-8 md:px-[8%] xl:px-[175px]' : '',
-                section.showDividers ? 'divide-y divide-gray-200 [&>*]:py-16' : 'gap-12'
+                section.showDividers ? 'divide-y divide-zinc-200 [&>*]:py-16' : 'gap-12'
               )}>
                 {section.cards.map((card) => {
                   const cardImgSrc = card.externalImageUrl 
@@ -3069,14 +3069,14 @@ function ContentBlock({
                               card.headline.length < 5 ? "text-5xl" : "text-xl",
                               "font-normal leading-tight whitespace-pre-wrap"
                             )}
-                            style={{ color: card.headlineColor || '#111827' }}
+                            style={{ color: card.headlineColor || '#18181b' }}
                           >
                             {renderHighlightedText(card.headline, card.highlightedText, card.highlightColor)}
                           </h3>
                           
                           {/* Description */}
                           {card.description && card.description.length > 0 && (
-                            <div className="text-base text-gray-600 leading-relaxed">
+                            <div className="text-base text-zinc-600 leading-relaxed">
                               <PortableText value={card.description} components={portableTextComponents} />
                             </div>
                           )}
@@ -3102,7 +3102,7 @@ function ContentBlock({
                           card.headline.length < 5 ? "text-5xl" : "text-xl",
                           "w-64 font-normal leading-normal whitespace-pre-wrap"
                         )}
-                        style={{ color: card.headlineColor || '#111827' }}
+                        style={{ color: card.headlineColor || '#18181b' }}
                       >
                         {renderHighlightedText(card.headline, card.highlightedText, card.highlightColor)}
                       </h3>
@@ -3116,7 +3116,7 @@ function ContentBlock({
                       <div className="flex flex-1 flex-col justify-center items-stretch">
                       {/* Description */}
                       {card.description && card.description.length > 0 && (
-                        <div className="text-base text-gray-500 self-end max-w-120 leading-relaxed">
+                        <div className="text-base text-zinc-500 self-end max-w-120 leading-relaxed">
                           <PortableText value={card.description} components={portableTextComponents} />
                         </div>
                       )}
@@ -3225,7 +3225,7 @@ function ContentBlock({
         );
 
       case "tableOfContentsSection":
-        const tocBgColor = section.backgroundColor || '#f3f4f6';
+        const tocBgColor = section.backgroundColor || '#f4f4f5';
         const tocAccentColor = section.accentColor || '#ec4899';
         const hasHeaderContent = section.sectionNumber || section.sectionTitle || section.subtitle || section.hintText || section.sectionDescription;
 
@@ -3270,7 +3270,7 @@ function ContentBlock({
 
                 {/* Hint Text */}
                 {section.hintText && (
-                  <div className="flex items-center text-gray-500">
+                  <div className="flex items-center text-zinc-500">
                     <span className="text-sm md:text-base">{section.hintText}</span>
                   </div>
                 )}
@@ -3279,7 +3279,7 @@ function ContentBlock({
                 {section.sectionDescription && (
                   <>
                     <div className="w-full h-px bg-zinc-100 mt-4" />
-                    <p className="text-sm md:text-base text-gray-400 mt-4 whitespace-pre-wrap">
+                    <p className="text-sm md:text-base text-zinc-400 mt-4 whitespace-pre-wrap">
                       {section.sectionDescription}
                     </p>
                   </>
@@ -3316,7 +3316,7 @@ function ContentBlock({
                     >
                       {/* Image/Icon */}
                       {itemImageSrc && (
-                        <div className="w-12 h-12 md:w-16 md:h-16 shadow-none rounded-xl overflow-hidden bg-gray-100">
+                        <div className="w-12 h-12 md:w-16 md:h-16 shadow-none rounded-xl overflow-hidden bg-zinc-100">
                           <ShimmerImage
                             src={itemImageSrc}
                             alt=""
@@ -3328,13 +3328,13 @@ function ContentBlock({
                       <div className="flex flex-col gap-1 w-full min-w-0">
                       {/* Number */}
                       {item.number && (
-                        <span className="text-lg md:text-xl text-gray-400">
+                        <span className="text-lg md:text-xl text-zinc-400">
                           {item.number}
                         </span>
                       )}
                       
                       {/* Title */}
-                      <span className="text-lg md:text-xl text-gray-900 hyphens-auto" lang="en">
+                      <span className="text-lg md:text-xl text-zinc-900 hyphens-auto" lang="en">
                         {item.title}
                       </span>
                       </div>

@@ -177,10 +177,10 @@ export default function SketchbookGallery({
     >
       {/* Caption: Title and Date */}
       <div className="flex flex-col font-medium items-start leading-[1.4] text-base">
-        <p className="text-gray-900 text-lg">
+        <p className="text-zinc-900 text-lg">
           {data.title}
         </p>
-        <p className="text-gray-400">
+        <p className="text-zinc-400">
           {data.date}
         </p>
       </div>
@@ -215,7 +215,7 @@ export default function SketchbookGallery({
               onClick={() => scroll("left")}
               disabled={!canScrollLeft}
               className={clsx(
-                canScrollLeft ? "text-gray-500 hover:text-gray-700" : "text-gray-300/60 cursor-default"
+                canScrollLeft ? "text-zinc-500 hover:text-zinc-700" : "text-zinc-300/60 cursor-default"
               )}
               aria-label="Scroll left"
             >
@@ -234,7 +234,7 @@ export default function SketchbookGallery({
               onClick={() => scroll("right")}
               disabled={!canScrollRight}
               className={clsx(
-                canScrollRight ? "text-gray-500 hover:text-gray-700" : "text-gray-300/60 cursor-default"
+                canScrollRight ? "text-zinc-500 hover:text-zinc-700" : "text-zinc-300/60 cursor-default"
               )}
               aria-label="Scroll right"
             >

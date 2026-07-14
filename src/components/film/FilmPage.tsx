@@ -742,10 +742,10 @@ function FilmPhotoHashmarks({
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <span className="text-sm font-medium leading-tight text-gray-500">
+                  <span className="text-sm font-medium leading-tight text-zinc-500">
                     {photos[hoverLabelIndex].month}
                   </span>
-                  <span className="mt-0.5 text-sm leading-tight text-gray-400">
+                  <span className="mt-0.5 text-sm leading-tight text-zinc-400">
                     {photos[hoverLabelIndex].year}
                   </span>
                 </motion.div>
@@ -758,7 +758,7 @@ function FilmPhotoHashmarks({
             >
               <motion.span
                 key={cur.month}
-                className="text-sm font-medium leading-tight text-gray-500"
+                className="text-sm font-medium leading-tight text-zinc-500"
                 initial={{ opacity: 0, filter: 'blur(4px)' }}
                 animate={{ opacity: 1, filter: 'blur(0px)' }}
                 transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
@@ -767,7 +767,7 @@ function FilmPhotoHashmarks({
               </motion.span>
               <motion.span
                 key={String(cur.year)}
-                className="mt-0.5 text-sm leading-tight text-gray-400"
+                className="mt-0.5 text-sm leading-tight text-zinc-400"
                 initial={{ opacity: 0, filter: 'blur(4px)' }}
                 animate={{ opacity: 1, filter: 'blur(0px)' }}
                 transition={{
@@ -807,7 +807,7 @@ const DEFAULT_FILM_PROJECT = {
   id: 'film',
   title: 'Film Diary',
   year: '2026',
-  description: (<>A digital photo timeline, featuring scenes from <a href="https://sundays.rsvp" target="_blank" rel="noopener noreferrer" className="font-medium hover:text-gray-900 transition-colors">sundays in la</a>.</>),
+  description: (<>A digital photo timeline, featuring scenes from <a href="https://sundays.rsvp" target="_blank" rel="noopener noreferrer" className="font-medium hover:text-zinc-900 transition-colors">sundays in la</a>.</>),
   imageSrc: 'https://image.mux.com/cUHD6AJLNxSi5VnldLaSehN70266tHEAfdiMQCCsQ4pA/thumbnail.png',
   videoSrc: 'https://stream.mux.com/cUHD6AJLNxSi5VnldLaSehN70266tHEAfdiMQCCsQ4pA.m3u8',
   tryItOutHref: '/film',
@@ -2128,7 +2128,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
             key={photo.id}
             type="button"
             ref={(el) => { itemRefs.current[i] = el; }}
-            className="absolute overflow-hidden rounded-[3px] border-0 bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 cursor-pointer"
+            className="absolute overflow-hidden rounded-sm border-0 bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 cursor-pointer"
             style={{
               width: BASE_WIDTH,
               height: BASE_WIDTH / filmSafeAspectRatio(photo.aspectRatio),

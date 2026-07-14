@@ -109,13 +109,13 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
               />
             </div>
           )}
-          <h3 className="text-xl font-medium text-gray-600">{data.title}</h3>
+          <h3 className="text-xl font-medium text-zinc-600">{data.title}</h3>
           {data.instagramUrl && (
             <a
               href={data.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-6 w-6 shrink-0 items-center justify-center text-[#c4c9d0] transition-colors hover:text-gray-700"
+              className="flex h-6 w-6 shrink-0 items-center justify-center text-[#c4c9d0] transition-colors hover:text-zinc-700"
               aria-label={`${data.title} Instagram`}
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -127,7 +127,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
           )}
         </div>
         {data.description && (
-          <p className="text-base text-gray-400">
+          <p className="text-base text-zinc-400">
             {data.description}
           </p>
         )}
@@ -147,13 +147,13 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
               />
             </div>
           )}
-          <h3 className="text-2xl font-medium leading-[1.4] text-gray-600">{data.title}</h3>
+          <h3 className="text-2xl font-medium leading-[1.4] text-zinc-600">{data.title}</h3>
           {data.instagramUrl && (
             <a
               href={data.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-6 w-6 items-center justify-center text-[#c4c9d0] transition-colors hover:text-gray-700"
+              className="flex h-6 w-6 items-center justify-center text-[#c4c9d0] transition-colors hover:text-zinc-700"
               aria-label={`${data.title} Instagram`}
             >
               <svg
@@ -182,7 +182,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
         
         {/* Description on the right */}
         {data.description && (
-          <p className="max-w-xs xl:max-w-sm shrink-0 whitespace-pre-wrap text-base tracking-[0.005em] font-normal leading-[1.4] text-gray-400">
+          <p className="max-w-xs xl:max-w-sm shrink-0 whitespace-pre-wrap text-base tracking-[0.005em] font-normal leading-[1.4] text-zinc-400">
             {data.description}
           </p>
         )}
@@ -208,7 +208,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                     style={{ transform: `rotate(${rotation}deg)` }}
                   >
                     <div className="relative transition-transform duration-200 hover:scale-[1.01]">
-                      <div className="absolute -inset-2 rounded-sm border border-gray-100 bg-white shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)]" />
+                      <div className="absolute -inset-2 rounded-sm border border-zinc-100 bg-white shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)]" />
                       <div
                         className={clsx(
                           "relative overflow-hidden rounded-sm",
@@ -228,7 +228,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                     {photo.caption && (
                       <p
                         className={clsx(
-                          "mt-2 font-['DM_Sans'] text-sm font-normal text-gray-500",
+                          "mt-2 font-['Michelle',sans-serif] text-sm font-normal text-zinc-500",
                           isVertical ? "w-44" : "w-52"
                         )}
                         style={{ fontVariationSettings: "'opsz' 9" }}
@@ -259,7 +259,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                     style={{ transform: `rotate(${rotation}deg)` }}
                   >
                     <div className="relative transition-transform duration-200 hover:scale-[1.01]">
-                      <div className="absolute -inset-2 rounded-sm border border-gray-100 bg-white shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)]" />
+                      <div className="absolute -inset-2 rounded-sm border border-zinc-100 bg-white shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)]" />
                       <div
                         className={clsx(
                           "relative overflow-hidden rounded-sm",
@@ -279,7 +279,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                     {photo.caption && (
                       <p
                         className={clsx(
-                          "mt-3 font-['DM_Sans'] text-sm font-normal text-gray-500",
+                          "mt-3 font-['Michelle',sans-serif] text-sm font-normal text-zinc-500",
                           isVertical ? "w-48" : "w-56"
                         )}
                         style={{ fontVariationSettings: "'opsz' 9" }}
@@ -324,7 +324,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                     style={{ transform: `rotate(${rotation}deg)` }}
                   >
                     <div className="relative transition-transform duration-200 hover:scale-[1.01]">
-                      <div className="absolute -inset-2 rounded-sm border border-gray-100 bg-white shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)]" />
+                      <div className="absolute -inset-2 rounded-sm border border-zinc-100 bg-white shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)]" />
                       <div
                         className={clsx(
                           "relative overflow-hidden rounded-sm",
@@ -344,7 +344,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                     {photo.caption && (
                       <p
                         className={clsx(
-                          "mt-2 font-['DM_Sans'] text-sm font-normal leading-tight text-gray-500",
+                          "mt-2 font-['Michelle',sans-serif] text-sm font-normal leading-tight text-zinc-500",
                           isVertical ? "w-60" : "w-72"
                         )}
                         style={{ fontVariationSettings: "'opsz' 9" }}
@@ -368,7 +368,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
             onClick={handleClosePhoto}
           >
             {/* Light grey translucent overlay */}
-            <div className="absolute inset-0 bg-gray-100/95" />
+            <div className="absolute inset-0 bg-zinc-100/95" />
 
             {/* Close button - fixed to top right of screen */}
             <button
@@ -388,7 +388,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
               >
                 <path
                   d="M1 1L13 13M1 13L13 1"
-                  stroke="#9ca3af"
+                  stroke="#a1a1aa"
                   strokeWidth="2"
                   strokeLinecap="round"
                 />
@@ -403,7 +403,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
               {/* Photo card - polaroid style */}
               <div className="relative flex flex-col items-center gap-1">
                 <div className="relative">
-                  <div className="absolute -inset-3 rounded-sm border border-gray-100 bg-white shadow-[0px_8px_24px_0px_rgba(0,0,0,0.15)]" />
+                  <div className="absolute -inset-3 rounded-sm border border-zinc-100 bg-white shadow-[0px_8px_24px_0px_rgba(0,0,0,0.15)]" />
                   <ShimmerImage
                     src={expandedPhoto.imageSrc}
                     alt={expandedPhoto.caption || "Community photo"}
@@ -418,7 +418,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                 </div>
                 {expandedPhoto.caption && (
                   <p
-                    className={`mt-6 max-w-[600px] text-center font-['DM_Sans'] text-base tracking-[0.005em] font-normal leading-relaxed text-gray-600 ${isClosingPhoto ? '' : 'animate-[fadeSlideUp_300ms_ease-out_100ms_both]'}`}
+                    className={`mt-6 max-w-[600px] text-center font-['Michelle',sans-serif] text-base tracking-[0.005em] font-normal leading-relaxed text-zinc-600 ${isClosingPhoto ? '' : 'animate-[fadeSlideUp_300ms_ease-out_100ms_both]'}`}
                     style={{ fontVariationSettings: "'opsz' 9" }}
                   >
                     {expandedPhoto.caption}

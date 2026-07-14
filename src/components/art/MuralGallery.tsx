@@ -188,7 +188,7 @@ export default function MuralGallery({
       {/* Header section */}
       <div className="flex flex-col items-start w-full">
         {/* Title */}
-        <p className="font-medium leading-normal pt-4 text-gray-900 text-lg mb-4">
+        <p className="font-medium leading-normal pt-4 text-zinc-900 text-lg mb-4">
           {data.title}
         </p>
 
@@ -198,17 +198,17 @@ export default function MuralGallery({
         <div className="flex flex-col md:flex-row font-normal gap-6 items-start text-base w-full">
           {/* Location and Date */}
           <div className="flex flex-col items-start w-[202px] flex-shrink-0">
-            <p className="text-gray-500 font-medium">
+            <p className="text-zinc-500 font-medium">
               {data.location}
             </p>
-            <p className="text-gray-400">
+            <p className="text-zinc-400">
               {data.date}
             </p>
           </div>
           
           {/* Description */}
           {data.description && (
-            <p className="font-normal leading-normal pb-4 text-gray-400 max-w-[366px] whitespace-pre-wrap">
+            <p className="font-normal leading-normal pb-4 text-zinc-400 max-w-[366px] whitespace-pre-wrap">
               {data.description}
             </p>
           )}
@@ -244,7 +244,7 @@ export default function MuralGallery({
               onClick={() => scroll("left")}
               disabled={!canScrollLeft}
               className={clsx(
-                canScrollLeft ? "text-gray-500 hover:text-gray-700" : "text-gray-300/60 cursor-default"
+                canScrollLeft ? "text-zinc-500 hover:text-zinc-700" : "text-zinc-300/60 cursor-default"
               )}
               aria-label="Scroll left"
             >
@@ -263,7 +263,7 @@ export default function MuralGallery({
               onClick={() => scroll("right")}
               disabled={!canScrollRight}
               className={clsx(
-                canScrollRight ? "text-gray-500 hover:text-gray-700" : "text-gray-300/60 cursor-default"
+                canScrollRight ? "text-zinc-500 hover:text-zinc-700" : "text-zinc-300/60 cursor-default"
               )}
               aria-label="Scroll right"
             >

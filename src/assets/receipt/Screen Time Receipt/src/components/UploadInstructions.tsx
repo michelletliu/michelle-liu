@@ -12,7 +12,7 @@ export function UploadInstructions({ onClose }: UploadInstructionsProps) {
           <h2 className="font-['SF_Mono:Semibold',sans-serif] text-[17px] text-black">Upload Your Screen Time Data</h2>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-zinc-100 rounded-full transition-colors"
           >
             <X size={20} />
           </button>
