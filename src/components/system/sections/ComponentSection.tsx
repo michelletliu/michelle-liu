@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { ArrowUpRight } from "../../ArrowUpRight";
-import { FieldInput, FieldShell } from "../../FieldInput";
+import { FieldInput, FieldLeadingIcon, FieldShell, SearchMagnifierIcon } from "../../FieldInput";
 import { FilterDropdown } from "../../FilterDropdown";
 import Sidebar, { type SidebarNode } from "../../Sidebar";
 import Tooltip from "../../Tooltip";
@@ -295,6 +295,31 @@ function FilterPillsSpecimen() {
   );
 }
 
+/** Mobile sheet Filter — muted FieldShell + leading magnifier. */
+function SearchFieldSpecimen() {
+  const [value, setValue] = useState("");
+
+  return (
+    <FieldShell tone="muted" className="max-w-[280px] gap-2">
+      <FieldLeadingIcon>
+        <SearchMagnifierIcon />
+      </FieldLeadingIcon>
+      <FieldInput
+        type="text"
+        inputMode="search"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Filter"
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
+        aria-label="Search input specimen"
+        className="pr-3 font-medium tracking-[0.01em] text-zinc-700"
+      />
+    </FieldShell>
+  );
+}
+
 /** Featured work-card title pill chrome — matches HomePageClient ProjectCard. */
 function ProjectTitlePill({
   suffix,
@@ -424,6 +449,66 @@ function SidebarSpecimen() {
   );
 }
 
+function InputSpecimensSection() {
+  return (
+    <>
+      <SubLabel note="Pill field shared by password gates, library modal, and mobile Filter. Leading icons use FieldLeadingIcon (size-5) with FieldInput h-5 / leading-5 / p-0.">
+        Inputs
+      </SubLabel>
+      <div className={SPECIMEN_GRID}>
+        <Specimen label="Text" span={SPAN_WIDE}>
+          <FieldShell className="max-w-[280px]">
+            <FieldInput type="text" placeholder="Book Title" defaultValue="" aria-label="Text input specimen" />
+          </FieldShell>
+        </Specimen>
+
+        <Specimen label="Search · leading icon" span={SPAN_WIDE}>
+          <SearchFieldSpecimen />
+        </Specimen>
+
+        <Specimen label="Password" span={SPAN_WIDE}>
+          <FieldShell className="max-w-[280px] justify-between">
+            <FieldInput type="password" placeholder="Enter" defaultValue="" aria-label="Password input specimen" />
+            <span className="size-3.5 shrink-0 text-zinc-400" aria-hidden>
+              <ArrowRightIcon size="14px" className="block size-full" />
+            </span>
+          </FieldShell>
+        </Specimen>
+
+        <Specimen label="Focused" span={SPAN_WIDE}>
+          <FieldShell active className="max-w-[240px]">
+            <FieldInput type="text" defaultValue="Michelle" aria-label="Focused input specimen" readOnly />
+          </FieldShell>
+        </Specimen>
+
+        <Specimen label="Muted (library)" span={SPAN_WIDE}>
+          <FieldShell tone="muted" className="max-w-[240px]">
+            <FieldInput
+              type="text"
+              placeholder="Say Hi"
+              defaultValue=""
+              className="px-3.5"
+              aria-label="Muted library input specimen"
+            />
+          </FieldShell>
+        </Specimen>
+
+        <Specimen label="Disabled" span={SPAN_WIDE}>
+          <FieldShell className="max-w-[240px]">
+            <FieldInput type="text" placeholder="Unavailable" disabled aria-label="Disabled input specimen" />
+          </FieldShell>
+        </Specimen>
+
+        <Specimen label="Error" span={SPAN_WIDE}>
+          <FieldShell error className="max-w-[240px]">
+            <FieldInput type="password" placeholder="Enter" defaultValue="••••" aria-label="Error input specimen" readOnly />
+          </FieldShell>
+        </Specimen>
+      </div>
+    </>
+  );
+}
+
 export default function ComponentSection() {
   return (
     <Section id="components" title="Components">
@@ -505,74 +590,25 @@ export default function ComponentSection() {
             className="flex shrink-0 cursor-default items-center gap-2 rounded-full bg-[#ecfdf5] px-3 py-1.5 transition-colors hover:bg-emerald-50"
             aria-label="Available for work"
           >
-            <span className="relative flex h-2.5 w-2.5 shrink-0">
+            <span className="relative flex size-2.5 shrink-0">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-200 opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+              <span className="relative inline-flex size-2.5 rounded-full bg-emerald-500" />
             </span>
             <span className="whitespace-nowrap text-sm text-emerald-600">Available for work</span>
           </button>
         </Specimen>
 
         <Specimen label="Social / meta link" span={SPAN_WIDE}>
-          <a
-            href="#components"
+          <button
+            type="button"
             className="inline-flex cursor-pointer items-center gap-1 text-sm text-zinc-600 transition-colors hover:text-blue-500"
-            onClick={(e) => e.preventDefault()}
           >
             Read more <ArrowUpRight />
-          </a>
+          </button>
         </Specimen>
       </div>
 
-      <SubLabel note="Pill field shared by password gates and the library submit-book modal. Idle border transparent → zinc-300 on focus; red-400 on error.">
-        Inputs
-      </SubLabel>
-      <div className={SPECIMEN_GRID}>
-        <Specimen label="Text" span={SPAN_WIDE}>
-          <FieldShell className="max-w-[280px]">
-            <FieldInput type="text" placeholder="Book Title" defaultValue="" aria-label="Text input specimen" />
-          </FieldShell>
-        </Specimen>
-
-        <Specimen label="Password" span={SPAN_WIDE}>
-          <FieldShell className="max-w-[280px] justify-between">
-            <FieldInput type="password" placeholder="Enter" defaultValue="" aria-label="Password input specimen" />
-            <span className="size-3.5 shrink-0 text-zinc-400" aria-hidden>
-              <ArrowRightIcon size="14px" className="block size-full" />
-            </span>
-          </FieldShell>
-        </Specimen>
-
-        <Specimen label="Focused" span={SPAN_WIDE}>
-          <FieldShell active className="max-w-[240px]">
-            <FieldInput type="text" defaultValue="Michelle" aria-label="Focused input specimen" readOnly />
-          </FieldShell>
-        </Specimen>
-
-        <Specimen label="Muted (library)" span={SPAN_WIDE}>
-          <FieldShell tone="muted" className="max-w-[240px]">
-            <FieldInput
-              type="text"
-              placeholder="Say Hi"
-              defaultValue=""
-              className="px-3.5"
-              aria-label="Muted library input specimen"
-            />
-          </FieldShell>
-        </Specimen>
-
-        <Specimen label="Disabled" span={SPAN_WIDE}>
-          <FieldShell className="max-w-[240px]">
-            <FieldInput type="text" placeholder="Unavailable" disabled aria-label="Disabled input specimen" />
-          </FieldShell>
-        </Specimen>
-
-        <Specimen label="Error" span={SPAN_WIDE}>
-          <FieldShell error className="max-w-[240px]">
-            <FieldInput type="password" placeholder="Enter" defaultValue="••••" aria-label="Error input specimen" readOnly />
-          </FieldShell>
-        </Specimen>
-      </div>
+      <InputSpecimensSection />
 
       <SubLabel note="Axes: variant · size · icon · glass · color. Specimens encode site class patterns (not a shared Button API).">
         Buttons
@@ -662,15 +698,15 @@ export default function ComponentSection() {
       </div>
       <p className="mt-6 max-w-2xl text-sm leading-relaxed text-zinc-400 text-pretty">
         In use (not shown): Contact CTA · View on X · Skip link · Breadcrumb · Info · Modal close.
-        Colors stay minimal — blue primary, zinc secondary; no destructive CTA on site.
+        Colors stay minimal (blue primary, zinc secondary); no destructive CTA on site.
       </p>
 
       <SubLabel>Loaders</SubLabel>
       <div className={SPECIMEN_GRID}>
         <Specimen label="Spinner" span={SPAN_MID}>
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-400" />
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-400" />
-          <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-zinc-200 border-t-zinc-400" />
+          <div className="size-5 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-400" />
+          <div className="size-8 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-400" />
+          <div className="size-10 animate-spin rounded-full border-[3px] border-zinc-200 border-t-zinc-400" />
         </Specimen>
 
         <Specimen label="Shimmer skeleton" span={SPAN_MID}>
