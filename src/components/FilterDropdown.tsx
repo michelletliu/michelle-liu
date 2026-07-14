@@ -35,6 +35,14 @@ export function FilterDropdown({
   // Snapshot of button rect captured synchronously before portal mounts
   const snapRef = useRef({ top: 0, left: 0 });
 
+  // Initialize snapRef if defaultOpen and usePortal are both true
+  useEffect(() => {
+    if (defaultOpen && usePortal && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      snapRef.current = { top: rect.bottom + 4, left: rect.left };
+    }
+  }, []);
+
   // Sync position update — called directly in scroll handler, no RAF lag
   const syncPanelPos = () => {
     if (buttonRef.current && panelRef.current) {
