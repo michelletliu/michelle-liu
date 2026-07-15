@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import BlueprintLogo from "./BlueprintLogo";
@@ -45,10 +44,17 @@ export default function DesignSystemLogoLink() {
     };
   }, [router]);
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    markBlueprintDoorwayNav();
+    window.scrollTo(0, 0);
+    // Use router.push for instant navigation instead of waiting for Link
+    router.push("/design-system");
+  };
+
   return (
-    <Link
+    <a
       href="/design-system"
-      prefetch
       aria-label="Open the design system"
       onMouseEnter={() => {
         router.prefetch("/design-system");
@@ -62,15 +68,12 @@ export default function DesignSystemLogoLink() {
         router.prefetch("/design-system");
         warmDesignSystem();
       }}
-      onClick={() => {
-        markBlueprintDoorwayNav();
-        window.scrollTo(0, 0);
-      }}
-      className="group relative -m-2 inline-block shrink-0 cursor-pointer overflow-visible p-2 transition-transform duration-200 ease-out [@media(hover:hover)]:hover:scale-[1.02] active:scale-95"
+      onClick={handleClick}
+      className="group relative -m-2 inline-block shrink-0 cursor-pointer overflow-visible p-2 transition-transform duration-200 ease-out hover:scale-[1.02] active:scale-95"
     >
       <span className="relative block size-8 md:size-11">
         <BlueprintLogo mode="hover" />
       </span>
-    </Link>
+    </a>
   );
 }
