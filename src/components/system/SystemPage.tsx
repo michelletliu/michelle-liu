@@ -369,11 +369,16 @@ export default function SystemPage() {
         collide, then docks to the zone bottom so it can't cover the footer.
       */}
       <div ref={zoneRef} className="relative">
-        {/* Mobile section menu — clears fixed logo */}
+        {/*
+          Mobile section menu — the leading spacer mirrors the fixed logo's box
+          (left-6 top-8 size-8, md:left-16 md:size-11) so the filter sits beside
+          the logo, vertically centered with it, matching the home header.
+        */}
         <nav
           aria-label="Sections"
-          className="sticky top-0 z-40 flex items-center border-b border-zinc-100 bg-white/85 py-2 pl-16 pr-4 backdrop-blur-md lg:hidden"
+          className="sticky top-0 z-40 flex items-center gap-3 border-b border-zinc-100 bg-white/85 pb-2.5 pl-6 pr-4 pt-[26px] backdrop-blur-md md:pb-3 md:pl-16 md:pt-8 lg:hidden"
         >
+          <span aria-hidden className="size-8 shrink-0 md:size-11" />
           <MobileSectionMenu activeSection={activeSection} onSelect={scrollTo} />
         </nav>
 
