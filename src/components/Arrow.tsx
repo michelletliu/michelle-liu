@@ -16,6 +16,7 @@ export type ArrowProps = {
 
 /**
  * Shared flat arrow — one path, sized like ArrowUpRight / Chevron.
+ * Prefer `size={iconSize(...)}` from `iconSizes` over CSS `size-*`.
  * Direction via SVG transform so Tailwind rotate-* still composes.
  * Canonical stroke from library ArrowRightIcon.
  */

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { materials } from "../tokens";
-import { Section, TagChip } from "../primitives";
+import { Section, TagChip, GLASS_SPECIMEN_GRADIENT } from "../primitives";
 
 const GRAIN_SVG =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E\")";
@@ -10,7 +10,7 @@ const HEADER_GRADIENT =
 
 function SpecimenShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex h-28 items-center justify-center overflow-hidden rounded-xl ring-1 ring-inset ring-black/5">
+    <div className="flex h-28 items-center justify-center overflow-hidden rounded-xl ring-1 ring-inset ring-zinc-900/5">
       {children}
     </div>
   );
@@ -36,8 +36,7 @@ function MaterialSpecimen({ name }: { name: string }) {
           <div
             className="flex h-full w-full items-center justify-center"
             style={{
-              backgroundColor: "#F5E2FF",
-              backgroundImage: GRAIN_SVG,
+              backgroundImage: `${GRAIN_SVG}, ${GLASS_SPECIMEN_GRADIENT}`,
             }}
           >
             <span className="text-sm text-zinc-500">Grain</span>
@@ -50,7 +49,7 @@ function MaterialSpecimen({ name }: { name: string }) {
         <SpecimenShell>
           <div
             className="flex h-full w-full items-center justify-center"
-            style={{ backgroundImage: "linear-gradient(120deg, #D5E0FF, #F5E2FF, #AADBFD)" }}
+            style={{ backgroundImage: GLASS_SPECIMEN_GRADIENT }}
           >
             <div className="rounded-full border border-white/50 bg-zinc-200/60 px-4 py-1.5 shadow-glass backdrop-blur-md">
               <span className="text-sm text-zinc-500">Glass pill</span>
@@ -62,10 +61,10 @@ function MaterialSpecimen({ name }: { name: string }) {
     case "Backdrop blur":
       return (
         <SpecimenShell>
-          <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-zinc-100">
+          <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
             <div
               className="absolute inset-0"
-              style={{ backgroundImage: "linear-gradient(120deg, #D5E0FF, #F5E2FF, #AADBFD)" }}
+              style={{ backgroundImage: GLASS_SPECIMEN_GRADIENT }}
             />
             <div className="relative rounded-lg border border-white/40 bg-white/40 px-4 py-2 backdrop-blur-md">
               <span className="text-sm text-zinc-600">Blur</span>
@@ -79,7 +78,7 @@ function MaterialSpecimen({ name }: { name: string }) {
         <SpecimenShell>
           <div
             className="relative flex h-full w-full items-center justify-center"
-            style={{ backgroundImage: "linear-gradient(135deg, #c7d2fe, #fbcfe8, #a5f3fc)" }}
+            style={{ backgroundImage: GLASS_SPECIMEN_GRADIENT }}
           >
             <div
               className="rounded-full border border-white/50 px-4 py-2 text-sm text-zinc-600 shadow-glass"
@@ -167,8 +166,8 @@ function MaterialSpecimen({ name }: { name: string }) {
       return (
         <SpecimenShell>
           <div className="relative flex h-full w-full items-center justify-center bg-zinc-100">
-            <div className="absolute inset-0 bg-black/20" />
-            <div className="relative rounded-lg bg-white px-4 py-2 shadow-soft ring-1 ring-black/5">
+            <div className="absolute inset-0 bg-zinc-900/20" />
+            <div className="relative rounded-lg bg-white px-4 py-2 shadow-soft ring-1 ring-zinc-900/5">
               <span className="text-sm text-zinc-600">Modal</span>
             </div>
           </div>
@@ -222,8 +221,8 @@ function MaterialSpecimen({ name }: { name: string }) {
       return (
         <SpecimenShell>
           <div className="flex h-full w-full items-center justify-center gap-3 bg-zinc-50">
-            <div className="h-12 w-16 scale-[0.99] rounded-lg bg-zinc-200 ring-1 ring-inset ring-black/5" />
-            <div className="h-12 w-16 scale-[1.005] rounded-lg bg-zinc-300 ring-1 ring-inset ring-black/5 shadow-soft" />
+            <div className="h-12 w-16 scale-[0.99] rounded-lg bg-zinc-200 ring-1 ring-inset ring-zinc-900/5" />
+            <div className="h-12 w-16 scale-[1.005] rounded-lg bg-zinc-300 ring-1 ring-inset ring-zinc-900/5 shadow-soft" />
           </div>
         </SpecimenShell>
       );
@@ -241,7 +240,7 @@ function MaterialSpecimen({ name }: { name: string }) {
 
 export default function MaterialSection() {
   return (
-    <Section id="materials" title="Materials & effects">
+    <Section id="materials" title="Materials">
       <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
         {materials.map((m) => (
           <div key={m.name} className="flex flex-col gap-3">

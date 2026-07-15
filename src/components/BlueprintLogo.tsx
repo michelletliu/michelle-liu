@@ -47,6 +47,49 @@ const morphTransition = (reduce: boolean): Transition =>
     : { duration: MORPH_DURATION, ease: MORPH_EASE };
 
 /**
+ * Hover morph only on true hover pointers. Touch/coarse leaves sticky
+ * `:hover` after tap (gray seal stuck on home), so skip morph there —
+ * tap just navigates. Mirrors Tooltip: also latch off on first touchstart
+ * for hybrid iPad / simulator cases where `(hover: hover)` still matches.
+ */
+function useHoverMorphCapable(): boolean {
+  const [capable, setCapable] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return (
+      window.matchMedia("(hover: hover)").matches &&
+      !window.matchMedia("(pointer: coarse)").matches
+    );
+  });
+
+  useEffect(() => {
+    const hoverMq = window.matchMedia("(hover: hover)");
+    const coarseMq = window.matchMedia("(pointer: coarse)");
+    let touchLatched = false;
+    const sync = () => {
+      setCapable(
+        hoverMq.matches && !coarseMq.matches && !touchLatched
+      );
+    };
+    const onTouch = () => {
+      touchLatched = true;
+      setCapable(false);
+      window.removeEventListener("touchstart", onTouch);
+    };
+    sync();
+    hoverMq.addEventListener("change", sync);
+    coarseMq.addEventListener("change", sync);
+    window.addEventListener("touchstart", onTouch, { passive: true });
+    return () => {
+      hoverMq.removeEventListener("change", sync);
+      coarseMq.removeEventListener("change", sync);
+      window.removeEventListener("touchstart", onTouch);
+    };
+  }, []);
+
+  return capable;
+}
+
+/**
  * Seal logo with a morphing blueprint frame.
  * Four open crop rails retract toward the seal’s straight edge segments while
  * a rounded rect peaks mid-transition (matching the red seal border). Glyph
@@ -61,6 +104,7 @@ export default function BlueprintLogo({
   const always = mode === "always";
   const rootRef = useRef<HTMLSpanElement>(null);
   const reduceMotion = useReducedMotion();
+  const hoverMorphCapable = useHoverMorphCapable();
   const [groupHovered, setGroupHovered] = useState(false);
   // Hover mode: arm on mount so the first red→blueprint hover works. Only stay
   // disarmed when returning from the design-system doorway with the pointer
@@ -76,6 +120,16 @@ export default function BlueprintLogo({
   useLayoutEffect(() => {
     const group = rootRef.current?.closest(".group");
     if (!group) return;
+
+    // Touch / coarse: resting seal only (red on home, blueprint on DS).
+    // Sticky :hover after tap must not drive morph / doorway lock.
+    if (!hoverMorphCapable) {
+      stickyLockRef.current = false;
+      clearBlueprintDoorwaySticky();
+      setGroupHovered(false);
+      setHoverArmed(true);
+      return;
+    }
 
     let raf1 = 0;
     let raf2 = 0;
@@ -110,7 +164,11 @@ export default function BlueprintLogo({
       }
     }
 
-    const onEnter = () => {
+    const onEnter = (event: Event) => {
+      // Ignore touch/pen "hover" emulation — only real mouse hover morphs.
+      if (event instanceof PointerEvent && event.pointerType !== "mouse") {
+        return;
+      }
       // Defer morph re-render so an in-flight click on the parent Link
       // isn't interrupted mid-gesture.
       startTransition(() => setGroupHovered(true));
@@ -135,7 +193,7 @@ export default function BlueprintLogo({
       group.removeEventListener("pointerenter", onEnter);
       group.removeEventListener("pointerleave", onLeave);
     };
-  }, [always]);
+  }, [always, hoverMorphCapable]);
 
   const showBlueprint = always
     ? !groupHovered

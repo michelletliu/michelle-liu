@@ -4,11 +4,11 @@ import type { ReactNode } from "react";
 import { ArrowUpRight } from "../../ArrowUpRight";
 import { LinkIcon } from "../../LinkIcon";
 import { TouchIcon } from "../../TouchIcon";
-import { ChevronLeftIcon, ChevronRightIcon } from "../../art/ChevronIcons";
+import { Chevron } from "../../Chevron";
+import { Close } from "../../Close";
+import { Arrow } from "../../Arrow";
+import { iconSize, iconSizes } from "../../iconSizes";
 import {
-  ArrowRightIcon,
-  ChevronDownIcon,
-  CloseIcon,
   PlusIcon,
   SendIcon,
   SmileyIcon,
@@ -16,10 +16,36 @@ import {
 import { SocialLinksBackgroundImage } from "../../SocialLinks";
 import svgPaths from "../../../imports/svg-2tsxp86msm";
 import LumaLogo from "../../../assets/LumaLogo.svg";
+import heartFillIcon from "../../../assets/HeartFill.svg";
+import academicCapIcon from "../../../assets/academic-cap.svg";
+import mapPinIcon from "../../../assets/map-pin.svg";
 import { Section, SubLabel, Grid } from "../primitives";
 
 const X_LOGO_PATH =
   "M10.6862 7.6055L17.3844 0H15.8002L9.97941 6.60311L5.36277 0H0.178833L7.19548 9.9737L0.178833 17.9454H1.76308L7.90171 10.9761L12.7696 17.9454H17.9536L10.6858 7.6055H10.6862ZM8.7057 10.0639L7.99222 9.06869L2.33673 1.16544H4.60063L9.33802 7.5516L10.0515 8.54678L15.8011 16.8348H13.5372L8.7057 10.0643V10.0639Z";
+
+const APPLE_LOGO_PATH =
+  "M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57-155.5-127C46.7 790.7 0 663 0 541.8c0-194.4 126.4-297.5 250.8-297.5 66.1 0 121.2 43.4 162.7 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z";
+
+/** Renders a filled SVG asset as currentColor via CSS mask (keeps fill icons filled). */
+function FilledAssetIcon({ src, className = "size-5" }: { src: string; className?: string }) {
+  return (
+    <span
+      className={`inline-block bg-current ${className}`}
+      style={{
+        maskImage: `url(${src})`,
+        maskSize: "contain",
+        maskRepeat: "no-repeat",
+        maskPosition: "center",
+        WebkitMaskImage: `url(${src})`,
+        WebkitMaskSize: "contain",
+        WebkitMaskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+      }}
+      aria-hidden
+    />
+  );
+}
 
 /** Filled info glyph from InfoButton / ExperimentModal. */
 function InfoIcon() {
@@ -37,48 +63,10 @@ function InfoIcon() {
 function ExpandIcon() {
   return (
     <svg className="size-5" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M10 4H4V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M4 4L10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M14 20H20V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M20 20L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-/** Thin filter / pop-up chevron (FilterDropdown, system mobile menu). */
-function FilterChevronIcon() {
-  return (
-    <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-    </svg>
-  );
-}
-
-/** Breadcrumb separator (ProjectModal / ExperimentModal). */
-function BreadcrumbChevronIcon() {
-  return (
-    <svg className="size-5" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path
-        d="M6 12L10 8L6 4"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-/** Password submit arrow (ProtectedContent / ProjectModal). */
-function SubmitDownArrowIcon() {
-  return (
-    <svg className="h-5 w-4" viewBox="0 0 12 14" fill="none" aria-hidden>
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M6 0C6.41421 0 6.75 0.335786 6.75 0.75V11.4393L10.7197 7.46967C11.0126 7.17678 11.4874 7.17678 11.7803 7.46967C12.0732 7.76256 12.0732 8.23744 11.7803 8.53033L6.53033 13.7803C6.23744 14.0732 5.76256 14.0732 5.46967 13.7803L0.21967 8.53033C-0.0732233 8.23744 -0.0732233 7.76256 0.21967 7.46967C0.512563 7.17678 0.987437 7.17678 1.28033 7.46967L5.25 11.4393V0.75C5.25 0.335786 5.58579 0 6 0Z"
-        fill="currentColor"
-      />
+      <path d="M10 4H4V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      <path d="M4 4L10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      <path d="M14 20H20V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      <path d="M20 20L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }
@@ -92,6 +80,7 @@ function EyeIcon() {
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
       <path
         d="M12 15.75C14.0711 15.75 15.75 14.0711 15.75 12C15.75 9.92893 14.0711 8.25 12 8.25C9.92893 8.25 8.25 9.92893 8.25 12C8.25 14.0711 9.92893 15.75 12 15.75Z"
@@ -99,6 +88,7 @@ function EyeIcon() {
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
     </svg>
   );
@@ -113,14 +103,16 @@ function EyeOffIcon() {
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
-      <path d="M4.5 4.5L19.5 19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4.5 4.5L19.5 19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
       <path
         d="M9.75 5.5C10.485 5.34 11.235 5.25 12 5.25C19.5 5.25 22.5 12 22.5 12C22.02 12.945 21.42 13.815 20.73 14.61"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
       <path
         d="M17.94 17.94C16.23 19.17 14.16 19.875 12 19.875C4.5 19.875 1.5 13.125 1.5 13.125C2.505 11.205 3.975 9.54 5.775 8.355"
@@ -128,6 +120,7 @@ function EyeOffIcon() {
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
     </svg>
   );
@@ -137,14 +130,14 @@ function SunIcon() {
   return (
     <svg className="size-5" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
       <circle cx="8" cy="8" r="3.5" />
-      <line x1="8" y1="0.5" x2="8" y2="2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="8" y1="13.5" x2="8" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="15.5" y1="8" x2="13.5" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="2.5" y1="8" x2="0.5" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="13.3" y1="2.7" x2="11.89" y2="4.11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="4.11" y1="11.89" x2="2.7" y2="13.3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="13.3" y1="13.3" x2="11.89" y2="11.89" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="4.11" y1="4.11" x2="2.7" y2="2.7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="8" y1="0.5" x2="8" y2="2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <line x1="8" y1="13.5" x2="8" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <line x1="15.5" y1="8" x2="13.5" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <line x1="2.5" y1="8" x2="0.5" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <line x1="13.3" y1="2.7" x2="11.89" y2="4.11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <line x1="4.11" y1="11.89" x2="2.7" y2="13.3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <line x1="13.3" y1="13.3" x2="11.89" y2="11.89" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <line x1="4.11" y1="4.11" x2="2.7" y2="2.7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }
@@ -161,7 +154,7 @@ function MoonIcon() {
 function CheckIcon() {
   return (
     <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
-      <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }
@@ -171,6 +164,42 @@ function LockIcon() {
     <svg className="h-7 w-auto" viewBox="0 0 19 28" fill="none" aria-hidden>
       <path
         d="M3.13274 27.3175C2.1117 27.3175 1.33199 27.039 0.793626 26.4821C0.264542 25.9251 0 25.099 0 24.0037V14.4106C0 13.3153 0.264542 12.4938 0.793626 11.9462C1.33199 11.3892 2.1117 11.1108 3.13274 11.1108H15.8725C16.8936 11.1108 17.6686 11.3892 18.1977 11.9462C18.7361 12.4938 19.0053 13.3153 19.0053 14.4106V24.0037C19.0053 25.099 18.7361 25.9251 18.1977 26.4821C17.6686 27.039 16.8936 27.3175 15.8725 27.3175H3.13274ZM2.43657 12.1829V7.78311C2.43657 6.03806 2.77073 4.59004 3.43905 3.43905C4.11665 2.28806 4.99381 1.42946 6.07054 0.863242C7.14728 0.287747 8.28899 0 9.49567 0C10.7116 0 11.858 0.287747 12.9347 0.863242C14.0114 1.42946 14.884 2.28806 15.5523 3.43905C16.2299 4.59004 16.5687 6.03806 16.5687 7.78311V12.1829H14.3688V7.47679C14.3688 6.30724 14.1414 5.32333 13.6866 4.52506C13.241 3.72679 12.647 3.12345 11.9044 2.71504C11.1711 2.30662 10.3682 2.10241 9.49567 2.10241C8.63243 2.10241 7.82952 2.30662 7.08694 2.71504C6.35365 3.12345 5.76423 3.72679 5.31869 4.52506C4.87314 5.32333 4.65037 6.30724 4.65037 7.47679V12.1829H2.43657Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+/** Film play control — FilmPage. */
+function FilmPlayIcon() {
+  return (
+    <svg className="size-5" viewBox="0 0 88 99" fill="none" aria-hidden>
+      <path
+        d="M0 89.8828V8.55469C0 5.625 0.722656 3.47656 2.16797 2.10938C3.61328 0.703125 5.33203 0 7.32422 0C9.08203 0 10.8789 0.507812 12.7148 1.52344L80.9766 41.4258C83.3984 42.832 85.0781 44.1016 86.0156 45.2344C86.9922 46.3281 87.4805 47.6562 87.4805 49.2188C87.4805 50.7422 86.9922 52.0703 86.0156 53.2031C85.0781 54.3359 83.3984 55.6055 80.9766 57.0117L12.7148 96.9141C10.8789 97.9297 9.08203 98.4375 7.32422 98.4375C5.33203 98.4375 3.61328 97.7344 2.16797 96.3281C0.722656 94.9219 0 92.7734 0 89.8828Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+/** Film pause control — FilmPage. */
+function FilmPauseIcon() {
+  return (
+    <svg className="size-5" viewBox="0 0 72 97" fill="none" aria-hidden>
+      <path
+        d="M7.79297 96.9141C5.21484 96.9141 3.26172 96.25 1.93359 94.9219C0.644531 93.5938 0 91.6406 0 89.0625V7.79297C0 5.21484 0.644531 3.28125 1.93359 1.99219C3.26172 0.664062 5.21484 0 7.79297 0H21.1523C23.6914 0 25.625 0.625 26.9531 1.875C28.2812 3.125 28.9453 5.09766 28.9453 7.79297V89.0625C28.9453 91.6406 28.2812 93.5938 26.9531 94.9219C25.625 96.25 23.6914 96.9141 21.1523 96.9141H7.79297ZM50.3906 96.9141C47.8125 96.9141 45.8594 96.25 44.5312 94.9219C43.2031 93.5938 42.5391 91.6406 42.5391 89.0625V7.79297C42.5391 5.21484 43.2031 3.28125 44.5312 1.99219C45.8594 0.664062 47.8125 0 50.3906 0H63.6914C66.2695 0 68.2031 0.625 69.4922 1.875C70.8203 3.125 71.4844 5.09766 71.4844 7.79297V89.0625C71.4844 91.6406 70.8203 93.5938 69.4922 94.9219C68.2031 96.25 66.2695 96.9141 63.6914 96.9141H50.3906Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+/** Film rewind control — FilmPage. */
+function FilmRewindIcon() {
+  return (
+    <svg className="size-5" viewBox="0 0 120 131" fill="none" aria-hidden>
+      <path
+        d="M71.0742 4.16324V31.0578C71.0742 32.425 70.7812 33.4601 70.1953 34.1632C69.6484 34.8664 68.9062 35.2179 67.9688 35.2179C67.0703 35.1789 66.0742 34.7882 64.9805 34.0461L46.2891 20.9211C44.9609 19.9836 44.2773 18.8898 44.2383 17.6398C44.2383 16.3898 44.9219 15.2765 46.2891 14.3L64.9219 1.17496C66.0156 0.432771 67.0312 0.0421464 67.9688 0.00308388C68.9062 -0.0359786 69.6484 0.296053 70.1953 0.999178C70.7812 1.7023 71.0742 2.75699 71.0742 4.16324ZM59.7656 130.902C51.5234 130.902 43.7891 129.339 36.5625 126.214C29.3359 123.128 22.9883 118.851 17.5195 113.382C12.0508 107.913 7.75391 101.566 4.62891 94.339C1.54297 87.1125 0 79.3781 0 71.1359C0 64.4562 1.01562 58.1281 3.04688 52.1515C5.11719 46.1359 8.00781 40.6476 11.7188 35.6867C15.4688 30.6867 19.8633 26.3703 24.9023 22.7375C26.1914 21.7218 27.5586 21.3507 29.0039 21.6242C30.4492 21.8976 31.543 22.6203 32.2852 23.7921C33.0273 25.0421 33.2227 26.3117 32.8711 27.6007C32.5586 28.8507 31.7969 29.925 30.5859 30.8234C26.4453 33.7921 22.832 37.3664 19.7461 41.5461C16.6602 45.6867 14.2578 50.257 12.5391 55.257C10.8203 60.257 9.96094 65.55 9.96094 71.1359C9.96094 78.0109 11.25 84.4562 13.8281 90.4718C16.4062 96.4875 19.9805 101.78 24.5508 106.351C29.1211 110.921 34.4141 114.495 40.4297 117.073C46.4453 119.652 52.8906 120.941 59.7656 120.941C66.6406 120.941 73.0859 119.652 79.1016 117.073C85.1172 114.495 90.4102 110.921 94.9805 106.351C99.5508 101.78 103.125 96.4875 105.703 90.4718C108.281 84.4562 109.57 78.0109 109.57 71.1359C109.57 64.2609 108.281 57.8156 105.703 51.8C103.125 45.7453 99.5508 40.4523 94.9805 35.9211C90.4102 31.3507 85.1172 27.7765 79.1016 25.1984C73.0859 22.6203 66.6406 21.3312 59.7656 21.3312C58.3984 21.3312 57.2266 20.8429 56.25 19.8664C55.2734 18.8507 54.7852 17.6593 54.7852 16.2921C54.7852 14.964 55.2539 13.8312 56.1914 12.8937C57.168 11.9171 58.3398 11.4093 59.707 11.3703C67.9883 11.3703 75.7422 12.9328 82.9688 16.0578C90.1953 19.1437 96.543 23.4211 102.012 28.8898C107.52 34.3586 111.816 40.7062 114.902 47.9328C117.988 55.1593 119.531 62.8937 119.531 71.1359C119.531 79.3781 117.969 87.1125 114.844 94.339C111.758 101.566 107.48 107.913 102.012 113.382C96.543 118.851 90.1953 123.128 82.9688 126.214C75.7422 129.339 68.0078 130.902 59.7656 130.902Z"
         fill="currentColor"
       />
     </svg>
@@ -205,37 +234,27 @@ const uiIcons: IconSpecimen[] = [
   {
     name: "ArrowUpRight",
     source: "ArrowUpRight.tsx",
-    usage: "External / meta links, CTAs, email hover",
-    sample: <ArrowUpRight size="20px" />,
-  },
-  {
-    name: "Chevron left / right",
-    source: "art/ChevronIcons.tsx",
-    usage: "Art mural & sketchbook carousel arrows",
+    usage: "External / meta links, CTAs, email hover — stroke stays 1.5px at any size",
     sample: (
-      <div className="flex items-center gap-4">
-        <ChevronLeftIcon className="size-5" />
-        <ChevronRightIcon className="size-5" />
+      <div className="flex items-end gap-3">
+        <ArrowUpRight size={iconSize("meta")} />
+        <ArrowUpRight size={iconSize("toolbar")} />
+        <ArrowUpRight size={iconSize("hero")} />
       </div>
     ),
   },
   {
-    name: "Chevron down",
-    source: "library/icons.tsx",
-    usage: "Library / shelf filter trigger",
-    sample: <ChevronDownIcon className="h-2.5 w-4" />,
-  },
-  {
-    name: "Filter chevron",
-    source: "FilterDropdown / SystemPage",
-    usage: "Filter pills & mobile section menu",
-    sample: <FilterChevronIcon />,
-  },
-  {
-    name: "Breadcrumb chevron",
-    source: "ProjectModal / ExperimentModal",
-    usage: "Modal breadcrumb separators",
-    sample: <BreadcrumbChevronIcon />,
+    name: "Chevron",
+    source: "Chevron.tsx",
+    usage: "Nav, filters, breadcrumbs, carousels — one path, size prop; direction via rotate (right/down/left/up)",
+    sample: (
+      <div className="flex items-end gap-3">
+        <Chevron size={iconSize("meta")} />
+        <Chevron size={iconSize("inline")} />
+        <Chevron size={iconSize("toolbar")} />
+        <Chevron size={iconSize("hero")} />
+      </div>
+    ),
   },
   {
     name: "Plus",
@@ -245,26 +264,16 @@ const uiIcons: IconSpecimen[] = [
   },
   {
     name: "Close",
-    source: "library/icons.tsx · CloseIcon",
-    usage: "Library / book modals",
-    sample: <CloseIcon className="size-5" />,
-  },
-  {
-    name: "Modal close",
-    source: "ProjectModal / lightbox",
-    usage: "Centered modal & lightbox dismiss",
+    source: "Close.tsx",
+    usage: "Modals, lightboxes, menus — one path, size prop; stroke stays 1.5px at any size",
     sample: (
-      <svg className="size-5" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
+      <div className="flex items-end gap-3">
+        <Close size={iconSize("meta")} />
+        <Close size={iconSize("toolbar")} />
+        <Close size={iconSize("touch")} />
+        <Close size={iconSize("hero")} />
+      </div>
     ),
-  },
-  {
-    name: "Info",
-    source: "InfoButton / ExperimentModal",
-    usage: "Project & experiment info triggers",
-    sample: <InfoIcon />,
   },
   {
     name: "Expand",
@@ -285,34 +294,22 @@ const uiIcons: IconSpecimen[] = [
     sample: <SmileyIcon className="size-5" />,
   },
   {
-    name: "Arrow right",
-    source: "library/icons.tsx · ArrowRightIcon",
-    usage: "Flat horizontal arrow (library)",
-    sample: <ArrowRightIcon className="size-5" />,
-  },
-  {
-    name: "Submit down arrow",
-    source: "ProtectedContent / ProjectModal",
-    usage: "Password field submit",
-    sample: <SubmitDownArrowIcon />,
+    name: "Arrow",
+    source: "Arrow.tsx",
+    usage: "Library date ranges, password submit — one path, size prop; direction via rotate (right/down/left/up)",
+    sample: (
+      <div className="flex items-end gap-3">
+        <Arrow size={iconSize("meta")} />
+        <Arrow size={iconSize("toolbar")} />
+        <Arrow size={iconSize("hero")} />
+      </div>
+    ),
   },
   {
     name: "Link",
     source: "LinkIcon.tsx",
     usage: "External experiment links on home",
-    sample: <LinkIcon size="20px" />,
-  },
-  {
-    name: "Touch",
-    source: "TouchIcon.tsx",
-    usage: "Interactive / in-site experiment links",
-    sample: <TouchIcon size="20px" />,
-  },
-  {
-    name: "Lock",
-    source: "assets/lock.svg",
-    usage: "Password-gated project content",
-    sample: <LockIcon />,
+    sample: <LinkIcon size={iconSize("toolbar")} />,
   },
   {
     name: "Eye / eye-off",
@@ -326,6 +323,57 @@ const uiIcons: IconSpecimen[] = [
     ),
   },
   {
+    name: "Check",
+    source: "lucide-react (shadcn)",
+    usage: "Checkbox & menu selected states",
+    sample: <CheckIcon />,
+  },
+  {
+    name: "Info",
+    source: "InfoButton / ExperimentModal",
+    usage: "Project & experiment info triggers",
+    sample: <InfoIcon />,
+  },
+  {
+    name: "Touch",
+    source: "TouchIcon.tsx",
+    usage: "Interactive / in-site experiment links",
+    sample: <TouchIcon size={iconSize("toolbar")} />,
+  },
+];
+
+const filledIcons: IconSpecimen[] = [
+  {
+    name: "Heart fill",
+    source: "assets/HeartFill.svg",
+    usage: "About · communities subtitle accent",
+    sample: <FilledAssetIcon src={heartFillIcon} className="h-[18px] w-5" />,
+  },
+  {
+    name: "Academic cap",
+    source: "assets/academic-cap.svg",
+    usage: "About · education meta row",
+    sample: <FilledAssetIcon src={academicCapIcon} />,
+  },
+  {
+    name: "Map pin",
+    source: "assets/map-pin.svg",
+    usage: "About · location meta row",
+    sample: <FilledAssetIcon src={mapPinIcon} />,
+  },
+  {
+    name: "Favorites star",
+    source: "unicode ★",
+    usage: "Shelf section titles (★ Books) & book ratings",
+    sample: <span className="text-2xl leading-none text-current">★</span>,
+  },
+  {
+    name: "Lock",
+    source: "assets/lock.svg",
+    usage: "Password-gated project content",
+    sample: <LockIcon />,
+  },
+  {
     name: "Sun / moon",
     source: "Footer",
     usage: "Local time day / night indicator",
@@ -337,10 +385,26 @@ const uiIcons: IconSpecimen[] = [
     ),
   },
   {
-    name: "Check",
-    source: "lucide-react (shadcn)",
-    usage: "Checkbox & menu selected states",
-    sample: <CheckIcon />,
+    name: "Play / pause / rewind",
+    source: "FilmPage",
+    usage: "Film page media controls",
+    sample: (
+      <div className="flex items-center gap-4">
+        <FilmPlayIcon />
+        <FilmPauseIcon />
+        <FilmRewindIcon />
+      </div>
+    ),
+  },
+  {
+    name: "Apple",
+    source: "HomePageClient",
+    usage: "Home hero · “Previously at” mark",
+    sample: (
+      <svg className="h-5 w-4" viewBox="0 0 814 1000" fill="currentColor" aria-hidden>
+        <path d={APPLE_LOGO_PATH} />
+      </svg>
+    ),
   },
 ];
 
@@ -396,8 +460,13 @@ const socialIcons: IconSpecimen[] = [
 export default function IconSection() {
   return (
     <Section id="icons" title="Iconography">
-      <SubLabel note="Navigation, actions, feedback, and form affordances — text-zinc-500 · strokeWidth 1.5.">
-        UI icons
+      <SubLabel
+        note={`Size ramp (iconSizes) — ${iconSizes.meta} meta · ${iconSizes.inline} inline · ${iconSizes.toolbar} toolbar/chevrons · ${iconSizes.touch} touch/Close · ${iconSizes.hero} hero. Chevrons sit one step below the paired Close.`}
+      >
+        Size
+      </SubLabel>
+      <SubLabel note="Stroke affordances — text-zinc-500 · strokeWidth 1.5 · vector-effect non-scaling-stroke. Prefer size={iconSize(...)} over CSS size-*.">
+        Stroke icons
       </SubLabel>
       <Grid min="160px">
         {uiIcons.map((icon) => (
@@ -405,7 +474,16 @@ export default function IconSection() {
         ))}
       </Grid>
 
-      <SubLabel note="Footer & community social marks (monochrome zinc-500 in this section).">Social</SubLabel>
+      <SubLabel note="Solid glyphs — stay filled (no strokeWidth rules). Same zinc-500 specimen color.">
+        Filled icons
+      </SubLabel>
+      <Grid min="160px">
+        {filledIcons.map((icon) => (
+          <IconCard key={icon.name} {...icon} />
+        ))}
+      </Grid>
+
+      <SubLabel note="Filled social marks (monochrome zinc-500 in this section).">Social</SubLabel>
       <Grid min="160px">
         {socialIcons.map((icon) => (
           <IconCard key={icon.name} {...icon} />

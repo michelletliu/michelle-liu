@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import clsx from "clsx";
 import lockIcon from "../../assets/lock.svg";
-import { FieldInput, FieldShell } from "../FieldInput";
+import { FieldInput, FieldShell, fieldIconSlotClassName } from "../FieldInput";
 import { ArrowRightIcon } from "../Arrow";
 
 // Lock icon with circular background and shadow (matches Figma exactly)
@@ -130,10 +130,13 @@ export default function ProtectedContent({
                 />
                 <button
                   type="submit"
-                  className="relative shrink-0 size-[14px] text-zinc-400 hover:opacity-70 transition-opacity"
+                  className={clsx(
+                    fieldIconSlotClassName,
+                    "relative text-zinc-400 transition-opacity hover:opacity-70",
+                  )}
                   aria-label="Submit password"
                 >
-                  <ArrowRightIcon size="14px" className="block size-full" />
+                  <ArrowRightIcon size="14px" />
                 </button>
               </FieldShell>
               {/* Error Message with smooth animation */}

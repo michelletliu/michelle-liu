@@ -5,14 +5,25 @@ import {
   fontWeights,
   tracking,
   lineHeights,
+  uniformTag,
 } from "../tokens";
 import { Section, SubLabel, RowList, TokenRow, TagChip } from "../primitives";
 
 export default function TypographySection() {
+  const familiesTag = uniformTag(fontFamilies);
+  const scaleTag = uniformTag(typeScale);
+  const experimentSizesTag = uniformTag(arbitraryTypeSizes);
+  const weightsTag = uniformTag(fontWeights);
+  const trackingTag = uniformTag(tracking);
+  const lineHeightsTag = uniformTag(lineHeights);
+
   return (
     <Section id="typography" title="Typography">
-      <SubLabel note="The 'Michelle' variable font covers weights 300–900, roman + italic.">
-        Font families
+      <SubLabel
+        note="The 'Michelle' variable font covers weights 300–900, roman + italic."
+        tag={familiesTag}
+      >
+        Families
       </SubLabel>
       <div className="flex flex-col divide-y divide-zinc-100">
         {fontFamilies.map((f) => (
@@ -21,7 +32,7 @@ export default function TypographySection() {
               <span className="text-2xl text-zinc-700" style={{ fontFamily: f.stack }}>
                 {f.name} — The quick brown fox
               </span>
-              <TagChip tag={f.tag} />
+              {!familiesTag && <TagChip tag={f.tag} />}
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
               <code className="font-mono text-sm text-zinc-400">{f.stack}</code>
@@ -31,8 +42,11 @@ export default function TypographySection() {
         ))}
       </div>
 
-      <SubLabel note="Named Tailwind steps, grouped by role. text-lg is the boundary — used for subtitles, so it reads as supporting body text.">
-        Type scale
+      <SubLabel
+        note="Named Tailwind steps, grouped by role. text-lg is the boundary — used for subtitles, so it reads as supporting body text."
+        tag={scaleTag}
+      >
+        Scale
       </SubLabel>
       {(["body", "heading"] as const).map((role) => (
         <div key={role} className="mb-8 last:mb-0">
@@ -52,7 +66,7 @@ export default function TypographySection() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2.5">
                       <code className="font-mono text-sm text-zinc-700">{t.name}</code>
-                      <TagChip tag={t.tag} />
+                      {!scaleTag && <TagChip tag={t.tag} />}
                     </div>
                     <p className="mt-0.5 truncate text-sm text-zinc-400">{t.usage}</p>
                   </div>
@@ -63,16 +77,25 @@ export default function TypographySection() {
         </div>
       ))}
 
-      <SubLabel note="The core site uses only the standard scale above. These pixel-exact sizes remain solely inside experiments (device-accurate / Figma-exported chrome).">
-        Experiment-only sizes
+      <SubLabel
+        note="The core site uses only the standard scale above. These pixel-exact sizes remain solely inside experiments (device-accurate / Figma-exported chrome)."
+        tag={experimentSizesTag}
+      >
+        Experiments
       </SubLabel>
       <RowList>
         {arbitraryTypeSizes.map((t) => (
-          <TokenRow key={t.name} name={t.name} tag={t.tag} value={t.value} usage={t.usage} />
+          <TokenRow
+            key={t.name}
+            name={t.name}
+            tag={experimentSizesTag ? undefined : t.tag}
+            value={t.value}
+            usage={t.usage}
+          />
         ))}
       </RowList>
 
-      <SubLabel>Weights</SubLabel>
+      <SubLabel tag={weightsTag}>Weights</SubLabel>
       <RowList>
         {fontWeights.map((w) => (
           <div key={w.name} className="flex items-center gap-4 py-3.5">
@@ -85,7 +108,7 @@ export default function TypographySection() {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2.5">
                 <code className="font-mono text-sm text-zinc-700">{w.name}</code>
-                <TagChip tag={w.tag} />
+                {!weightsTag && <TagChip tag={w.tag} />}
               </div>
               <p className="mt-0.5 truncate text-sm text-zinc-400">{w.usage}</p>
             </div>
@@ -94,17 +117,29 @@ export default function TypographySection() {
         ))}
       </RowList>
 
-      <SubLabel>Letter-spacing</SubLabel>
+      <SubLabel tag={trackingTag}>Tracking</SubLabel>
       <RowList>
         {tracking.map((t) => (
-          <TokenRow key={t.name} name={t.name} tag={t.tag} value={t.value} usage={t.usage} />
+          <TokenRow
+            key={t.name}
+            name={t.name}
+            tag={trackingTag ? undefined : t.tag}
+            value={t.value}
+            usage={t.usage}
+          />
         ))}
       </RowList>
 
-      <SubLabel>Line-height</SubLabel>
+      <SubLabel tag={lineHeightsTag}>Leading</SubLabel>
       <RowList>
         {lineHeights.map((t) => (
-          <TokenRow key={t.name} name={t.name} tag={t.tag} value={t.value} usage={t.usage} />
+          <TokenRow
+            key={t.name}
+            name={t.name}
+            tag={lineHeightsTag ? undefined : t.tag}
+            value={t.value}
+            usage={t.usage}
+          />
         ))}
       </RowList>
     </Section>
