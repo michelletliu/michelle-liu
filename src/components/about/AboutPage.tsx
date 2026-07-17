@@ -814,7 +814,8 @@ export default function AboutPage() {
                 <div className="flex flex-col gap-4 text-zinc-600 text-base tracking-[0.005em] leading-relaxed">
                   <p>
                     I love art, business, technology, & the ways that they can work together to
-                    create extraordinary products for people.
+                    create extraordinary products for people. I obsess over crafting beautiful
+                    tools for human creation and communication.
                   </p>
                   <p>
                     I view myself as an artist at heart, designing where beauty meets tactile utility. I like to think of it as my <a href="https://en.wikipedia.org/wiki/Ikigai" target="_blank" rel="noopener noreferrer" className="text-zinc-600 font-semibold no-underline hover:text-blue-600 transition-colors">ikigai</a>: the
