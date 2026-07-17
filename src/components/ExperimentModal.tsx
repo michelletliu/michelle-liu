@@ -1023,7 +1023,7 @@ function ToolsSectionCompact({ categories, isFullscreen = false }: { categories:
   if (!categories || categories.length === 0) return null;
   
   return (
-    <div className={clsx("flex w-full flex-col", isFullscreen ? "gap-2" : "gap-1")}>
+    <div className={clsx("flex w-full flex-col", isFullscreen ? "gap-2" : "gap-3")}>
       <HorizontalLine bleed />
       <div className={clsx(
         "font-['Michelle',sans-serif] font-normal grid grid-cols-4 relative shrink-0 w-full",
