@@ -11,13 +11,11 @@ export default function RadiusSection() {
         <h3 className="text-sm font-medium text-zinc-500">
           Squircle corner-shape
         </h3>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-zinc-500 text-pretty">
-          When a browser supports <code className="font-mono text-zinc-400">corner-shape: squircle</code>,
-          <code className="font-mono text-zinc-400"> index.css</code> applies it globally and{" "}
-          compensates the border-radius ~1.7× so the perceived roundness stays
-          constant (a full squircle visually shrinks corners). Circles and pills opt back into{" "}
-          <code className="font-mono text-zinc-400">corner-shape: round</code>. The samples below are
-          squircled in supporting browsers.
+        <p className="mt-2 max-w-3xl text-base leading-relaxed text-zinc-500 text-pretty">
+          Supporting browsers get{" "}
+          <code className="font-mono text-zinc-400">corner-shape: squircle</code>{" "}
+          globally; radius is bumped ~1.7× so corners don’t look tighter. Circles
+          and pills stay <code className="font-mono text-zinc-400">round</code>.
         </p>
       </div>
 
