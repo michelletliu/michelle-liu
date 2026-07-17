@@ -65,14 +65,8 @@ export default function RadiusSection() {
             usage={r.usage}
             sample={
               <div
-                className={`h-16 w-16 bg-white ring-1 ring-inset ring-zinc-200 ${
-                  r.value >= 999 ? "rounded-full" : ""
-                }`}
-                style={
-                  r.value >= 999
-                    ? undefined
-                    : { borderRadius: `${r.value}px` }
-                }
+                className="h-16 w-16 bg-white ring-1 ring-inset ring-zinc-200"
+                style={{ borderRadius: r.value >= 999 ? "9999px" : `${r.value}px` }}
               />
             }
           />
