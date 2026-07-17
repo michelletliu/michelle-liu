@@ -67,7 +67,15 @@ const MediaCard = dynamic(() => import("./MediaCard"));
 
 // fadeUpStyles imported from shared animations
 
-function StartupLogosRow({ startups, startDelay = 0 }: { startups: StartupCardData[]; startDelay?: number }) {
+function StartupLogosRow({
+  startups,
+  startDelay = 0,
+  onRevealComplete,
+}: {
+  startups: StartupCardData[];
+  startDelay?: number;
+  onRevealComplete?: () => void;
+}) {
   const rowRef = useRef<HTMLDivElement>(null);
   const [revealed, setRevealed] = useState(false);
 
@@ -75,26 +83,44 @@ function StartupLogosRow({ startups, startDelay = 0 }: { startups: StartupCardDa
     const el = rowRef.current;
     if (!el) return;
 
-    let timeout: NodeJS.Timeout;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setRevealed(true);
+      onRevealComplete?.();
+      return;
+    }
+
+    let revealTimeout: ReturnType<typeof setTimeout> | undefined;
+    let completionTimeout: ReturnType<typeof setTimeout> | undefined;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          timeout = setTimeout(() => setRevealed(true), startDelay);
+          revealTimeout = setTimeout(() => setRevealed(true), startDelay);
+          completionTimeout = setTimeout(
+            () => onRevealComplete?.(),
+            startDelay + Math.max(0, startups.length - 1) * 40 + 400,
+          );
           observer.disconnect();
         }
       },
       { threshold: 0.1, rootMargin: "0px 0px -20px 0px" }
     );
     observer.observe(el);
-    return () => { observer.disconnect(); clearTimeout(timeout); };
-  }, [startDelay]);
+    return () => {
+      observer.disconnect();
+      if (revealTimeout) clearTimeout(revealTimeout);
+      if (completionTimeout) clearTimeout(completionTimeout);
+    };
+  }, [onRevealComplete, startDelay, startups.length]);
 
   return (
-    <div ref={rowRef} className="flex justify-between md:flex-wrap md:gap-y-6 md:-ml-2">
+    <div
+      ref={rowRef}
+      className="mx-auto flex w-full max-w-[26rem] flex-wrap justify-between gap-y-6 md:mx-0 md:max-w-lg"
+    >
       {startups.map((startup, i) => (
         <div
           key={startup.id}
-          className="w-12 md:w-auto"
+          className="w-14 md:w-auto"
           style={{
             opacity: revealed ? 1 : 0,
             transform: revealed ? 'translateY(0)' : 'translateY(6px)',
@@ -380,7 +406,13 @@ export default function AboutPage() {
   const [startups, setStartups] = useState<StartupCardData[]>(
     () => cachedInitial?.startups ?? [],
   );
+  const [startupsRevealed, setStartupsRevealed] = useState(false);
   const [isLoading, setIsLoading] = useState(() => cachedInitial === null);
+  const handleStartupsRevealComplete = useCallback(
+    () => setStartupsRevealed(true),
+    [],
+  );
+  const experiencesCanReveal = startups.length === 0 || startupsRevealed;
 
   // Shelf year filter state (for books, music, and movies)
   const [activeBooksYear, setActiveBooksYear] = useState<string | undefined>();
@@ -816,20 +848,29 @@ export default function AboutPage() {
               <div className="flex flex-col gap-10 md:gap-12 md:pt-1.5 md:w-1/2 md:shrink-0">
                 {/* Startups Section */}
                 {startups.length > 0 && (
-                  <div className="flex flex-col gap-8">
+                  <div className="flex flex-col items-start gap-8 mb-4 md:mb-2">
                     <ScrollReveal>
                       <div className="flex flex-col">
-                        <p className="whitespace-nowrap text-base md:text-lg font-medium text-zinc-700 tracking-[0.005em]">
-                          Freelance<span className="text-zinc-400 font-normal">, 2023 - Present</span>
+                        <p className="pl-0.5 whitespace-nowrap text-base md:text-lg font-medium text-zinc-700 tracking-[0.005em]">
+                          Freelance Designer<span className="text-zinc-400 font-normal">, 2023 - Present</span>
                         </p>
                       </div>
                     </ScrollReveal>
-                    <StartupLogosRow startups={startups} startDelay={200} />
+                    <StartupLogosRow
+                      startups={startups}
+                      startDelay={200}
+                      onRevealComplete={handleStartupsRevealComplete}
+                    />
                   </div>
                 )}
 
                 {experiences.map((exp, index) => (
-                  <ScrollReveal key={exp.id} delay={(index + (startups.length > 0 ? 1 : 0)) * 80}>
+                  <ScrollReveal
+                    key={exp.id}
+                    className={clsx(!experiencesCanReveal && "invisible")}
+                    delay={(index + (startups.length > 0 ? 1 : 0)) * 80}
+                    disabled={!experiencesCanReveal}
+                  >
                     <ExperienceCard data={exp} />
                   </ScrollReveal>
                 ))}
