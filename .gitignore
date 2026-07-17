@@ -9,6 +9,7 @@ next-env.d.ts
 *.tsbuildinfo
 .superpowers/
 .claude/worktrees/
+.worktrees/
 .gstack/
 
 .tmp-shots/
