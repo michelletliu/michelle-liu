@@ -3,7 +3,9 @@ import { createPortal } from 'react-dom';
 import ShimmerImage from './ShimmerImage';
 import ShimmerVideo from './ShimmerVideo';
 import { ArrowUpRight } from './ArrowUpRight';
+import { HorizontalLine } from './HorizontalLine';
 import { useScrollLock } from '../utils/useScrollLock';
+import { ghostIconButtonClass } from './ghostIconButton';
 
 // Info icon SVG component - zinc-400 color, 20px
 function InfoIcon() {
@@ -16,17 +18,6 @@ function InfoIcon() {
 
 // X logo path
 const xLogoPath = "M10.6862 7.6055L17.3844 0H15.8002L9.97941 6.60311L5.36277 0H0.178833L7.19548 9.9737L0.178833 17.9454H1.76308L7.90171 10.9761L12.7696 17.9454H17.9536L10.6858 7.6055H10.6862ZM8.7057 10.0639L7.99222 9.06869L2.33673 1.16544H4.60063L9.33802 7.5516L10.0515 8.54678L15.8011 16.8348H13.5372L8.7057 10.0643V10.0639Z";
-
-// Horizontal divider line for popup modal.
-// On mobile, extends to the modal edges by cancelling the parent's `px-6` padding,
-// and darkens one Tailwind step (zinc-100 -> zinc-200).
-function PopupLine() {
-  return (
-    <div className="h-px relative shrink-0 w-full max-md:-mx-6 max-md:w-[calc(100%+3rem)]">
-      <div className="absolute inset-0 bg-zinc-100 max-md:bg-zinc-200" />
-    </div>
-  );
-}
 
 // Tool category type for the tools section
 export type ToolCategory = {
@@ -46,14 +37,14 @@ export type ProjectInfo = {
   toolCategories?: ToolCategory[];
 };
 
-// Tools Section component - 4-column grid
+// Tools Section — line is nested so parent flex gap doesn't read as py on the rule
 function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   if (!categories || categories.length === 0) return null;
   
   return (
-    <>
-      <PopupLine />
-      <div className="font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 text-base w-full mt-2 hidden md:grid">
+    <div className="flex w-full flex-col gap-2">
+      <HorizontalLine bleed />
+      <div className="font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 text-base w-full hidden md:grid">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
             <p className="leading-5 text-sm relative shrink-0 text-[#a1a1aa]">
@@ -69,7 +60,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
           </div>
         ))}
       </div>
-      <div className="font-['Michelle',sans-serif] font-normal flex flex-col gap-1.5 relative shrink-0 text-sm w-full mt-2 md:hidden">
+      <div className="font-['Michelle',sans-serif] font-normal flex flex-col gap-1.5 relative shrink-0 text-sm w-full md:hidden">
         {categories.map((category, idx) => (
           <div key={idx} className="flex items-baseline gap-6">
             <p className="leading-5 shrink-0 text-[#a1a1aa] w-[72px]">
@@ -81,7 +72,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -173,7 +164,10 @@ export default function InfoButton({ project }: InfoButtonProps) {
       {/* Info Button - fixed top right */}
       <button
         onClick={handleOpen}
-        className="fixed top-8 right-8 md:right-16 z-50 cursor-pointer transition-colors duration-200 hover:bg-zinc-200/50 rounded-full p-2 -m-1 text-zinc-400"
+        className={ghostIconButtonClass(
+          "md",
+          "fixed top-8 right-8 z-50 text-zinc-400 md:right-16",
+        )}
         aria-label="Project info"
       >
         <InfoIcon />

@@ -10,7 +10,10 @@ import {
 
 /** Width/color border tokens only — focus outline & ring live in Focus states below. */
 const borderTokens = borders.filter(
-  (b) => b.name !== "focus outline" && b.name !== "focus ring",
+  (b) => b.name !== "Focus outline" && b.name !== "Focus ring",
+);
+const focusTokens = borders.filter(
+  (b) => b.name === "Focus outline" || b.name === "Focus ring",
 );
 
 const specimens: Record<string, ReactNode> = {
@@ -38,10 +41,28 @@ const specimens: Record<string, ReactNode> = {
       Inactive
     </div>
   ),
+  "Focus outline": (
+    <button
+      type="button"
+      tabIndex={-1}
+      aria-label="Focus outline specimen"
+      className="h-9 w-24 rounded-lg bg-white"
+      style={{ outline: "2px solid #d4d4d8", outlineOffset: "2px" }}
+    />
+  ),
+  "Focus ring": (
+    <button
+      type="button"
+      tabIndex={-1}
+      aria-label="Focus ring specimen"
+      className="h-9 w-24 rounded-2xl bg-white ring-2 ring-zinc-400 ring-offset-2 ring-offset-zinc-50"
+    />
+  ),
 };
 
 export default function BorderSection() {
   const bordersTag = uniformTag(borderTokens);
+  const focusTag = uniformTag(focusTokens);
 
   return (
     <Section id="borders" title="Borders">
@@ -49,7 +70,7 @@ export default function BorderSection() {
         note="Width and color tokens used across cards, inputs, overlays, and chrome."
         tag={bordersTag}
       >
-        Borders
+        Styles
       </SubLabel>
       <Grid min="200px">
         {borderTokens.map((b) => (
@@ -64,23 +85,23 @@ export default function BorderSection() {
         ))}
       </Grid>
 
-      <SubLabel note="Global :focus-visible and the interactive focus ring.">Focus states</SubLabel>
-      <div className="grid gap-6 sm:grid-cols-2">
-        <div className="flex flex-col items-center gap-4 rounded-2xl bg-zinc-50 p-8">
-          <button
-            className="rounded-lg bg-white px-4 py-2 text-sm text-zinc-600"
-            style={{ outline: "2px solid #d4d4d8", outlineOffset: "2px" }}
-          >
-            :focus-visible
-          </button>
-          <code className="font-mono text-sm text-zinc-400">outline 2px #d4d4d8, offset 2px</code>
-        </div>
-        <div className="flex flex-col items-center gap-4 rounded-2xl bg-zinc-50 p-8">
-          <button className="rounded-2xl bg-white px-4 py-2 text-sm text-zinc-600 ring-2 ring-zinc-400 ring-offset-2 ring-offset-zinc-50">
-            ring-zinc-400
-          </button>
-          <code className="font-mono text-sm text-zinc-400">ring-2 ring-zinc-400 offset-2</code>
-        </div>
+      <SubLabel
+        note="Global :focus-visible and the interactive focus ring."
+        tag={focusTag}
+      >
+        Focus states
+      </SubLabel>
+      <div className="grid grid-cols-1 gap-x-6 gap-y-9 md:grid-cols-2">
+        {focusTokens.map((b) => (
+          <TokenCard
+            key={b.name}
+            name={b.name}
+            tag={focusTag ? undefined : b.tag}
+            value={b.value}
+            usage={b.usage}
+            sample={specimens[b.name]}
+          />
+        ))}
       </div>
     </Section>
   );

@@ -1,5 +1,5 @@
 import { motion, durationScale, uniformTag } from "../tokens";
-import { Section, SubLabel, RowList, TokenRow, TagChip } from "../primitives";
+import { Section, SubLabel, RowList, TokenRow, TokenCard, Grid } from "../primitives";
 
 const demoStyles = `
 @keyframes sys-fade { 0%,20% { opacity: 0 } 60%,100% { opacity: 1 } }
@@ -56,27 +56,18 @@ export default function MotionSection() {
       >
         Animations
       </SubLabel>
-      <div className="grid gap-x-6 gap-y-9" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
+      <Grid min="200px">
         {motion.map((m) => (
-          <div key={m.name} className="flex flex-col gap-3">
-            <div className="flex h-20 items-center justify-center rounded-xl bg-zinc-50">
-              <Demo kind={m.keyframe} />
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between gap-2">
-                <code className="font-mono text-sm text-zinc-700">{m.name}</code>
-                {!animationsTag && <TagChip tag={m.tag} />}
-              </div>
-              <div className="flex items-center gap-2 text-sm text-zinc-400">
-                <span className="tabular-nums">{m.duration}</span>
-                <span className="text-zinc-300">·</span>
-                <span className="truncate">{m.easing}</span>
-              </div>
-              <span className="text-sm leading-snug text-zinc-400">{m.usage}</span>
-            </div>
-          </div>
+          <TokenCard
+            key={m.name}
+            name={m.name}
+            tag={animationsTag ? undefined : m.tag}
+            value={`${m.duration} · ${m.easing.charAt(0).toUpperCase() + m.easing.slice(1)}`}
+            usage={m.usage}
+            sample={<Demo kind={m.keyframe} />}
+          />
         ))}
-      </div>
+      </Grid>
 
       <SubLabel tag={durationsTag}>Duration scale</SubLabel>
       <RowList>

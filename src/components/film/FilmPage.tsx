@@ -867,7 +867,10 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
     router.prefetch('/');
     let cancelled = false;
     const warmHome = () => {
-      if (!cancelled) void import('../HomePageClient');
+      if (!cancelled) {
+        void import('../HomePageClient');
+        void import('../../../app/(home)/layout');
+      }
     };
     let idleId: number | undefined;
     let timeoutId: ReturnType<typeof setTimeout> | undefined;

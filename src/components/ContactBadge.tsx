@@ -2,11 +2,17 @@ import { useRef, useState, useEffect } from "react";
 import clsx from "clsx";
 import { posthog, posthogEnabled } from "../lib/posthog";
 
+export type ContactBadgeSize = "sm" | "md";
+
 type ContactBadgeProps = {
   /** Whether to show the badge in expanded state initially (for hover behavior on Work page) */
   hoverMode?: boolean;
   /** Whether to auto-expand on scroll (for About page) */
   scrollExpandMode?: boolean;
+  /**
+   * Visual size. Defaults from mode: hover → sm (header), scroll/default → md (about).
+   */
+  size?: ContactBadgeSize;
   /** Additional className */
   className?: string;
   /** Called when expanded state changes */
@@ -15,20 +21,21 @@ type ContactBadgeProps = {
 
 /**
  * Contact badge component with green dot and "Get in touch" CTA
- * - Work page: Collapses/expands on hover
- * - About page: Auto-expands on scroll into view
+ * - Work page: Collapses/expands on hover (sm)
+ * - About page: Auto-expands on scroll into view (md)
  */
-export default function ContactBadge({ 
-  hoverMode = false, 
+export default function ContactBadge({
+  hoverMode = false,
   scrollExpandMode = false,
+  size,
   className,
   onExpandedChange,
 }: ContactBadgeProps) {
   const [isExpanded, setIsExpanded] = useState(!hoverMode && !scrollExpandMode);
   const badgeRef = useRef<HTMLSpanElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const resolvedSize: ContactBadgeSize = size ?? (hoverMode ? "sm" : "md");
 
-  // Hover mode handlers (Work page)
   const handleMouseEnter = () => {
     if (!hoverMode) return;
     if (timeoutRef.current) {
@@ -45,10 +52,9 @@ export default function ContactBadge({
     }, 100);
   };
 
-  // Scroll expand mode (About page)
   useEffect(() => {
     if (!scrollExpandMode) return;
-    
+
     const badge = badgeRef.current;
     if (!badge) return;
 
@@ -56,7 +62,6 @@ export default function ContactBadge({
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !isExpanded) {
-            // Delay the expansion slightly for a nice effect
             setTimeout(() => {
               setIsExpanded(true);
             }, 400);
@@ -78,52 +83,56 @@ export default function ContactBadge({
   }, [isExpanded, onExpandedChange]);
 
   return (
-    <span 
+    <span
       ref={badgeRef}
       className={clsx(
-        "relative inline-flex items-center justify-center rounded-[999px] transition-all ease-in-out w-fit",
+        "relative inline-flex w-fit items-center justify-center rounded-[999px] transition-all ease-in-out",
         isExpanded ? "bg-[#ecfdf5]" : "bg-transparent",
-        hoverMode && "align-middle -translate-y-[2px] [cursor:inherit] before:content-[''] before:absolute before:-inset-[2px] before:rounded-[999px] before:pointer-events-none",
-        hoverMode && (isExpanded 
-          ? "gap-1.5 pl-1 pr-2.5 md:ml-0.5 duration-300" 
-          : "md:gap-0 pl-1 md:pr-0 md:ml-0.5 duration-300"
-        ),
-        scrollExpandMode && (isExpanded 
-          ? "gap-1 pl-1.5 pr-2.5 py-0.5 duration-[800ms]" 
-          : "gap-0 p-1 duration-[800ms]"
-        ),
+        hoverMode &&
+          "align-middle -translate-y-[2px] [cursor:inherit] before:pointer-events-none before:absolute before:-inset-[2px] before:rounded-[999px] before:content-['']",
+        // Expanded padding / gap by size (header sm vs about md)
+        isExpanded &&
+          resolvedSize === "sm" &&
+          (hoverMode ? "gap-1.5 py-0 pl-1 pr-2.5 md:ml-0.5 duration-300" : "gap-1.5 py-0.5 pl-1 pr-2.5"),
+        isExpanded &&
+          resolvedSize === "md" &&
+          (scrollExpandMode ? "gap-1 py-0.5 pl-1.5 pr-2.5 duration-[800ms]" : "gap-1 py-0.5 pl-1.5 pr-2.5"),
+        // Collapsed padding
+        !isExpanded && hoverMode && "gap-0 py-0 pl-1 pr-0 md:ml-0.5 duration-300 md:gap-0 md:pr-0",
+        !isExpanded && scrollExpandMode && "gap-0 p-1 duration-[800ms]",
+        !isExpanded && !hoverMode && !scrollExpandMode && "gap-0 p-1",
         className
       )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <span className="relative shrink-0 size-[16px] overflow-visible">
-        {/* Pulsing ring behind the badge */}
+      <span className="relative size-4 shrink-0 overflow-visible">
         <span className={isExpanded ? "green-pulse-ring-off" : "green-pulse-ring"} />
-        <svg className="block size-full relative z-10" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-          <g id="Background">
-            <circle cx="8" cy="8" fill="var(--fill-0, #10B981)" id="Ellipse 1" r="4" />
-          </g>
+        <svg className="relative z-10 block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
+          <circle cx="8" cy="8" fill="#10B981" r="4" />
         </svg>
       </span>
-      <span className={clsx(
-        "font-['Michelle:Medium',sans-serif] font-normal text-emerald-500 tracking-[0.005em] text-nowrap overflow-hidden transition-all ease-out",
-        hoverMode && "text-sm duration-300",
-        scrollExpandMode && "text-base duration-[800ms]",
-        isExpanded ? "max-w-[500px] opacity-100" : "max-w-0 opacity-0"
-      )}>
+      <span
+        className={clsx(
+          "overflow-hidden text-nowrap font-['Michelle:Medium',sans-serif] font-normal tracking-[0.005em] text-emerald-500 transition-all ease-out",
+          resolvedSize === "sm" ? "text-sm" : "text-base",
+          hoverMode && "duration-300",
+          scrollExpandMode && "duration-[800ms]",
+          isExpanded ? "max-w-[500px] opacity-100" : "max-w-0 opacity-0"
+        )}
+      >
         <span>Working on something cool? Get in</span>{" "}
         <a
           href="mailto:studio@liumichelle.com"
-          className="[text-decoration-skip-ink:none] [text-underline-position:from-font] font-semibold text-emerald-500 hover:!text-blue-500 transition-colors"
+          className="font-semibold text-emerald-500 [text-decoration-skip-ink:none] [text-underline-position:from-font] transition-colors hover:!text-blue-500"
           onClick={() => {
             if (posthogEnabled) {
               posthog.capture("contact_link_clicked");
             }
           }}
         >
-          touch
-        </a>!
+          touch!
+        </a>
       </span>
     </span>
   );

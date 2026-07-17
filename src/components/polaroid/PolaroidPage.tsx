@@ -617,7 +617,7 @@ export default function PolaroidPage() {
                               <polyline points="17 8 12 3 7 8" />
                               <line x1="12" y1="3" x2="12" y2="15" />
                             </svg>
-                            <span className="font-['SF_Pro','-apple-system',sans-serif] text-[17px] text-[rgba(60,60,67,0.6)] whitespace-nowrap">
+                            <span className="font-['SF_Pro','-apple-system',sans-serif] text-lg text-[rgba(60,60,67,0.6)] whitespace-nowrap">
                               Upload New
                             </span>
                           </div>
@@ -643,12 +643,12 @@ export default function PolaroidPage() {
             <div 
               className={`absolute flex flex-col justify-center leading-[0] not-italic text-[rgba(0,0,0,0.4)] text-center text-nowrap tracking-[0.15em] -translate-x-1/2 -translate-y-1/2 ${
                 isPopupMode 
-                  ? 'text-[10px] md:text-[12px] left-[161px] md:left-[198px] top-[211px] md:top-[259px]' 
-                  : 'text-[13.8px] md:text-[16.949px] left-[229.7px] md:left-[282.7px] top-[301.5px] md:top-[370.72px]'
+                  ? 'text-xs md:text-xs left-[161px] md:left-[198px] top-[211px] md:top-[259px]' 
+                  : 'text-sm md:text-base left-[229.7px] md:left-[282.7px] top-[301.5px] md:top-[370.72px]'
               }`}
               style={{ fontFamily: "'Courier New', monospace" }}
             >
-              <p className="leading-[23.4px] md:leading-[28.814px]">{currentDate}</p>
+              <p className="leading-6 md:leading-7">{currentDate}</p>
             </div>
           )}
 
@@ -664,11 +664,11 @@ export default function PolaroidPage() {
               <div className="content-stretch flex items-center relative w-full overflow-hidden">
                 <div 
                   className={`flex flex-col justify-center leading-[0] not-italic relative text-zinc-900 text-center text-nowrap tracking-[0.15em] overflow-hidden text-ellipsis ${
-                    isPopupMode ? 'text-[10px] md:text-[12px]' : 'text-[14.6px] md:text-[18px]'
+                    isPopupMode ? 'text-xs md:text-xs' : 'text-sm md:text-lg'
                   }`}
                   style={{ fontFamily: "'Courier New', monospace" }}
                 >
-                  <p className={isPopupMode ? 'leading-[16px] md:leading-[20px]' : 'leading-[24.4px] md:leading-[30px]'}>{caption}</p>
+                  <p className={isPopupMode ? 'leading-4 md:leading-5' : 'leading-6 md:leading-7'}>{caption}</p>
                 </div>
                 {isEditingCaption && (
                   <div className={`relative shrink-0 animate-blink ${
@@ -802,7 +802,7 @@ export default function PolaroidPage() {
           {/* Action Buttons */}
           <div className="content-stretch flex gap-[24px] items-center relative shrink-0">
             <button 
-              className="flex items-center gap-[8px] px-6 py-3 text-[17px] text-[rgba(60,60,67,0.5)] cursor-pointer rounded-[999px] hover:bg-[rgba(0,0,0,0.05)] transition-colors"
+              className="flex items-center gap-[8px] px-6 py-3 text-lg text-[rgba(60,60,67,0.5)] cursor-pointer rounded-[999px] hover:bg-[rgba(0,0,0,0.05)] transition-colors"
               onClick={handleRestart}
             >
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -813,7 +813,7 @@ export default function PolaroidPage() {
             </button>
 
             <button 
-              className={`rounded-[999px] flex items-center gap-[8px] px-6 py-3 text-[17px] text-white transition-colors ${
+              className={`rounded-[999px] flex items-center gap-[8px] px-6 py-3 text-lg text-white transition-colors ${
                 uploadedImage 
                   ? 'bg-zinc-900 cursor-pointer hover:bg-[rgba(24,24,27,0.8)]' 
                   : 'bg-zinc-800 cursor-not-allowed opacity-50'
@@ -854,8 +854,8 @@ export default function PolaroidPage() {
                 : 'gap-[24px] sm:gap-[32px] px-[20px] sm:px-[28px] md:px-[36px] py-[24px] sm:py-[30px] pb-[48px] sm:pb-[40px] sm:min-w-[400px] md:min-w-[530px]'
             }`}>
               <div className={`content-stretch flex flex-col items-center relative shrink-0 w-full ${isPopupMode ? 'gap-[20px]' : 'gap-[36px]'}`}>
-                <div className={`flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] min-w-full relative shrink-0 text-[22px] text-zinc-900 tracking-[-0.26px] w-[min-content] ${isPopupMode ? 'self-start pl-0' : ''}`} style={{ fontVariationSettings: "'wdth' 100" }}>
-                  <p className="leading-[28px]">Share Polaroid</p>
+                <div className={`flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] min-w-full relative shrink-0 text-xl text-zinc-900 tracking-[-0.26px] w-[min-content] ${isPopupMode ? 'self-start pl-0' : ''}`} style={{ fontVariationSettings: "'wdth' 100" }}>
+                  <p className="leading-7">Share Polaroid</p>
                 </div>
                 
                 {/* Mini Polaroid Preview */}
@@ -913,20 +913,20 @@ export default function PolaroidPage() {
                         </div>
                         {showDate && (
                           <div 
-                            className="absolute flex flex-col justify-center leading-[0] left-[182.78px] not-italic text-[10.959px] text-[rgba(0,0,0,0.4)] text-center text-nowrap top-[239.88px] tracking-[0.15em] -translate-x-1/2 -translate-y-1/2"
+                            className="absolute flex flex-col justify-center leading-[0] left-[182.78px] not-italic text-xs text-[rgba(0,0,0,0.4)] text-center text-nowrap top-[239.88px] tracking-[0.15em] -translate-x-1/2 -translate-y-1/2"
                             style={{ fontFamily: "'Courier New', monospace" }}
                           >
-                            <p className="leading-[18.629px]">{currentDate}</p>
+                            <p className="leading-5">{currentDate}</p>
                           </div>
                         )}
                         {caption && (
                           <div className="absolute content-stretch flex items-center left-[8.07px] px-[5.172px] py-[2.586px] top-[207.15px] w-[104.741px]">
                             <div className="content-stretch flex items-center relative shrink-0">
                               <div 
-                                className="flex flex-col justify-center leading-[0] not-italic relative shrink-0 text-[12.931px] text-zinc-900 text-center text-nowrap tracking-[0.15em]"
+                                className="flex flex-col justify-center leading-[0] not-italic relative shrink-0 text-xs text-zinc-900 text-center text-nowrap tracking-[0.15em]"
                                 style={{ fontFamily: "'Courier New', monospace" }}
                               >
-                                <p className="leading-[21.983px]">{caption}</p>
+                                <p className="leading-6">{caption}</p>
                               </div>
                             </div>
                           </div>
@@ -970,7 +970,7 @@ export default function PolaroidPage() {
                         </div>
                         <div className="relative h-[20px] overflow-visible">
                           <p 
-                            className={`font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-zinc-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                            className={`font-['SF_Pro:Regular',sans-serif] font-normal leading-4 text-zinc-500 text-sm text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
                               copyLinkSuccess ? 'opacity-0 translate-y-[-5px]' : 'opacity-100 translate-y-0'
                             }`} 
                             style={{ fontVariationSettings: "'wdth' 100" }}
@@ -978,7 +978,7 @@ export default function PolaroidPage() {
                             Copy Link
                           </p>
                           <p 
-                            className={`absolute left-0 right-0 top-0 font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-zinc-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                            className={`absolute left-0 right-0 top-0 font-['SF_Pro:Regular',sans-serif] font-normal leading-4 text-zinc-500 text-sm text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
                               copyLinkSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[5px]'
                             }`} 
                             style={{ fontVariationSettings: "'wdth' 100" }}
@@ -1022,7 +1022,7 @@ export default function PolaroidPage() {
                         </div>
                         <div className="relative h-[15px]">
                           <p 
-                            className={`font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-zinc-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                            className={`font-['SF_Pro:Regular',sans-serif] font-normal leading-4 text-zinc-500 text-sm text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
                               downloadSuccess ? 'opacity-0 translate-y-[-5px]' : 'opacity-100 translate-y-0'
                             }`} 
                             style={{ fontVariationSettings: "'wdth' 100" }}
@@ -1030,7 +1030,7 @@ export default function PolaroidPage() {
                             Download
                           </p>
                           <p 
-                            className={`absolute left-0 right-0 top-0 font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-zinc-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                            className={`absolute left-0 right-0 top-0 font-['SF_Pro:Regular',sans-serif] font-normal leading-4 text-zinc-500 text-sm text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
                               downloadSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[5px]'
                             }`} 
                             style={{ fontVariationSettings: "'wdth' 100" }}
@@ -1062,7 +1062,7 @@ export default function PolaroidPage() {
                     <div className="relative rounded-[16px] sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
                       <img alt="Instagram" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[16px] sm:rounded-[18.928px] size-full" src={imgInstagramIcon} />
                     </div>
-                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-none overflow-hidden text-ellipsis relative shrink-0 text-xs text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Instagram
                     </p>
                   </button>
@@ -1076,7 +1076,7 @@ export default function PolaroidPage() {
                         <img alt="LinkedIn" className="absolute h-[1236.21%] left-[-168.97%] max-w-none top-[-256.03%] w-[568.97%]" src={imgLinkedInIcon} />
                       </div>
                     </div>
-                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-none overflow-hidden text-ellipsis relative shrink-0 text-xs text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       LinkedIn
                     </p>
                   </button>
@@ -1088,7 +1088,7 @@ export default function PolaroidPage() {
                     <div className="relative rounded-[16px] sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
                       <img alt="Mail" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[16px] sm:rounded-[18.928px] size-full" src={imgMailIcon} />
                     </div>
-                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-zinc-500 text-center text-nowrap tracking-[0.06px]" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-none overflow-hidden text-ellipsis relative shrink-0 text-xs text-zinc-500 text-center text-nowrap tracking-[0.06px]" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Mail
                     </p>
                   </button>
@@ -1100,7 +1100,7 @@ export default function PolaroidPage() {
                     <div className="relative rounded-[16px] sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
                       <img alt="X" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[16px] sm:rounded-[18.928px] size-full" src={imgXIcon} />
                     </div>
-                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-none overflow-hidden text-ellipsis relative shrink-0 text-xs text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       X
                     </p>
                   </button>
@@ -1112,7 +1112,7 @@ export default function PolaroidPage() {
                     <div className="relative rounded-[16px] sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
                       <img alt="Messages" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[16px] sm:rounded-[18.928px] size-full" src={imgMessagesIcon} />
                     </div>
-                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-none overflow-hidden text-ellipsis relative shrink-0 text-xs text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Messages
                     </p>
                   </button>
@@ -1135,8 +1135,8 @@ export default function PolaroidPage() {
             <div className={`bg-white fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[26px] z-[101] max-h-[calc(100vh-40px)] max-h-[calc(100dvh-40px)] sm:max-h-none w-[calc(100%-64px)] max-w-[400px] sm:max-w-none sm:w-auto sm:min-w-[400px] md:min-w-[530px] overflow-y-auto sm:overflow-visible ${isClosingShareModal ? 'animate-modal-scale-out' : 'animate-modal-scale-in'}`}>
               <div className="content-stretch flex flex-col items-center overflow-clip relative rounded-[inherit] w-full gap-[24px] sm:gap-[32px] px-[20px] sm:px-[28px] md:px-[36px] py-[24px] sm:py-[30px] pb-[24px] sm:pb-[40px] sm:min-w-[400px] md:min-w-[530px]">
                 <div className="content-stretch flex flex-col gap-[36px] items-center relative shrink-0 w-full">
-                  <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] min-w-full relative shrink-0 text-[22px] text-zinc-900 tracking-[-0.26px] w-[min-content]" style={{ fontVariationSettings: "'wdth' 100" }}>
-                    <p className="leading-[28px]">Share Polaroid</p>
+                  <div className="flex flex-col font-['SF_Pro:Regular',sans-serif] font-normal justify-center leading-[0] min-w-full relative shrink-0 text-xl text-zinc-900 tracking-[-0.26px] w-[min-content]" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <p className="leading-7">Share Polaroid</p>
                   </div>
                   
                   {/* Mini Polaroid Preview */}
@@ -1188,20 +1188,20 @@ export default function PolaroidPage() {
                         </div>
                         {showDate && (
                           <div 
-                            className="absolute flex flex-col justify-center leading-[0] left-[182.78px] not-italic text-[10.959px] text-[rgba(0,0,0,0.4)] text-center text-nowrap top-[239.88px] tracking-[0.15em] -translate-x-1/2 -translate-y-1/2"
+                            className="absolute flex flex-col justify-center leading-[0] left-[182.78px] not-italic text-xs text-[rgba(0,0,0,0.4)] text-center text-nowrap top-[239.88px] tracking-[0.15em] -translate-x-1/2 -translate-y-1/2"
                             style={{ fontFamily: "'Courier New', monospace" }}
                           >
-                            <p className="leading-[18.629px]">{currentDate}</p>
+                            <p className="leading-5">{currentDate}</p>
                           </div>
                         )}
                         {caption && (
                           <div className="absolute content-stretch flex items-center left-[8.07px] px-[5.172px] py-[2.586px] top-[207.15px] w-[104.741px]">
                             <div className="content-stretch flex items-center relative shrink-0">
                               <div 
-                                className="flex flex-col justify-center leading-[0] not-italic relative shrink-0 text-[12.931px] text-zinc-900 text-center text-nowrap tracking-[0.15em]"
+                                className="flex flex-col justify-center leading-[0] not-italic relative shrink-0 text-xs text-zinc-900 text-center text-nowrap tracking-[0.15em]"
                                 style={{ fontFamily: "'Courier New', monospace" }}
                               >
-                                <p className="leading-[21.983px]">{caption}</p>
+                                <p className="leading-6">{caption}</p>
                               </div>
                             </div>
                           </div>
@@ -1244,7 +1244,7 @@ export default function PolaroidPage() {
                           </div>
                           <div className="relative h-[20px] overflow-visible">
                             <p 
-                              className={`font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-zinc-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                              className={`font-['SF_Pro:Regular',sans-serif] font-normal leading-4 text-zinc-500 text-sm text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
                                 copyLinkSuccess ? 'opacity-0 translate-y-[-5px]' : 'opacity-100 translate-y-0'
                               }`} 
                               style={{ fontVariationSettings: "'wdth' 100" }}
@@ -1252,7 +1252,7 @@ export default function PolaroidPage() {
                               Copy Link
                             </p>
                             <p 
-                              className={`absolute left-0 right-0 top-0 font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-zinc-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                              className={`absolute left-0 right-0 top-0 font-['SF_Pro:Regular',sans-serif] font-normal leading-4 text-zinc-500 text-sm text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
                                 copyLinkSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[5px]'
                               }`} 
                               style={{ fontVariationSettings: "'wdth' 100" }}
@@ -1296,7 +1296,7 @@ export default function PolaroidPage() {
                           </div>
                           <div className="relative h-[15px]">
                             <p 
-                              className={`font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-zinc-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                              className={`font-['SF_Pro:Regular',sans-serif] font-normal leading-4 text-zinc-500 text-sm text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
                                 downloadSuccess ? 'opacity-0 translate-y-[-5px]' : 'opacity-100 translate-y-0'
                               }`} 
                               style={{ fontVariationSettings: "'wdth' 100" }}
@@ -1304,7 +1304,7 @@ export default function PolaroidPage() {
                               Download
                             </p>
                             <p 
-                              className={`absolute left-0 right-0 top-0 font-['SF_Pro:Regular',sans-serif] font-normal leading-[15px] text-zinc-500 text-[13px] text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
+                              className={`absolute left-0 right-0 top-0 font-['SF_Pro:Regular',sans-serif] font-normal leading-4 text-zinc-500 text-sm text-center tracking-[-0.1px] transition-all duration-300 ease-in-out ${
                                 downloadSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[5px]'
                               }`} 
                               style={{ fontVariationSettings: "'wdth' 100" }}
@@ -1336,7 +1336,7 @@ export default function PolaroidPage() {
                       <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
                         <img alt="Instagram" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgInstagramIcon} />
                       </div>
-                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-none overflow-hidden text-ellipsis relative shrink-0 text-xs text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                         Instagram
                       </p>
                     </button>
@@ -1350,7 +1350,7 @@ export default function PolaroidPage() {
                           <img alt="LinkedIn" className="absolute h-[1236.21%] left-[-168.97%] max-w-none top-[-256.03%] w-[568.97%]" src={imgLinkedInIcon} />
                         </div>
                       </div>
-                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-none overflow-hidden text-ellipsis relative shrink-0 text-xs text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                         LinkedIn
                       </p>
                     </button>
@@ -1362,7 +1362,7 @@ export default function PolaroidPage() {
                       <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
                         <img alt="Mail" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgMailIcon} />
                       </div>
-                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-none overflow-hidden text-ellipsis relative shrink-0 text-xs text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                         Mail
                       </p>
                     </button>
@@ -1374,7 +1374,7 @@ export default function PolaroidPage() {
                       <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
                         <img alt="X" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgXIcon} />
                       </div>
-                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-none overflow-hidden text-ellipsis relative shrink-0 text-xs text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                         X
                       </p>
                     </button>
@@ -1386,7 +1386,7 @@ export default function PolaroidPage() {
                       <div className="relative rounded-[15px] sm:rounded-[18.928px] shrink-0 size-[54px] sm:size-[69.402px]">
                         <img alt="Messages" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[15px] sm:rounded-[18.928px] size-full" src={imgMessagesIcon} />
                       </div>
-                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-[13px] overflow-hidden text-ellipsis relative shrink-0 text-[11px] text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
+                      <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-none overflow-hidden text-ellipsis relative shrink-0 text-xs text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                         Messages
                       </p>
                     </button>

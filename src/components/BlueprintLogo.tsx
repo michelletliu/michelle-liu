@@ -30,9 +30,12 @@ type BlueprintLogoProps = {
   className?: string;
 };
 
-/** Soft ease — quick start, long settle. */
-const MORPH_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
-const MORPH_DURATION = 0.3;
+/**
+ * Same curve as alexsafayan.com’s squircle↔box toggle:
+ * co-tween radius + geometry on a short, controlled ease — not corner-shape.
+ */
+const MORPH_EASE: [number, number, number, number] = [0.2, 0.2, 0.2, 1];
+const MORPH_DURATION = 0.2;
 
 /** Seal outer border in 100×100 space (from ~88px artwork). */
 const SEAL_RX = 8;
@@ -43,7 +46,7 @@ const RAIL_INSET = SEAL_INSET + SEAL_RX;
 
 const morphTransition = (reduce: boolean): Transition =>
   reduce
-    ? { duration: 0.15, ease: "easeOut" }
+    ? { duration: 0.12, ease: "easeOut" }
     : { duration: MORPH_DURATION, ease: MORPH_EASE };
 
 /**
@@ -91,11 +94,10 @@ function useHoverMorphCapable(): boolean {
 
 /**
  * Seal logo with a morphing blueprint frame.
- * Four open crop rails retract toward the seal’s straight edge segments while
- * a rounded rect peaks mid-transition (matching the red seal border). Glyph
- * layers cross-fade on the same curve. Morph-in fades the bridge out before
- * rails go opaque (avoids stroke stacking); morph-out kills bridge + rails
- * early so the gray path never overlaps the red seal border.
+ * Squircle→crop-marks: co-tween rect rx with rail extension on a shared
+ * 200ms cubic-bezier(.2,.2,.2,1) (same idea as alexsafayan.com’s toggle).
+ * Glyph layers cross-fade on that curve. Morph-in clears the bridge before
+ * rails go solid; morph-out drops rails early so gray never rings the red seal.
  */
 export default function BlueprintLogo({
   mode = "hover",
@@ -106,11 +108,12 @@ export default function BlueprintLogo({
   const reduceMotion = useReducedMotion();
   const hoverMorphCapable = useHoverMorphCapable();
   const [groupHovered, setGroupHovered] = useState(false);
-  // Hover mode: arm on mount so the first red→blueprint hover works. Only stay
-  // disarmed when returning from the design-system doorway with the pointer
-  // still over the logo (see markBlueprintDoorwayNav). Always mode ignores this.
+  // Arm on mount so the first hover morph works. Stay disarmed when arriving
+  // through the doorway with the pointer still over the logo
+  // (see markBlueprintDoorwayNav) — hover mode stays red, always stays gray
+  // until pointerleave.
   const [hoverArmed, setHoverArmed] = useState(true);
-  /** True when this instance is holding a sticky-return lock (red until leave). */
+  /** True when this instance is holding a sticky-return lock (until leave). */
   const stickyLockRef = useRef(false);
   const prevBlueprint = useRef<boolean | null>(null);
 
@@ -134,34 +137,34 @@ export default function BlueprintLogo({
     let raf1 = 0;
     let raf2 = 0;
 
-    if (!always) {
-      // On client nav the new logo node often isn't :hover yet inside
-      // useLayoutEffect even when the pointer never moved. Tentatively lock
-      // when a doorway mark is pending, then confirm after paint.
-      if (peekBlueprintDoorwaySticky()) {
-        stickyLockRef.current = true;
-        setHoverArmed(false);
-        if (group.matches(":hover")) setGroupHovered(true);
+    // On client nav the new logo node often isn't :hover yet inside
+    // useLayoutEffect even when the pointer never moved. Tentatively disarm
+    // when a doorway mark is pending, then confirm after paint.
+    // Only the instance actually under the pointer claims the lock — the DS
+    // footer brand also uses mode="always" and must not steal/clear the mark.
+    if (peekBlueprintDoorwaySticky()) {
+      setHoverArmed(false);
+      if (group.matches(":hover")) setGroupHovered(true);
 
-        raf1 = requestAnimationFrame(() => {
-          raf2 = requestAnimationFrame(() => {
-            if (group.matches(":hover")) {
-              setGroupHovered(true);
-              return;
-            }
-            // Pointer isn't on the doorway — normal first-hover arming.
-            stickyLockRef.current = false;
-            clearBlueprintDoorwaySticky();
-            setGroupHovered(false);
-            setHoverArmed(true);
-          });
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => {
+          if (group.matches(":hover")) {
+            // Keep resting color (home red / DS gray) until pointer leaves.
+            setGroupHovered(true);
+            stickyLockRef.current = true;
+            return;
+          }
+          // Not under the pointer — re-arm; leave the mark for the seal that is.
+          stickyLockRef.current = false;
+          setGroupHovered(false);
+          setHoverArmed(true);
         });
-      } else {
-        stickyLockRef.current = false;
-        setHoverArmed(true);
-        // Hydration/remount can miss pointerenter when the cursor is already over.
-        if (group.matches(":hover")) setGroupHovered(true);
-      }
+      });
+    } else {
+      stickyLockRef.current = false;
+      setHoverArmed(true);
+      // Hydration/remount can miss pointerenter when the cursor is already over.
+      if (group.matches(":hover")) setGroupHovered(true);
     }
 
     const onEnter = (event: Event) => {
@@ -177,10 +180,12 @@ export default function BlueprintLogo({
       startTransition(() => {
         setGroupHovered(false);
         setHoverArmed(true);
-        // Only the sticky-locked hover doorway clears the mark — never the
-        // always-mode DS logo (its unmount leave would wipe a just-set mark).
-        if (stickyLockRef.current) {
-          stickyLockRef.current = false;
+        if (!stickyLockRef.current) return;
+        stickyLockRef.current = false;
+        // Real pointer leave (node still mounted) clears the mark. Unmount
+        // during doorway nav disconnects the node — keep the mark so the
+        // destination seal can stay resting while the cursor hasn't moved.
+        if (rootRef.current?.isConnected) {
           clearBlueprintDoorwaySticky();
         }
       });
@@ -195,8 +200,11 @@ export default function BlueprintLogo({
     };
   }, [always, hoverMorphCapable]);
 
+  // Hover: red resting, gray while armed+hovered.
+  // Always: gray resting, red while armed+hovered.
+  // Disarmed (sticky doorway): keep resting color until pointer leaves.
   const showBlueprint = always
-    ? !groupHovered
+    ? !(hoverArmed && groupHovered)
     : hoverArmed && groupHovered;
   const t = morphTransition(!!reduceMotion);
 
@@ -206,10 +214,16 @@ export default function BlueprintLogo({
   const v2 = showBlueprint ? 100 + OVERHANG : 100 - RAIL_INSET;
 
   // Resting opacities on first paint; morph bridge only when state actually flips.
+  // Radius + rail opacity share one curve (Alex-style): animate rx→0 with the
+  // crop marks, don't try to interpolate corner-shape.
   useEffect(() => {
     if (prevBlueprint.current === null) {
       prevBlueprint.current = showBlueprint;
-      roundedControls.set({ opacity: 0 });
+      roundedControls.set({
+        opacity: 0,
+        rx: showBlueprint ? 0 : SEAL_RX,
+        ry: showBlueprint ? 0 : SEAL_RX,
+      });
       railControls.set({ opacity: showBlueprint ? 1 : 0 });
       return;
     }
@@ -218,50 +232,44 @@ export default function BlueprintLogo({
     prevBlueprint.current = showBlueprint;
 
     if (reduceMotion) {
-      roundedControls.set({ opacity: 0 });
+      roundedControls.set({
+        opacity: 0,
+        rx: showBlueprint ? 0 : SEAL_RX,
+        ry: showBlueprint ? 0 : SEAL_RX,
+      });
       railControls.start({
         opacity: showBlueprint ? 1 : 0,
-        transition: { duration: 0.15, ease: "easeOut" },
+        transition: { duration: 0.12, ease: "easeOut" },
       });
       return;
     }
 
-    // Bridge peaks then hides; morph-in clears it before rails go solid so
-    // corners don't stack (ghost/shadow). Morph-out kills bridge + rails in
-    // the first ~25% so the gray rounded path never rings the red seal.
+    const shared = { duration: MORPH_DURATION, ease: MORPH_EASE } as const;
+
+    // Morph-in: closed squircle flattens (rx→0) while rails extend + fade in.
+    // Bridge clears before rails go solid so corners don't double-stroke.
     if (showBlueprint) {
       roundedControls.start({
-        opacity: [0, 0.9, 0, 0],
-        transition: {
-          duration: MORPH_DURATION,
-          ease: MORPH_EASE,
-          times: [0, 0.22, 0.48, 1],
-        },
+        opacity: [0, 0.95, 0, 0],
+        rx: [SEAL_RX, SEAL_RX * 0.4, 0, 0],
+        ry: [SEAL_RX, SEAL_RX * 0.4, 0, 0],
+        transition: { ...shared, times: [0, 0.35, 0.7, 1] },
       });
       railControls.start({
-        opacity: [0, 0.12, 1],
-        transition: {
-          duration: MORPH_DURATION,
-          ease: MORPH_EASE,
-          times: [0, 0.42, 1],
-        },
+        opacity: [0, 0.2, 1],
+        transition: { ...shared, times: [0, 0.4, 1] },
       });
     } else {
+      // Morph-out: rails drop fast; brief radius restore so gray never rings the red seal.
       roundedControls.start({
         opacity: [0, 0.55, 0, 0],
-        transition: {
-          duration: MORPH_DURATION,
-          ease: MORPH_EASE,
-          times: [0, 0.1, 0.26, 1],
-        },
+        rx: [0, SEAL_RX * 0.45, SEAL_RX, SEAL_RX],
+        ry: [0, SEAL_RX * 0.45, SEAL_RX, SEAL_RX],
+        transition: { ...shared, times: [0, 0.2, 0.45, 1] },
       });
       railControls.start({
-        opacity: [0.25, 0, 0],
-        transition: {
-          duration: MORPH_DURATION,
-          ease: MORPH_EASE,
-          times: [0.08, 0.24, 1],
-        },
+        opacity: [0.3, 0, 0],
+        transition: { ...shared, times: [0, 0.35, 1] },
       });
     }
   }, [showBlueprint, reduceMotion, roundedControls, railControls]);
@@ -304,7 +312,7 @@ export default function BlueprintLogo({
       />
 
       <svg
-        className="blueprint-frame pointer-events-none absolute inset-0 text-zinc-400/60"
+        className="blueprint-frame pointer-events-none absolute inset-0 text-zinc-400/60 will-change-transform"
         viewBox="0 0 100 100"
         fill="none"
         overflow="visible"
@@ -322,11 +330,9 @@ export default function BlueprintLogo({
             y={SEAL_INSET}
             width={100 - SEAL_INSET * 2}
             height={100 - SEAL_INSET * 2}
-            rx={SEAL_RX}
-            ry={SEAL_RX}
             strokeLinecap="round"
             strokeLinejoin="round"
-            initial={{ opacity: 0 }}
+            initial={{ opacity: 0, rx: SEAL_RX, ry: SEAL_RX }}
             animate={roundedControls}
           />
 

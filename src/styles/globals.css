@@ -314,29 +314,6 @@ html {
   font-family: 'Michelle', sans-serif !important;
 }
 
-/* Animated gradient text effect */
-@keyframes gradient-intro {
-  0% {
-    background-position: 50% 50%;
-  }
-  50% {
-    background-position: 80% 50%;
-  }
-  100% {
-    background-position: 50% 50%;
-  }
-}
-
-.gradient-text-animated {
-  transition: 0.1s;
-  background: linear-gradient(-60deg, violet, #FFD2F2, #ECCBFF, #AADBFD, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa, #a1a1aa);
-  background-size: 125% 125%;
-  animation: gradient-intro 6s ease infinite;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
 /* Custom Highlight Color */
 ::-moz-selection {
   color: #3b82f6; /* blue-500 */
