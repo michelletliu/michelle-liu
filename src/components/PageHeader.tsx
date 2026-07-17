@@ -16,7 +16,6 @@ type PageHeaderProps = {
 
 export default function PageHeader({
   variant,
-  heroAnimationPlayed = false,
   children,
   nameAddon,
 }: PageHeaderProps) {
@@ -71,16 +70,10 @@ export default function PageHeader({
                 <div
                   key={variant}
                   className="font-['Michelle',sans-serif] font-normal tracking-wide leading-6 max-md:leading-5.5 text-[#a1a1aa] text-lg max-md:text-base w-full max-md:max-w-86 whitespace-pre-wrap mt-1 max-md:mt-1"
-                  style={
-                    // Skip entrance animation on return visits — Art → Work was
-                    // paying 360ms of opacity:0 before the hero felt ready.
-                    heroAnimationPlayed
-                      ? undefined
-                      : {
-                          animation:
-                            "projectCardEnter 360ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
-                        }
-                  }
+                  style={{
+                    animation:
+                      "projectCardEnter 360ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
+                  }}
                 >
                   {children}
                 </div>
