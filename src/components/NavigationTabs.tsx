@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type MouseEvent,
+  type TransitionEvent,
 } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -134,6 +135,7 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
     art: null,
     about: null,
   });
+  const pendingHrefRef = useRef<string | null>(null);
   const indicatorReadyRef = useRef(false);
   const [indicatorStyle, setIndicatorStyle] = useState({
     left: 0,
@@ -146,6 +148,7 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
 
   // Sync when the route's active tab prop changes (e.g. back/forward).
   useLayoutEffect(() => {
+    pendingHrefRef.current = null;
     setDisplayedActiveTab(activeTab);
   }, [activeTab]);
 
@@ -209,11 +212,30 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
       return;
     }
 
-    // Optimistic pill slide on this still-mounted instance. Navigation is
-    // handled by the Link itself (immediate) — a delayed router.push used to
-    // wait for the 300ms CSS transition, but that left the optimistic active
-    // state stuck when soft navigation from the timeout never completed.
+    if (
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      !indicatorReady ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    pendingHrefRef.current = tab.href;
     setDisplayedActiveTab(tab.id);
+  };
+
+  const handleIndicatorTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget || event.propertyName !== "transform") return;
+
+    const href = pendingHrefRef.current;
+    if (!href) return;
+
+    pendingHrefRef.current = null;
+    router.push(href, { scroll: false });
   };
 
   return (
@@ -228,6 +250,7 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
                   "pointer-events-none absolute left-0 top-0 z-0 rounded-full border border-white/50 bg-zinc-200/60 shadow-glass md:backdrop-blur-md motion-reduce:transition-none",
                   indicatorReady && "transition-[transform,width,opacity] duration-300 ease-out",
                 )}
+                onTransitionEnd={handleIndicatorTransitionEnd}
                 style={{
                   opacity: indicatorStyle.opacity,
                   transform: `translate3d(${indicatorStyle.left}px, ${indicatorStyle.top}px, 0)`,

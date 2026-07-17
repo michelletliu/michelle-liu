@@ -32,6 +32,14 @@ test("does not compile every inactive tab automatically on mount", () => {
   assert.match(source, /process\.env\.NODE_ENV === "development"/);
 });
 
+test("finishes the pill transform before changing routes", () => {
+  assert.match(source, /pendingHrefRef/);
+  assert.match(source, /event\.preventDefault\(\)[\s\S]*pendingHrefRef\.current = tab\.href/);
+  assert.match(source, /onTransitionEnd=\{handleIndicatorTransitionEnd\}/);
+  assert.match(source, /event\.propertyName !== "transform"/);
+  assert.match(source, /router\.push\(href, \{ scroll: false \}\)/);
+});
+
 test("does not compile the design system automatically on mount", () => {
   assert.doesNotMatch(
     doorwaySource,
