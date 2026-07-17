@@ -1,0 +1,48 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+
+const source = readFileSync(
+  new URL("./NavigationTabs.tsx", import.meta.url),
+  "utf8",
+);
+const doorwaySource = readFileSync(
+  new URL("./DesignSystemLogoLink.tsx", import.meta.url),
+  "utf8",
+);
+const projectModalSource = readFileSync(
+  new URL("./project/ProjectModal.tsx", import.meta.url),
+  "utf8",
+);
+const preloadSource = readFileSync(
+  new URL("../sanity/preload.ts", import.meta.url),
+  "utf8",
+);
+const homeSource = readFileSync(
+  new URL("./HomePageClient.tsx", import.meta.url),
+  "utf8",
+);
+
+test("does not compile every inactive tab automatically on mount", () => {
+  assert.doesNotMatch(
+    source,
+    /useEffect\(\(\) => \{[\s\S]*?prefetchTab\(tab\.href\)[\s\S]*?\}, \[activeTab, prefetchTab\]\)/,
+  );
+  assert.match(source, /prefetch=\{false\}/);
+  assert.match(source, /process\.env\.NODE_ENV === "development"/);
+});
+
+test("does not compile the design system automatically on mount", () => {
+  assert.doesNotMatch(
+    doorwaySource,
+    /useEffect\(\(\) => \{[\s\S]*?warmDesignSystem\(\)[\s\S]*?\}, \[router\]\)/,
+  );
+  assert.doesNotMatch(doorwaySource, /onMouseEnter=\{prefetchDoorway\}/);
+  assert.match(doorwaySource, /process\.env\.NODE_ENV === "development"/);
+});
+
+test("project preloads and modal opens share one in-flight request", () => {
+  assert.doesNotMatch(projectModalSource, /async function fetchProjectByCompany/);
+  assert.match(preloadSource, /const projectRequests = new Map/);
+  assert.match(homeSource, /process\.env\.NODE_ENV !== "development"/);
+});

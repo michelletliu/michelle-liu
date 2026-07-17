@@ -97,7 +97,7 @@ export const colorGroups: ColorGroup[] = [
   {
     id: "accent",
     label: "Blue",
-    note: "Blue-500 (#3b82f6) is the single accent for links, CTAs, active states, and text selection.",
+    note: "Blue-500 is the single accent for links, CTAs, active states, and text selection.",
     colors: [
       { name: "blue-600", value: "#2563eb", className: "text-blue-600", usage: "Ikigai link hover, CMS title default", tag: "canonical" },
       { name: "blue-500", value: "#3b82f6", className: "bg-blue-500", usage: "Links, CTAs, active nav, selection", tag: "canonical" },
@@ -110,7 +110,7 @@ export const colorGroups: ColorGroup[] = [
   {
     id: "cms",
     label: "Case studies",
-    note: "Hexes from Sanity project content (published NASA, Adobe, Roblox, Apple) plus code defaults for CMS sections. Brand/project hues are one-offs; pink-50/500 stay canonical defaults. Surface neutrals already in Zinc are omitted.",
+    note: "Project accent hues from Sanity case studies, plus CMS pink defaults.",
     colors: [
       { name: "pink-500", value: "#ec4899", className: "text-pink-500", usage: "CMS default — TOC, headers, stats accent", tag: "canonical" },
       { name: "pink-50", value: "#fdf2f8", className: "bg-pink-50", usage: "CMS section header bar default", tag: "canonical" },
@@ -158,7 +158,7 @@ export const colorGroups: ColorGroup[] = [
   {
     id: "status",
     label: "Status",
-    note: "Emerald for availability, red for errors, green for the pulse ring.",
+    note: "Emerald for availability, red for errors.",
     colors: [
       { name: "emerald-500", value: "#10b981", usage: "Availability dot, submit button", tag: "canonical" },
       { name: "emerald-600", value: "#059669", usage: "Changelog link hover", tag: "one-off" },
@@ -234,12 +234,12 @@ export const tracking: ScaleToken[] = [
 export const lineHeights: ScaleToken[] = [
   { name: "leading-none", value: "1", usage: "404 display", tag: "canonical" },
   { name: "leading-tight", value: "1.25", usage: "Card descriptions, lore dates", tag: "canonical" },
-  { name: "leading-snug", value: "1.375", usage: "Film captions, stats", tag: "canonical" },
-  { name: "leading-normal", value: "1.5", usage: "Default headings / buttons", tag: "canonical" },
-  { name: "leading-relaxed", value: "1.625", usage: "About prose, book review", tag: "canonical" },
-  { name: "leading-[1.4]", value: "1.4", usage: "Project card text", tag: "canonical" },
   { name: "leading-5", value: "calc(var(--spacing) * 5)", usage: "Metadata, nav, captions", tag: "canonical" },
+  { name: "leading-snug", value: "1.375", usage: "Film captions, stats", tag: "canonical" },
+  { name: "leading-[1.4]", value: "1.4", usage: "Project card text", tag: "canonical" },
+  { name: "leading-normal", value: "1.5", usage: "Default headings / buttons", tag: "canonical" },
   { name: "leading-6", value: "calc(var(--spacing) * 6)", usage: "Subtitles, footer CTA", tag: "canonical" },
+  { name: "leading-relaxed", value: "1.625", usage: "About prose, book review", tag: "canonical" },
   { name: "leading-7", value: "calc(var(--spacing) * 7)", usage: "Quotes, display lines", tag: "canonical" },
 ];
 
@@ -304,16 +304,8 @@ export const radii: RadiusToken[] = [
   { name: "rounded-xl", className: "rounded-xl", value: 12, compensated: "20px", usage: "Gallery items, project cards", tag: "canonical" },
   { name: "rounded-2xl", className: "rounded-2xl", value: 16, compensated: "27px", usage: "Lore cards, book modal, video", tag: "canonical" },
   { name: "rounded-3xl", className: "rounded-3xl", value: 24, compensated: "41px", usage: "Info modal, media quote cards", tag: "canonical" },
-  { name: "rounded-[16px]", value: 16, compensated: "27px", usage: "Video / image embeds", tag: "canonical" },
-  { name: "rounded-[24px]", value: 24, compensated: "41px", usage: "Device mockup columns", tag: "canonical" },
   { name: "rounded-[26px]", value: 26, compensated: "44px", usage: "★ Signature project & modal radius", tag: "canonical" },
   { name: "rounded-full", className: "rounded-full", value: 999, usage: "Pills, avatars, CTAs, nav (stays round)", tag: "canonical" },
-];
-
-export const oddRadii: ScaleToken[] = [
-  { name: "rounded-[7px]", value: "7px", usage: "Screentime daily-tab segment", tag: "experiment" },
-  { name: "rounded-[11px] / [12px]", value: "11–12px", usage: "Screentime app icons (iOS-accurate)", tag: "experiment" },
-  { name: "rounded-[100px]", value: "100px", usage: "Screentime home indicator, segmented control", tag: "experiment" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -333,7 +325,7 @@ export const spacingScale: ScaleToken[] = [
 ];
 
 export const gutters: ScaleToken[] = [
-  { name: "px-16 / max-md:px-6", value: "64px → 24px", usage: "★ Primary page gutter (desktop → mobile)", tag: "canonical" },
+  { name: "px-16 / max-md:px-6", value: "64px → 24px", usage: "★ Primary page gutter", tag: "canonical" },
   { name: "px-8", value: "32px", usage: "Secondary mobile gutter", tag: "canonical" },
   { name: "px-[175px] / md:px-[8%]", value: "175px / 8%", usage: "Wide project gallery gutters", tag: "one-off" },
   { name: "w-[calc(100%*10/12)]", value: "10 of 12 cols", usage: "Project modal width", tag: "canonical" },
@@ -346,7 +338,7 @@ export const gutters: ScaleToken[] = [
 // ---------------------------------------------------------------------------
 
 export const borders: ScaleToken[] = [
-  { name: "border", value: "1px solid", usage: "Cards, images, modals (hairline)", tag: "canonical" },
+  { name: "border", value: "1px solid", usage: "Cards, images, modals", tag: "canonical" },
   { name: "border-2", value: "2px", usage: "Loading spinners", tag: "canonical" },
   { name: "border-zinc-50", value: "#fafafa", usage: "Image hairline overlays", tag: "canonical" },
   { name: "border-zinc-100", value: "#f4f4f5", usage: "Cards, dropdowns, community frames, project card frames", tag: "canonical" },

@@ -711,7 +711,7 @@ export default function PolaroidPage() {
         {/* Controls */}
         <div className={`content-stretch flex flex-col items-center relative shrink-0 ${isPopupMode ? 'gap-[20px] md:gap-[28px]' : 'gap-[36px]'}`}>
           {/* Toolbar */}
-          <div className="content-stretch flex items-center px-[8px] py-0 relative rounded-[16px] shrink-0 w-full justify-center">
+          <div className="content-stretch flex items-center px-[8px] py-0 relative rounded-2xl shrink-0 w-full justify-center">
             <div className="content-stretch flex md:flex-row flex-col gap-[10px] items-center justify-center relative shrink-0">
               {/* Color Palette */}
               <div className="bg-white content-stretch flex items-center md:p-[10px] p-[8px] relative rounded-[1000px] shrink-0 shadow-soft overflow-visible">
@@ -941,10 +941,10 @@ export default function PolaroidPage() {
                 <div className="content-stretch flex gap-[16px] sm:gap-[24px] items-center relative shrink-0 w-full">
                   <button 
                     onClick={handleCopyLink}
-                    className="group basis-0 bg-white grow py-[10px] sm:py-[12px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-zinc-50 transition-all duration-300 ease-in-out"
+                    className="group basis-0 bg-white grow py-[10px] sm:py-[12px] min-h-px min-w-px relative rounded-2xl shrink-0 cursor-pointer hover:bg-zinc-50 transition-all duration-300 ease-in-out"
                     style={{ backgroundImage: copyLinkSuccess ? "linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" : undefined }}
                   >
-                    <div aria-hidden="true" className="absolute border border-zinc-200/50 border-solid inset-0 pointer-events-none rounded-[16px]" />
+                    <div aria-hidden="true" className="absolute border border-zinc-200/50 border-solid inset-0 pointer-events-none rounded-2xl" />
                     <div className="flex flex-col items-center size-full">
                       <div className="content-stretch flex flex-col gap-[7px] items-center p-[12px] relative size-full">
                         <div className="relative shrink-0 size-[70px]">
@@ -992,10 +992,10 @@ export default function PolaroidPage() {
 
                   <button 
                     onClick={handleDownload}
-                    className="group basis-0 bg-white grow py-[10px] sm:py-[12px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-zinc-50 transition-all duration-300 ease-in-out"
+                    className="group basis-0 bg-white grow py-[10px] sm:py-[12px] min-h-px min-w-px relative rounded-2xl shrink-0 cursor-pointer hover:bg-zinc-50 transition-all duration-300 ease-in-out"
                     style={{ backgroundImage: downloadSuccess ? "linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" : undefined }}
                   >
-                    <div aria-hidden="true" className="absolute border border-zinc-200/50 border-solid inset-0 pointer-events-none rounded-[16px]" />
+                    <div aria-hidden="true" className="absolute border border-zinc-200/50 border-solid inset-0 pointer-events-none rounded-2xl" />
                     <div className="flex flex-col items-center size-full">
                       <div className="content-stretch flex flex-col gap-[7px] items-center p-[12px] relative size-full">
                         <div className="relative shrink-0 size-[70px]">
@@ -1059,8 +1059,8 @@ export default function PolaroidPage() {
                     onClick={() => handleShareToApp('Instagram')}
                     className="content-stretch flex flex-col gap-[6px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="relative rounded-[16px] sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
-                      <img alt="Instagram" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[16px] sm:rounded-[18.928px] size-full" src={imgInstagramIcon} />
+                    <div className="relative rounded-2xl sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
+                      <img alt="Instagram" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-2xl sm:rounded-[18.928px] size-full" src={imgInstagramIcon} />
                     </div>
                     <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-none overflow-hidden text-ellipsis relative shrink-0 text-xs text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Instagram
@@ -1071,8 +1071,8 @@ export default function PolaroidPage() {
                     onClick={() => handleShareToApp('LinkedIn')}
                     className="content-stretch flex flex-col gap-[6px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="relative rounded-[16px] sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
-                      <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[16px] sm:rounded-[18.928px]">
+                    <div className="relative rounded-2xl sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
+                      <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-2xl sm:rounded-[18.928px]">
                         <img alt="LinkedIn" className="absolute h-[1236.21%] left-[-168.97%] max-w-none top-[-256.03%] w-[568.97%]" src={imgLinkedInIcon} />
                       </div>
                     </div>
@@ -1085,8 +1085,8 @@ export default function PolaroidPage() {
                     onClick={() => handleShareToApp('Mail')}
                     className="content-stretch flex flex-col gap-[6px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="relative rounded-[16px] sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
-                      <img alt="Mail" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[16px] sm:rounded-[18.928px] size-full" src={imgMailIcon} />
+                    <div className="relative rounded-2xl sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
+                      <img alt="Mail" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-2xl sm:rounded-[18.928px] size-full" src={imgMailIcon} />
                     </div>
                     <p className="font-['SF_Pro:Regular',sans-serif] font-normal leading-none overflow-hidden text-ellipsis relative shrink-0 text-xs text-zinc-500 text-center text-nowrap tracking-[0.06px]" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Mail
@@ -1097,8 +1097,8 @@ export default function PolaroidPage() {
                     onClick={() => handleShareToApp('X')}
                     className="content-stretch flex flex-col gap-[6px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="relative rounded-[16px] sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
-                      <img alt="X" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[16px] sm:rounded-[18.928px] size-full" src={imgXIcon} />
+                    <div className="relative rounded-2xl sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
+                      <img alt="X" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-2xl sm:rounded-[18.928px] size-full" src={imgXIcon} />
                     </div>
                     <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-none overflow-hidden text-ellipsis relative shrink-0 text-xs text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       X
@@ -1109,8 +1109,8 @@ export default function PolaroidPage() {
                     onClick={() => handleShareToApp('Messages')}
                     className="content-stretch flex flex-col gap-[6px] items-center pb-[2px] pt-0 px-0 relative flex-1 sm:flex-none sm:w-[78px] cursor-pointer hover:brightness-90 transition-all"
                   >
-                    <div className="relative rounded-[16px] sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
-                      <img alt="Messages" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[16px] sm:rounded-[18.928px] size-full" src={imgMessagesIcon} />
+                    <div className="relative rounded-2xl sm:rounded-[18.928px] shrink-0 size-[44px] sm:size-[69.402px]">
+                      <img alt="Messages" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-2xl sm:rounded-[18.928px] size-full" src={imgMessagesIcon} />
                     </div>
                     <p className="font-['SF_Pro:Regular',sans-serif] font-normal h-[13px] leading-none overflow-hidden text-ellipsis relative shrink-0 text-xs text-zinc-500 text-center text-nowrap tracking-[0.06px] w-full" style={{ fontVariationSettings: "'wdth' 100" }}>
                       Messages
@@ -1215,10 +1215,10 @@ export default function PolaroidPage() {
                   <div className="content-stretch flex gap-[16px] sm:gap-[24px] items-center relative shrink-0 w-full">
                     <button 
                       onClick={handleCopyLink}
-                      className="group basis-0 bg-white grow py-[10px] sm:py-[12px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-zinc-50 transition-all duration-300 ease-in-out"
+                      className="group basis-0 bg-white grow py-[10px] sm:py-[12px] min-h-px min-w-px relative rounded-2xl shrink-0 cursor-pointer hover:bg-zinc-50 transition-all duration-300 ease-in-out"
                       style={{ backgroundImage: copyLinkSuccess ? "linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" : undefined }}
                     >
-                      <div aria-hidden="true" className="absolute border border-zinc-200/50 border-solid inset-0 pointer-events-none rounded-[16px]" />
+                      <div aria-hidden="true" className="absolute border border-zinc-200/50 border-solid inset-0 pointer-events-none rounded-2xl" />
                       <div className="flex flex-col items-center size-full">
                         <div className="content-stretch flex flex-col gap-[7px] items-center p-[12px] relative size-full">
                           <div className="relative shrink-0 size-[70px]">
@@ -1266,10 +1266,10 @@ export default function PolaroidPage() {
 
                     <button 
                       onClick={handleDownload}
-                      className="group basis-0 bg-white grow py-[10px] sm:py-[12px] min-h-px min-w-px relative rounded-[16px] shrink-0 cursor-pointer hover:bg-zinc-50 transition-all duration-300 ease-in-out"
+                      className="group basis-0 bg-white grow py-[10px] sm:py-[12px] min-h-px min-w-px relative rounded-2xl shrink-0 cursor-pointer hover:bg-zinc-50 transition-all duration-300 ease-in-out"
                       style={{ backgroundImage: downloadSuccess ? "linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" : undefined }}
                     >
-                      <div aria-hidden="true" className="absolute border border-zinc-200/50 border-solid inset-0 pointer-events-none rounded-[16px]" />
+                      <div aria-hidden="true" className="absolute border border-zinc-200/50 border-solid inset-0 pointer-events-none rounded-2xl" />
                       <div className="flex flex-col items-center size-full">
                         <div className="content-stretch flex flex-col gap-[7px] items-center p-[12px] relative size-full">
                           <div className="relative shrink-0 size-[70px]">

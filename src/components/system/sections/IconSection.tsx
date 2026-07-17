@@ -237,7 +237,7 @@ function iconDisplayName(name: string): string {
 function IconCard({ name, sample }: IconSpecimen) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="relative flex h-24 items-center justify-center overflow-hidden rounded-xl bg-zinc-50 text-zinc-500">
+      <div className="relative flex h-[120px] min-h-[120px] items-center justify-center overflow-hidden rounded-xl bg-zinc-50 text-zinc-500 md:h-24 md:min-h-24">
         {sample}
       </div>
       <div className="pl-1 text-base leading-snug text-zinc-400 text-pretty">{iconDisplayName(name)}</div>
@@ -403,14 +403,12 @@ const socialIcons: IconSpecimen[] = [
 export default function IconSection() {
   return (
     <Section id="icons" title="Iconography">
-      <SubLabel note="iconSizes · Chevrons sit one step below the paired Close. Prefer size={iconSize(...)} over CSS size-*.">
-        Size
-      </SubLabel>
+      <SubLabel>Size</SubLabel>
       <div className="mb-10 grid h-[200px] grid-cols-5 items-center gap-x-8 rounded-xl bg-zinc-50 px-6">
         {ICON_SIZE_RAMP.map((name) => {
           const px = iconSizes[name];
           return (
-            <div key={name} className="flex flex-col">
+            <div key={name} className="flex translate-y-1 flex-col">
               <div className="flex h-8 items-end justify-center pt-4">
                 <div
                   aria-hidden
@@ -437,7 +435,7 @@ export default function IconSection() {
         ))}
       </Grid>
 
-      <SubLabel note="Solid glyphs — stay filled (no strokeWidth rules). Same zinc-500 specimen color.">
+      <SubLabel note="Solid glyphs. Zinc-500.">
         Filled icons
       </SubLabel>
       <Grid min="160px">
@@ -446,7 +444,7 @@ export default function IconSection() {
         ))}
       </Grid>
 
-      <SubLabel note="Filled social marks (monochrome zinc-500 in this section).">Social</SubLabel>
+      <SubLabel note="Social marks. Zinc-500.">Social</SubLabel>
       <Grid min="160px">
         {socialIcons.map((icon) => (
           <IconCard key={icon.name} {...icon} />

@@ -273,21 +273,21 @@ export default function InfoButton({ project }: InfoButtonProps) {
 
               {/* Video/Image content area */}
               {project.imageSrc && (
-              <div className="relative rounded-[16px] border border-zinc-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0 mt-3">
+              <div className="relative rounded-2xl border border-zinc-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0 mt-3">
                 <ShimmerImage
                   alt=""
                   className="absolute object-cover size-full"
                   wrapperClassName="absolute inset-0"
-                  rounded="rounded-[16px]"
+                  rounded="rounded-2xl"
                   src={project.imageSrc}
                 />
                 {project.videoSrc && videoReady && (
                   <ShimmerVideo
                     key={project.id}
                     src={project.videoSrc}
-                    className="absolute object-cover size-full rounded-[16px]"
+                    className="absolute object-cover size-full rounded-2xl"
                     wrapperClassName="absolute inset-0"
-                    rounded="rounded-[16px]"
+                    rounded="rounded-2xl"
                     autoPlay
                     muted
                     loop

@@ -1,7 +1,6 @@
 import {
   forwardRef,
   useCallback,
-  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -55,7 +54,7 @@ const TagBackgroundImageAndText = forwardRef<HTMLAnchorElement, TagBackgroundIma
         ref={ref}
         href={href}
         scroll={false}
-        prefetch
+        prefetch={false}
         onClick={onClick}
         onMouseEnter={onPrefetch}
         onFocus={onPrefetch}
@@ -93,6 +92,11 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
 
   const prefetchTab = useCallback(
     (href: string) => {
+      // In dev, prefetches trigger expensive webpack route compiles and can
+      // block the route the user actually clicks. Production serves built
+      // chunks, so intent-based warming remains useful there.
+      if (process.env.NODE_ENV === "development") return;
+
       // Sanity data + page modules can be warmed repeatedly (no-ops when
       // cached). Route RSC prefetch is deduped so we don't hammer the router.
       // Module imports are what make tab switches feel instant — router.prefetch
@@ -122,20 +126,6 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
     },
     [router],
   );
-
-  // Warm other tabs immediately. Prefer Work first from Art/About — that's the
-  // common back-nav and used to wait on ExperimentModal + ProjectModal JS.
-  useEffect(() => {
-    const others = NAVIGATION_TABS.filter((tab) => tab.id !== activeTab);
-    const ordered =
-      activeTab === "work"
-        ? others
-        : [
-            ...others.filter((t) => t.id === "work"),
-            ...others.filter((t) => t.id !== "work"),
-          ];
-    ordered.forEach((tab) => prefetchTab(tab.href));
-  }, [activeTab, prefetchTab]);
 
   const [displayedActiveTab, setDisplayedActiveTab] = useState(activeTab);
   const containerRef = useRef<HTMLDivElement | null>(null);

@@ -474,12 +474,12 @@ export default function AboutPage() {
       }
     };
 
-    if ("requestIdleCallback" in window) {
+    if (typeof requestIdleCallback === "function") {
       const id = requestIdleCallback(warm, { timeout: 4000 });
       return () => cancelIdleCallback(id);
     }
 
-    const timeout = window.setTimeout(warm, 800);
+    const timeout = setTimeout(warm, 800);
     return () => clearTimeout(timeout);
   }, [shelfItems]);
 
@@ -819,11 +819,8 @@ export default function AboutPage() {
                   <div className="flex flex-col gap-8">
                     <ScrollReveal>
                       <div className="flex flex-col">
-                        <p className="text-base md:text-lg font-medium text-zinc-700 tracking-[0.005em]">
-                          Freelance
-                        </p>
-                        <p className="text-base text-zinc-500 tracking-[0.005em]">
-                          Design Contracts<span className="text-zinc-400 font-normal">, 2023 - Present</span>
+                        <p className="whitespace-nowrap text-base md:text-lg font-medium text-zinc-700 tracking-[0.005em]">
+                          Freelance<span className="text-zinc-400 font-normal">, 2023 - Present</span>
                         </p>
                       </div>
                     </ScrollReveal>

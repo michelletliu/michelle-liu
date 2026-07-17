@@ -66,12 +66,7 @@ export default function BorderSection() {
 
   return (
     <Section id="borders" title="Borders">
-      <SubLabel
-        note="Width and color tokens used across cards, inputs, overlays, and chrome."
-        tag={bordersTag}
-      >
-        Styles
-      </SubLabel>
+      <SubLabel tag={bordersTag}>Styles</SubLabel>
       <Grid min="200px">
         {borderTokens.map((b) => (
           <TokenCard
@@ -85,12 +80,7 @@ export default function BorderSection() {
         ))}
       </Grid>
 
-      <SubLabel
-        note="Global :focus-visible and the interactive focus ring."
-        tag={focusTag}
-      >
-        Focus states
-      </SubLabel>
+      <SubLabel tag={focusTag}>Focus states</SubLabel>
       <div className="grid grid-cols-1 gap-x-6 gap-y-9 md:grid-cols-2">
         {focusTokens.map((b) => (
           <TokenCard

@@ -14,9 +14,9 @@ function BrowserFrame({
 }) {
   return (
     <div
-      className={`flex flex-col overflow-hidden rounded-lg border border-zinc-300 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] ${heightClass} ${className}`}
+      className={`flex flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] ${heightClass} ${className}`}
     >
-      <div className="flex h-3.5 shrink-0 items-center gap-1 border-b border-zinc-200 bg-zinc-100 px-1">
+      <div className="flex h-3.5 shrink-0 items-center gap-1 border-b border-zinc-100 bg-zinc-100 px-1">
         <span className="size-1.5 rounded-full bg-zinc-300" />
         <span className="size-1.5 rounded-full bg-zinc-300" />
         <span className="size-1.5 rounded-full bg-zinc-300" />
@@ -26,23 +26,21 @@ function BrowserFrame({
   );
 }
 
-/** Mini phone chrome: bezel + screen. */
+/** Mini phone chrome: bezel + screen. Aspect matches iPhone 16 (393×852). */
 function PhoneFrame({
   children,
   className = "",
   heightClass = "h-[72px]",
-  widthClass = "w-[36px]",
 }: {
   children?: ReactNode;
   className?: string;
   heightClass?: string;
-  widthClass?: string;
 }) {
   return (
     <div
-      className={`relative shrink-0 overflow-hidden rounded-[10px] border-[3px] border-zinc-600 bg-zinc-600 shadow-[0_1px_2px_rgba(0,0,0,0.08)] ${heightClass} ${widthClass} ${className}`}
+      className={`relative aspect-[393/852] shrink-0 overflow-hidden rounded-[13px] border-2 border-zinc-500 bg-zinc-500 shadow-[0_2px_8px_rgba(0,0,0,0.1)] ${heightClass} ${className}`}
     >
-      <div className="absolute inset-0 overflow-hidden rounded-[7px] bg-white">
+      <div className="absolute inset-0 overflow-hidden rounded-[11px] bg-white">
         {children}
       </div>
     </div>
@@ -74,7 +72,7 @@ function ModalScreen({ cols }: { cols: 6 | 10 }) {
         ))}
       </div>
       <div
-        className="relative z-[1] h-[70%] rounded-md border border-zinc-300 bg-white shadow-sm"
+        className="relative z-[1] h-[70%] rounded-md border border-zinc-200 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
         style={{ width: `${widthPct}%` }}
       />
     </div>
@@ -96,7 +94,7 @@ function LayoutWidthSample({ name }: { name: string }) {
       );
     case "px-8":
       return (
-        <PhoneFrame heightClass="h-[88px]" widthClass="w-[44px]">
+        <PhoneFrame heightClass="h-[88px]">
           <GutterScreen gutterPct={22} />
         </PhoneFrame>
       );
@@ -130,10 +128,10 @@ function LayoutWidthSample({ name }: { name: string }) {
     case "w-[337px] / [402px]":
       return (
         <div className="flex items-center justify-center gap-2.5">
-          <PhoneFrame heightClass="h-[70px]" widthClass="w-[34px]">
+          <PhoneFrame heightClass="h-[70px]">
             <div className="h-full w-full bg-zinc-100" />
           </PhoneFrame>
-          <PhoneFrame heightClass="h-[84px]" widthClass="w-[40px]">
+          <PhoneFrame heightClass="h-[84px]">
             <div className="h-full w-full bg-zinc-100" />
           </PhoneFrame>
         </div>
@@ -156,7 +154,7 @@ export default function SpacingSection() {
           return (
             <div key={s.name} className="flex items-center gap-4 py-3.5">
               <div className="flex w-24 shrink-0 items-center">
-                <div className="h-2.5 rounded-full bg-zinc-300" style={{ width: `${px}px` }} />
+                <div className="h-2.5 rounded-md bg-zinc-300" style={{ width: `${px}px` }} />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2.5">
@@ -173,9 +171,7 @@ export default function SpacingSection() {
         })}
       </RowList>
 
-      <SubLabel note="Page gutters and grid-based widths." tag={gutterTag}>
-        Layout widths
-      </SubLabel>
+      <SubLabel tag={gutterTag}>Layout widths</SubLabel>
       <Grid min="220px">
         {gutters.map((g) => (
           <TokenCard

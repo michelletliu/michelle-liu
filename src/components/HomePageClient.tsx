@@ -378,7 +378,10 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
   };
 
   const warmProject = () => {
-    if (MAIN_PROJECT_IDS.includes(project.id)) {
+    if (
+      process.env.NODE_ENV !== "development" &&
+      MAIN_PROJECT_IDS.includes(project.id)
+    ) {
       void preloadProject(project.id);
     }
   };
@@ -700,21 +703,21 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
             <ToolsSection categories={project.toolCategories} />
           )}
 
-          <div className="relative rounded-[16px] w-full aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0 mt-3">
+          <div className="relative rounded-2xl w-full aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0 mt-3">
             <ShimmerImage
               alt=""
               className="absolute object-cover size-full"
               wrapperClassName="absolute inset-0"
-              rounded="rounded-[16px]"
+              rounded="rounded-2xl"
               src={project.imageSrc}
             />
             {project.videoSrc && videoReady && (
               <ShimmerVideo
                 key={project.id}
                 src={project.videoSrc}
-                className="absolute object-cover size-full rounded-[16px]"
+                className="absolute object-cover size-full rounded-2xl"
                 wrapperClassName="absolute inset-0"
-                rounded="rounded-[16px]"
+                rounded="rounded-2xl"
                 autoPlay
                 muted
                 loop

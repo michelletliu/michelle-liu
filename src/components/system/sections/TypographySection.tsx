@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   fontFamilies,
   typeScale,
@@ -8,12 +8,12 @@ import {
   tracking,
   lineHeights,
   uniformTag,
+  type Tag,
 } from "../tokens";
 import {
   Section,
   SubLabel,
   RowList,
-  TokenRow,
   TagChip,
   TokenCard,
 } from "../primitives";
@@ -27,6 +27,43 @@ const TYPE_FILTERS = [
 ] as const;
 
 type TypeFilterId = (typeof TYPE_FILTERS)[number]["value"];
+
+/** One properties row — stacks on mobile, single-line on sm+. */
+function PropertyRow({
+  sample,
+  name,
+  tag,
+  usage,
+  value,
+}: {
+  sample?: ReactNode;
+  name: string;
+  tag?: Tag;
+  usage: string;
+  value: string;
+}) {
+  return (
+    <div className="flex flex-col gap-2 py-3.5 sm:h-16 sm:flex-row sm:items-center sm:gap-4 sm:py-0">
+      {sample != null ? (
+        <div className="flex h-8 w-full shrink-0 items-center overflow-hidden sm:h-10 sm:w-28 md:w-40">
+          {sample}
+        </div>
+      ) : null}
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+          <code className="break-all font-mono text-sm text-zinc-700">{name}</code>
+          {tag ? <TagChip tag={tag} /> : null}
+        </div>
+        <p className="mt-0.5 text-sm leading-5 text-zinc-400 text-pretty sm:truncate">
+          {usage}
+        </p>
+      </div>
+      <code className="shrink-0 font-mono text-sm tabular-nums text-zinc-400">
+        {value}
+      </code>
+    </div>
+  );
+}
 
 export default function TypographySection() {
   const familiesTag = uniformTag(fontFamilies);
@@ -48,12 +85,7 @@ export default function TypographySection() {
 
   return (
     <Section id="typography" title="Typography">
-      <SubLabel
-        note="The 'Figtree' variable font covers weights 300–900, roman + italic."
-        tag={familiesTag}
-      >
-        Families
-      </SubLabel>
+      <SubLabel tag={familiesTag}>Families</SubLabel>
       <div className="grid grid-cols-1 gap-x-6 gap-y-9 mid:grid-cols-2">
         {fontFamilies.map((f) => (
           <TokenCard
@@ -98,32 +130,20 @@ export default function TypographySection() {
                 {typeScale
                   .filter((t) => t.role === role)
                   .map((t) => (
-                    <div
+                    <PropertyRow
                       key={t.name}
-                      className="flex items-center gap-4 py-3.5"
-                    >
-                      <div className="w-40 shrink-0 overflow-hidden">
+                      sample={
                         <span
                           className={`${t.className} whitespace-nowrap text-zinc-700`}
                         >
                           {t.sample ?? "Text"}
                         </span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2.5">
-                          <code className="font-mono text-sm text-zinc-700">
-                            {t.name}
-                          </code>
-                          {!scaleTag && <TagChip tag={t.tag} />}
-                        </div>
-                        <p className="mt-0.5 truncate text-sm text-zinc-400">
-                          {t.usage}
-                        </p>
-                      </div>
-                      <code className="shrink-0 font-mono text-sm tabular-nums text-zinc-400">
-                        {t.px}
-                      </code>
-                    </div>
+                      }
+                      name={t.name}
+                      tag={scaleTag ? undefined : t.tag}
+                      usage={t.usage}
+                      value={t.px}
+                    />
                   ))}
               </RowList>
             </div>
@@ -134,28 +154,21 @@ export default function TypographySection() {
       {filter === "weights" && (
         <RowList>
           {fontWeights.map((w) => (
-            <div key={w.name} className="flex items-center gap-4 py-3.5">
-              <span
-                className="w-40 shrink-0 text-base text-zinc-700"
-                style={{ fontWeight: Number(w.value) }}
-              >
-                Text
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2.5">
-                  <code className="font-mono text-sm text-zinc-700">
-                    {w.name}
-                  </code>
-                  {!weightsTag && <TagChip tag={w.tag} />}
-                </div>
-                <p className="mt-0.5 truncate text-sm text-zinc-400">
-                  {w.usage}
-                </p>
-              </div>
-              <code className="shrink-0 font-mono text-sm tabular-nums text-zinc-400">
-                {w.value}
-              </code>
-            </div>
+            <PropertyRow
+              key={w.name}
+              sample={
+                <span
+                  className="text-base leading-5 text-zinc-700"
+                  style={{ fontWeight: Number(w.value) }}
+                >
+                  Text
+                </span>
+              }
+              name={w.name}
+              tag={weightsTag ? undefined : w.tag}
+              usage={w.usage}
+              value={w.value}
+            />
           ))}
         </RowList>
       )}
@@ -163,28 +176,21 @@ export default function TypographySection() {
       {filter === "tracking" && (
         <RowList>
           {tracking.map((t) => (
-            <div key={t.name} className="flex items-center gap-4 py-3.5">
-              <span
-                className="w-40 shrink-0 text-base text-zinc-700"
-                style={{ letterSpacing: t.value }}
-              >
-                Text
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2.5">
-                  <code className="font-mono text-sm text-zinc-700">
-                    {t.name}
-                  </code>
-                  {!trackingTag && <TagChip tag={t.tag} />}
-                </div>
-                <p className="mt-0.5 truncate text-sm text-zinc-400">
-                  {t.usage}
-                </p>
-              </div>
-              <code className="shrink-0 font-mono text-sm tabular-nums text-zinc-400">
-                {t.value}
-              </code>
-            </div>
+            <PropertyRow
+              key={t.name}
+              sample={
+                <span
+                  className="text-base leading-5 text-zinc-700"
+                  style={{ letterSpacing: t.value }}
+                >
+                  Text
+                </span>
+              }
+              name={t.name}
+              tag={trackingTag ? undefined : t.tag}
+              usage={t.usage}
+              value={t.value}
+            />
           ))}
         </RowList>
       )}
@@ -192,12 +198,12 @@ export default function TypographySection() {
       {filter === "leading" && (
         <RowList>
           {lineHeights.map((t) => (
-            <TokenRow
+            <PropertyRow
               key={t.name}
               name={t.name}
               tag={lineHeightsTag ? undefined : t.tag}
-              value={t.value}
               usage={t.usage}
+              value={t.value}
             />
           ))}
         </RowList>

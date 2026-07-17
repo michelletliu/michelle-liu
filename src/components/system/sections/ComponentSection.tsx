@@ -132,10 +132,11 @@ const MATRIX_CONTENT_OPTIONS = [
 ];
 
 /**
- * Locked height for Solid / Glass matrices so content-mode toggles never reflow.
+ * Solid / Glass matrices — fluid height on mobile; locked on md+ so content
+ * toggles don’t reflow the card.
  */
 const BUTTON_MATRIX_CARD_CLASS =
-  "h-[30rem] min-h-[30rem] max-h-[30rem] !items-stretch !justify-start overflow-hidden";
+  "min-h-0 !items-stretch !justify-start overflow-hidden md:h-[30rem] md:min-h-[30rem] md:max-h-[30rem]";
 
 /** Playground is shorter — size to content so the card has no empty bottom band. */
 const BUTTON_PLAYGROUND_CARD_CLASS =
@@ -271,13 +272,41 @@ function ButtonMatrixStage({
 }) {
   return (
     <div
-      className={`flex min-h-0 flex-1 items-center justify-center overflow-x-auto rounded-xl px-6 py-6 ${stageClassName}`}
+      className={`flex min-h-0 flex-1 items-stretch justify-center rounded-xl px-3 py-4 sm:px-6 sm:py-6 md:items-center ${stageClassName}`}
     >
+      <p className="sr-only">{caption}</p>
+
+      {/* Mobile: stacked variants; sizes wrap so icon+label never overflows */}
+      <div className="flex w-full flex-col gap-5 md:hidden">
+        {SPEC_BUTTON_VARIANTS.map((variant) => (
+          <div key={variant} className="flex flex-col gap-2">
+            <span className="text-sm font-normal text-zinc-400">
+              {SPEC_BUTTON_VARIANT_LABELS[variant]}
+            </span>
+            <div className="flex flex-wrap items-end justify-center gap-x-4 gap-y-3">
+              {SPEC_BUTTON_SIZES.map((size) => (
+                <div
+                  key={size}
+                  className="flex flex-col items-center gap-1.5"
+                >
+                  <span className="text-xs font-normal text-zinc-400">
+                    {size}
+                  </span>
+                  <div className="flex min-h-12 items-center justify-center">
+                    {renderCell(variant, size, content)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/*
-        Fixed column widths so row/col headers stay put across
+        md+: fixed column widths so row/col headers stay put across
         Label / Icon+label / Icon — widest mode is Icon+label.
       */}
-      <table className="mx-auto w-[36rem] table-fixed border-separate border-spacing-x-4 border-spacing-y-4">
+      <table className="mx-auto hidden w-full max-w-[36rem] table-fixed border-separate border-spacing-x-3 border-spacing-y-4 md:table lg:border-spacing-x-4">
         <caption className="sr-only">{caption}</caption>
         <colgroup>
           <col className="w-[5.5rem]" />
@@ -424,7 +453,7 @@ function ButtonPlaygroundSpecimen() {
     <div className="flex h-full w-full min-h-0 flex-col items-stretch gap-4">
       {/* Fixed stage height — lg / icon+label must not grow the card */}
       <div
-        className={`flex h-44 shrink-0 items-center justify-center rounded-xl px-6 ${
+        className={`flex h-36 shrink-0 items-center justify-center rounded-xl px-3 sm:h-44 sm:px-6 ${
           isGlass
             ? "bg-gradient-to-br from-zinc-200 via-zinc-100 to-zinc-300"
             : "bg-white"
@@ -438,7 +467,7 @@ function ButtonPlaygroundSpecimen() {
       </div>
 
       <div
-        className="flex w-full shrink-0 flex-col gap-2.5 px-6"
+        className="flex w-full shrink-0 flex-col gap-2.5 px-3 sm:px-6"
         role="group"
         aria-label="Button playground settings"
       >
@@ -509,21 +538,28 @@ function Specimen({
   children,
   className = "",
   span = "col-span-1 lg:col-span-4",
+  labelPosition = "bottom",
 }: {
   label: string;
   children: ReactNode;
   className?: string;
   /** Tailwind col-span utilities for the parent 12-col bento grid */
   span?: string;
+  /** Buttons section puts labels above the zinc-50 card */
+  labelPosition?: "top" | "bottom";
 }) {
+  const labelEl = (
+    <div className="pl-1 text-base leading-snug text-zinc-400 text-pretty">{label}</div>
+  );
   return (
-    <div className={`flex h-full w-full min-w-0 flex-col gap-2 self-stretch ${span}`}>
+    <div className={`flex h-full w-full min-w-0 flex-col gap-1 self-stretch ${span}`}>
+      {labelPosition === "top" ? labelEl : null}
       <div
         className={`flex min-h-64 w-full min-w-0 flex-1 items-center justify-center gap-4 overflow-visible rounded-2xl bg-zinc-50 px-6 py-6 ${className}`}
       >
         {children}
       </div>
-      <div className="pl-1 text-base leading-snug text-zinc-400 text-pretty">{label}</div>
+      {labelPosition === "bottom" ? labelEl : null}
     </div>
   );
 }
@@ -791,7 +827,7 @@ function SidebarSpecimen() {
 function InputSpecimensSection() {
   return (
     <>
-      <SubLabel note="Pill field shared by password gates, library modal, and mobile Filter. Leading/trailing icons use FieldLeadingIcon / FieldTrailingIcon (size-5) with FieldInput h-5 / leading-5 / p-0.">
+      <SubLabel>
         Inputs
       </SubLabel>
       <div className={SPECIMEN_GRID}>
@@ -866,14 +902,13 @@ function InputSpecimensSection() {
 export default function ComponentSection() {
   return (
     <Section id="components" title="Components">
-      <SubLabel note="Axes: variant · Size · Icon · Glass · Color. Specimens encode site class patterns (not a shared Button API).">
-        Buttons
-      </SubLabel>
+      <SubLabel>Buttons</SubLabel>
       <div className={SPECIMEN_GRID}>
         <Specimen
           label="Solid"
           span={SPAN_FULL}
           className={BUTTON_MATRIX_CARD_CLASS}
+          labelPosition="top"
         >
           <ButtonMatrixSpecimen />
         </Specimen>
@@ -882,14 +917,16 @@ export default function ComponentSection() {
           label="Glass"
           span={SPAN_FULL}
           className={BUTTON_MATRIX_CARD_CLASS}
+          labelPosition="top"
         >
           <GlassMatrixSpecimen />
         </Specimen>
 
         <Specimen
-          label="Playground · Flip axes"
+          label="Playground"
           span={SPAN_FULL}
           className={BUTTON_PLAYGROUND_CARD_CLASS}
+          labelPosition="top"
         >
           <ButtonPlaygroundSpecimen />
         </Specimen>
@@ -914,7 +951,7 @@ export default function ComponentSection() {
         </Specimen>
       </div>
 
-      <SubLabel note="1px zinc-100 hairline. No vertical padding — space with gap/margin on adjacent content. bleed full-bleeds past px-6 on mobile.">
+      <SubLabel note="1px zinc-100 hairline.">
         Dividers
       </SubLabel>
       <div className={SPECIMEN_GRID}>
@@ -1029,7 +1066,7 @@ export default function ComponentSection() {
           </div>
         </Specimen>
 
-        <Specimen label="Availability badge" span={SPAN_WIDE}>
+        <Specimen label="Availability badge" span="col-span-1 lg:col-span-8">
           <div className="flex flex-wrap items-end justify-center gap-8">
             <div className="flex flex-col items-center gap-3">
               <ContactBadge size="md" />
@@ -1042,7 +1079,7 @@ export default function ComponentSection() {
           </div>
         </Specimen>
 
-        <Specimen label="Social / meta link" span={SPAN_WIDE}>
+        <Specimen label="Social / meta link" span="col-span-1 lg:col-span-4">
           <button
             type="button"
             className="inline-flex cursor-pointer items-center gap-1 text-sm font-medium text-zinc-600 transition-colors hover:text-blue-500"

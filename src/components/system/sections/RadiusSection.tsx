@@ -1,31 +1,77 @@
-import { radii, oddRadii, subSlug, uniformTag } from "../tokens";
-import { Section, SubLabel, Grid, RowList, TokenCard, TokenRow } from "../primitives";
+"use client";
+
+import { useState } from "react";
+import clsx from "clsx";
+import { radii, subSlug, uniformTag } from "../tokens";
+import { Section, SubLabel, Grid, TokenCard } from "../primitives";
+import { ghostIconButtonClass } from "../../ghostIconButton";
+import { iconSize } from "../../iconSizes";
+
+/** 2×2 grid glyph — matches Code / Chevron stroke style. */
+function GridIcon({ size = iconSize("inline") }: { size?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className="inline-block shrink-0"
+      aria-hidden
+    >
+      <path
+        d="M4 4h6v6H4V4ZM14 4h6v6h-6V4ZM4 14h6v6H4v-6ZM14 14h6v6h-6v-6Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+/** Radius 40 so round vs squircle reads clearly. viewBox 137.55. */
+const ROUND_PATH =
+  "M41.575 1.575H95.975A40 40 0 0 1 135.975 41.575V95.975A40 40 0 0 1 95.975 135.975H41.575A40 40 0 0 1 1.575 95.975V41.575A40 40 0 0 1 41.575 1.575Z";
+const SQUIRCLE_PATH =
+  "M41.575 1.575H95.975C123.375 1.575 135.975 14.055 135.975 41.575V95.975C135.975 123.375 123.495 135.975 95.975 135.975H41.575C14.175 135.975 1.575 123.495 1.575 95.975V41.575C1.575 14.175 14.055 1.575 41.575 1.575Z";
+
+const CORNER_SPECIMENS = [
+  { label: "Round", d: ROUND_PATH, overlayD: SQUIRCLE_PATH },
+  { label: "Squircle", d: SQUIRCLE_PATH, overlayD: ROUND_PATH },
+] as const;
 
 export default function RadiusSection() {
   const radiiTag = uniformTag(radii);
-  const oddRadiiTag = uniformTag(oddRadii);
+  const [showGrid, setShowGrid] = useState(false);
 
   return (
     <Section id={subSlug("Border Radius")} title="Border Radius">
       <div className="mb-10">
-        <div className="rounded-2xl bg-zinc-50 px-6 py-12">
-          <div className="flex justify-center gap-16">
-            {(
-              [
-                {
-                  label: "Round",
-                  // Circular corner arcs (from Figma)
-                  d: "M35.175 1.575H102.375C111.286 1.575 119.833 5.11499 126.134 11.4162C132.435 17.7174 135.975 26.2637 135.975 35.175V102.375C135.975 111.286 132.435 119.833 126.134 126.134C119.833 132.435 111.286 135.975 102.375 135.975H35.175C26.2637 135.975 17.7174 132.435 11.4162 126.134C5.11499 119.833 1.575 111.286 1.575 102.375V35.175C1.575 26.2637 5.11499 17.7174 11.4162 11.4162C17.7174 5.11499 26.2637 1.575 35.175 1.575Z",
-                },
-                {
-                  label: "Squircle",
-                  // Superellipse-ish corners — fuller near the edges (from Figma)
-                  d: "M35.175 1.575H102.375C125.475 1.575 135.975 12.075 135.975 35.175V102.375C135.975 125.475 125.475 135.975 102.375 135.975H35.175C12.075 135.975 1.575 125.475 1.575 102.375V35.175C1.575 12.075 12.075 1.575 35.175 1.575Z",
-                },
-              ] as const
-            ).map(({ label, d }) => (
-              <div key={label} className="flex w-[168px] flex-col items-center">
-                <div className="relative size-[168px] drop-shadow-[0_2px_6px_rgba(0,0,0,0.08)]">
+        <div className="relative overflow-hidden rounded-2xl bg-zinc-50 px-4 py-8 sm:px-6 sm:py-12">
+          <button
+            type="button"
+            aria-pressed={showGrid}
+            aria-label={showGrid ? "Hide grid" : "Show grid"}
+            onClick={() => setShowGrid((v) => !v)}
+            className={clsx(
+              // Solid zinc-50 fill so card grid never shows through the circle
+              ghostIconButtonClass("sm", "absolute right-3 top-3 z-[3] bg-zinc-50 text-zinc-300"),
+              "hover:bg-zinc-100 hover:text-zinc-400",
+              "active:bg-zinc-100",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
+              showGrid && "bg-zinc-100 text-zinc-500 hover:bg-zinc-100",
+            )}
+          >
+            <GridIcon />
+          </button>
+
+          <div className="relative flex justify-center gap-8 sm:gap-16">
+            {CORNER_SPECIMENS.map(({ label, d, overlayD }) => (
+              <div
+                key={label}
+                className="flex w-[112px] flex-col items-center sm:w-[168px]"
+              >
+                <div className="relative size-[112px] drop-shadow-[0_2px_6px_rgba(0,0,0,0.08)] sm:size-[168px]">
                   <svg
                     viewBox="0 0 137.55 137.55"
                     className="absolute inset-[10%] overflow-visible"
@@ -36,10 +82,44 @@ export default function RadiusSection() {
                       d={d}
                       fill="white"
                       stroke="#9F9FA9"
-                      strokeOpacity="0.3"
+                      strokeOpacity={showGrid ? 0.15 : 0.3}
                       strokeWidth="3.15"
                     />
                   </svg>
+                  {showGrid && (
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 z-[1]"
+                      style={{
+                        // 5% cells → shape (inset 10%) spans 16 cells with 2 cells outside each edge.
+                        // Line at end of each cell; clip outer 1px so no perimeter on any side.
+                        backgroundImage: `
+                          linear-gradient(to right, transparent calc(100% - 1px), rgb(161 161 170 / 0.18) 1px),
+                          linear-gradient(to bottom, transparent calc(100% - 1px), rgb(161 161 170 / 0.18) 1px)
+                        `,
+                        backgroundSize: "5% 5%",
+                        backgroundPosition: "0 0",
+                        clipPath: "inset(1px)",
+                      }}
+                    />
+                  )}
+                  {showGrid && (
+                    <svg
+                      viewBox="0 0 137.55 137.55"
+                      className="pointer-events-none absolute inset-[10%] z-[2] overflow-visible"
+                      fill="none"
+                      aria-hidden
+                    >
+                      <path
+                        d={overlayD}
+                        fill="none"
+                        stroke="#60a5fa"
+                        strokeOpacity="0.55"
+                        strokeWidth="1"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </svg>
+                  )}
                 </div>
                 <p className="mt-2 text-center text-sm text-zinc-500">{label}</p>
               </div>
@@ -78,24 +158,6 @@ export default function RadiusSection() {
           />
         ))}
       </Grid>
-
-      <SubLabel
-        note="Deliberately precise / odd radii from Figma exports and device mockups."
-        tag={oddRadiiTag}
-      >
-        Experiment radii
-      </SubLabel>
-      <RowList>
-        {oddRadii.map((r) => (
-          <TokenRow
-            key={r.name}
-            name={r.name}
-            tag={oddRadiiTag ? undefined : r.tag}
-            value={r.value}
-            usage={r.usage}
-          />
-        ))}
-      </RowList>
     </Section>
   );
 }

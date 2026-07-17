@@ -4,7 +4,10 @@ import clsx from "clsx";
 import { PortableText } from "@portabletext/react";
 import type { PortableTextComponents } from "@portabletext/react";
 import { urlFor } from "../../sanity/client";
-import { getCachedData } from "../../sanity/preload";
+import {
+  fetchProjectByCompany,
+  getCachedData,
+} from "../../sanity/preload";
 import type { Project, ContentSection } from "../../sanity/types";
 import Footer from "../Footer";
 import ShimmerImage from "../ShimmerImage";
@@ -26,25 +29,6 @@ import { Close } from "../Close";
 import { ArrowRightIcon } from "../Arrow";
 import { HorizontalLine } from "../HorizontalLine";
 import { ghostIconButtonClass } from "../ghostIconButton";
-
-async function fetchProjectByCompany(company: string): Promise<{
-  project: Project | null;
-  unlocked: boolean;
-}> {
-  const response = await fetch(`/api/project?company=${encodeURIComponent(company)}`, {
-    cache: "no-store",
-    credentials: "same-origin",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch project ${company}: ${response.status}`);
-  }
-
-  return {
-    project: (await response.json()) as Project | null,
-    unlocked: response.headers.get("x-project-unlocked") === "true",
-  };
-}
 
 // Helper to render text with highlighted portion
 function renderHighlightedText(text: string, highlightedText?: string, highlightColor?: string): React.ReactNode {
@@ -1260,7 +1244,7 @@ export default function ProjectModal({
                 {/* Logo - skip animation for Apple on mobile since logo is visible from homepage */}
                 {project.logo && (
                   projectId === 'apple' && isMobile ? (
-                    <div className="relative shrink-0 size-20 rounded-[16px] overflow-hidden">
+                    <div className="relative shrink-0 size-20 rounded-2xl overflow-hidden">
                       <img
                         className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
                         alt=""
@@ -1269,7 +1253,7 @@ export default function ProjectModal({
                     </div>
                   ) : (
                     <ScrollReveal variant="fade" rootMargin="0px">
-                      <div className="relative shrink-0 size-20 rounded-[16px] overflow-hidden">
+                      <div className="relative shrink-0 size-20 rounded-2xl overflow-hidden">
                         <img
                           className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
                           alt=""
@@ -2174,7 +2158,7 @@ function ContentBlock({
               {section.images?.map((image) => (
                 <div
                   key={image._key}
-                  className="flex flex-col items-center rounded-[24px] shadow-soft overflow-hidden max-w-110 w-full"
+                  className="flex flex-col items-center rounded-3xl shadow-soft overflow-hidden max-w-110 w-full"
                 >
                   <ShimmerImage
                     className="block w-full h-auto object-contain"

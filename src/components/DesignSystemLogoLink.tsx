@@ -1,27 +1,21 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
 import BlueprintLogo from "./BlueprintLogo";
 import { markBlueprintDoorwayNav } from "./blueprintDoorwayNav";
 import { warmDesignSystem } from "./doorwayWarm";
 
 /**
  * Red seal doorway → /design-system.
- * Prefetches the route on mount and again on hover/focus; warms the SystemPage
- * chunk immediately so click paints the DS shell (not loading.tsx).
+ * Warms on focus or press so an idle pointer over the seal cannot make the
+ * large design-system bundle compete with normal page startup.
  */
 export default function DesignSystemLogoLink() {
   const router = useRouter();
   const pathname = usePathname() || "/";
 
-  useEffect(() => {
-    router.prefetch("/design-system");
-    // Shell first — don't wait for idle or the first click pays compile cost.
-    warmDesignSystem();
-  }, [router]);
-
   const prefetchDoorway = () => {
+    if (process.env.NODE_ENV === "development") return;
     router.prefetch("/design-system");
     warmDesignSystem();
   };
@@ -39,9 +33,7 @@ export default function DesignSystemLogoLink() {
     <a
       href="/design-system"
       aria-label="Open the design system"
-      onMouseEnter={prefetchDoorway}
       onFocus={prefetchDoorway}
-      onTouchStart={prefetchDoorway}
       onPointerDown={prefetchDoorway}
       onClick={handleClick}
       className="group relative -m-2 inline-block shrink-0 cursor-pointer overflow-visible p-2 transition-transform duration-200 ease-out [@media(hover:hover)]:hover:scale-[1.02] active:scale-95"

@@ -532,8 +532,9 @@ export default function SystemPage() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   // Sticky-until-footer: TOC sticks until the footer would collide, then docks.
-  // Logo stays position:fixed (reliable hit target) and hides once the footer
-  // enters the viewport so only the footer brand shows near the bottom.
+  // Logo stays position:fixed (reliable hit target). On lg+ it hides once the
+  // footer enters the viewport so only the footer brand shows near the bottom;
+  // on mobile it stays top-left at all times.
   const zoneRef = useRef<HTMLDivElement>(null);
   const mobileStickySentinelRef = useRef<HTMLDivElement>(null);
   const desktopChromeRef = useRef<HTMLDivElement>(null);
@@ -605,10 +606,10 @@ export default function SystemPage() {
       if (!footer) return;
       const footerTop = footer.getBoundingClientRect().top;
 
-      // Hide as soon as any part of the footer is on-screen. A collision-only
-      // threshold (~logo bottom) left both logos visible whenever the footer
-      // brand sat lower in a tall viewport.
-      const nextLogoHidden = footerTop < window.innerHeight;
+      // Desktop only: hide as soon as any part of the footer is on-screen.
+      // Mobile keeps the seal fixed top-left even over the footer.
+      const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+      const nextLogoHidden = isDesktop && footerTop < window.innerHeight;
       setLogoHidden((prev) => (prev === nextLogoHidden ? prev : nextLogoHidden));
 
       const desktop = desktopChromeRef.current;
@@ -774,8 +775,8 @@ export default function SystemPage() {
 
       {/*
         Fixed logo doorway — always a real hit target above body::before (z-40)
-        and the mobile section nav. Hides near the footer so it can't cover the
-        footer brand (which also links home).
+        and the mobile section nav. On lg+ hides near the footer so it can't
+        cover the footer brand; on mobile stays top-left at all times.
       */}
       <Link
         href={returnHref}
@@ -885,7 +886,7 @@ export default function SystemPage() {
                 <h1 className="max-w-3xl font-['Michelle',sans-serif] text-4xl font-medium leading-normal tracking-[0.0125em] text-[#3f3f46] text-balance">
                   Design System
                 </h1>
-                <p className="-mt-2 font-['Michelle',sans-serif] text-4xl font-medium leading-normal tracking-[0.0125em] text-zinc-300">
+                <p className="-mt-3 font-['Michelle',sans-serif] text-4xl font-normal leading-normal tracking-[0.0125em] text-zinc-400">
                   liumichelle.com
                 </p>
                 <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400 text-pretty">

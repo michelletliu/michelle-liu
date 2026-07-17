@@ -92,7 +92,7 @@ export function Section({
           {tag && <TagChip tag={tag} />}
         </div>
       </div>
-      {children}
+      <div>{children}</div>
     </section>
   );
 }
@@ -110,7 +110,7 @@ export function SubLabel({
 }) {
   const id = typeof children === "string" ? subSlug(children) : undefined;
   return (
-    <div id={id} className="mb-5 mt-20 scroll-mt-28 first:mt-0">
+    <div id={id} className="mb-5 mt-20 scroll-mt-28 first:mt-0 first-of-type:mt-0">
       <div className="flex items-center gap-2.5">
         <h3 className="text-base font-medium leading-relaxed text-zinc-700">{children}</h3>
         {tag && <TagChip tag={tag} />}
@@ -161,8 +161,8 @@ export function TokenCard({
   const hasCode = Boolean(value);
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="relative flex h-24 items-center justify-center overflow-hidden rounded-xl bg-zinc-50 md:min-h-[200px]">
+    <div className="flex flex-col gap-1">
+      <div className="relative flex h-[120px] min-h-[120px] items-center justify-center overflow-hidden rounded-xl bg-zinc-50 md:h-auto md:min-h-[200px]">
         {sample}
         {tag ? (
           <div
@@ -188,7 +188,7 @@ export function TokenCard({
           </code>
         ) : null}
       </div>
-      <div className="flex flex-col gap-1 pl-2">
+      <div className="flex flex-col gap-0 pl-2">
         <span className="font-['Michelle',sans-serif] text-base font-medium text-zinc-700">
           {name}
         </span>

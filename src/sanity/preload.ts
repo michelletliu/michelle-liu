@@ -53,6 +53,10 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Track if preloading is already in progress to avoid duplicate calls
 let preloadingInProgress = false;
+const projectRequests = new Map<
+  string,
+  Promise<{ project: Project | null; unlocked: boolean }>
+>();
 
 /**
  * Get cached data if available and not expired
@@ -70,6 +74,40 @@ export function getCachedData<T>(key: string): T | null {
  */
 export function setCachedData(key: string, data: unknown): void {
   cache.set(key, { data, timestamp: Date.now() });
+}
+
+export function fetchProjectByCompany(
+  company: string,
+): Promise<{ project: Project | null; unlocked: boolean }> {
+  const existing = projectRequests.get(company);
+  if (existing) return existing;
+
+  const request = fetch(
+    `/api/project?company=${encodeURIComponent(company)}`,
+    {
+      cache: "no-store",
+      credentials: "same-origin",
+    },
+  ).then(async (response) => {
+    if (!response.ok) {
+      throw new Error(`Failed to fetch project ${company}: ${response.status}`);
+    }
+
+    return {
+      project: (await response.json()) as Project | null,
+      unlocked: response.headers.get("x-project-unlocked") === "true",
+    };
+  });
+
+  projectRequests.set(company, request);
+  const clear = () => {
+    if (projectRequests.get(company) === request) {
+      projectRequests.delete(company);
+    }
+  };
+  void request.then(clear, clear);
+
+  return request;
 }
 
 /**
@@ -124,18 +162,7 @@ export async function preloadProject(company: string): Promise<void> {
   }
 
   try {
-    const response = await fetch(`/api/project?company=${encodeURIComponent(company)}`, {
-      cache: "no-store",
-      credentials: "same-origin",
-    });
-    if (!response.ok) {
-      throw new Error(`Project API returned ${response.status}`);
-    }
-    const raw = await response.text();
-    if (!raw) {
-      throw new Error(`Project API returned empty body for ${company}`);
-    }
-    const data = JSON.parse(raw) as Project;
+    const { project: data } = await fetchProjectByCompany(company);
     if (data) {
       setCachedData(cacheKey, data);
       if (data.heroImage) warmImage(urlFor(data.heroImage).width(1200).url());

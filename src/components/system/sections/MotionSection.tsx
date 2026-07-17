@@ -50,12 +50,7 @@ export default function MotionSection() {
     <Section id="motion" title="Motion">
       <style dangerouslySetInnerHTML={{ __html: demoStyles }} />
 
-      <SubLabel
-        note="Live loops — the demos below repeat continuously so you can see each curve."
-        tag={animationsTag}
-      >
-        Animations
-      </SubLabel>
+      <SubLabel tag={animationsTag}>Animations</SubLabel>
       <Grid min="200px">
         {motion.map((m) => (
           <TokenCard

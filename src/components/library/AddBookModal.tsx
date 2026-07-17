@@ -124,10 +124,10 @@ export function AddBookModal({ onClose, onAddBook }: AddBookModalProps) {
     <>
       <div className="fixed inset-0 z-40" onClick={animateClose} />
 
-      <div onClick={(e) => e.stopPropagation()} className={`absolute right-0 top-[calc(100%+12px)] z-50 bg-white rounded-[16px] w-[calc(100vw-64px)] sm:w-[420px] max-w-[420px] ${isClosing ? 'animate-modal-out' : 'animate-modal-in'}`}>
+      <div onClick={(e) => e.stopPropagation()} className={`absolute right-0 top-[calc(100%+12px)] z-50 bg-white rounded-2xl w-[calc(100vw-64px)] sm:w-[420px] max-w-[420px] ${isClosing ? 'animate-modal-out' : 'animate-modal-in'}`}>
         <div
           aria-hidden="true"
-          className="absolute border border-zinc-50 border-solid inset-0 pointer-events-none rounded-[16px] shadow-soft"
+          className="absolute border border-zinc-50 border-solid inset-0 pointer-events-none rounded-2xl shadow-soft"
         />
         <div className="content-stretch flex flex-col items-start p-5 pt-4.5 pb-5 relative w-full">
           <div

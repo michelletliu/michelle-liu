@@ -595,7 +595,7 @@ function HomeIndicator({ additionalClassNames = "" }: { additionalClassNames?: s
     <div className={`md:hidden absolute h-[34px] left-1/2 -translate-x-1/2 w-[400px] max-w-full ${additionalClassNames}`}>
       <div className="absolute bottom-[8px] flex h-[5px] items-center justify-center left-1/2 -translate-x-1/2 w-[144px]">
         <div className="flex-none rotate-180 scale-y-[-1]">
-          <div className="bg-zinc-900 h-[5px] rounded-[100px] w-[144px]" />
+          <div className="bg-zinc-900 h-[5px] rounded-full w-[144px]" />
         </div>
       </div>
     </div>
@@ -625,7 +625,7 @@ function GenerateScreen({
         <p>RECEIPT</p>
       </div>
       <div className="flex items-start relative shrink-0">
-        <div className="bg-[rgba(118,118,128,0.12)] flex h-[36px] items-center justify-center overflow-clip px-[5px] py-[4px] relative rounded-[100px] shrink-0 w-[209px]">
+        <div className="bg-[rgba(118,118,128,0.12)] flex h-[36px] items-center justify-center overflow-clip px-[5px] py-[4px] relative rounded-full shrink-0 w-[209px]">
           <div
             className="absolute inset-y-[4px] left-[5px] w-[calc(50%-5px)] bg-white rounded-full shadow-soft"
             style={{
@@ -635,7 +635,7 @@ function GenerateScreen({
           />
           <button
             onClick={() => onPeriodChange('daily')}
-            className="basis-0 grow h-full min-h-px min-w-px relative rounded-[7px] shrink-0 cursor-pointer"
+            className="basis-0 grow h-full min-h-px min-w-px relative rounded-md shrink-0 cursor-pointer"
           >
             <div className="flex flex-row items-center justify-center size-full">
               <div className="flex items-center justify-center px-[10px] py-[2px] relative size-full">
@@ -697,20 +697,20 @@ function AppIcon({ appName, icon }: { appName: string; icon: string }) {
   switch (appName) {
     case "INSTAGRAM":
       return (
-        <div className={`${baseStyles} rounded-[12px]`}>
-          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[12px] size-full" src={icon} />
+        <div className={`${baseStyles} rounded-xl`}>
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-xl size-full" src={icon} />
         </div>
       );
     case "TWITTER/X":
       return (
-        <div className={`${baseStyles} rounded-[11px]`}>
-          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-[11px] size-full" src={icon} />
+        <div className={`${baseStyles} rounded-xl`}>
+          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-xl size-full" src={icon} />
         </div>
       );
     case "LINKEDIN":
       return (
-        <div className={`${baseStyles} rounded-[11px]`}>
-          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-[11px] size-full" src={icon} />
+        <div className={`${baseStyles} rounded-xl`}>
+          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-xl size-full" src={icon} />
         </div>
       );
     case "MESSAGES":
@@ -721,14 +721,14 @@ function AppIcon({ appName, icon }: { appName: string; icon: string }) {
       );
     case "CALENDAR":
       return (
-        <div className={`${baseStyles} rounded-[11px] ${whiteBackgroundShadow}`}>
-          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-[11px] size-full" src={icon} />
+        <div className={`${baseStyles} rounded-xl ${whiteBackgroundShadow}`}>
+          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-xl size-full" src={icon} />
         </div>
       );
     case "SLACK":
       return (
-        <div className={`${baseStyles} rounded-[12px] shadow-media`}>
-          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-[12px] size-full" src={icon} />
+        <div className={`${baseStyles} rounded-xl shadow-media`}>
+          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-xl size-full" src={icon} />
         </div>
       );
     case "NOTES":
@@ -745,31 +745,31 @@ function AppIcon({ appName, icon }: { appName: string; icon: string }) {
       );
     case "NOTION":
       return (
-        <div className={`${baseStyles} rounded-[11px] shadow-media`}>
-          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-[11px] size-full" src={icon} />
+        <div className={`${baseStyles} rounded-xl shadow-media`}>
+          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-xl size-full" src={icon} />
         </div>
       );
     case "YOUTUBE":
       return (
-        <div className={`${baseStyles} rounded-[12px] shadow-media`}>
-          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-[12px] size-full" src={icon} />
+        <div className={`${baseStyles} rounded-xl shadow-media`}>
+          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-xl size-full" src={icon} />
         </div>
       );
     case "NETFLIX":
       return (
-        <div className={`${baseStyles} rounded-[11px]`}>
-          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-[11px] size-full" src={icon} />
+        <div className={`${baseStyles} rounded-xl`}>
+          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-xl size-full" src={icon} />
         </div>
       );
     case "SPOTIFY":
       return (
-        <div className={`${baseStyles} rounded-[12px]`}>
-          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-[12px] size-full" src={icon} />
+        <div className={`${baseStyles} rounded-xl`}>
+          <img alt="" className="absolute inset-0 object-cover pointer-events-none rounded-xl size-full" src={icon} />
         </div>
       );
     default:
       return (
-        <div className={`${baseStyles} rounded-[12px] overflow-hidden ${whiteBackgroundShadow}`}>
+        <div className={`${baseStyles} rounded-xl overflow-hidden ${whiteBackgroundShadow}`}>
           <img alt="" className="max-w-none object-cover pointer-events-none size-full" src={icon} />
         </div>
       );

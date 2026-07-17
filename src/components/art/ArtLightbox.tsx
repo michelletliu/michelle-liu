@@ -133,7 +133,7 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
           className="relative flex flex-col items-center"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="relative max-h-[min(75vh,820px)] max-w-full overflow-hidden rounded-2xl bg-zinc-100">
+          <div className="relative max-h-[min(75vh,820px)] max-w-full overflow-hidden rounded-2xl bg-zinc-100 shadow-elevated">
             {/* Instant preview from the already-cached gallery image */}
             {hasPreview && (
               <img
