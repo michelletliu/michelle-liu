@@ -5,6 +5,7 @@ import { useScrollLock } from "../../utils/useScrollLock";
 import ShimmerImage from "../ShimmerImage";
 import Tooltip from "../Tooltip";
 import { Close } from "../Close";
+import { ghostIconButtonClass } from "../ghostIconButton";
 
 export type CommunityPhoto = {
   id: string;
@@ -382,7 +383,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
                 e.stopPropagation();
                 handleClosePhoto();
               }}
-              className={`fixed right-4 top-4 z-10 flex h-10 w-10 items-center justify-center text-zinc-500 transition-all duration-200 hover:scale-110 ${isClosingPhoto ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
+              className={`${ghostIconButtonClass("sm", "fixed right-4 top-4 z-10 text-zinc-500")} ${isClosingPhoto ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
               aria-label="Close expanded photo"
             >
               <Close size="12px" />

@@ -24,6 +24,8 @@ import { FieldInput, FieldShell, fieldIconSlotClassName } from "../FieldInput";
 import { Chevron } from "../Chevron";
 import { Close } from "../Close";
 import { ArrowRightIcon } from "../Arrow";
+import { HorizontalLine } from "../HorizontalLine";
+import { ghostIconButtonClass } from "../ghostIconButton";
 
 async function fetchProjectByCompany(company: string): Promise<{
   project: Project | null;
@@ -547,7 +549,7 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
                 e.stopPropagation();
                 handleClose();
               }}
-              className={`fixed right-4 top-4 z-[10000] flex h-10 w-10 items-center justify-center text-zinc-500 transition-all duration-200 hover:scale-110 ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
+              className={`${ghostIconButtonClass("sm", "fixed right-4 top-4 z-[10000] text-zinc-500")} ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
               aria-label="Close expanded image"
             >
               <Close size="12px" />
@@ -712,15 +714,6 @@ const LogoIcon = () => (
     decoding="async"
   />
 );
-
-// Horizontal line separator
-function Line() {
-  return (
-    <div className="h-px relative shrink-0 w-full">
-      <div className="absolute bg-zinc-100 inset-0" />
-    </div>
-  );
-}
 
 type ProjectModalProps = {
   projectId: string; // company name: "apple", "roblox", "adobe", "nasa"
@@ -1328,7 +1321,7 @@ export default function ProjectModal({
 
                 {/* Separator Line */}
                 <ScrollReveal variant="fade" delay={400} rootMargin="0px" className="w-full">
-                  <Line />
+                  <HorizontalLine />
                 </ScrollReveal>
 
                 {/* Hero Video or Image */}

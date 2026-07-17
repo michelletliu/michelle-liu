@@ -6,6 +6,7 @@ import { urlFor } from "../../sanity/client";
 import { useScrollLock } from "../../utils/useScrollLock";
 import type { SanityImage } from "../../sanity/types";
 import { Close } from "../Close";
+import { ghostIconButtonClass } from "../ghostIconButton";
 
 interface TeamMember {
   _key: string;
@@ -205,7 +206,7 @@ export default function SideQuestSection({
                 e.stopPropagation();
                 handleClose();
               }}
-              className={`fixed right-4 top-4 z-[10000] flex h-10 w-10 items-center justify-center text-zinc-500 transition-all duration-200 hover:scale-110 ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
+              className={`${ghostIconButtonClass("sm", "fixed right-4 top-4 z-[10000] text-zinc-500")} ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
               aria-label="Close expanded image"
             >
               <Close size="12px" />

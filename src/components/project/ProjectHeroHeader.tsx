@@ -1,6 +1,7 @@
 import React from "react";
 import clsx from "clsx";
 import ShimmerImage from "../ShimmerImage";
+import { HorizontalLine } from "../HorizontalLine";
 
 type MetadataItem = {
   label: string;
@@ -19,15 +20,6 @@ type ProjectHeroHeaderProps = {
   /** Hero image URL */
   heroImageSrc: string;
 };
-
-// Horizontal line separator
-function Line({ className }: { className?: string }) {
-  return (
-    <div className={clsx("relative", className)}>
-      <div className="absolute bg-zinc-100 inset-0" />
-    </div>
-  );
-}
 
 export default function ProjectHeroHeader({
   device = "Default",
@@ -117,7 +109,7 @@ export default function ProjectHeroHeader({
       </div>
 
       {/* Separator Line */}
-      <Line className="h-px shrink-0 w-full" />
+      <HorizontalLine />
 
       {/* Hero Image */}
       <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[26px] shrink-0 w-full">
