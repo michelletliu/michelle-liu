@@ -17,13 +17,16 @@ import {
   SearchMagnifierIcon,
 } from "../../FieldInput";
 import { FilterDropdown } from "../../FilterDropdown";
+import { FilterPills } from "../../FilterPills";
 import Sidebar, { type SidebarNode } from "../../Sidebar";
 import Tooltip from "../../Tooltip";
 import LiquidGlassButton from "../../art/LiquidGlassButton";
-import { Chevron, ChevronRightIcon } from "../../Chevron";
+import ContactBadge from "../../ContactBadge";
+import { Chevron } from "../../Chevron";
 import { iconSize } from "../../iconSizes";
 import { ArrowRightIcon } from "../../Arrow";
 import { SendIcon } from "../../library/icons";
+import { HorizontalLine } from "../../HorizontalLine";
 import { Section, SubLabel, TagChip } from "../primitives";
 import type { Tag } from "../tokens";
 
@@ -105,6 +108,406 @@ function SpecButton({
   );
 }
 
+const SPEC_BUTTON_VARIANTS: SpecButtonVariant[] = [
+  "primary",
+  "secondary",
+  "tertiary",
+  "ghost",
+];
+const SPEC_BUTTON_SIZES: SpecButtonSize[] = ["sm", "md", "lg"];
+
+const SPEC_BUTTON_VARIANT_LABELS: Record<SpecButtonVariant, string> = {
+  primary: "Primary",
+  secondary: "Secondary",
+  tertiary: "Tertiary",
+  ghost: "Ghost",
+};
+
+type SpecButtonContent = "label" | "icon-label" | "icon";
+
+const MATRIX_CONTENT_OPTIONS = [
+  { value: "label", label: "Label" },
+  { value: "icon-label", label: "Icon + label" },
+  { value: "icon", label: "Icon" },
+];
+
+/**
+ * Solid / Glass matrices — fluid height on mobile; locked on md+ so content
+ * toggles don’t reflow the card.
+ */
+const BUTTON_MATRIX_CARD_CLASS =
+  "min-h-0 !items-stretch !justify-start overflow-hidden md:h-[30rem] md:min-h-[30rem] md:max-h-[30rem]";
+
+/** Playground is shorter — size to content so the card has no empty bottom band. */
+const BUTTON_PLAYGROUND_CARD_CLASS =
+  "!items-stretch !justify-start";
+
+function SpecButtonSample({
+  variant,
+  size,
+  content,
+}: {
+  variant: SpecButtonVariant;
+  size: SpecButtonSize;
+  content: SpecButtonContent;
+}) {
+  if (content === "icon") {
+    return (
+      <SpecButton variant={variant} size={size} icon aria-label="Send">
+        <SendIcon className="-ml-0.5 w-5 pt-0.5" />
+      </SpecButton>
+    );
+  }
+
+  if (content === "icon-label") {
+    return (
+      <SpecButton
+        variant={variant}
+        size={size}
+        className={size === "sm" ? "gap-1" : "gap-1.5"}
+      >
+        <span>Continue</span>
+        {variant === "secondary" ? (
+          <Chevron direction="right" size={iconSize("inline")} />
+        ) : (
+          <ArrowUpRight size="12px" />
+        )}
+      </SpecButton>
+    );
+  }
+
+  return (
+    <SpecButton variant={variant} size={size}>
+      Label
+    </SpecButton>
+  );
+}
+
+const GLASS_BUTTON_STYLE = {
+  backgroundColor: "rgba(255, 255, 255, 0.45)",
+  backdropFilter: "blur(16px) saturate(180%)",
+  WebkitBackdropFilter: "blur(16px) saturate(180%)",
+} as const;
+
+const GLASS_BUTTON_TONE: Record<SpecButtonVariant, string> = {
+  primary: "text-blue-500 hover:text-blue-600",
+  secondary: "text-zinc-700 hover:text-zinc-900",
+  tertiary: "text-zinc-600 hover:text-zinc-800",
+  ghost: "text-zinc-500 hover:text-zinc-700",
+};
+
+const GLASS_ICON_SIZE: Record<SpecButtonSize, number> = {
+  sm: 32,
+  md: 36,
+  lg: 44,
+};
+
+/** Liquid-glass surface with the same variant × size × content axes as SpecButton. */
+function GlassButtonSample({
+  variant,
+  size,
+  content,
+}: {
+  variant: SpecButtonVariant;
+  size: SpecButtonSize;
+  content: SpecButtonContent;
+}) {
+  const tone = GLASS_BUTTON_TONE[variant];
+  const radius = SPEC_BUTTON_RADIUS[variant];
+
+  if (content === "icon") {
+    return (
+      <LiquidGlassButton
+        size={GLASS_ICON_SIZE[size]}
+        className={tone}
+        aria-label="Send"
+      >
+        <SendIcon className="-ml-0.5 w-5 pt-0.5" />
+      </LiquidGlassButton>
+    );
+  }
+
+  const sizing = SPEC_BUTTON_SIZE_TEXT[size];
+  const typeFace =
+    variant === "primary"
+      ? "font-['Michelle',sans-serif] font-semibold"
+      : "font-medium";
+
+  return (
+    <button
+      type="button"
+      className={`inline-flex shrink-0 items-center justify-center border border-white/50 shadow-glass transition-transform duration-150 ease-out hover:scale-105 ${radius} ${sizing} ${typeFace} ${tone}`}
+      style={GLASS_BUTTON_STYLE}
+    >
+      {content === "icon-label" ? (
+        <>
+          <span>Continue</span>
+          {variant === "secondary" ? (
+            <Chevron direction="right" size={iconSize("inline")} />
+          ) : (
+            <ArrowUpRight size="12px" />
+          )}
+        </>
+      ) : (
+        "Label"
+      )}
+    </button>
+  );
+}
+
+function ButtonMatrixStage({
+  content,
+  renderCell,
+  caption,
+  stageClassName,
+}: {
+  content: SpecButtonContent;
+  renderCell: (
+    variant: SpecButtonVariant,
+    size: SpecButtonSize,
+    content: SpecButtonContent,
+  ) => ReactNode;
+  caption: string;
+  stageClassName: string;
+}) {
+  return (
+    <div
+      className={`flex min-h-0 flex-1 items-stretch justify-center rounded-xl px-3 py-4 sm:px-6 sm:py-6 md:items-center ${stageClassName}`}
+    >
+      <p className="sr-only">{caption}</p>
+
+      {/* Mobile: stacked variants; sizes wrap so icon+label never overflows */}
+      <div className="flex w-full flex-col gap-5 md:hidden">
+        {SPEC_BUTTON_VARIANTS.map((variant) => (
+          <div key={variant} className="flex flex-col gap-2">
+            <span className="text-sm font-normal text-zinc-400">
+              {SPEC_BUTTON_VARIANT_LABELS[variant]}
+            </span>
+            <div className="flex flex-wrap items-end justify-center gap-x-4 gap-y-3">
+              {SPEC_BUTTON_SIZES.map((size) => (
+                <div
+                  key={size}
+                  className="flex flex-col items-center gap-1.5"
+                >
+                  <span className="text-xs font-normal text-zinc-400">
+                    {size}
+                  </span>
+                  <div className="flex min-h-12 items-center justify-center">
+                    {renderCell(variant, size, content)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/*
+        md+: fixed column widths so row/col headers stay put across
+        Label / Icon+label / Icon — widest mode is Icon+label.
+      */}
+      <table className="mx-auto hidden w-full max-w-[36rem] table-fixed border-separate border-spacing-x-3 border-spacing-y-4 md:table lg:border-spacing-x-4">
+        <caption className="sr-only">{caption}</caption>
+        <colgroup>
+          <col className="w-[5.5rem]" />
+          <col className="w-[9.5rem]" />
+          <col className="w-[9.5rem]" />
+          <col className="w-[9.5rem]" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th className="pb-1 text-left text-sm font-normal text-zinc-400" />
+            {SPEC_BUTTON_SIZES.map((size) => (
+              <th
+                key={size}
+                scope="col"
+                className="pb-1 text-center text-sm font-normal text-zinc-400"
+              >
+                {size}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {SPEC_BUTTON_VARIANTS.map((variant) => (
+            <tr key={variant}>
+              <th
+                scope="row"
+                className="text-left text-sm font-normal text-zinc-400"
+              >
+                {SPEC_BUTTON_VARIANT_LABELS[variant]}
+              </th>
+              {SPEC_BUTTON_SIZES.map((size) => (
+                <td key={size} className="text-center align-middle">
+                  <div className="flex h-12 items-center justify-center">
+                    {renderCell(variant, size, content)}
+                  </div>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ButtonMatrixSpecimen() {
+  const [content, setContent] = useState<SpecButtonContent>("label");
+
+  return (
+    <div className="flex h-full w-full flex-col items-stretch gap-5">
+      <ButtonMatrixStage
+        content={content}
+        caption="Solid button variants by size"
+        stageClassName="bg-white"
+        renderCell={(variant, size, cellContent) => (
+          <SpecButtonSample
+            variant={variant}
+            size={size}
+            content={cellContent}
+          />
+        )}
+      />
+      <FilterPills
+        options={MATRIX_CONTENT_OPTIONS}
+        value={content}
+        onChange={(value) => setContent(value as SpecButtonContent)}
+        className="justify-center flex-wrap"
+      />
+    </div>
+  );
+}
+
+function GlassMatrixSpecimen() {
+  const [content, setContent] = useState<SpecButtonContent>("label");
+
+  return (
+    <div className="flex h-full w-full flex-col items-stretch gap-5">
+      <ButtonMatrixStage
+        content={content}
+        caption="Glass button variants by size"
+        stageClassName="bg-gradient-to-br from-zinc-200 via-zinc-100 to-zinc-300"
+        renderCell={(variant, size, cellContent) => (
+          <GlassButtonSample
+            variant={variant}
+            size={size}
+            content={cellContent}
+          />
+        )}
+      />
+      <FilterPills
+        options={MATRIX_CONTENT_OPTIONS}
+        value={content}
+        onChange={(value) => setContent(value as SpecButtonContent)}
+        className="justify-center flex-wrap"
+      />
+    </div>
+  );
+}
+
+const PLAYGROUND_VARIANT_OPTIONS = [
+  { value: "primary", label: "Primary" },
+  { value: "secondary", label: "Secondary" },
+  { value: "tertiary", label: "Tertiary" },
+  { value: "ghost", label: "Ghost" },
+];
+
+const PLAYGROUND_SIZE_OPTIONS = [
+  { value: "sm", label: "sm" },
+  { value: "md", label: "md" },
+  { value: "lg", label: "lg" },
+];
+
+const PLAYGROUND_CONTENT_OPTIONS = MATRIX_CONTENT_OPTIONS;
+
+const PLAYGROUND_SURFACE_OPTIONS = [
+  { value: "solid", label: "Solid" },
+  { value: "glass", label: "Glass" },
+];
+
+function PlaygroundSettingRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="grid w-full grid-cols-1 items-center gap-1.5 sm:grid-cols-[5.5rem_minmax(0,1fr)] sm:gap-3">
+      <span className="text-sm text-zinc-400">{label}</span>
+      <div className="flex min-w-0 justify-start">{children}</div>
+    </div>
+  );
+}
+
+function ButtonPlaygroundSpecimen() {
+  const [variant, setVariant] = useState<SpecButtonVariant>("primary");
+  const [size, setSize] = useState<SpecButtonSize>("md");
+  const [content, setContent] = useState<SpecButtonContent>("label");
+  const [surface, setSurface] = useState<"solid" | "glass">("solid");
+
+  const isGlass = surface === "glass";
+
+  return (
+    <div className="flex h-full w-full min-h-0 flex-col items-stretch gap-4">
+      {/* Fixed stage height — lg / icon+label must not grow the card */}
+      <div
+        className={`flex h-36 shrink-0 items-center justify-center rounded-xl px-3 sm:h-44 sm:px-6 ${
+          isGlass
+            ? "bg-gradient-to-br from-zinc-200 via-zinc-100 to-zinc-300"
+            : "bg-white"
+        }`}
+      >
+        {isGlass ? (
+          <GlassButtonSample variant={variant} size={size} content={content} />
+        ) : (
+          <SpecButtonSample variant={variant} size={size} content={content} />
+        )}
+      </div>
+
+      <div
+        className="flex w-full shrink-0 flex-col gap-2.5 px-3 sm:px-6"
+        role="group"
+        aria-label="Button playground settings"
+      >
+        <PlaygroundSettingRow label="Surface">
+          <FilterPills
+            options={PLAYGROUND_SURFACE_OPTIONS}
+            value={surface}
+            onChange={(value) => setSurface(value as "solid" | "glass")}
+            className="flex-wrap"
+          />
+        </PlaygroundSettingRow>
+        <PlaygroundSettingRow label="Variant">
+          <FilterPills
+            options={PLAYGROUND_VARIANT_OPTIONS}
+            value={variant}
+            onChange={(value) => setVariant(value as SpecButtonVariant)}
+            className="flex-wrap"
+          />
+        </PlaygroundSettingRow>
+        <PlaygroundSettingRow label="Size">
+          <FilterPills
+            options={PLAYGROUND_SIZE_OPTIONS}
+            value={size}
+            onChange={(value) => setSize(value as SpecButtonSize)}
+            className="flex-wrap"
+          />
+        </PlaygroundSettingRow>
+        <PlaygroundSettingRow label="Content">
+          <FilterPills
+            options={PLAYGROUND_CONTENT_OPTIONS}
+            value={content}
+            onChange={(value) => setContent(value as SpecButtonContent)}
+            className="flex-wrap"
+          />
+        </PlaygroundSettingRow>
+      </div>
+    </div>
+  );
+}
+
 function SpecimenInfoIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -135,21 +538,28 @@ function Specimen({
   children,
   className = "",
   span = "col-span-1 lg:col-span-4",
+  labelPosition = "bottom",
 }: {
   label: string;
   children: ReactNode;
   className?: string;
   /** Tailwind col-span utilities for the parent 12-col bento grid */
   span?: string;
+  /** Buttons section puts labels above the zinc-50 card */
+  labelPosition?: "top" | "bottom";
 }) {
+  const labelEl = (
+    <div className="pl-1 text-base leading-snug text-zinc-400 text-pretty">{label}</div>
+  );
   return (
-    <div className={`flex h-full w-full min-w-0 flex-col gap-3 self-stretch ${span}`}>
+    <div className={`flex h-full w-full min-w-0 flex-col gap-1 self-stretch ${span}`}>
+      {labelPosition === "top" ? labelEl : null}
       <div
-        className={`flex min-h-64 w-full min-w-0 flex-1 items-center justify-center gap-4 overflow-visible rounded-2xl bg-zinc-50 px-6 py-8 ${className}`}
+        className={`flex min-h-64 w-full min-w-0 flex-1 items-center justify-center gap-4 overflow-visible rounded-2xl bg-zinc-50 px-6 py-6 ${className}`}
       >
         {children}
       </div>
-      <div className="text-sm leading-snug text-zinc-400 text-pretty">{label}</div>
+      {labelPosition === "bottom" ? labelEl : null}
     </div>
   );
 }
@@ -166,6 +576,8 @@ const SPAN_NARROW = "col-span-1 lg:col-span-3";
 const SPAN_MID = "col-span-1 lg:col-span-4";
 /** ~1/2 — primary CTAs, dual controls */
 const SPAN_WIDE = "col-span-1 lg:col-span-6";
+/** Full row — lone specimens so the grid never leaves empty columns */
+const SPAN_FULL = "col-span-1 lg:col-span-12";
 
 const LIBRARY_OPTIONS = [
   { value: "favorites", label: "favorites", count: 8 },
@@ -174,17 +586,10 @@ const LIBRARY_OPTIONS = [
   { value: "2025", label: "2025", count: 13 },
 ];
 
-const SHELF_OPTIONS = [
-  { value: "books", label: "Books ★", count: 5 },
-  { value: "2026", label: "2026", count: 11 },
-  { value: "2025", label: "2025", count: 13 },
-  { value: "2024", label: "2024", count: 7 },
-];
-
 const FILTER_PILLS = [
-  { id: "books", label: "★ Books", count: 5 },
-  { id: "2026", label: "2026", count: 10 },
-  { id: "2025", label: "2025", count: 13 },
+  { value: "books", label: "★ Books", count: 5 },
+  { value: "2026", label: "2026", count: 10 },
+  { value: "2025", label: "2025", count: 13 },
 ];
 
 const NAV_TABS = [
@@ -273,56 +678,17 @@ function NavTabsSpecimen() {
   );
 }
 
-/** Shelf-style filter pills — toggle active/rest on click. */
+/** Shelf-style filter pills — shared FilterPills with sliding indicator. */
 function FilterPillsSpecimen() {
   const [active, setActive] = useState("books");
 
   return (
-    <div className="flex flex-wrap justify-center gap-2 font-['Michelle',sans-serif] text-sm font-medium tracking-wide">
-      {FILTER_PILLS.map((pill) => {
-        const isActive = active === pill.id;
-        return (
-          <button
-            key={pill.id}
-            type="button"
-            onClick={() => setActive(pill.id)}
-            className={`cursor-pointer rounded-full px-3 py-1.5 transition-colors ${
-              isActive ? "bg-zinc-500/10" : "hover:bg-zinc-500/5"
-            }`}
-          >
-            <span className={isActive ? "text-zinc-500" : "text-zinc-400"}>
-              {pill.label}{" "}
-              <span className={isActive ? "text-zinc-400" : "text-zinc-300"}>{pill.count}</span>
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-/** Mobile sheet Filter — muted FieldShell + leading magnifier. */
-function SearchFieldSpecimen() {
-  const [value, setValue] = useState("");
-
-  return (
-    <FieldShell tone="muted" className="max-w-[280px] gap-2">
-      <FieldLeadingIcon>
-        <SearchMagnifierIcon />
-      </FieldLeadingIcon>
-      <FieldInput
-        type="text"
-        inputMode="search"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="Filter"
-        autoComplete="off"
-        autoCorrect="off"
-        spellCheck={false}
-        aria-label="Search input specimen"
-        className="pr-3 font-medium tracking-[0.01em] text-zinc-700"
-      />
-    </FieldShell>
+    <FilterPills
+      options={FILTER_PILLS}
+      value={active}
+      onChange={setActive}
+      className="justify-center"
+    />
   );
 }
 
@@ -376,9 +742,11 @@ function TagBadgesSpecimen() {
 function FilterDropdownSpecimen({
   options,
   initialActive,
+  defaultOpen = false,
 }: {
   options: { value: string; label: string; count: number }[];
   initialActive: string;
+  defaultOpen?: boolean;
 }) {
   const [active, setActive] = useState(initialActive);
   return (
@@ -386,7 +754,7 @@ function FilterDropdownSpecimen({
       options={options}
       activeValue={active}
       onChange={setActive}
-      defaultOpen
+      defaultOpen={defaultOpen}
     />
   );
 }
@@ -414,8 +782,9 @@ const NAV_GROUPS = [
     id: "murals",
     label: "Murals",
     children: [
-      { id: "cafe", label: "Café wall", count: 1 },
-      { id: "campus", label: "Campus", count: 2 },
+      { id: "ca-poppies", label: "CA Poppies", count: 4 },
+      { id: "wonder", label: "Wonder", count: 7 },
+      { id: "grapevine", label: "Grapevine", count: 5 },
     ],
   },
 ];
@@ -458,7 +827,7 @@ function SidebarSpecimen() {
 function InputSpecimensSection() {
   return (
     <>
-      <SubLabel note="Pill field shared by password gates, library modal, and mobile Filter. Leading/trailing icons use FieldLeadingIcon / FieldTrailingIcon (size-5) with FieldInput h-5 / leading-5 / p-0.">
+      <SubLabel>
         Inputs
       </SubLabel>
       <div className={SPECIMEN_GRID}>
@@ -468,13 +837,28 @@ function InputSpecimensSection() {
           </FieldShell>
         </Specimen>
 
-        <Specimen label="Search · leading icon" span={SPAN_WIDE}>
-          <SearchFieldSpecimen />
+        <Specimen label="Leading icon" span={SPAN_WIDE}>
+          <FieldShell tone="muted" className="max-w-[280px] gap-2.5">
+            <FieldLeadingIcon>
+              <SearchMagnifierIcon />
+            </FieldLeadingIcon>
+            <FieldInput
+              type="text"
+              inputMode="search"
+              placeholder="Filter"
+              defaultValue=""
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
+              aria-label="Leading icon search input specimen"
+              className="pr-3 font-medium tracking-[0.01em] text-zinc-700"
+            />
+          </FieldShell>
         </Specimen>
 
-        <Specimen label="Password" span={SPAN_WIDE}>
+        <Specimen label="Trailing icon" span={SPAN_WIDE}>
           <FieldShell className="max-w-[280px] justify-between">
-            <FieldInput type="password" placeholder="Enter" defaultValue="" aria-label="Password input specimen" />
+            <FieldInput type="password" placeholder="Enter" defaultValue="" aria-label="Trailing icon input specimen" />
             <FieldTrailingIcon className="text-zinc-400">
               <ArrowRightIcon size="14px" />
             </FieldTrailingIcon>
@@ -505,7 +889,7 @@ function InputSpecimensSection() {
           </FieldShell>
         </Specimen>
 
-        <Specimen label="Error" span={SPAN_WIDE}>
+        <Specimen label="Error" span={SPAN_FULL}>
           <FieldShell error className="max-w-[240px]">
             <FieldInput type="password" placeholder="Enter" defaultValue="••••" aria-label="Error input specimen" readOnly />
           </FieldShell>
@@ -518,7 +902,108 @@ function InputSpecimensSection() {
 export default function ComponentSection() {
   return (
     <Section id="components" title="Components">
-      <SubLabel>Navigation & pills</SubLabel>
+      <SubLabel>Buttons</SubLabel>
+      <div className={SPECIMEN_GRID}>
+        <Specimen
+          label="Solid"
+          span={SPAN_FULL}
+          className={BUTTON_MATRIX_CARD_CLASS}
+          labelPosition="top"
+        >
+          <ButtonMatrixSpecimen />
+        </Specimen>
+
+        <Specimen
+          label="Glass"
+          span={SPAN_FULL}
+          className={BUTTON_MATRIX_CARD_CLASS}
+          labelPosition="top"
+        >
+          <GlassMatrixSpecimen />
+        </Specimen>
+
+        <Specimen
+          label="Playground"
+          span={SPAN_FULL}
+          className={BUTTON_PLAYGROUND_CARD_CLASS}
+          labelPosition="top"
+        >
+          <ButtonPlaygroundSpecimen />
+        </Specimen>
+      </div>
+      <SubLabel>Cards</SubLabel>
+      <div className={SPECIMEN_GRID}>
+        <Specimen label="Quote card" span={SPAN_WIDE}>
+          <button
+            type="button"
+            className="flex h-24 w-48 cursor-pointer flex-col justify-center rounded-3xl border border-zinc-100 bg-white px-4 shadow-default shadow-default-hover transition-transform duration-200 hover:scale-[1.01]"
+          >
+            <span className="text-2xl tracking-[0.01em] text-zinc-700">“delightful.”</span>
+          </button>
+        </Specimen>
+
+        <Specimen label="Book cover" span={SPAN_WIDE}>
+          <button
+            type="button"
+            className="h-28 w-20 cursor-pointer rounded-sm bg-gradient-to-br from-zinc-300 to-zinc-400 shadow-media transition-transform duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02]"
+            aria-label="Book cover"
+          />
+        </Specimen>
+      </div>
+
+      <SubLabel note="1px zinc-100 hairline.">
+        Dividers
+      </SubLabel>
+      <div className={SPECIMEN_GRID}>
+        <Specimen label="HorizontalLine · Default" span={SPAN_WIDE}>
+          <div className="flex w-full max-w-sm flex-col gap-3">
+            <p className="text-sm text-zinc-500">Above</p>
+            <HorizontalLine />
+            <p className="text-sm text-zinc-500">Below</p>
+          </div>
+        </Specimen>
+
+        <Specimen label="HorizontalLine · Bleed (mobile)" span={SPAN_WIDE}>
+          <div className="w-full max-w-sm overflow-hidden rounded-xl bg-white px-6 py-4">
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-zinc-500">Panel content</p>
+              <HorizontalLine bleed />
+              <p className="text-sm text-zinc-500">Reaches panel edge on mobile</p>
+            </div>
+          </div>
+        </Specimen>
+      </div>
+
+      <InputSpecimensSection />
+
+      <SubLabel>Loaders</SubLabel>
+      <div className={SPECIMEN_GRID}>
+        <Specimen label="Spinner" span={SPAN_MID}>
+          <div className="size-5 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-400" />
+          <div className="size-8 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-400" />
+          <div className="size-10 animate-spin rounded-full border-[3px] border-zinc-200 border-t-zinc-400" />
+        </Specimen>
+
+        <Specimen label="Shimmer skeleton" span={SPAN_MID}>
+          <div className="flex flex-col gap-2">
+            <div className="animate-shimmer h-4 w-40 rounded-md" />
+            <div className="animate-shimmer h-4 w-28 rounded-md" />
+            <div className="animate-shimmer h-16 w-40 rounded-xl" />
+          </div>
+        </Specimen>
+
+        <Specimen label="Loading dots" span={SPAN_MID}>
+          <style>{`@keyframes film-dot-pulse{0%,80%,100%{opacity:.15}40%{opacity:1}}.film-dot{animation:film-dot-pulse 1.4s ease-in-out infinite;opacity:.15}`}</style>
+          <p className="text-sm text-zinc-600">
+            Loading
+            <span className="film-dot" style={{ animationDelay: "0s" }}>.</span>
+            <span className="film-dot" style={{ animationDelay: "0.2s" }}>.</span>
+            <span className="film-dot" style={{ animationDelay: "0.4s" }}>.</span>
+          </p>
+        </Specimen>
+      </div>
+
+      <SubLabel>Navigation</SubLabel>
       <div className={SPECIMEN_GRID}>
         <Specimen
           label="Sidebar nav"
@@ -532,32 +1017,23 @@ export default function ComponentSection() {
           <NavTabsSpecimen />
         </Specimen>
 
-        <Specimen label="Project title pill" span={SPAN_WIDE}>
-          <ProjectTitlePillSpecimen />
-        </Specimen>
-
-        <Specimen label="Tag badges" span={SPAN_WIDE}>
-          <TagBadgesSpecimen />
-        </Specimen>
-
-        <Specimen label="Filter pill" span={SPAN_WIDE}>
-          <FilterPillsSpecimen />
-        </Specimen>
-
-        <Specimen
-          label="Filter dropdown"
-          span={SPAN_WIDE}
-          className="!items-start !justify-start"
-        >
-          <FilterDropdownSpecimen options={LIBRARY_OPTIONS} initialActive="2026" />
-        </Specimen>
-
-        <Specimen
-          label="Filter dropdown"
-          span={SPAN_WIDE}
-          className="!items-start !justify-start"
-        >
-          <FilterDropdownSpecimen options={SHELF_OPTIONS} initialActive="2026" />
+        <Specimen label="Breadcrumb" span={SPAN_WIDE}>
+          <div className="flex items-center">
+            <button
+              type="button"
+              className="ml-2 flex cursor-pointer items-center justify-center rounded-md px-1.5 py-0.5 transition-colors duration-200 hover:bg-[#f4f4f5]"
+            >
+              <span className="text-sm font-medium leading-normal whitespace-nowrap text-[#52525b]">
+                Work
+              </span>
+            </button>
+            <Chevron direction="right" className="size-4 shrink-0 text-zinc-500" />
+            <div className="flex items-center justify-center px-1 py-0.5">
+              <span className="text-sm font-medium leading-normal text-[#27272a]">
+                Project
+              </span>
+            </div>
+          </div>
         </Specimen>
 
         <Specimen label="Tooltip" span={SPAN_WIDE}>
@@ -590,177 +1066,49 @@ export default function ComponentSection() {
           </div>
         </Specimen>
 
-        <Specimen label="Availability badge" span={SPAN_WIDE}>
-          <button
-            type="button"
-            className="flex shrink-0 cursor-default items-center gap-2 rounded-full bg-[#ecfdf5] px-3 py-1.5 transition-colors hover:bg-emerald-50"
-            aria-label="Available for work"
-          >
-            <span className="relative flex size-2.5 shrink-0">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-200 opacity-75" />
-              <span className="relative inline-flex size-2.5 rounded-full bg-emerald-500" />
-            </span>
-            <span className="whitespace-nowrap text-sm text-emerald-600">Available for work</span>
-          </button>
+        <Specimen label="Availability badge" span="col-span-1 lg:col-span-8">
+          <div className="flex flex-wrap items-end justify-center gap-8">
+            <div className="flex flex-col items-center gap-3">
+              <ContactBadge size="md" />
+              <code className="font-mono text-xs text-zinc-400">md · About</code>
+            </div>
+            <div className="flex flex-col items-center gap-3">
+              <ContactBadge size="sm" />
+              <code className="font-mono text-xs text-zinc-400">sm · Header</code>
+            </div>
+          </div>
         </Specimen>
 
-        <Specimen label="Social / meta link" span={SPAN_WIDE}>
+        <Specimen label="Social / meta link" span="col-span-1 lg:col-span-4">
           <button
             type="button"
-            className="inline-flex cursor-pointer items-center gap-1 text-sm text-zinc-600 transition-colors hover:text-blue-500"
+            className="inline-flex cursor-pointer items-center gap-1 text-sm font-medium text-zinc-600 transition-colors hover:text-blue-500"
           >
             Read more <ArrowUpRight />
           </button>
         </Specimen>
       </div>
 
-      <InputSpecimensSection />
-
-      <SubLabel note="Axes: variant · size · icon · glass · color. Specimens encode site class patterns (not a shared Button API).">
-        Buttons
-      </SubLabel>
+      <SubLabel>Pills</SubLabel>
       <div className={SPECIMEN_GRID}>
-        <Specimen label="Primary CTA · blue" span={SPAN_MID}>
-          <SpecButton variant="primary">Try It Out!</SpecButton>
+        <Specimen label="Project title pill" span={SPAN_WIDE}>
+          <ProjectTitlePillSpecimen />
         </Specimen>
 
-        <Specimen label="Secondary CTA · zinc" span={SPAN_MID}>
-          <SpecButton variant="secondary" size="lg">
-            View all projects
-          </SpecButton>
+        <Specimen label="Tag badges" span={SPAN_WIDE}>
+          <TagBadgesSpecimen />
         </Specimen>
 
-        <Specimen label="Tertiary · quiet fill" span={SPAN_MID}>
-          <SpecButton variant="tertiary" size="sm">
-            Try Again
-          </SpecButton>
+        <Specimen label="Filter pill" span={SPAN_WIDE}>
+          <FilterPillsSpecimen />
         </Specimen>
 
-        <Specimen label="Ghost · transparent + wash" span={SPAN_MID}>
-          <SpecButton variant="ghost">Read more</SpecButton>
-        </Specimen>
-
-        <Specimen label="Sizes · sm / md / lg" span={SPAN_WIDE}>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <SpecButton variant="primary" size="sm">
-              Small
-            </SpecButton>
-            <SpecButton variant="primary" size="md">
-              Medium
-            </SpecButton>
-            <SpecButton variant="primary" size="lg">
-              Large
-            </SpecButton>
-          </div>
-        </Specimen>
-
-        <Specimen label="Icon + text · primary" span={SPAN_MID}>
-          <SpecButton variant="primary" size="sm" className="gap-1">
-            <span>Continue</span>
-            <ArrowUpRight size="12px" />
-          </SpecButton>
-        </Specimen>
-
-        <Specimen label="Icon + text · secondary" span={SPAN_MID}>
-          <SpecButton variant="secondary" size="md" className="gap-1.5">
-            <span>Next</span>
-            <Chevron direction="right" size={iconSize("inline")} />
-          </SpecButton>
-        </Specimen>
-
-        <Specimen label="Icon · primary" span={SPAN_NARROW}>
-          <SpecButton variant="primary" icon aria-label="Send">
-            <SendIcon className="-ml-0.5 w-5 pt-0.5" />
-          </SpecButton>
-        </Specimen>
-
-        <Specimen label="Icon · secondary" span={SPAN_NARROW}>
-          <SpecButton variant="secondary" icon aria-label="Next">
-            <Chevron direction="right" size={iconSize("toolbar")} />
-          </SpecButton>
-        </Specimen>
-
-        <Specimen label="Icon · tertiary" span={SPAN_NARROW}>
-          <SpecButton variant="tertiary" icon aria-label="Expand">
-            <Chevron direction="down" size={iconSize("toolbar")} />
-          </SpecButton>
-        </Specimen>
-
-        <Specimen label="Icon · ghost" span={SPAN_NARROW}>
-          <SpecButton variant="ghost" icon aria-label="Open menu">
-            <Chevron direction="down" size={iconSize("toolbar")} />
-          </SpecButton>
-        </Specimen>
-
-        <Specimen
-          label="Glass · carousel arrow (in use)"
-          span={SPAN_WIDE}
-          className="!bg-gradient-to-br from-zinc-200 via-zinc-100 to-zinc-300"
-        >
-          <LiquidGlassButton className="text-zinc-500 hover:text-zinc-700" aria-label="Scroll right">
-            <ChevronRightIcon size={iconSize("toolbar")} className="translate-x-px" />
-          </LiquidGlassButton>
-        </Specimen>
-      </div>
-      <p className="mt-6 max-w-2xl text-sm leading-relaxed text-zinc-400 text-pretty">
-        In use (not shown): Contact CTA · View on X · Skip link · Breadcrumb · Info · Modal close.
-        Colors stay minimal (blue primary, zinc secondary); no destructive CTA on site.
-      </p>
-
-      <SubLabel>Loaders</SubLabel>
-      <div className={SPECIMEN_GRID}>
-        <Specimen label="Spinner" span={SPAN_MID}>
-          <div className="size-5 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-400" />
-          <div className="size-8 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-400" />
-          <div className="size-10 animate-spin rounded-full border-[3px] border-zinc-200 border-t-zinc-400" />
-        </Specimen>
-
-        <Specimen label="Shimmer skeleton" span={SPAN_MID}>
-          <div className="flex flex-col gap-2">
-            <div className="animate-shimmer h-4 w-40 rounded-md" />
-            <div className="animate-shimmer h-4 w-28 rounded-md" />
-            <div className="animate-shimmer h-16 w-40 rounded-xl" />
-          </div>
-        </Specimen>
-
-        <Specimen label="Film loading dots" span={SPAN_MID}>
-          <style>{`@keyframes film-dot-pulse{0%,80%,100%{opacity:.15}40%{opacity:1}}.film-dot{animation:film-dot-pulse 1.4s ease-in-out infinite;opacity:.15}`}</style>
-          <p className="text-sm text-zinc-600">
-            Loading
-            <span className="film-dot" style={{ animationDelay: "0s" }}>.</span>
-            <span className="film-dot" style={{ animationDelay: "0.2s" }}>.</span>
-            <span className="film-dot" style={{ animationDelay: "0.4s" }}>.</span>
-          </p>
-        </Specimen>
-      </div>
-
-      <SubLabel>Cards</SubLabel>
-      <div className={SPECIMEN_GRID}>
-        <Specimen label="Card" span={SPAN_MID} className="!bg-zinc-100">
-          <button
-            type="button"
-            className="flex h-24 w-48 cursor-pointer flex-col justify-end rounded-3xl border border-zinc-100 bg-white p-4 shadow-default shadow-default-hover transition-transform duration-200 hover:scale-[1.01]"
-          >
-            <span className="text-sm font-medium text-zinc-700">Media card</span>
-            <span className="text-xs text-zinc-400">rounded-3xl · shadow-default</span>
-          </button>
-        </Specimen>
-
-        <Specimen label="Book cover" span={SPAN_MID} className="!bg-zinc-100">
-          <button
-            type="button"
-            className="h-28 w-20 cursor-pointer rounded-sm bg-gradient-to-br from-zinc-300 to-zinc-400 shadow-media transition-transform duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02]"
-            aria-label="Book cover"
+        <Specimen label="Filter dropdown" span={SPAN_WIDE}>
+          <FilterDropdownSpecimen
+            options={LIBRARY_OPTIONS}
+            initialActive="2026"
+            defaultOpen
           />
-        </Specimen>
-
-        <Specimen label="Quote card" span={SPAN_MID} className="!bg-zinc-100">
-          <button
-            type="button"
-            className="flex h-24 w-48 cursor-pointer flex-col justify-center rounded-3xl border border-zinc-100 bg-white px-4 shadow-default shadow-default-hover transition-transform duration-200 hover:scale-[1.01]"
-          >
-            <span className="text-2xl tracking-[0.01em] text-zinc-700">“delightful.”</span>
-          </button>
         </Specimen>
       </div>
     </Section>

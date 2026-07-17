@@ -4,7 +4,10 @@ import clsx from "clsx";
 import { PortableText } from "@portabletext/react";
 import type { PortableTextComponents } from "@portabletext/react";
 import { urlFor } from "../../sanity/client";
-import { getCachedData } from "../../sanity/preload";
+import {
+  fetchProjectByCompany,
+  getCachedData,
+} from "../../sanity/preload";
 import type { Project, ContentSection } from "../../sanity/types";
 import Footer from "../Footer";
 import ShimmerImage from "../ShimmerImage";
@@ -24,25 +27,8 @@ import { FieldInput, FieldShell, fieldIconSlotClassName } from "../FieldInput";
 import { Chevron } from "../Chevron";
 import { Close } from "../Close";
 import { ArrowRightIcon } from "../Arrow";
-
-async function fetchProjectByCompany(company: string): Promise<{
-  project: Project | null;
-  unlocked: boolean;
-}> {
-  const response = await fetch(`/api/project?company=${encodeURIComponent(company)}`, {
-    cache: "no-store",
-    credentials: "same-origin",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch project ${company}: ${response.status}`);
-  }
-
-  return {
-    project: (await response.json()) as Project | null,
-    unlocked: response.headers.get("x-project-unlocked") === "true",
-  };
-}
+import { HorizontalLine } from "../HorizontalLine";
+import { ghostIconButtonClass } from "../ghostIconButton";
 
 // Helper to render text with highlighted portion
 function renderHighlightedText(text: string, highlightedText?: string, highlightColor?: string): React.ReactNode {
@@ -547,7 +533,7 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
                 e.stopPropagation();
                 handleClose();
               }}
-              className={`fixed right-4 top-4 z-[10000] flex h-10 w-10 items-center justify-center text-zinc-500 transition-all duration-200 hover:scale-110 ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
+              className={`${ghostIconButtonClass("sm", "fixed right-4 top-4 z-[10000] text-zinc-500")} ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
               aria-label="Close expanded image"
             >
               <Close size="12px" />
@@ -712,15 +698,6 @@ const LogoIcon = () => (
     decoding="async"
   />
 );
-
-// Horizontal line separator
-function Line() {
-  return (
-    <div className="h-px relative shrink-0 w-full">
-      <div className="absolute bg-zinc-100 inset-0" />
-    </div>
-  );
-}
 
 type ProjectModalProps = {
   projectId: string; // company name: "apple", "roblox", "adobe", "nasa"
@@ -1267,7 +1244,7 @@ export default function ProjectModal({
                 {/* Logo - skip animation for Apple on mobile since logo is visible from homepage */}
                 {project.logo && (
                   projectId === 'apple' && isMobile ? (
-                    <div className="relative shrink-0 size-20 rounded-[16px] overflow-hidden">
+                    <div className="relative shrink-0 size-20 rounded-2xl overflow-hidden">
                       <img
                         className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
                         alt=""
@@ -1276,7 +1253,7 @@ export default function ProjectModal({
                     </div>
                   ) : (
                     <ScrollReveal variant="fade" rootMargin="0px">
-                      <div className="relative shrink-0 size-20 rounded-[16px] overflow-hidden">
+                      <div className="relative shrink-0 size-20 rounded-2xl overflow-hidden">
                         <img
                           className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
                           alt=""
@@ -1328,7 +1305,7 @@ export default function ProjectModal({
 
                 {/* Separator Line */}
                 <ScrollReveal variant="fade" delay={400} rootMargin="0px" className="w-full">
-                  <Line />
+                  <HorizontalLine />
                 </ScrollReveal>
 
                 {/* Hero Video or Image */}
@@ -2181,7 +2158,7 @@ function ContentBlock({
               {section.images?.map((image) => (
                 <div
                   key={image._key}
-                  className="flex flex-col items-center rounded-[24px] shadow-soft overflow-hidden max-w-110 w-full"
+                  className="flex flex-col items-center rounded-3xl shadow-soft overflow-hidden max-w-110 w-full"
                 >
                   <ShimmerImage
                     className="block w-full h-auto object-contain"

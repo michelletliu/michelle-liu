@@ -1,7 +1,6 @@
 import {
   forwardRef,
   useCallback,
-  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -11,6 +10,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { ScrollReveal } from "./ScrollReveal";
+import { preloadArtPage, preloadAboutPage, preloadWorkPage } from "../sanity/preload";
+import { warmWorkPage } from "./doorwayWarm";
 
 type NavigationTab = "work" | "art" | "about";
 
@@ -53,6 +54,7 @@ const TagBackgroundImageAndText = forwardRef<HTMLAnchorElement, TagBackgroundIma
         ref={ref}
         href={href}
         scroll={false}
+        prefetch={false}
         onClick={onClick}
         onMouseEnter={onPrefetch}
         onFocus={onPrefetch}
@@ -90,22 +92,40 @@ export default function NavigationTabs({ activeTab }: NavigationTabsProps) {
 
   const prefetchTab = useCallback(
     (href: string) => {
+      // In dev, prefetches trigger expensive webpack route compiles and can
+      // block the route the user actually clicks. Production serves built
+      // chunks, so intent-based warming remains useful there.
+      if (process.env.NODE_ENV === "development") return;
+
+      // Sanity data + page modules can be warmed repeatedly (no-ops when
+      // cached). Route RSC prefetch is deduped so we don't hammer the router.
+      // Module imports are what make tab switches feel instant — router.prefetch
+      // alone still leaves a cold client chunk on first click.
+      if (href === "/art") {
+        void preloadArtPage();
+        void import("./art/ArtPage");
+      } else if (href === "/about") {
+        void preloadAboutPage();
+        void import("./about/AboutPage");
+        // Warm below-fold About chunks so first paint isn't waiting on them.
+        void import("./about/CommunityCard");
+        void import("./about/ShelfSection");
+        void import("./about/LoreCard");
+        void import("./about/MediaCard");
+      } else if (href === "/") {
+        warmWorkPage();
+        void preloadWorkPage();
+      }
+
+      // Prefetch RSC + route layout chunk every time we warm — Next may drop
+      // an earlier partial prefetch, and Art → Work needs app/(home)/layout.js.
+      router.prefetch(href);
+
       if (prefetchedRef.current.has(href)) return;
       prefetchedRef.current.add(href);
-      router.prefetch(href);
     },
     [router],
   );
-
-  // Warm up the other two tab routes shortly after mount so the first click is instant
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      NAVIGATION_TABS.forEach((tab) => {
-        if (tab.id !== activeTab) prefetchTab(tab.href);
-      });
-    }, 800);
-    return () => clearTimeout(timeout);
-  }, [activeTab, prefetchTab]);
 
   const [displayedActiveTab, setDisplayedActiveTab] = useState(activeTab);
   const containerRef = useRef<HTMLDivElement | null>(null);

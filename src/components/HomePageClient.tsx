@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { useNavigate } from "@/lib/navigation";
 import svgPaths from "../imports/svg-2tsxp86msm";
 import clsx from "clsx";
@@ -8,9 +9,15 @@ import VideoPlayer from "./VideoPlayer";
 import ShimmerImage from "./ShimmerImage";
 import ShimmerVideo from "./ShimmerVideo";
 import Footer from "./Footer";
-import { ProjectModal as SanityProjectModal } from "./project";
 import { TryItOutButton } from "./TryItOutButton";
-import { preloadLikelyPages } from "../sanity/preload";
+import {
+  getCachedData,
+  setCachedData,
+  preloadLikelyPages,
+  preloadProject,
+  WORK_SANITY_PROJECTS_KEY,
+  WORK_EXPERIMENT_PROJECTS_KEY,
+} from "../sanity/preload";
 import PageHeader from "./PageHeader";
 import { client, urlFor } from "../sanity/client";
 import { PROJECTS_QUERY, EXPERIMENT_PROJECTS_QUERY } from "../sanity/queries";
@@ -21,10 +28,19 @@ import { LinkIcon } from "./LinkIcon";
 import { useScrollLock } from "../utils/useScrollLock";
 import ContactBadge from "./ContactBadge";
 import NavigationTabs from "./NavigationTabs";
-import ExperimentModal from "./ExperimentModal";
+import { HorizontalLine } from "./HorizontalLine";
 import { posthog, posthogEnabled } from "../lib/posthog";
 import { useHeroAnimation } from "../hooks/useHeroAnimation";
 import { fadeUpStyles } from "../styles/animations";
+
+// Keep Work's initial chunk light — these modals (and ExperimentModal's
+// eager experiment-page imports) made About → Work wait on ~4k+ lines of JS.
+const ExperimentModal = dynamic(() => import("./ExperimentModal"), {
+  ssr: false,
+});
+const SanityProjectModal = dynamic(() => import("./project/ProjectModal"), {
+  ssr: false,
+});
 
 // TextScramble is now imported from shared component when needed in this file's scope.
 // The HomePageClient doesn't directly render TextScramble — it's used in Footer.
@@ -344,6 +360,9 @@ type ProjectCardProps = {
   index?: number;
 };
 
+const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library", "film", "sundays"];
+const MAIN_PROJECT_IDS = ["apple", "roblox", "adobe", "nasa"];
+
 const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, featured = false, index = 0 }: ProjectCardProps) {
   const experimentLink = getExperimentLink(project.id);
   const hasTryItOut = experimentLink !== null;
@@ -358,12 +377,24 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
     }
   };
 
+  const warmProject = () => {
+    if (
+      process.env.NODE_ENV !== "development" &&
+      MAIN_PROJECT_IDS.includes(project.id)
+    ) {
+      void preloadProject(project.id);
+    }
+  };
+
   const enterStyle = { animationDelay: `${Math.min(index * 60, 300)}ms` };
 
   if (featured) {
     return (
       <button
         onClick={handleClick}
+        onMouseEnter={warmProject}
+        onFocus={warmProject}
+        onTouchStart={warmProject}
         style={enterStyle}
         className="content-stretch flex flex-col gap-3 items-start relative shrink-0 w-full cursor-pointer group project-card"
       >
@@ -385,7 +416,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                     <a
                       href={experimentLink!.href}
                       onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1.5 align-middle text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                      className="inline-flex items-end gap-1 align-baseline leading-none text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
                       {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     >
                       {experimentLink!.label}{experimentLink!.external && <ArrowUpRight />}
@@ -428,6 +459,9 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
   return (
     <button
       onClick={handleClick}
+      onMouseEnter={warmProject}
+      onFocus={warmProject}
+      onTouchStart={warmProject}
       style={enterStyle}
       className="content-stretch flex flex-col gap-3 items-start relative shrink-0 w-full cursor-pointer group project-card"
     >
@@ -450,7 +484,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
               <a
                 href={experimentLink!.href}
                 onClick={(e) => e.stopPropagation()}
-                className="hidden md:inline-flex items-center gap-1.5 align-middle text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
+                className="hidden md:inline-flex items-end gap-1 align-baseline leading-none font-medium text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
                 {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
                 {experimentLink!.label}{experimentLink!.external && <ArrowUpRight />}
@@ -488,21 +522,13 @@ type ProjectModalProps = {
   onClose: () => void;
 };
 
-function PopupLine() {
-  return (
-    <div className="h-px relative shrink-0 w-full">
-      <div className="absolute bg-zinc-100 inset-0" />
-    </div>
-  );
-}
-
 function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   if (!categories || categories.length === 0) return null;
   
   return (
-    <>
-      <PopupLine />
-      <div className="font-['Michelle',sans-serif] font-normal gap-4 grid-cols-4 relative shrink-0 text-base w-full mt-2 hidden md:grid">
+    <div className="flex w-full flex-col gap-2">
+      <HorizontalLine />
+      <div className="font-['Michelle',sans-serif] font-normal gap-4 grid-cols-4 relative shrink-0 text-base w-full hidden md:grid">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
             <p className="leading-5 relative shrink-0 text-[#a1a1aa]">
@@ -518,7 +544,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
           </div>
         ))}
       </div>
-      <div className="font-['Michelle',sans-serif] font-normal flex flex-col gap-1.5 relative shrink-0 text-sm w-full mt-2 md:hidden">
+      <div className="font-['Michelle',sans-serif] font-normal flex flex-col gap-1.5 relative shrink-0 text-sm w-full md:hidden">
         {categories.map((category, idx) => (
           <div key={idx} className="flex items-baseline gap-6">
             <p className="leading-5 shrink-0 text-[#a1a1aa] w-[72px]">
@@ -530,7 +556,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -677,21 +703,21 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
             <ToolsSection categories={project.toolCategories} />
           )}
 
-          <div className="relative rounded-[16px] w-full aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0 mt-3">
+          <div className="relative rounded-2xl w-full aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0 mt-3">
             <ShimmerImage
               alt=""
               className="absolute object-cover size-full"
               wrapperClassName="absolute inset-0"
-              rounded="rounded-[16px]"
+              rounded="rounded-2xl"
               src={project.imageSrc}
             />
             {project.videoSrc && videoReady && (
               <ShimmerVideo
                 key={project.id}
                 src={project.videoSrc}
-                className="absolute object-cover size-full rounded-[16px]"
+                className="absolute object-cover size-full rounded-2xl"
                 wrapperClassName="absolute inset-0"
-                rounded="rounded-[16px]"
+                rounded="rounded-2xl"
                 autoPlay
                 muted
                 loop
@@ -707,9 +733,6 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
     </div>
   );
 }
-
-const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library", "film", "sundays"];
-const MAIN_PROJECT_IDS = ["apple", "roblox", "adobe", "nasa"];
 
 type SanityProject = {
   company: string;
@@ -731,6 +754,77 @@ type SanityExperimentProject = {
   toolCategories?: ToolCategory[];
 };
 
+function mergeWorkProjects(
+  sanityProjects: SanityProject[],
+  experimentProjects: SanityExperimentProject[],
+): Project[] {
+  const heroVideoMap: Record<string, string> = {};
+  sanityProjects.forEach((sp) => {
+    if (sp.company && sp.heroVideo) {
+      heroVideoMap[sp.company] = sp.heroVideo;
+    }
+  });
+
+  const experimentMap: Record<string, SanityExperimentProject> = {};
+  experimentProjects.forEach((ep) => {
+    if (ep.projectId) {
+      experimentMap[ep.projectId] = ep;
+    }
+  });
+
+  return staticProjects.map((project) => {
+    if (MAIN_PROJECT_IDS.includes(project.id)) {
+      const heroVideo = heroVideoMap[project.id];
+      if (heroVideo) {
+        const muxUrls = getMuxUrls(heroVideo);
+        return {
+          ...project,
+          imageSrc: muxUrls.imageSrc,
+          videoSrc: muxUrls.videoSrc,
+        };
+      }
+    }
+
+    if (SIDE_PROJECT_IDS.includes(project.id)) {
+      const experimentData = experimentMap[project.id];
+      if (experimentData) {
+        const clipPlaybackId =
+          experimentData.muxPlaybackIdClip || experimentData.muxPlaybackId;
+        const muxUrls = clipPlaybackId
+          ? getMuxUrls(clipPlaybackId)
+          : { imageSrc: project.imageSrc, videoSrc: project.videoSrc };
+        const fallbackUrl = experimentData.fallbackThumbnail
+          ? urlFor(experimentData.fallbackThumbnail).width(1920).url()
+          : undefined;
+        return {
+          ...project,
+          title: experimentData.title,
+          year: experimentData.year,
+          description: experimentData.description,
+          imageSrc: fallbackUrl || muxUrls.imageSrc,
+          videoSrc: muxUrls.videoSrc,
+          xLink: experimentData.xLink || project.xLink,
+          backgroundColor:
+            experimentData.backgroundColor || project.backgroundColor,
+          toolCategories:
+            experimentData.toolCategories || project.toolCategories,
+        };
+      }
+    }
+
+    return project;
+  });
+}
+
+function readCachedWorkProjects(): Project[] | null {
+  const sanityProjects = getCachedData<SanityProject[]>(WORK_SANITY_PROJECTS_KEY);
+  const experimentProjects = getCachedData<SanityExperimentProject[]>(
+    WORK_EXPERIMENT_PROJECTS_KEY,
+  );
+  if (!sanityProjects || !experimentProjects) return null;
+  return mergeWorkProjects(sanityProjects, experimentProjects);
+}
+
 type HomePageClientProps = {
   slug?: string;
   mode?: string;
@@ -740,74 +834,43 @@ type HomePageClientProps = {
 export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientProps) {
   const navigate = useNavigate();
   const [isContactBadgeExpanded, setIsContactBadgeExpanded] = useState(false);
-  
-  const [projects, setProjects] = useState<Project[]>(staticProjects);
-  
+
+  const [projects, setProjects] = useState<Project[]>(
+    () => readCachedWorkProjects() ?? staticProjects,
+  );
+
   const heroAnimationPlayed = useHeroAnimation();
-  
+
   useEffect(() => {
     async function fetchSanityProjects() {
       try {
+        const cachedProjects = getCachedData<SanityProject[]>(
+          WORK_SANITY_PROJECTS_KEY,
+        );
+        const cachedExperiments = getCachedData<SanityExperimentProject[]>(
+          WORK_EXPERIMENT_PROJECTS_KEY,
+        );
+
+        // Already hydrated from preload — skip the network round-trip.
+        if (cachedProjects && cachedExperiments) {
+          setProjects(mergeWorkProjects(cachedProjects, cachedExperiments));
+          return;
+        }
+
         const [sanityProjects, experimentProjects] = await Promise.all([
-          client.fetch<SanityProject[]>(PROJECTS_QUERY),
-          client.fetch<SanityExperimentProject[]>(EXPERIMENT_PROJECTS_QUERY),
+          cachedProjects ?? client.fetch<SanityProject[]>(PROJECTS_QUERY),
+          cachedExperiments ??
+            client.fetch<SanityExperimentProject[]>(EXPERIMENT_PROJECTS_QUERY),
         ]);
 
-        const heroVideoMap: Record<string, string> = {};
-        sanityProjects.forEach((sp) => {
-          if (sp.company && sp.heroVideo) {
-            heroVideoMap[sp.company] = sp.heroVideo;
-          }
-        });
+        if (!cachedProjects) {
+          setCachedData(WORK_SANITY_PROJECTS_KEY, sanityProjects);
+        }
+        if (!cachedExperiments) {
+          setCachedData(WORK_EXPERIMENT_PROJECTS_KEY, experimentProjects);
+        }
 
-        const experimentMap: Record<string, SanityExperimentProject> = {};
-        experimentProjects.forEach((ep) => {
-          if (ep.projectId) {
-            experimentMap[ep.projectId] = ep;
-          }
-        });
-
-        const mergedProjects = staticProjects.map((project) => {
-          if (MAIN_PROJECT_IDS.includes(project.id)) {
-            const heroVideo = heroVideoMap[project.id];
-            if (heroVideo) {
-              const muxUrls = getMuxUrls(heroVideo);
-              return {
-                ...project,
-                imageSrc: muxUrls.imageSrc,
-                videoSrc: muxUrls.videoSrc,
-              };
-            }
-          }
-          
-          if (SIDE_PROJECT_IDS.includes(project.id)) {
-            const experimentData = experimentMap[project.id];
-            if (experimentData) {
-              const clipPlaybackId = experimentData.muxPlaybackIdClip || experimentData.muxPlaybackId;
-              const muxUrls = clipPlaybackId 
-                ? getMuxUrls(clipPlaybackId)
-                : { imageSrc: project.imageSrc, videoSrc: project.videoSrc };
-              const fallbackUrl = experimentData.fallbackThumbnail
-                ? urlFor(experimentData.fallbackThumbnail).width(1920).url()
-                : undefined;
-              return {
-                ...project,
-                title: experimentData.title,
-                year: experimentData.year,
-                description: experimentData.description,
-                imageSrc: fallbackUrl || muxUrls.imageSrc,
-                videoSrc: muxUrls.videoSrc,
-                xLink: experimentData.xLink || project.xLink,
-                backgroundColor: experimentData.backgroundColor || project.backgroundColor,
-                toolCategories: experimentData.toolCategories || project.toolCategories,
-              };
-            }
-          }
-          
-          return project;
-        });
-
-        setProjects(mergedProjects);
+        setProjects(mergeWorkProjects(sanityProjects, experimentProjects));
       } catch (error) {
         console.error("Error fetching Sanity projects:", error);
       }
@@ -935,22 +998,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
   return (
     <div className="bg-white content-stretch flex flex-col items-center relative size-full min-h-screen">
       <style>{fadeUpStyles}</style>
-      
-      <svg width="0" height="0" className="absolute">
-        <defs>
-          <linearGradient id="socialGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#D79FE8">
-              <animate attributeName="stop-color" values="#D79FE8; #4DACEA; #13B2EB; #D79FE8" dur="3.5s" repeatCount="indefinite" />
-            </stop>
-            <stop offset="50%" stopColor="#4DACEA">
-              <animate attributeName="stop-color" values="#4DACEA; #13B2EB; #D79FE8; #4DACEA" dur="3.5s" repeatCount="indefinite" />
-            </stop>
-            <stop offset="100%" stopColor="#13B2EB">
-              <animate attributeName="stop-color" values="#13B2EB; #D79FE8; #4DACEA; #13B2EB" dur="3.5s" repeatCount="indefinite" />
-            </stop>
-          </linearGradient>
-        </defs>
-      </svg>
+
       <PageHeader variant="work" heroAnimationPlayed={heroAnimationPlayed}>
         <>
           <div>

@@ -12,18 +12,25 @@ import { LinksBackgroundImageAndText, SocialIconLinks } from "./SocialLinks";
 type FooterProps = {
   /** default: red seal; blueprint: gray outline logo (design-system) */
   logoVariant?: "default" | "blueprint";
+  /** Override brand link (design-system returns to the tab that opened it). */
+  logoHref?: string;
 };
 
 function FooterBrand({
   logoVariant,
   gapClassName,
+  logoHref = "/",
 }: {
   logoVariant: "default" | "blueprint";
   gapClassName: string;
+  logoHref?: string;
 }) {
   return (
     <a
-      href="/"
+      href={logoHref}
+      {...(logoVariant === "blueprint"
+        ? { "data-blueprint-doorway-back": "" }
+        : {})}
       className={`group content-stretch flex ${gapClassName} items-center justify-center relative shrink-0 transition-opacity ${
         logoVariant === "default" ? "hover:opacity-80" : ""
       }`}
@@ -127,16 +134,16 @@ function useLocalTime(timezone: string) {
 
 function SunIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="8" cy="8" r="3.5" />
-      <line x1="8" y1="0.5" x2="8" y2="2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <line x1="8" y1="13.5" x2="8" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <line x1="15.5" y1="8" x2="13.5" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <line x1="2.5" y1="8" x2="0.5" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <line x1="13.3" y1="2.7" x2="11.89" y2="4.11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <line x1="4.11" y1="11.89" x2="2.7" y2="13.3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <line x1="13.3" y1="13.3" x2="11.89" y2="11.89" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <line x1="4.11" y1="4.11" x2="2.7" y2="2.7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+    <svg className={className} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <circle cx="8" cy="8" r="2.75" fill="currentColor" />
+      <line x1="8" y1="1" x2="8" y2="2.75" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <line x1="8" y1="13.25" x2="8" y2="15" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <line x1="15" y1="8" x2="13.25" y2="8" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <line x1="2.75" y1="8" x2="1" y2="8" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <line x1="12.95" y1="3.05" x2="11.75" y2="4.25" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <line x1="4.25" y1="11.75" x2="3.05" y2="12.95" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <line x1="12.95" y1="12.95" x2="11.75" y2="11.75" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <line x1="4.25" y1="4.25" x2="3.05" y2="3.05" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
     </svg>
   );
 }
@@ -169,7 +176,10 @@ function BlinkingTime({ time, h24, city }: { time: string; h24: number; city: st
   );
 }
 
-export default function Footer({ logoVariant = "default" }: FooterProps) {
+export default function Footer({
+  logoVariant = "default",
+  logoHref = "/",
+}: FooterProps) {
   const latestCommitDate = useLatestCommitDate();
   const changelogText = latestCommitDate 
     ? `CHANGELOG: ${latestCommitDate}` 
@@ -190,7 +200,11 @@ export default function Footer({ logoVariant = "default" }: FooterProps) {
             <div className="hidden md:grid gap-5 grid-cols-[repeat(4,_minmax(0px,_1fr))] grid-rows-[repeat(1,_fit-content(100%))] relative shrink-0 w-full">
               {/* Column 1: Logo + Time */}
               <div className="[grid-area:1_/_1] content-stretch flex flex-col gap-0 items-start relative shrink-0">
-                <FooterBrand logoVariant={logoVariant} gapClassName="gap-3" />
+                <FooterBrand
+                  logoVariant={logoVariant}
+                  gapClassName="gap-3"
+                  logoHref={logoHref}
+                />
                 <p className="font-['Michelle',sans-serif] font-normal leading-5 text-zinc-400 text-base">
                   <BlinkingTime time={localTime} h24={localH24} city={city} />
                 </p>
@@ -224,7 +238,11 @@ export default function Footer({ logoVariant = "default" }: FooterProps) {
             <div className="md:hidden content-stretch flex flex-col gap-10 items-start relative shrink-0 w-full">
               {/* Logo Section + Time */}
               <div className="content-stretch flex flex-col gap-0 items-start relative shrink-0">
-                <FooterBrand logoVariant={logoVariant} gapClassName="gap-2" />
+                <FooterBrand
+                  logoVariant={logoVariant}
+                  gapClassName="gap-2"
+                  logoHref={logoHref}
+                />
                 <p className="font-['Michelle',sans-serif] font-normal leading-5 text-zinc-400 text-base">
                   <BlinkingTime time={localTime} h24={localH24} city={city} />
                 </p>

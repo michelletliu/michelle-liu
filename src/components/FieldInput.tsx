@@ -74,7 +74,7 @@ export function FieldLeadingIcon({
   return (
     <span
       className={clsx(
-        "pointer-events-none ml-2.5 text-zinc-400",
+        "pointer-events-none ml-1.5 text-zinc-400",
         fieldIconSlotClassName,
         className,
       )}

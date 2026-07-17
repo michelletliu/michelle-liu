@@ -1,6 +1,45 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useState, type ReactNode } from "react";
+import clsx from "clsx";
 import type { Tag } from "./tokens";
 import { subSlug } from "./tokens";
+import { iconSize } from "../iconSizes";
+import { ghostIconButtonClass } from "../ghostIconButton";
+import { Code } from "../Code";
+
+/**
+ * Ghost icon button — sm hit target (between size-6 and md), inline glyph.
+ * Used by TokenCard (and custom card shells) to reveal mono values.
+ */
+export function CodeToggleButton({
+  pressed,
+  onPressedChange,
+  className = "",
+}: {
+  pressed: boolean;
+  onPressedChange: (next: boolean) => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={pressed}
+      aria-label={pressed ? "Hide code" : "Show code"}
+      onClick={() => onPressedChange(!pressed)}
+      className={clsx(
+        ghostIconButtonClass("sm", "text-zinc-300"),
+        "hover:text-zinc-400",
+        "active:bg-zinc-900/5",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
+        pressed && "bg-zinc-900/5 text-zinc-500",
+        className,
+      )}
+    >
+      <Code size={iconSize("inline")} />
+    </button>
+  );
+}
 
 /**
  * Soft gray tile behind glass / border-white/50 specimens.
@@ -44,16 +83,16 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-24 border-t border-zinc-100 pt-16 pb-4">
-      <div className="mb-10">
+    <section id={id} className="scroll-mt-24 pt-16 pb-4">
+      <div className="mb-5">
         <div className="flex items-center gap-2.5">
-          <h2 className="font-['Michelle',sans-serif] text-2xl font-medium leading-relaxed tracking-tight text-zinc-900">
+          <h2 className="font-['Michelle',sans-serif] text-xl font-medium leading-relaxed tracking-tight text-zinc-900">
             {title}
           </h2>
           {tag && <TagChip tag={tag} />}
         </div>
       </div>
-      {children}
+      <div>{children}</div>
     </section>
   );
 }
@@ -71,13 +110,13 @@ export function SubLabel({
 }) {
   const id = typeof children === "string" ? subSlug(children) : undefined;
   return (
-    <div id={id} className="mb-5 mt-20 scroll-mt-28 first:mt-0">
+    <div id={id} className="mb-5 mt-20 scroll-mt-28 first:mt-0 first-of-type:mt-0">
       <div className="flex items-center gap-2.5">
-        <h3 className="text-xl font-medium leading-relaxed text-zinc-700">{children}</h3>
+        <h3 className="text-base font-medium leading-relaxed text-zinc-700">{children}</h3>
         {tag && <TagChip tag={tag} />}
       </div>
       {note && (
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400 text-pretty">{note}</p>
+        <p className="mt-2 max-w-2xl text-base leading-relaxed text-zinc-400 text-pretty">{note}</p>
       )}
     </div>
   );
@@ -99,7 +138,11 @@ export function RowList({ children }: { children: ReactNode }) {
   return <div className="divide-y divide-zinc-100">{children}</div>;
 }
 
-/** Standard entry: borderless visual sample on a soft tile, name + tag, mono value, usage note. */
+/**
+ * Standard entry: borderless visual sample on a soft tile, name, usage note.
+ * When `value` is set, a </> toggle sits top-right; tag shifts top-left.
+ * Mono value reveals in the specimen’s bottom-left (overlay — no layout shift).
+ */
 export function TokenCard({
   sample,
   name,
@@ -112,24 +155,46 @@ export function TokenCard({
   /** Omit when the section header already shows a uniform group tag. */
   tag?: Tag;
   value?: string;
-  usage: string;
+  usage?: string;
 }) {
+  const [codeOpen, setCodeOpen] = useState(false);
+  const hasCode = Boolean(value);
+
   return (
-    <div className="flex flex-col gap-3">
-      <div className="relative flex h-24 items-center justify-center overflow-hidden rounded-xl bg-zinc-50">
+    <div className="flex flex-col gap-1">
+      <div className="relative flex h-[120px] min-h-[120px] items-center justify-center overflow-hidden rounded-xl bg-zinc-50 md:h-auto md:min-h-[200px]">
         {sample}
-      </div>
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-base font-medium text-zinc-700">{name}</span>
-          {tag && <TagChip tag={tag} />}
-        </div>
-        {value && (
-          <code className="block break-words font-mono text-sm leading-relaxed text-zinc-400">
+        {tag ? (
+          <div
+            className={clsx(
+              "absolute top-2 z-10",
+              hasCode ? "left-2" : "right-2",
+            )}
+          >
+            <TagChip tag={tag} />
+          </div>
+        ) : null}
+        {hasCode ? (
+          <div className="absolute right-2 top-2 z-10">
+            <CodeToggleButton
+              pressed={codeOpen}
+              onPressedChange={setCodeOpen}
+            />
+          </div>
+        ) : null}
+        {hasCode && codeOpen ? (
+          <code className="absolute bottom-2 left-3 z-10 max-w-[calc(100%-1.5rem)] break-words font-mono text-sm leading-relaxed text-zinc-400">
             {value}
           </code>
-        )}
-        <span className="text-sm leading-snug text-zinc-400 text-pretty">{usage}</span>
+        ) : null}
+      </div>
+      <div className="flex flex-col gap-0 pl-2">
+        <span className="font-['Michelle',sans-serif] text-base font-medium text-zinc-700">
+          {name}
+        </span>
+        {usage ? (
+          <span className="text-sm leading-snug text-zinc-400 text-pretty">{usage}</span>
+        ) : null}
       </div>
     </div>
   );

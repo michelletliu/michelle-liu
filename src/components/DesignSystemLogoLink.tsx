@@ -1,54 +1,31 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import BlueprintLogo from "./BlueprintLogo";
 import { markBlueprintDoorwayNav } from "./blueprintDoorwayNav";
-
-/** Warm the design-system route + its heavy section chunks. */
-function warmDesignSystem() {
-  void import("./system/sections/ComponentSection");
-  void import("./system/sections/IconSection");
-  void import("./system/sections/MaterialSection");
-  void import("./system/sections/MotionSection");
-}
+import { warmDesignSystem } from "./doorwayWarm";
 
 /**
  * Red seal doorway → /design-system.
- * Prefetches the route on mount and again on hover; warms heavy section chunks
- * so click paints the DS shell immediately.
+ * Warms on focus or press so an idle pointer over the seal cannot make the
+ * large design-system bundle compete with normal page startup.
  */
 export default function DesignSystemLogoLink() {
   const router = useRouter();
+  const pathname = usePathname() || "/";
 
-  useEffect(() => {
+  const prefetchDoorway = () => {
+    if (process.env.NODE_ENV === "development") return;
     router.prefetch("/design-system");
-    // Idle-warm section chunks so they ride along after the shell RSC/JS.
-    let cancelled = false;
-    const run = () => {
-      if (!cancelled) warmDesignSystem();
-    };
-    let idleId: number | undefined;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    if ("requestIdleCallback" in window) {
-      idleId = window.requestIdleCallback(run);
-    } else {
-      timeoutId = setTimeout(run, 400);
-    }
-    return () => {
-      cancelled = true;
-      if (idleId !== undefined && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(idleId);
-      }
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
-    };
-  }, [router]);
+    warmDesignSystem();
+  };
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    markBlueprintDoorwayNav();
+    // Remember Art / About / Work so the DS seal returns here.
+    markBlueprintDoorwayNav(pathname);
     window.scrollTo(0, 0);
-    // Use router.push for instant navigation instead of waiting for Link
+    // Instant client nav — don't wait on the default Link/anchor round-trip.
     router.push("/design-system");
   };
 
@@ -56,20 +33,10 @@ export default function DesignSystemLogoLink() {
     <a
       href="/design-system"
       aria-label="Open the design system"
-      onMouseEnter={() => {
-        router.prefetch("/design-system");
-        warmDesignSystem();
-      }}
-      onFocus={() => {
-        router.prefetch("/design-system");
-        warmDesignSystem();
-      }}
-      onTouchStart={() => {
-        router.prefetch("/design-system");
-        warmDesignSystem();
-      }}
+      onFocus={prefetchDoorway}
+      onPointerDown={prefetchDoorway}
       onClick={handleClick}
-      className="group relative -m-2 inline-block shrink-0 cursor-pointer overflow-visible p-2 transition-transform duration-200 ease-out hover:scale-[1.02] active:scale-95"
+      className="group relative -m-2 inline-block shrink-0 cursor-pointer overflow-visible p-2 transition-transform duration-200 ease-out [@media(hover:hover)]:hover:scale-[1.02] active:scale-95"
     >
       <span className="relative block size-8 md:size-11">
         <BlueprintLogo mode="hover" />

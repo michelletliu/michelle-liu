@@ -23,8 +23,36 @@ import ArtLightbox, { type ArtLightboxItem } from "./ArtLightbox";
 // Sanity imports
 import { client, urlFor } from "../../sanity/client";
 import { ART_PIECES_QUERY, SKETCHBOOKS_QUERY, MURALS_QUERY } from "../../sanity/queries";
-import { getCachedData } from "../../sanity/preload";
+import { getCachedData, setCachedData, preloadLikelyPages } from "../../sanity/preload";
 import type { ArtPiece, Sketchbook, Mural, ArtType } from "../../sanity/types";
+
+const EMPTY_ART_BY_TYPE: Record<ArtType, ArtCardData[]> = {
+  painting: [],
+  conceptual: [],
+  graphite: [],
+};
+
+function readCachedArtPage(): {
+  artPiecesByType: Record<ArtType, ArtCardData[]>;
+  sketchbooks: SketchbookData[];
+  murals: MuralData[];
+} | null {
+  const artPieces = getCachedData<ArtPiece[]>("art:pieces");
+  const sketchbooks = getCachedData<Sketchbook[]>("art:sketchbooks");
+  const murals = getCachedData<Mural[]>("art:murals");
+  if (!artPieces || !sketchbooks || !murals) return null;
+
+  const grouped = groupArtPiecesByType(artPieces);
+  return {
+    artPiecesByType: {
+      painting: transformArtPieces(grouped.painting),
+      conceptual: transformArtPieces(grouped.conceptual),
+      graphite: transformArtPieces(grouped.graphite),
+    },
+    sketchbooks: transformSketchbooks(sketchbooks),
+    murals: transformMurals(murals),
+  };
+}
 
 function transformArtPieces(sanityData: ArtPiece[]): ArtCardData[] {
   return sanityData.map((piece) => {
@@ -118,38 +146,51 @@ export default function ArtPage() {
   // Individual mural refs
   const muralRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Sanity data state
-  const [artPiecesByType, setArtPiecesByType] = useState<Record<ArtType, ArtCardData[]>>({
-    painting: [],
-    conceptual: [],
-    graphite: [],
-  });
-  const [sketchbooks, setSketchbooks] = useState<SketchbookData[]>([]);
-  const [murals, setMurals] = useState<MuralData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Sanity data state — hydrate synchronously from preload cache when warm
+  const [cachedInitial] = useState(readCachedArtPage);
+  const [artPiecesByType, setArtPiecesByType] = useState<Record<ArtType, ArtCardData[]>>(
+    () => cachedInitial?.artPiecesByType ?? EMPTY_ART_BY_TYPE,
+  );
+  const [sketchbooks, setSketchbooks] = useState<SketchbookData[]>(
+    () => cachedInitial?.sketchbooks ?? [],
+  );
+  const [murals, setMurals] = useState<MuralData[]>(
+    () => cachedInitial?.murals ?? [],
+  );
+  const [isLoading, setIsLoading] = useState(() => cachedInitial === null);
   const [error, setError] = useState<string | null>(null);
   const [lightboxItem, setLightboxItem] = useState<ArtLightboxItem | null>(null);
+
+  useEffect(() => {
+    preloadLikelyPages();
+  }, []);
 
   // Fetch data from Sanity (uses preloaded cache if available)
   useEffect(() => {
     async function fetchArtData() {
       try {
-        setIsLoading(true);
         setError(null);
 
-        // Check cache first (populated by preloadLikelyPages)
         const cachedArtPieces = getCachedData<ArtPiece[]>("art:pieces");
         const cachedSketchbooks = getCachedData<Sketchbook[]>("art:sketchbooks");
         const cachedMurals = getCachedData<Mural[]>("art:murals");
+        const hasFullCache = !!(cachedArtPieces && cachedSketchbooks && cachedMurals);
 
-        // Fetch only what's not cached
+        // Only show spinner when we have nothing to render yet
+        if (!hasFullCache) setIsLoading(true);
+
         const [artPiecesData, sketchbooksData, muralsData] = await Promise.all([
           cachedArtPieces ?? client.fetch<ArtPiece[]>(ART_PIECES_QUERY),
           cachedSketchbooks ?? client.fetch<Sketchbook[]>(SKETCHBOOKS_QUERY),
           cachedMurals ?? client.fetch<Mural[]>(MURALS_QUERY),
         ]);
 
-        // Group art pieces by type and transform
+        if (!cachedArtPieces && artPiecesData) setCachedData("art:pieces", artPiecesData);
+        if (!cachedSketchbooks && sketchbooksData) {
+          setCachedData("art:sketchbooks", sketchbooksData);
+        }
+        if (!cachedMurals && muralsData) setCachedData("art:murals", muralsData);
+
         const grouped = groupArtPiecesByType(artPiecesData || []);
         setArtPiecesByType({
           painting: transformArtPieces(grouped.painting),

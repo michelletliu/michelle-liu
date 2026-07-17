@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../utils/useScrollLock";
 import { useNavigate } from "@/lib/navigation";
@@ -12,13 +13,10 @@ import { fadeUpStyles } from "../../styles/animations";
 import SectionHeading from "../SectionHeading";
 import LoadingSpinner from "../LoadingSpinner";
 
-// Components
+// Above-the-fold About chrome stays eager; heavier sections load as separate
+// chunks so Work → About isn't blocked on Community/Shelf/Lore JS.
 import ExperienceCard from "./ExperienceCard";
-import CommunityCard from "./CommunityCard";
-import ShelfSection from "./ShelfSection";
-import LoreCard from "./LoreCard";
 import StartupCard from "./StartupCard";
-import MediaCard from "./MediaCard";
 import AboutSidebar from "./AboutSidebar";
 import Footer from "../Footer";
 import { ArrowUpRight } from "../ArrowUpRight";
@@ -43,7 +41,7 @@ import {
   QUOTES_QUERY,
   STARTUPS_QUERY,
 } from "../../sanity/queries";
-import { getCachedData } from "../../sanity/preload";
+import { getCachedData, setCachedData, preloadLikelyPages } from "../../sanity/preload";
 import type {
   Experience,
   Community,
@@ -60,10 +58,24 @@ import type { LoreCardData } from "./LoreCard";
 import type { StartupCardData } from "./StartupCard";
 import type { MediaCardData } from "./MediaCard";
 import { Close } from "../Close";
+import { ghostIconButtonClass } from "../ghostIconButton";
+
+const CommunityCard = dynamic(() => import("./CommunityCard"));
+const ShelfSection = dynamic(() => import("./ShelfSection"));
+const LoreCard = dynamic(() => import("./LoreCard"));
+const MediaCard = dynamic(() => import("./MediaCard"));
 
 // fadeUpStyles imported from shared animations
 
-function StartupLogosRow({ startups, startDelay = 0 }: { startups: StartupCardData[]; startDelay?: number }) {
+function StartupLogosRow({
+  startups,
+  startDelay = 0,
+  onRevealComplete,
+}: {
+  startups: StartupCardData[];
+  startDelay?: number;
+  onRevealComplete?: () => void;
+}) {
   const rowRef = useRef<HTMLDivElement>(null);
   const [revealed, setRevealed] = useState(false);
 
@@ -71,26 +83,44 @@ function StartupLogosRow({ startups, startDelay = 0 }: { startups: StartupCardDa
     const el = rowRef.current;
     if (!el) return;
 
-    let timeout: NodeJS.Timeout;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setRevealed(true);
+      onRevealComplete?.();
+      return;
+    }
+
+    let revealTimeout: ReturnType<typeof setTimeout> | undefined;
+    let completionTimeout: ReturnType<typeof setTimeout> | undefined;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          timeout = setTimeout(() => setRevealed(true), startDelay);
+          revealTimeout = setTimeout(() => setRevealed(true), startDelay);
+          completionTimeout = setTimeout(
+            () => onRevealComplete?.(),
+            startDelay + Math.max(0, startups.length - 1) * 40 + 400,
+          );
           observer.disconnect();
         }
       },
       { threshold: 0.1, rootMargin: "0px 0px -20px 0px" }
     );
     observer.observe(el);
-    return () => { observer.disconnect(); clearTimeout(timeout); };
-  }, [startDelay]);
+    return () => {
+      observer.disconnect();
+      if (revealTimeout) clearTimeout(revealTimeout);
+      if (completionTimeout) clearTimeout(completionTimeout);
+    };
+  }, [onRevealComplete, startDelay, startups.length]);
 
   return (
-    <div ref={rowRef} className="flex justify-between md:flex-wrap md:gap-y-6 md:-ml-2">
+    <div
+      ref={rowRef}
+      className="mx-auto flex w-full max-w-[26rem] flex-wrap justify-between gap-y-6 md:mx-0 md:max-w-lg"
+    >
       {startups.map((startup, i) => (
         <div
           key={startup.id}
-          className="w-12 md:w-auto"
+          className="w-14 md:w-auto"
           style={{
             opacity: revealed ? 1 : 0,
             transform: revealed ? 'translateY(0)' : 'translateY(6px)',
@@ -142,6 +172,9 @@ function ProfilePhoto({ imageSrc, caption }: { imageSrc?: string; caption?: Reac
             <img
               src={imageSrc}
               alt="Michelle Liu"
+              decoding="async"
+              width={304}
+              height={389}
               className="w-full h-auto rounded-lg transition-transform duration-200 ease-out hover:scale-[0.99]"
             />
           ) : (
@@ -169,7 +202,7 @@ function ProfilePhoto({ imageSrc, caption }: { imageSrc?: string; caption?: Reac
               e.stopPropagation();
               handleClose();
             }}
-            className={`fixed right-4 top-4 z-10 flex h-10 w-10 items-center justify-center text-zinc-500 transition-all duration-200 hover:scale-110 ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
+            className={`${ghostIconButtonClass("sm", "fixed right-4 top-4 z-10 text-zinc-500")} ${isClosing ? '' : 'animate-[fadeSlideDown_300ms_ease-out]'}`}
             aria-label="Close expanded photo"
           >
             <Close size="12px" />
@@ -295,6 +328,34 @@ function transformStartups(data: Startup[]): StartupCardData[] {
   }));
 }
 
+function readCachedAboutPage(): {
+  experiences: ExperienceCardData[];
+  communities: CommunityCardData[];
+  shelfItems: MediaCardData[];
+  quotes: MediaCardData[];
+  loreItems: LoreCardData[];
+  startups: StartupCardData[];
+} | null {
+  const experiences = getCachedData<Experience[]>("about:experiences");
+  const communities = getCachedData<Community[]>("about:communities");
+  const shelfItems = getCachedData<ShelfItem[]>("about:shelfItems");
+  const quotes = getCachedData<AboutQuote[]>("about:quotes");
+  const loreItems = getCachedData<LoreItem[]>("about:loreItems");
+  const startups = getCachedData<Startup[]>("about:startups");
+  if (!experiences || !communities || !shelfItems || !quotes || !loreItems || !startups) {
+    return null;
+  }
+
+  return {
+    experiences: transformExperiences(experiences),
+    communities: transformCommunities(communities),
+    shelfItems: transformShelfItems(shelfItems),
+    quotes: transformQuotes(quotes),
+    loreItems: transformLoreItems(loreItems),
+    startups: transformStartups(startups),
+  };
+}
+
 export default function AboutPage() {
   const navigate = useNavigate();
 
@@ -325,35 +386,65 @@ export default function AboutPage() {
   // Active shelf subcategory state
   const [activeShelfSubcategory, setActiveShelfSubcategory] = useState<ShelfSubcategory>("books");
 
-  // Sanity data state
-  const [experiences, setExperiences] = useState<ExperienceCardData[]>([]);
-  const [communities, setCommunities] = useState<CommunityCardData[]>([]);
-  const [shelfItems, setShelfItems] = useState<MediaCardData[]>([]);
-  const [quotes, setQuotes] = useState<MediaCardData[]>([]);
-  const [loreItems, setLoreItems] = useState<LoreCardData[]>([]);
-  const [startups, setStartups] = useState<StartupCardData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Sanity data state — hydrate synchronously from preload cache when warm
+  const [cachedInitial] = useState(readCachedAboutPage);
+  const [experiences, setExperiences] = useState<ExperienceCardData[]>(
+    () => cachedInitial?.experiences ?? [],
+  );
+  const [communities, setCommunities] = useState<CommunityCardData[]>(
+    () => cachedInitial?.communities ?? [],
+  );
+  const [shelfItems, setShelfItems] = useState<MediaCardData[]>(
+    () => cachedInitial?.shelfItems ?? [],
+  );
+  const [quotes, setQuotes] = useState<MediaCardData[]>(
+    () => cachedInitial?.quotes ?? [],
+  );
+  const [loreItems, setLoreItems] = useState<LoreCardData[]>(
+    () => cachedInitial?.loreItems ?? [],
+  );
+  const [startups, setStartups] = useState<StartupCardData[]>(
+    () => cachedInitial?.startups ?? [],
+  );
+  const [startupsRevealed, setStartupsRevealed] = useState(false);
+  const [isLoading, setIsLoading] = useState(() => cachedInitial === null);
+  const handleStartupsRevealComplete = useCallback(
+    () => setStartupsRevealed(true),
+    [],
+  );
+  const experiencesCanReveal = startups.length === 0 || startupsRevealed;
 
   // Shelf year filter state (for books, music, and movies)
   const [activeBooksYear, setActiveBooksYear] = useState<string | undefined>();
   const [activeMusicYear, setActiveMusicYear] = useState<string | undefined>();
   const [activeMoviesYear, setActiveMoviesYear] = useState<string | undefined>();
 
+  useEffect(() => {
+    preloadLikelyPages();
+  }, []);
+
   // Fetch data from Sanity (uses preloaded cache if available)
   useEffect(() => {
     async function fetchAboutData() {
       try {
-        setIsLoading(true);
-
-        // Check cache first (populated by preloadLikelyPages)
         const cachedExperiences = getCachedData<Experience[]>("about:experiences");
         const cachedCommunities = getCachedData<Community[]>("about:communities");
         const cachedShelfItems = getCachedData<ShelfItem[]>("about:shelfItems");
         const cachedQuotes = getCachedData<AboutQuote[]>("about:quotes");
         const cachedLoreItems = getCachedData<LoreItem[]>("about:loreItems");
         const cachedStartups = getCachedData<Startup[]>("about:startups");
+        const hasFullCache = !!(
+          cachedExperiences &&
+          cachedCommunities &&
+          cachedShelfItems &&
+          cachedQuotes &&
+          cachedLoreItems &&
+          cachedStartups
+        );
 
-        // Fetch only what's not cached
+        // Only show spinner when we have nothing to render yet
+        if (!hasFullCache) setIsLoading(true);
+
         const [
           experiencesData,
           communitiesData,
@@ -369,6 +460,23 @@ export default function AboutPage() {
           cachedLoreItems ?? client.fetch<LoreItem[]>(LORE_ITEMS_QUERY),
           cachedStartups ?? client.fetch<Startup[]>(STARTUPS_QUERY),
         ]);
+
+        if (!cachedExperiences && experiencesData) {
+          setCachedData("about:experiences", experiencesData);
+        }
+        if (!cachedCommunities && communitiesData) {
+          setCachedData("about:communities", communitiesData);
+        }
+        if (!cachedShelfItems && shelfItemsData) {
+          setCachedData("about:shelfItems", shelfItemsData);
+        }
+        if (!cachedQuotes && quotesData) setCachedData("about:quotes", quotesData);
+        if (!cachedLoreItems && loreItemsData) {
+          setCachedData("about:loreItems", loreItemsData);
+        }
+        if (!cachedStartups && startupsData) {
+          setCachedData("about:startups", startupsData);
+        }
 
         setExperiences(transformExperiences(experiencesData || []));
         setCommunities(transformCommunities(communitiesData || []));
@@ -386,18 +494,25 @@ export default function AboutPage() {
     fetchAboutData();
   }, []);
 
-  // Preload all shelf images in the background so tab switching is instant
+  // Warm shelf images after first paint — don't compete with About mount.
   useEffect(() => {
     if (shelfItems.length === 0) return;
-    
-    const imageUrls = shelfItems
-      .map(item => item.imageSrc)
-      .filter((src): src is string => !!src);
-    
-    imageUrls.forEach(src => {
-      const img = new Image();
-      img.src = src;
-    });
+
+    const warm = () => {
+      for (const item of shelfItems) {
+        if (!item.imageSrc) continue;
+        const img = new Image();
+        img.src = item.imageSrc;
+      }
+    };
+
+    if (typeof requestIdleCallback === "function") {
+      const id = requestIdleCallback(warm, { timeout: 4000 });
+      return () => cancelIdleCallback(id);
+    }
+
+    const timeout = setTimeout(warm, 800);
+    return () => clearTimeout(timeout);
   }, [shelfItems]);
 
   // Set first community as active when communities load
@@ -731,28 +846,34 @@ export default function AboutPage() {
               <LoadingSpinner label="Loading..." className="py-4" />
             ) : experiences.length > 0 ? (
               <div className="flex flex-col gap-10 md:gap-12 md:pt-1.5 md:w-1/2 md:shrink-0">
-                {experiences.map((exp, index) => (
-                  <ScrollReveal key={exp.id} delay={index * 80}>
-                    <ExperienceCard data={exp} />
-                  </ScrollReveal>
-                ))}
-
                 {/* Startups Section */}
                 {startups.length > 0 && (
-                  <div className="flex flex-col gap-8 pt-4">
-                    <ScrollReveal delay={experiences.length * 80}>
+                  <div className="flex flex-col items-start gap-8 mb-4 md:mb-2">
+                    <ScrollReveal>
                       <div className="flex flex-col">
-                        <p className="text-base md:text-lg font-medium text-zinc-700 tracking-[0.005em]">
-                          Freelance
-                        </p>
-                        <p className="text-base text-zinc-500 tracking-[0.005em]">
-                          Design Contracts<span className="text-zinc-400 font-normal">, 2023 - Present</span>
+                        <p className="pl-0.5 whitespace-nowrap text-base md:text-lg font-medium text-zinc-700 tracking-[0.005em]">
+                          Freelance Designer<span className="text-zinc-400 font-normal">, 2023 - Present</span>
                         </p>
                       </div>
                     </ScrollReveal>
-                    <StartupLogosRow startups={startups} startDelay={experiences.length * 80 + 200} />
+                    <StartupLogosRow
+                      startups={startups}
+                      startDelay={200}
+                      onRevealComplete={handleStartupsRevealComplete}
+                    />
                   </div>
                 )}
+
+                {experiences.map((exp, index) => (
+                  <ScrollReveal
+                    key={exp.id}
+                    className={clsx(!experiencesCanReveal && "invisible")}
+                    delay={(index + (startups.length > 0 ? 1 : 0)) * 80}
+                    disabled={!experiencesCanReveal}
+                  >
+                    <ExperienceCard data={exp} />
+                  </ScrollReveal>
+                ))}
               </div>
             ) : (
               <p className="text-zinc-400 text-sm py-4">Add experience items in Sanity Studio.</p>

@@ -23,7 +23,7 @@ export default function StartupCard({ className, data }: StartupCardProps) {
         className
       )}
     >
-      <div className="relative size-12 md:size-16 shrink-0 overflow-hidden rounded-full bg-zinc-100">
+      <div className="relative size-14 md:size-20 shrink-0 overflow-hidden rounded-full bg-zinc-100">
         {data.logoSrc ? (
           <img
             src={data.logoSrc}

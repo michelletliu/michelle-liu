@@ -18,6 +18,14 @@ export type ColorGroup = {
   label: string;
   note?: string;
   colors: ColorToken[];
+  /** Brand tabs for case-study palettes (e.g. Adobe, NASA, Roblox). */
+  tabs?: {
+    id: string;
+    label: string;
+    colors: ColorToken[];
+    /** When false, omit shared CMS defaults (pink-50/500) for this brand. */
+    includeDefaults?: boolean;
+  }[];
 };
 
 export type TypeToken = {
@@ -71,17 +79,17 @@ export const colorGroups: ColorGroup[] = [
   {
     id: "zinc",
     label: "Zinc",
-    note: "The site's neutral backbone (Tailwind zinc-*). Muted zinc-400 (#a1a1aa) is the single most-used color.",
+    note: "The site's neutral backbone (Tailwind zinc-*).",
     colors: [
-      { name: "zinc-900", value: "#18181b", className: "text-zinc-900", usage: "★ Darkest canonical — headings, icons, --primary / --secondary-foreground / --accent-foreground / --sidebar-primary", tag: "canonical" },
-      { name: "zinc-800", value: "#27272a", className: "text-zinc-800", usage: "Modal tab labels, testimonial body, film timeline active", tag: "canonical" },
-      { name: "zinc-700", value: "#3f3f46", className: "text-zinc-700", usage: "Hero name, section headings, footer; CMS — Adobe highlightCard headlineColor", tag: "canonical" },
-      { name: "zinc-600", value: "#52525b", className: "text-zinc-600", usage: "Active nav, body copy, metadata, film info, library spinner", tag: "canonical" },
-      { name: "zinc-500", value: "#71717a", className: "text-zinc-500", usage: "Secondary body, tool lists, film loading hint, --muted-foreground; CMS — Adobe muted highlightColor", tag: "canonical" },
-      { name: "zinc-400", value: "#a1a1aa", className: "text-zinc-400", usage: "Muted labels, captions, placeholders, footer tagline (most common); CMS — NASA/Adobe sectionTitle numberColor, Roblox muted highlightColor, stats title default", tag: "canonical" },
-      { name: "zinc-300", value: "#d4d4d8", className: "text-zinc-300", usage: "Focus borders, quote underline, inactive badges, muted icons, scramble glyphs", tag: "canonical" },
-      { name: "zinc-200", value: "#e4e4e7", className: "bg-zinc-200", usage: "Shimmer base, card borders, spinners, film idle marks, lore card image fallback", tag: "canonical" },
-      { name: "zinc-100", value: "#f4f4f5", className: "bg-zinc-100", usage: "Pill borders, hover fills, dividers, modal hero bands", tag: "canonical" },
+      { name: "zinc-900", value: "#18181b", className: "text-zinc-900", usage: "Headings, icons, --primary / --foreground tokens", tag: "canonical" },
+      { name: "zinc-800", value: "#27272a", className: "text-zinc-800", usage: "Modal tabs, testimonial body, film timeline", tag: "canonical" },
+      { name: "zinc-700", value: "#3f3f46", className: "text-zinc-700", usage: "Hero name, section headings, footer", tag: "canonical" },
+      { name: "zinc-600", value: "#52525b", className: "text-zinc-600", usage: "Active nav, body copy, metadata, film info", tag: "canonical" },
+      { name: "zinc-500", value: "#71717a", className: "text-zinc-500", usage: "Secondary body, tool lists, --muted-foreground", tag: "canonical" },
+      { name: "zinc-400", value: "#a1a1aa", className: "text-zinc-400", usage: "Muted labels, captions, placeholders, footer", tag: "canonical" },
+      { name: "zinc-300", value: "#d4d4d8", className: "text-zinc-300", usage: "Focus borders, quote underline, muted icons", tag: "canonical" },
+      { name: "zinc-200", value: "#e4e4e7", className: "bg-zinc-200", usage: "Shimmer, card borders, spinners, film marks", tag: "canonical" },
+      { name: "zinc-100", value: "#f4f4f5", className: "bg-zinc-100", usage: "Pill borders, hover fills, dividers", tag: "canonical" },
       { name: "zinc-50", value: "#fafafa", className: "bg-zinc-50", usage: "Button bg, section bg", tag: "canonical" },
       { name: "white", value: "#ffffff", className: "bg-white", usage: "Page & card surfaces", tag: "canonical" },
     ],
@@ -89,11 +97,11 @@ export const colorGroups: ColorGroup[] = [
   {
     id: "accent",
     label: "Blue",
-    note: "Blue-500 (#3b82f6) is the single accent for links, CTAs, active states, and text selection.",
+    note: "Blue-500 is the single accent for links, CTAs, active states, and text selection.",
     colors: [
-      { name: "blue-600", value: "#2563eb", className: "text-blue-600", usage: "Ikigai link hover, CMS section title default", tag: "canonical" },
+      { name: "blue-600", value: "#2563eb", className: "text-blue-600", usage: "Ikigai link hover, CMS title default", tag: "canonical" },
       { name: "blue-500", value: "#3b82f6", className: "bg-blue-500", usage: "Links, CTAs, active nav, selection", tag: "canonical" },
-      { name: "blue-400", value: "#60a5fa", className: "bg-blue-400", usage: "CTA hover fill / border, project links, CMS number default", tag: "canonical" },
+      { name: "blue-400", value: "#60a5fa", className: "bg-blue-400", usage: "CTA hover, project links, CMS numbers", tag: "canonical" },
       { name: "blue-300", value: "#93c5fd", className: "border-blue-300", usage: "CTA hover border", tag: "canonical" },
       { name: "blue-100", value: "#dbeafe", usage: "Text selection background", tag: "canonical" },
       { name: "blue-50", value: "#eff6ff", className: "bg-blue-50", usage: "Polaroid project card bg", tag: "canonical" },
@@ -101,43 +109,56 @@ export const colorGroups: ColorGroup[] = [
   },
   {
     id: "cms",
-    label: "CMS & case study",
-    note: "Hexes from Sanity project content (published NASA, Adobe, Roblox, Apple) plus code defaults for CMS sections. Brand/project hues are one-offs; pink-50/500 stay canonical defaults. Surface neutrals already in Zinc are omitted.",
+    label: "Case studies",
+    note: "Project accent hues from Sanity case studies, plus CMS pink defaults.",
     colors: [
-      // Canonical CMS defaults
-      { name: "pink-500", value: "#ec4899", className: "text-pink-500", usage: "CMS default — TOC accent, section header text, stats, two-column highlight initial", tag: "canonical" },
-      { name: "pink-50", value: "#fdf2f8", className: "bg-pink-50", usage: "CMS section header bar background default", tag: "canonical" },
-      { name: "blue-500", value: "#3b82f6", className: "text-blue-500", usage: "CMS highlightColor default (mission / text / feature) — also under Blue", tag: "canonical" },
-
-      // Adobe brand
-      { name: "Adobe pink", value: "#F63768", usage: "Adobe — highlightColor, Express card headlineColor", tag: "one-off" },
-      { name: "Adobe pink deep", value: "#DE3C82", usage: "Adobe — sectionTitle titleColor, highlightColor", tag: "one-off" },
-      { name: "Adobe pink soft", value: "#F777B0", usage: "Adobe — sectionTitle numberColor / titleColor", tag: "one-off" },
-      { name: "Adobe blush", value: "#FF8EAB", usage: "Adobe Express — highlightCard highlightColor", tag: "one-off" },
-      { name: "Adobe orange", value: "#FD9A00", usage: "Adobe Express — highlightCard headlineColor", tag: "one-off" },
-      { name: "Adobe orange soft", value: "#FFB748", usage: "Adobe Express — highlightCard highlightColor", tag: "one-off" },
-      { name: "Adobe sky", value: "#32A7F9", usage: "Adobe Express — highlightCard headlineColor", tag: "one-off" },
-      { name: "Adobe sky soft", value: "#88CEFF", usage: "Adobe Express — highlightCard highlightColor", tag: "one-off" },
-      { name: "Adobe cyan", value: "#34A9F3", usage: "Adobe — two-column / feature highlightColor", tag: "one-off" },
-
-      // NASA brand
-      { name: "NASA periwinkle", value: "#828EE4", usage: "NASA — sectionTitle numberColor", tag: "one-off" },
-      { name: "NASA indigo", value: "#5365DE", usage: "NASA — sectionTitle titleColor, highlightCard headlineColor", tag: "one-off" },
-
-      // Roblox brand
-      { name: "Roblox blue", value: "#335FFF", usage: "Roblox — highlightColor", tag: "one-off" },
-      { name: "Roblox blue mid", value: "#7FA2FF", usage: "Roblox — sectionTitle numberColor", tag: "one-off" },
-      { name: "Roblox blue deep", value: "#2E5EDE", usage: "Roblox — sectionTitle titleColor, highlightColor", tag: "one-off" },
-      { name: "Roblox teal soft", value: "#6FD8D2", usage: "Roblox — sectionTitle numberColor", tag: "one-off" },
-      { name: "Roblox teal", value: "#38C4BC", usage: "Roblox — sectionTitle titleColor", tag: "one-off" },
-      { name: "Roblox purple soft", value: "#B378DB", usage: "Roblox — sectionTitle numberColor", tag: "one-off" },
-      { name: "Roblox purple", value: "#842CBF", usage: "Roblox — sectionTitle titleColor", tag: "one-off" },
+      { name: "pink-500", value: "#ec4899", className: "text-pink-500", usage: "CMS default — TOC, headers, stats accent", tag: "canonical" },
+      { name: "pink-50", value: "#fdf2f8", className: "bg-pink-50", usage: "CMS section header bar default", tag: "canonical" },
+    ],
+    tabs: [
+      {
+        id: "adobe",
+        label: "Adobe",
+        colors: [
+          { name: "Adobe pink", value: "#F63768", usage: "Highlight & Express headline", tag: "one-off" },
+          { name: "Adobe pink deep", value: "#DE3C82", usage: "Section title & highlight", tag: "one-off" },
+          { name: "Adobe pink soft", value: "#F777B0", usage: "Section title number / title", tag: "one-off" },
+          { name: "Adobe blush", value: "#FF8EAB", usage: "Express — card highlight", tag: "one-off" },
+          { name: "Adobe orange", value: "#FD9A00", usage: "Express — card headline", tag: "one-off" },
+          { name: "Adobe orange soft", value: "#FFB748", usage: "Express — card highlight", tag: "one-off" },
+          { name: "Adobe sky", value: "#32A7F9", usage: "Express — card headline", tag: "one-off" },
+          { name: "Adobe sky soft", value: "#88CEFF", usage: "Express — card highlight", tag: "one-off" },
+          { name: "Adobe cyan", value: "#34A9F3", usage: "Two-column / feature highlight", tag: "one-off" },
+        ],
+      },
+      {
+        id: "nasa",
+        label: "NASA",
+        colors: [
+          { name: "NASA periwinkle", value: "#828EE4", usage: "Section title number", tag: "one-off" },
+          { name: "NASA indigo", value: "#5365DE", usage: "Section title & card headline", tag: "one-off" },
+        ],
+      },
+      {
+        id: "roblox",
+        label: "Roblox",
+        includeDefaults: false,
+        colors: [
+          { name: "Roblox blue", value: "#335FFF", usage: "Highlight", tag: "one-off" },
+          { name: "Roblox blue mid", value: "#7FA2FF", usage: "Section title number", tag: "one-off" },
+          { name: "Roblox blue deep", value: "#2E5EDE", usage: "Section title & highlight", tag: "one-off" },
+          { name: "Roblox teal soft", value: "#6FD8D2", usage: "Section title number", tag: "one-off" },
+          { name: "Roblox teal", value: "#38C4BC", usage: "Section title", tag: "one-off" },
+          { name: "Roblox purple soft", value: "#B378DB", usage: "Section title number", tag: "one-off" },
+          { name: "Roblox purple", value: "#842CBF", usage: "Section title", tag: "one-off" },
+        ],
+      },
     ],
   },
   {
     id: "status",
     label: "Status",
-    note: "Emerald for availability, red for errors, green for the pulse ring.",
+    note: "Emerald for availability, red for errors.",
     colors: [
       { name: "emerald-500", value: "#10b981", usage: "Availability dot, submit button", tag: "canonical" },
       { name: "emerald-600", value: "#059669", usage: "Changelog link hover", tag: "one-off" },
@@ -147,43 +168,37 @@ export const colorGroups: ColorGroup[] = [
       { name: "red-400", value: "#f87171", usage: "Form error text / border", tag: "canonical" },
     ],
   },
-  {
-    id: "gradients-color",
-    label: "Gradient stops",
-    note: "Multi-stop gradients for the animated header, gradient text, and social icon.",
-    colors: [
-      { name: "Header · lavender", value: "#D5E0FF", usage: "header-gradient stop", tag: "canonical" },
-      { name: "Header · blue", value: "#E2EAFF", usage: "header-gradient stop", tag: "canonical" },
-      { name: "Header · violet", value: "#F5E2FF", usage: "header-gradient stop", tag: "canonical" },
-      { name: "Header · pink", value: "#FDE9FA", usage: "header-gradient stop", tag: "canonical" },
-      { name: "Header · blush", value: "#FFF5FC", usage: "header-gradient stop", tag: "canonical" },
-      { name: "Text · pink", value: "#FFD2F2", usage: "gradient-text-animated stop", tag: "one-off" },
-      { name: "Text · violet", value: "#ECCBFF", usage: "gradient-text-animated stop", tag: "one-off" },
-      { name: "Text · sky", value: "#AADBFD", usage: "gradient-text-animated stop", tag: "one-off" },
-      { name: "Social · magenta", value: "#D79FE8", usage: "Animated social icon", tag: "one-off" },
-      { name: "Social · blue", value: "#4DACEA", usage: "Animated social icon", tag: "one-off" },
-      { name: "Social · cyan", value: "#13B2EB", usage: "Animated social icon", tag: "one-off" },
-    ],
-  },
 ];
 
 // ---------------------------------------------------------------------------
 // TYPOGRAPHY
 // ---------------------------------------------------------------------------
 
-export const fontFamilies: { name: string; stack: string; usage: string; tag: Tag }[] = [
-  { name: "Michelle", stack: "'Michelle', sans-serif", usage: "Primary site font (Figtree variable, self-hosted, weights 300–900)", tag: "canonical" },
-  { name: "SF Pro", stack: "'SF Pro', -apple-system, sans-serif", usage: "Library UI, add-book modal, 404, Polaroid", tag: "experiment" },
-  { name: "Courier New", stack: "'Courier New', monospace", usage: "Polaroid date + caption imprint", tag: "experiment" },
-  { name: "SF Mono", stack: "ui-monospace, 'SF Mono', Menlo, monospace", usage: "Entire Screentime page (forced monospace)", tag: "experiment" },
+export const fontFamilies: {
+  name: string;
+  stack: string;
+  usage: string;
+  tag: Tag;
+  fontFamily?: string;
+}[] = [
+  {
+    name: "Figtree",
+    stack: "'Figtree', sans-serif",
+    fontFamily: "'Michelle', sans-serif",
+    usage: "",
+    tag: "canonical",
+  },
+  { name: "SF Pro", stack: "'SF Pro', -apple-system, sans-serif", usage: "", tag: "experiment" },
+  { name: "Courier New", stack: "'Courier New', monospace", usage: "", tag: "experiment" },
+  { name: "SF Mono", stack: "ui-monospace, 'SF Mono', Menlo, monospace", usage: "", tag: "experiment" },
 ];
 
 export const typeScale: TypeToken[] = [
-  { name: "text-xs", className: "text-xs", px: "12px", usage: "Footer clock, film loading, skip-to-designs link", tag: "canonical", role: "body" },
-  { name: "text-sm", className: "text-sm", px: "14px", usage: "Captions, filters, errors, tooltips, contact badge", tag: "canonical", role: "body" },
-  { name: "text-base", className: "text-base", px: "16px", usage: "Default body (--font-size), metadata / tool grids", tag: "canonical", role: "body" },
-  { name: "text-lg", className: "text-lg", px: "18px", usage: "Hero subtitle, section subtitles, nav tab labels", tag: "canonical", role: "body" },
-  { name: "text-xl", className: "text-xl", px: "20px", usage: "Section / community titles", tag: "canonical", role: "heading" },
+  { name: "text-xs", className: "text-xs", px: "12px", usage: "Footer clock, film loading, skip-to-designs link, Polaroid stamp / share chrome", tag: "canonical", role: "body" },
+  { name: "text-sm", className: "text-sm", px: "14px", usage: "Captions, filters, errors, tooltips, contact badge, Polaroid / Screentime labels", tag: "canonical", role: "body" },
+  { name: "text-base", className: "text-base", px: "16px", usage: "Default body (--font-size), metadata / tool grids, Screentime CTAs", tag: "canonical", role: "body" },
+  { name: "text-lg", className: "text-lg", px: "18px", usage: "Hero subtitle, section subtitles, nav tab labels, Polaroid / Screentime headings", tag: "canonical", role: "body" },
+  { name: "text-xl", className: "text-xl", px: "20px", usage: "Section / community titles, Polaroid dialog titles", tag: "canonical", role: "heading" },
   { name: "text-2xl", className: "text-2xl", px: "24px", usage: "Quote cards, mission headers", tag: "canonical", role: "heading" },
   { name: "text-3xl", className: "text-3xl", px: "30px", usage: "Section headings, library title, footer CTA", tag: "canonical", role: "heading" },
   { name: "text-4xl", className: "text-4xl", px: "36px", usage: "Project hero, large display sizes (base size for Display name)", tag: "canonical", role: "heading" },
@@ -191,19 +206,12 @@ export const typeScale: TypeToken[] = [
     name: "Display name",
     className: "font-['Michelle',sans-serif] text-4xl font-medium leading-normal tracking-[0.0125em] text-[#3f3f46]",
     px: "36px",
-    sample: "michelle liu",
+    sample: "Text",
     usage: "Home hero name, Design System title",
     tag: "canonical",
     role: "heading",
   },
   { name: "text-5xl", className: "text-5xl", px: "48px", usage: "Stats, emoji blocks, 404 display code", tag: "canonical", role: "heading" },
-];
-
-// Every core-site size now snaps to the standard scale above. Only experiments
-// keep pixel-exact sizes on purpose (device-accurate / Figma-exported chrome).
-export const arbitraryTypeSizes: ScaleToken[] = [
-  { name: "text-[17px] / [22px]", value: "17–22px", usage: "Polaroid / Screentime headings", tag: "experiment" },
-  { name: "Figma sub-px", value: "10.959–16.949px", usage: "Polaroid share export sizes", tag: "experiment" },
 ];
 
 export const fontWeights: ScaleToken[] = [
@@ -224,13 +232,15 @@ export const tracking: ScaleToken[] = [
 ];
 
 export const lineHeights: ScaleToken[] = [
-  { name: "leading-none", value: "1", usage: "404 display", tag: "one-off" },
+  { name: "leading-none", value: "1", usage: "404 display", tag: "canonical" },
   { name: "leading-tight", value: "1.25", usage: "Card descriptions, lore dates", tag: "canonical" },
+  { name: "leading-5", value: "calc(var(--spacing) * 5)", usage: "Metadata, nav, captions", tag: "canonical" },
   { name: "leading-snug", value: "1.375", usage: "Film captions, stats", tag: "canonical" },
-  { name: "leading-normal", value: "1.5", usage: "Default headings / buttons", tag: "canonical" },
-  { name: "leading-relaxed", value: "1.625", usage: "About prose, book review", tag: "canonical" },
   { name: "leading-[1.4]", value: "1.4", usage: "Project card text", tag: "canonical" },
-  { name: "leading-5 / 6 / 7", value: "20 / 24 / 28px", usage: "Metadata, subtitle, quotes", tag: "canonical" },
+  { name: "leading-normal", value: "1.5", usage: "Default headings / buttons", tag: "canonical" },
+  { name: "leading-6", value: "calc(var(--spacing) * 6)", usage: "Subtitles, footer CTA", tag: "canonical" },
+  { name: "leading-relaxed", value: "1.625", usage: "About prose, book review", tag: "canonical" },
+  { name: "leading-7", value: "calc(var(--spacing) * 7)", usage: "Quotes, display lines", tag: "canonical" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -294,17 +304,8 @@ export const radii: RadiusToken[] = [
   { name: "rounded-xl", className: "rounded-xl", value: 12, compensated: "20px", usage: "Gallery items, project cards", tag: "canonical" },
   { name: "rounded-2xl", className: "rounded-2xl", value: 16, compensated: "27px", usage: "Lore cards, book modal, video", tag: "canonical" },
   { name: "rounded-3xl", className: "rounded-3xl", value: 24, compensated: "41px", usage: "Info modal, media quote cards", tag: "canonical" },
-  { name: "rounded-[16px]", value: 16, compensated: "27px", usage: "Video / image embeds", tag: "canonical" },
-  { name: "rounded-[24px]", value: 24, compensated: "41px", usage: "Device mockup columns", tag: "canonical" },
   { name: "rounded-[26px]", value: 26, compensated: "44px", usage: "★ Signature project & modal radius", tag: "canonical" },
-  { name: "rounded-[28px]", value: 28, compensated: "48px", usage: "Large surfaces", tag: "one-off" },
   { name: "rounded-full", className: "rounded-full", value: 999, usage: "Pills, avatars, CTAs, nav (stays round)", tag: "canonical" },
-];
-
-export const oddRadii: ScaleToken[] = [
-  { name: "rounded-[7px]", value: "7px", usage: "Screentime daily-tab segment", tag: "experiment" },
-  { name: "rounded-[11px] / [12px]", value: "11–12px", usage: "Screentime app icons (iOS-accurate)", tag: "experiment" },
-  { name: "rounded-[100px]", value: "100px", usage: "Screentime home indicator, segmented control", tag: "experiment" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -324,7 +325,7 @@ export const spacingScale: ScaleToken[] = [
 ];
 
 export const gutters: ScaleToken[] = [
-  { name: "px-16 / max-md:px-6", value: "64px → 24px", usage: "★ Primary page gutter (desktop → mobile)", tag: "canonical" },
+  { name: "px-16 / max-md:px-6", value: "64px → 24px", usage: "★ Primary page gutter", tag: "canonical" },
   { name: "px-8", value: "32px", usage: "Secondary mobile gutter", tag: "canonical" },
   { name: "px-[175px] / md:px-[8%]", value: "175px / 8%", usage: "Wide project gallery gutters", tag: "one-off" },
   { name: "w-[calc(100%*10/12)]", value: "10 of 12 cols", usage: "Project modal width", tag: "canonical" },
@@ -337,14 +338,14 @@ export const gutters: ScaleToken[] = [
 // ---------------------------------------------------------------------------
 
 export const borders: ScaleToken[] = [
-  { name: "border", value: "1px solid", usage: "Cards, images, modals (hairline)", tag: "canonical" },
+  { name: "border", value: "1px solid", usage: "Cards, images, modals", tag: "canonical" },
   { name: "border-2", value: "2px", usage: "Loading spinners", tag: "canonical" },
   { name: "border-zinc-50", value: "#fafafa", usage: "Image hairline overlays", tag: "canonical" },
   { name: "border-zinc-100", value: "#f4f4f5", usage: "Cards, dropdowns, community frames, project card frames", tag: "canonical" },
   { name: "border-white/50", value: "rgba(255,255,255,0.5)", usage: "Glass nav pill border", tag: "canonical" },
   { name: "border-transparent", value: "transparent", usage: "Default / inactive pills & inputs", tag: "canonical" },
-  { name: "focus outline", value: "2px solid #d4d4d8, offset 2px", usage: "Global :focus-visible", tag: "canonical" },
-  { name: "focus ring", value: "ring-2 ring-zinc-400 offset-2", usage: "Cards & interactive tiles", tag: "canonical" },
+  { name: "Focus outline", value: "2px solid #d4d4d8, offset 2px", usage: "Global :focus-visible", tag: "canonical" },
+  { name: "Focus ring", value: "ring-2 ring-zinc-400 offset-2", usage: "Cards & interactive tiles", tag: "canonical" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -365,7 +366,6 @@ export const materials: MaterialToken[] = [
   { name: "Backdrop blur", detail: "backdrop-blur-sm / -md", usage: "Nav pill, project TOC overlay", tag: "canonical" },
   { name: "Liquid glass", detail: "backdrop-filter: blur(16px) saturate(180%) + shadow-glass", usage: "Art carousel arrows", tag: "experiment" },
   { name: "Shimmer", detail: "Gradient #f4f4f5→#e4e4e7→#fafafa, 2s ease-in-out loop", usage: "Image / skeleton loading", tag: "canonical" },
-  { name: "Gradient text", detail: "violet/pink/blue/zinc stops, animated 6s", usage: "Intro accent text", tag: "one-off" },
   { name: "Text selection", detail: "color #3b82f6 on #dbeafe background", usage: "Global ::selection", tag: "canonical" },
   { name: "Green pulse ring", detail: "#bbf7d0 ring, pulse-ring 2.3s infinite", usage: "Availability dot", tag: "canonical" },
   { name: "Quote underline", detail: "#d4d4d8 2px line, 0.6s reveal", usage: "Media quote cards", tag: "canonical" },
@@ -412,13 +412,13 @@ export const durationScale: ScaleToken[] = [
 export const tocSections: { id: string; label: string }[] = [
   { id: "intro", label: "Overview" },
   { id: "color", label: "Color" },
+  { id: "components", label: "Components" },
   { id: "typography", label: "Typography" },
   { id: "shadows", label: "Shadows" },
   { id: "spacing", label: "Spacing" },
   { id: "borders", label: "Borders" },
   { id: "motion", label: "Motion" },
   { id: "icons", label: "Iconography" },
-  { id: "components", label: "Components" },
   { id: "materials", label: "Materials" },
 ];
 
@@ -449,23 +449,18 @@ export function subSlug(label: string): string {
  */
 export const tocSubsections: Record<string, string[]> = {
   color: colorGroups.map((g) => g.label),
-  typography: [
-    "Families",
-    "Scale",
-    "Experiments",
-    "Weights",
-    "Tracking",
-    "Leading",
-  ],
+  typography: ["Families", "Properties"],
   spacing: ["Gap scale", "Layout widths"],
-  borders: ["Borders", "Focus states", "Border Radius"],
+  borders: ["Styles", "Focus states", "Border Radius"],
   motion: ["Animations", "Duration scale"],
   icons: ["Size", "Stroke icons", "Filled icons", "Social"],
   components: [
-    "Navigation & pills",
-    "Inputs",
     "Buttons",
-    "Loaders",
     "Cards",
+    "Dividers",
+    "Inputs",
+    "Loaders",
+    "Navigation",
+    "Pills",
   ],
 };

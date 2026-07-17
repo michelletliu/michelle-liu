@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { useScrollLock } from "../../utils/useScrollLock";
+import { ghostIconButtonClass } from "../ghostIconButton";
 
 export type ArtLightboxItem = {
   imageSrc: string;
@@ -99,7 +100,7 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
           e.stopPropagation();
           handleClose();
         }}
-        className={`fixed right-4 top-4 z-10 flex h-10 w-10 items-center justify-center text-zinc-500 transition-all duration-200 hover:scale-110 ${
+        className={`${ghostIconButtonClass("sm", "fixed right-4 top-4 z-10 text-zinc-500")} ${
           isClosing ? "opacity-0" : "animate-[fadeSlideDown_300ms_ease-out]"
         }`}
         aria-label="Close artwork"
@@ -132,7 +133,7 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
           className="relative flex flex-col items-center"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="relative max-h-[min(75vh,820px)] max-w-full overflow-hidden rounded-2xl bg-zinc-100">
+          <div className="relative max-h-[min(75vh,820px)] max-w-full overflow-hidden rounded-2xl bg-zinc-100 shadow-elevated">
             {/* Instant preview from the already-cached gallery image */}
             {hasPreview && (
               <img

@@ -6,8 +6,9 @@ import { LinkIcon } from "../../LinkIcon";
 import { TouchIcon } from "../../TouchIcon";
 import { Chevron } from "../../Chevron";
 import { Close } from "../../Close";
+import { Code } from "../../Code";
 import { Arrow } from "../../Arrow";
-import { iconSize, iconSizes } from "../../iconSizes";
+import { iconSize, iconSizes, type IconSizeName } from "../../iconSizes";
 import {
   PlusIcon,
   SendIcon,
@@ -20,6 +21,14 @@ import heartFillIcon from "../../../assets/HeartFill.svg";
 import academicCapIcon from "../../../assets/academic-cap.svg";
 import mapPinIcon from "../../../assets/map-pin.svg";
 import { Section, SubLabel, Grid } from "../primitives";
+
+const ICON_SIZE_RAMP: IconSizeName[] = [
+  "meta",
+  "inline",
+  "toolbar",
+  "touch",
+  "hero",
+];
 
 const X_LOGO_PATH =
   "M10.6862 7.6055L17.3844 0H15.8002L9.97941 6.60311L5.36277 0H0.178833L7.19548 9.9737L0.178833 17.9454H1.76308L7.90171 10.9761L12.7696 17.9454H17.9536L10.6858 7.6055H10.6862ZM8.7057 10.0639L7.99222 9.06869L2.33673 1.16544H4.60063L9.33802 7.5516L10.0515 8.54678L15.8011 16.8348H13.5372L8.7057 10.0643V10.0639Z";
@@ -128,16 +137,16 @@ function EyeOffIcon() {
 
 function SunIcon() {
   return (
-    <svg className="size-5" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
-      <circle cx="8" cy="8" r="3.5" />
-      <line x1="8" y1="0.5" x2="8" y2="2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <line x1="8" y1="13.5" x2="8" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <line x1="15.5" y1="8" x2="13.5" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <line x1="2.5" y1="8" x2="0.5" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <line x1="13.3" y1="2.7" x2="11.89" y2="4.11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <line x1="4.11" y1="11.89" x2="2.7" y2="13.3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <line x1="13.3" y1="13.3" x2="11.89" y2="11.89" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <line x1="4.11" y1="4.11" x2="2.7" y2="2.7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+    <svg className="size-5" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <circle cx="8" cy="8" r="2.75" fill="currentColor" />
+      <line x1="8" y1="1" x2="8" y2="2.75" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <line x1="8" y1="13.25" x2="8" y2="15" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <line x1="15" y1="8" x2="13.25" y2="8" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <line x1="2.75" y1="8" x2="1" y2="8" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <line x1="12.95" y1="3.05" x2="11.75" y2="4.25" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <line x1="4.25" y1="11.75" x2="3.05" y2="12.95" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <line x1="12.95" y1="12.95" x2="11.75" y2="11.75" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <line x1="4.25" y1="4.25" x2="3.05" y2="3.05" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
     </svg>
   );
 }
@@ -208,24 +217,30 @@ function FilmRewindIcon() {
 
 type IconSpecimen = {
   name: string;
-  usage: string;
-  source?: string;
   sample: ReactNode;
 };
 
-function IconCard({ name, usage, source, sample }: IconSpecimen) {
+/** PascalCase component names → sentence-case labels (e.g. ArrowUpRight → Arrow up right). */
+function iconDisplayName(name: string): string {
+  if (/[\s/]/.test(name)) return name;
+  return name
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .split(" ")
+    .map((word, index) =>
+      index === 0
+        ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        : word.toLowerCase(),
+    )
+    .join(" ");
+}
+
+function IconCard({ name, sample }: IconSpecimen) {
   return (
-    <div className="flex flex-col gap-3">
-      <div className="relative flex h-24 items-center justify-center overflow-hidden rounded-xl bg-zinc-50 text-zinc-500">
+    <div className="flex flex-col gap-2">
+      <div className="relative flex h-[120px] min-h-[120px] items-center justify-center overflow-hidden rounded-xl bg-zinc-50 text-zinc-500 md:h-24 md:min-h-24">
         {sample}
       </div>
-      <div className="flex flex-col gap-1">
-        <span className="text-base font-medium text-zinc-700">{name}</span>
-        {source && (
-          <code className="block break-words font-mono text-sm leading-relaxed text-zinc-400">{source}</code>
-        )}
-        <span className="text-sm leading-snug text-zinc-400 text-pretty">{usage}</span>
-      </div>
+      <div className="pl-1 text-base leading-snug text-zinc-400 text-pretty">{iconDisplayName(name)}</div>
     </div>
   );
 }
@@ -233,88 +248,46 @@ function IconCard({ name, usage, source, sample }: IconSpecimen) {
 const uiIcons: IconSpecimen[] = [
   {
     name: "ArrowUpRight",
-    source: "ArrowUpRight.tsx",
-    usage: "External / meta links, CTAs, email hover — stroke stays 1.5px at any size",
-    sample: (
-      <div className="flex items-end gap-3">
-        <ArrowUpRight size={iconSize("meta")} />
-        <ArrowUpRight size={iconSize("toolbar")} />
-        <ArrowUpRight size={iconSize("hero")} />
-      </div>
-    ),
+    sample: <ArrowUpRight size={iconSize("toolbar")} />,
   },
   {
     name: "Chevron",
-    source: "Chevron.tsx",
-    usage: "Nav, filters, breadcrumbs, carousels — one path, size prop; direction via rotate (right/down/left/up)",
-    sample: (
-      <div className="flex items-end gap-3">
-        <Chevron size={iconSize("meta")} />
-        <Chevron size={iconSize("inline")} />
-        <Chevron size={iconSize("toolbar")} />
-        <Chevron size={iconSize("hero")} />
-      </div>
-    ),
+    sample: <Chevron size={iconSize("toolbar")} />,
   },
   {
     name: "Plus",
-    source: "library/icons.tsx · PlusIcon",
-    usage: "Add book / create actions",
     sample: <PlusIcon className="size-5" />,
   },
   {
     name: "Close",
-    source: "Close.tsx",
-    usage: "Modals, lightboxes, menus — one path, size prop; stroke stays 1.5px at any size",
-    sample: (
-      <div className="flex items-end gap-3">
-        <Close size={iconSize("meta")} />
-        <Close size={iconSize("toolbar")} />
-        <Close size={iconSize("touch")} />
-        <Close size={iconSize("hero")} />
-      </div>
-    ),
+    sample: <Close size={iconSize("touch")} />,
+  },
+  {
+    name: "Code",
+    sample: <Code size={iconSize("toolbar")} />,
   },
   {
     name: "Expand",
-    source: "Expand.svg / ExperimentModal",
-    usage: "Open experiment / project full page",
     sample: <ExpandIcon />,
   },
   {
     name: "Send",
-    source: "library/icons.tsx · SendIcon",
-    usage: "Library add-book submit",
     sample: <SendIcon className="size-5" />,
   },
   {
     name: "Smiley",
-    source: "library/icons.tsx · SmileyIcon",
-    usage: "Library success state",
     sample: <SmileyIcon className="size-5" />,
   },
   {
     name: "Arrow",
-    source: "Arrow.tsx",
-    usage: "Library date ranges, password submit — one path, size prop; direction via rotate (right/down/left/up)",
-    sample: (
-      <div className="flex items-end gap-3">
-        <Arrow size={iconSize("meta")} />
-        <Arrow size={iconSize("toolbar")} />
-        <Arrow size={iconSize("hero")} />
-      </div>
-    ),
+    sample: <Arrow size={iconSize("toolbar")} />,
   },
   {
     name: "Link",
-    source: "LinkIcon.tsx",
-    usage: "External experiment links on home",
     sample: <LinkIcon size={iconSize("toolbar")} />,
   },
   {
     name: "Eye / eye-off",
-    source: "ProjectModal",
-    usage: "Show / hide password",
     sample: (
       <div className="flex items-center gap-4">
         <EyeIcon />
@@ -324,20 +297,14 @@ const uiIcons: IconSpecimen[] = [
   },
   {
     name: "Check",
-    source: "lucide-react (shadcn)",
-    usage: "Checkbox & menu selected states",
     sample: <CheckIcon />,
   },
   {
     name: "Info",
-    source: "InfoButton / ExperimentModal",
-    usage: "Project & experiment info triggers",
     sample: <InfoIcon />,
   },
   {
     name: "Touch",
-    source: "TouchIcon.tsx",
-    usage: "Interactive / in-site experiment links",
     sample: <TouchIcon size={iconSize("toolbar")} />,
   },
 ];
@@ -345,38 +312,26 @@ const uiIcons: IconSpecimen[] = [
 const filledIcons: IconSpecimen[] = [
   {
     name: "Heart fill",
-    source: "assets/HeartFill.svg",
-    usage: "About · communities subtitle accent",
     sample: <FilledAssetIcon src={heartFillIcon} className="h-[18px] w-5" />,
   },
   {
     name: "Academic cap",
-    source: "assets/academic-cap.svg",
-    usage: "About · education meta row",
     sample: <FilledAssetIcon src={academicCapIcon} />,
   },
   {
     name: "Map pin",
-    source: "assets/map-pin.svg",
-    usage: "About · location meta row",
     sample: <FilledAssetIcon src={mapPinIcon} />,
   },
   {
     name: "Favorites star",
-    source: "unicode ★",
-    usage: "Shelf section titles (★ Books) & book ratings",
     sample: <span className="text-2xl leading-none text-current">★</span>,
   },
   {
     name: "Lock",
-    source: "assets/lock.svg",
-    usage: "Password-gated project content",
     sample: <LockIcon />,
   },
   {
     name: "Sun / moon",
-    source: "Footer",
-    usage: "Local time day / night indicator",
     sample: (
       <div className="flex items-center gap-4">
         <SunIcon />
@@ -386,8 +341,6 @@ const filledIcons: IconSpecimen[] = [
   },
   {
     name: "Play / pause / rewind",
-    source: "FilmPage",
-    usage: "Film page media controls",
     sample: (
       <div className="flex items-center gap-4">
         <FilmPlayIcon />
@@ -398,8 +351,6 @@ const filledIcons: IconSpecimen[] = [
   },
   {
     name: "Apple",
-    source: "HomePageClient",
-    usage: "Home hero · “Previously at” mark",
     sample: (
       <svg className="h-5 w-4" viewBox="0 0 814 1000" fill="currentColor" aria-hidden>
         <path d={APPLE_LOGO_PATH} />
@@ -411,8 +362,6 @@ const filledIcons: IconSpecimen[] = [
 const socialIcons: IconSpecimen[] = [
   {
     name: "Instagram",
-    source: "Footer · svg-2tsxp86msm",
-    usage: "Footer social row, community cards",
     sample: (
       <SocialLinksBackgroundImage>
         <path d={svgPaths.p2c5f2300} fill="currentColor" />
@@ -421,8 +370,6 @@ const socialIcons: IconSpecimen[] = [
   },
   {
     name: "X",
-    source: "Footer / View on X CTA",
-    usage: "Footer social, experiment CTAs",
     sample: (
       <svg className="h-4 w-[19px] fill-current" viewBox="0 0 19 18" aria-hidden>
         <path d={X_LOGO_PATH} />
@@ -431,8 +378,6 @@ const socialIcons: IconSpecimen[] = [
   },
   {
     name: "LinkedIn",
-    source: "Footer · svg-2tsxp86msm",
-    usage: "Footer social row",
     sample: (
       <SocialLinksBackgroundImage>
         <path d={svgPaths.p1e086000} fill="currentColor" stroke="currentColor" />
@@ -441,8 +386,6 @@ const socialIcons: IconSpecimen[] = [
   },
   {
     name: "Luma",
-    source: "assets/LumaLogo.svg",
-    usage: "Footer social row",
     sample: (
       <img
         src={LumaLogo}
@@ -460,12 +403,30 @@ const socialIcons: IconSpecimen[] = [
 export default function IconSection() {
   return (
     <Section id="icons" title="Iconography">
-      <SubLabel
-        note={`Size ramp (iconSizes) — ${iconSizes.meta} meta · ${iconSizes.inline} inline · ${iconSizes.toolbar} toolbar/chevrons · ${iconSizes.touch} touch/Close · ${iconSizes.hero} hero. Chevrons sit one step below the paired Close.`}
-      >
-        Size
-      </SubLabel>
-      <SubLabel note="Stroke affordances — text-zinc-500 · strokeWidth 1.5 · vector-effect non-scaling-stroke. Prefer size={iconSize(...)} over CSS size-*.">
+      <SubLabel>Size</SubLabel>
+      <div className="mb-10 grid h-[200px] grid-cols-5 items-center gap-x-8 rounded-xl bg-zinc-50 px-6">
+        {ICON_SIZE_RAMP.map((name) => {
+          const px = iconSizes[name];
+          return (
+            <div key={name} className="flex translate-y-1 flex-col">
+              <div className="flex h-8 items-end justify-center pt-4">
+                <div
+                  aria-hidden
+                  className="shrink-0 rounded-[2px] bg-blue-100 ring-1 ring-inset ring-blue-400"
+                  style={{ width: px, height: px }}
+                />
+              </div>
+              <div className="mt-3 flex flex-col items-center gap-0.5 text-center">
+                <code className="font-mono text-sm text-zinc-700">{name}</code>
+                <code className="font-mono text-xs tabular-nums text-zinc-400">
+                  {px}px
+                </code>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <SubLabel note="Text-zinc-500 · StrokeWidth 1.5">
         Stroke icons
       </SubLabel>
       <Grid min="160px">
@@ -474,7 +435,7 @@ export default function IconSection() {
         ))}
       </Grid>
 
-      <SubLabel note="Solid glyphs — stay filled (no strokeWidth rules). Same zinc-500 specimen color.">
+      <SubLabel note="Solid glyphs. Zinc-500.">
         Filled icons
       </SubLabel>
       <Grid min="160px">
@@ -483,7 +444,7 @@ export default function IconSection() {
         ))}
       </Grid>
 
-      <SubLabel note="Filled social marks (monochrome zinc-500 in this section).">Social</SubLabel>
+      <SubLabel note="Social marks. Zinc-500.">Social</SubLabel>
       <Grid min="160px">
         {socialIcons.map((icon) => (
           <IconCard key={icon.name} {...icon} />

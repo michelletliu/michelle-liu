@@ -1,23 +1,136 @@
-import { radii, oddRadii, subSlug, uniformTag } from "../tokens";
-import { Section, SubLabel, Grid, RowList, TokenCard, TokenRow } from "../primitives";
+"use client";
+
+import { useState } from "react";
+import clsx from "clsx";
+import { radii, subSlug, uniformTag } from "../tokens";
+import { Section, SubLabel, Grid, TokenCard } from "../primitives";
+import { ghostIconButtonClass } from "../../ghostIconButton";
+import { iconSize } from "../../iconSizes";
+
+/** 2×2 grid glyph — matches Code / Chevron stroke style. */
+function GridIcon({ size = iconSize("inline") }: { size?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className="inline-block shrink-0"
+      aria-hidden
+    >
+      <path
+        d="M4 4h6v6H4V4ZM14 4h6v6h-6V4ZM4 14h6v6H4v-6ZM14 14h6v6h-6v-6Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+/** Radius 40 so round vs squircle reads clearly. viewBox 137.55. */
+const ROUND_PATH =
+  "M41.575 1.575H95.975A40 40 0 0 1 135.975 41.575V95.975A40 40 0 0 1 95.975 135.975H41.575A40 40 0 0 1 1.575 95.975V41.575A40 40 0 0 1 41.575 1.575Z";
+const SQUIRCLE_PATH =
+  "M41.575 1.575H95.975C123.375 1.575 135.975 14.055 135.975 41.575V95.975C135.975 123.375 123.495 135.975 95.975 135.975H41.575C14.175 135.975 1.575 123.495 1.575 95.975V41.575C1.575 14.175 14.055 1.575 41.575 1.575Z";
+
+const CORNER_SPECIMENS = [
+  { label: "Round", d: ROUND_PATH, overlayD: SQUIRCLE_PATH },
+  { label: "Squircle", d: SQUIRCLE_PATH, overlayD: ROUND_PATH },
+] as const;
 
 export default function RadiusSection() {
   const radiiTag = uniformTag(radii);
-  const oddRadiiTag = uniformTag(oddRadii);
+  const [showGrid, setShowGrid] = useState(false);
 
   return (
     <Section id={subSlug("Border Radius")} title="Border Radius">
-      <div className="mb-10 rounded-2xl bg-zinc-50 p-6">
-        <h3 className="text-sm font-medium text-zinc-500">
-          Squircle corner-shape
-        </h3>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-zinc-500 text-pretty">
-          When a browser supports <code className="font-mono text-zinc-400">corner-shape: squircle</code>,
-          <code className="font-mono text-zinc-400"> index.css</code> applies it globally and{" "}
-          compensates the border-radius ~1.7× so the perceived roundness stays
-          constant (a full squircle visually shrinks corners). Circles and pills opt back into{" "}
-          <code className="font-mono text-zinc-400">corner-shape: round</code>. The samples below are
-          squircled in supporting browsers.
+      <div className="mb-10">
+        <div className="relative overflow-hidden rounded-2xl bg-zinc-50 px-4 py-8 sm:px-6 sm:py-12">
+          <button
+            type="button"
+            aria-pressed={showGrid}
+            aria-label={showGrid ? "Hide grid" : "Show grid"}
+            onClick={() => setShowGrid((v) => !v)}
+            className={clsx(
+              // Solid zinc-50 fill so card grid never shows through the circle
+              ghostIconButtonClass("sm", "absolute right-3 top-3 z-[3] bg-zinc-50 text-zinc-300"),
+              "hover:bg-zinc-100 hover:text-zinc-400",
+              "active:bg-zinc-100",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
+              showGrid && "bg-zinc-100 text-zinc-500 hover:bg-zinc-100",
+            )}
+          >
+            <GridIcon />
+          </button>
+
+          <div className="relative flex justify-center gap-8 sm:gap-16">
+            {CORNER_SPECIMENS.map(({ label, d, overlayD }) => (
+              <div
+                key={label}
+                className="flex w-[112px] flex-col items-center sm:w-[168px]"
+              >
+                <div className="relative size-[112px] drop-shadow-[0_2px_6px_rgba(0,0,0,0.08)] sm:size-[168px]">
+                  <svg
+                    viewBox="0 0 137.55 137.55"
+                    className="absolute inset-[10%] overflow-visible"
+                    fill="none"
+                    aria-hidden
+                  >
+                    <path
+                      d={d}
+                      fill="white"
+                      stroke="#9F9FA9"
+                      strokeOpacity={showGrid ? 0.15 : 0.3}
+                      strokeWidth="3.15"
+                    />
+                  </svg>
+                  {showGrid && (
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 z-[1]"
+                      style={{
+                        // 5% cells → shape (inset 10%) spans 16 cells with 2 cells outside each edge.
+                        // Line at end of each cell; clip outer 1px so no perimeter on any side.
+                        backgroundImage: `
+                          linear-gradient(to right, transparent calc(100% - 1px), rgb(161 161 170 / 0.18) 1px),
+                          linear-gradient(to bottom, transparent calc(100% - 1px), rgb(161 161 170 / 0.18) 1px)
+                        `,
+                        backgroundSize: "5% 5%",
+                        backgroundPosition: "0 0",
+                        clipPath: "inset(1px)",
+                      }}
+                    />
+                  )}
+                  {showGrid && (
+                    <svg
+                      viewBox="0 0 137.55 137.55"
+                      className="pointer-events-none absolute inset-[10%] z-[2] overflow-visible"
+                      fill="none"
+                      aria-hidden
+                    >
+                      <path
+                        d={overlayD}
+                        fill="none"
+                        stroke="#60a5fa"
+                        strokeOpacity="0.55"
+                        strokeWidth="1"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </svg>
+                  )}
+                </div>
+                <p className="mt-2 text-center text-sm text-zinc-500">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="mt-3 max-w-3xl text-base leading-relaxed text-zinc-500 text-pretty">
+          Supporting browsers get{" "}
+          <code className="font-mono text-zinc-400">corner-shape: squircle</code>{" "}
+          globally. Radius is bumped ~1.7× so corners don’t look tighter. Circles
+          and pills stay <code className="font-mono text-zinc-400">round</code>.
         </p>
       </div>
 
@@ -45,24 +158,6 @@ export default function RadiusSection() {
           />
         ))}
       </Grid>
-
-      <SubLabel
-        note="Deliberately precise / odd radii from Figma exports and device mockups."
-        tag={oddRadiiTag}
-      >
-        Experiment radii
-      </SubLabel>
-      <RowList>
-        {oddRadii.map((r) => (
-          <TokenRow
-            key={r.name}
-            name={r.name}
-            tag={oddRadiiTag ? undefined : r.tag}
-            value={r.value}
-            usage={r.usage}
-          />
-        ))}
-      </RowList>
     </Section>
   );
 }

@@ -5,11 +5,15 @@ import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import clsx from "clsx";
 import Sidebar, { type SidebarNode } from "../Sidebar";
 import BlueprintLogo from "../BlueprintLogo";
-import { markBlueprintDoorwayNav, clearBlueprintDoorwaySticky } from "../blueprintDoorwayNav";
+import {
+  markBlueprintDoorwayNav,
+  getDoorwayReturnPath,
+  doorwayReturnLabel,
+} from "../blueprintDoorwayNav";
+import { warmDoorwayReturn } from "../doorwayWarm";
 import Footer from "../Footer";
 import { Chevron } from "../Chevron";
 import { Close } from "../Close";
@@ -21,10 +25,18 @@ import {
 } from "../FieldInput";
 import { iconSize } from "../iconSizes";
 import { useScrollLock } from "../../utils/useScrollLock";
-import { fadeUpStyles } from "../../styles/animations";
 import { tocSections, tocSubsections, subSlug } from "./tokens";
+import { TagChip } from "./primitives";
+// Light token sections ship with the shell so above-the-fold content isn't
+// blocked on a dynamic() waterfall (skeleton → chunk → fade).
+import ColorSection from "./sections/ColorSection";
+import TypographySection from "./sections/TypographySection";
+import ShadowSection from "./sections/ShadowSection";
+import RadiusSection from "./sections/RadiusSection";
+import SpacingSection from "./sections/SpacingSection";
+import BorderSection from "./sections/BorderSection";
 
-/** Lightweight placeholder so the DS shell (logo, TOC, intro) paints before specimens. */
+/** Lightweight placeholder while heavy specimen chunks arrive. */
 function SectionSkeleton({ tall = false }: { tall?: boolean }) {
   return (
     <div
@@ -35,26 +47,6 @@ function SectionSkeleton({ tall = false }: { tall?: boolean }) {
     />
   );
 }
-
-// Light token sections — small, paint right under the intro.
-const ColorSection = dynamic(() => import("./sections/ColorSection"), {
-  loading: () => <SectionSkeleton />,
-});
-const TypographySection = dynamic(() => import("./sections/TypographySection"), {
-  loading: () => <SectionSkeleton />,
-});
-const ShadowSection = dynamic(() => import("./sections/ShadowSection"), {
-  loading: () => <SectionSkeleton />,
-});
-const RadiusSection = dynamic(() => import("./sections/RadiusSection"), {
-  loading: () => <SectionSkeleton />,
-});
-const SpacingSection = dynamic(() => import("./sections/SpacingSection"), {
-  loading: () => <SectionSkeleton />,
-});
-const BorderSection = dynamic(() => import("./sections/BorderSection"), {
-  loading: () => <SectionSkeleton />,
-});
 
 // Heavy specimen / demo sections — keep out of the initial SystemPage chunk.
 const MaterialSection = dynamic(() => import("./sections/MaterialSection"), {
@@ -71,8 +63,9 @@ const ComponentSection = dynamic(() => import("./sections/ComponentSection"), {
 });
 
 /**
- * Ghost icon-button hit target — SpecButton icon **md** (`size-10` / 40px).
- * Shared by sticky-bar slot, sheet close slot, and the floating morph control.
+ * Icon-button hit target — SpecButton icon **md** (`size-10` / 40px),
+ * rounded-xl (not pill). Shared by sticky-bar slot, sheet close slot, and
+ * the floating morph control.
  */
 const MORPH_CONTROL_BOX = "size-10";
 /**
@@ -80,20 +73,13 @@ const MORPH_CONTROL_BOX = "size-10";
  * comparable path bounds in the 24 viewBox so glyphs match optically.
  */
 const MORPH_ICON = iconSize("touch");
-/**
- * Optical end-align: pull the control into the `px-5`/`pr-5` gutter so the
- * glyph’s right tip lines up with the Filter field (and sticky content edge).
- * 14px ≈ (40−24)/2 box pad + (24−12)/2 Close/Chevron path inset.
- */
-const MORPH_OPTICAL_END = "-mr-3.5";
-const MORPH_SLOT = `${MORPH_CONTROL_BOX} shrink-0 ${MORPH_OPTICAL_END}`;
-const MORPH_TRANSITION = { duration: 0.3, ease: "easeOut" } as const;
+/** Spacer for the floating chevron↔X control (size-10 hit target). */
+const MORPH_SLOT = `${MORPH_CONTROL_BOX} shrink-0`;
 
 /**
  * Shared control: down-chevron morphs into Close X (and reverse).
- * Animates HTML wrappers (not SVG `<g>`) — Framer Motion’s SVG `fill-box`
- * transforms + default `overflow:hidden` can leave the chevron clipped or
- * stuck at opacity 0 after close.
+ * CSS transitions (not Framer Motion) — FM opacity could stick at 0 after
+ * rapid open/close, making the X disappear while the sheet stays open.
  */
 function ChevronCloseMorph({ open }: { open: boolean }) {
   return (
@@ -101,35 +87,35 @@ function ChevronCloseMorph({ open }: { open: boolean }) {
       className="relative inline-flex size-6 items-center justify-center overflow-visible"
       aria-hidden
     >
-      <motion.span
-        className="absolute inset-0 flex items-center justify-center"
-        initial={false}
-        animate={{
-          opacity: open ? 0 : 1,
-          scale: open ? 0.7 : 1,
-        }}
-        transition={MORPH_TRANSITION}
+      <span
+        className={clsx(
+          "absolute inset-0 flex items-center justify-center transition-[opacity,transform] duration-300 ease-out",
+          open ? "scale-75 opacity-0" : "scale-100 opacity-100",
+        )}
       >
         <Chevron direction="down" size={MORPH_ICON} />
-      </motion.span>
-      <motion.span
-        className="absolute inset-0 flex items-center justify-center"
-        initial={false}
-        animate={{
-          opacity: open ? 1 : 0,
-          scale: open ? 1 : 0.7,
-          rotate: open ? 0 : -45,
-        }}
-        transition={MORPH_TRANSITION}
+      </span>
+      <span
+        className={clsx(
+          "absolute inset-0 flex items-center justify-center transition-[opacity,transform] duration-300 ease-out",
+          open ? "scale-100 rotate-0 opacity-100" : "scale-75 -rotate-45 opacity-0",
+        )}
       >
         <Close size={MORPH_ICON} />
-      </motion.span>
+      </span>
     </span>
   );
 }
 
 /** Matches Chevron toolbar width so flat rows align with expandable ones. */
 const LEADING_ICON_SLOT = "w-5 shrink-0";
+/**
+ * Sheet TOC row. With list `px-2`, `pl-5.5` puts the chevron column at the same
+ * x as Filter’s magnifier (shell px-5 + muted px-1 + leading ml-1.5). `gap-2.5`
+ * then lines labels up with the Filter placeholder.
+ */
+const SHEET_ROW =
+  "flex w-full min-h-11 items-center gap-2.5 rounded-xl py-2.5 pl-5.5 pr-3 text-left transition-colors duration-200 hover:bg-zinc-50";
 
 type SheetLeaf = { id: string; label: string };
 type SheetRow =
@@ -159,6 +145,7 @@ function MobileSectionMenu({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const filterRef = useRef<HTMLInputElement>(null);
   const barSlotRef = useRef<HTMLSpanElement>(null);
+  const sheetSlotRef = useRef<HTMLSpanElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const wasOpenRef = useRef(false);
   const [togglePos, setTogglePos] = useState<{ top: number; left: number } | null>(
@@ -173,25 +160,37 @@ function MobileSectionMenu({
     setMounted(true);
   }, []);
 
-  // One floating toggle — always tracks the sticky-bar slot so open-state X
-  // keeps the same top/right + md (size-10) hit box as the closed chevron.
+  // Floating toggle tracks the sticky-bar slot when closed, and the sheet
+  // header slot when open (fixed sheet — stable under keyboard / scroll-lock).
   useLayoutEffect(() => {
     if (!mounted) return;
     const measure = () => {
-      const slot = barSlotRef.current;
+      const slot = open
+        ? sheetSlotRef.current ?? barSlotRef.current
+        : barSlotRef.current;
       if (!slot) return;
       const r = slot.getBoundingClientRect();
+      // display:none / pre-layout → zeros; don't park the control at 0,0.
+      if (r.width < 1 || r.height < 1) return;
       setTogglePos((prev) => {
         if (prev && prev.top === r.top && prev.left === r.left) return prev;
         return { top: r.top, left: r.left };
       });
     };
     measure();
+    // Keyboard / filter focus can shift the visual viewport after open.
+    const settle = open ? window.setTimeout(measure, 120) : undefined;
     window.addEventListener("scroll", measure, { passive: true });
     window.addEventListener("resize", measure);
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", measure);
+    vv?.addEventListener("scroll", measure);
     return () => {
+      if (settle !== undefined) window.clearTimeout(settle);
       window.removeEventListener("scroll", measure);
       window.removeEventListener("resize", measure);
+      vv?.removeEventListener("resize", measure);
+      vv?.removeEventListener("scroll", measure);
     };
   }, [mounted, open]);
 
@@ -285,7 +284,7 @@ function MobileSectionMenu({
 
   const floatingToggle = mounted
     ? createPortal(
-        <motion.button
+        <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-label={
@@ -294,28 +293,23 @@ function MobileSectionMenu({
               : `Open section menu. Current: ${activeLabel}`
           }
           className={clsx(
-            // SpecButton ghost · icon · md: size-10, rounded-full, translucent wash
-            "fixed z-[70] flex items-center justify-center rounded-full bg-transparent text-zinc-400",
-            "transition-colors duration-200 hover:bg-zinc-900/5 hover:text-zinc-500",
+            // SpecButton tertiary icon · md: size-10, rounded-xl, translucent wash
+            "fixed z-[70] flex items-center justify-center overflow-visible rounded-xl bg-transparent text-zinc-500",
+            "transition-colors duration-200 hover:bg-zinc-900/5 hover:text-zinc-600",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
             "lg:hidden",
             MORPH_CONTROL_BOX,
           )}
-          initial={false}
-          animate={
-            togglePos
-              ? { top: togglePos.top, left: togglePos.left, opacity: 1 }
-              : { top: 0, left: 0, opacity: 0 }
-          }
-          transition={{ duration: 0, ease: "easeOut" }}
+          // Position via style (not FM animate) so opacity can’t stick at 0.
           style={{
-            // Keep pointer-events out of Motion’s opacity channel so a prior
-            // style={{ opacity: 0 }} can’t stick after togglePos is measured.
+            top: togglePos?.top ?? 0,
+            left: togglePos?.left ?? 0,
+            opacity: togglePos ? 1 : 0,
             pointerEvents: togglePos ? "auto" : "none",
           }}
         >
           <ChevronCloseMorph open={open} />
-        </motion.button>,
+        </button>,
         document.body,
       )
     : null;
@@ -331,23 +325,27 @@ function MobileSectionMenu({
             className="fixed inset-0 z-[60] flex flex-col bg-white animate-in fade-in duration-200 lg:hidden"
           >
             {/*
-              Mirror sticky bar chrome (py-3 + h-8/h-10 + pr-5 md slot + optical
-              -mr) so the reserved close slot sits under the floating control.
+              Mirror sticky bar chrome (pt-8 pb-6 / mid:pt-10 + h-8/h-10 +
+              pr-5 md slot) so the reserved close slot sits under the floating
+              control. pt-8 matches the home seal (PageHeader pt-8); mid:pt-10
+              tracks the sticky bar when the seal grows. pl-2.5 = FieldShell
+              muted px-1 + FieldLeadingIcon ml-1.5 so the title lines up with
+              the Filter magnifier’s left edge.
             */}
-            <div className="px-5 py-3">
-              <div className="flex h-8 w-full items-center overflow-visible">
+            <div className="px-5 pt-8 pb-6 mid:pt-10">
+              <div className="flex h-8 w-full items-center overflow-visible pl-2.5">
                 <div className="flex h-10 w-full items-center gap-3 overflow-visible">
-                  <h2 className="min-w-0 flex-1 overflow-visible text-base font-medium leading-normal tracking-wide text-zinc-800">
+                  <h2 className="min-w-0 flex-1 overflow-visible text-base font-medium leading-normal tracking-wide text-zinc-900">
                     Design System
                   </h2>
-                  <span className={MORPH_SLOT} aria-hidden />
+                  <span ref={sheetSlotRef} className={MORPH_SLOT} aria-hidden />
                 </div>
               </div>
             </div>
 
             <div className="px-5 pb-3">
-              <FieldShell tone="muted" className="gap-2">
-                <FieldLeadingIcon>
+              <FieldShell tone="muted" className="gap-2.5">
+                <FieldLeadingIcon className="!text-zinc-500">
                   <SearchMagnifierIcon />
                 </FieldLeadingIcon>
                 <FieldInput
@@ -361,7 +359,7 @@ function MobileSectionMenu({
                   autoCorrect="off"
                   spellCheck={false}
                   aria-label="Filter sections"
-                  className="pr-3 font-medium tracking-[0.01em] text-zinc-700"
+                  className="pr-3 font-medium tracking-[0.01em] text-zinc-800 placeholder:text-zinc-500"
                 />
               </FieldShell>
             </div>
@@ -372,7 +370,7 @@ function MobileSectionMenu({
               className="min-h-0 flex-1 overflow-y-auto px-2 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
             >
               {rows.length === 0 ? (
-                <p className="px-3 py-6 text-sm text-zinc-400">No matching sections</p>
+                <p className="px-3 py-6 text-base text-zinc-500">No matching sections</p>
               ) : (
                 <ul className="flex flex-col gap-px py-1">
                   {rows.map((row) => {
@@ -385,7 +383,7 @@ function MobileSectionMenu({
                             role="option"
                             aria-selected={active}
                             onClick={() => selectLeaf(row.id)}
-                            className="flex w-full min-h-11 items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors duration-200 hover:bg-zinc-50"
+                            className={SHEET_ROW}
                           >
                             <span className={LEADING_ICON_SLOT} aria-hidden />
                             <span
@@ -393,7 +391,7 @@ function MobileSectionMenu({
                                 "text-base font-medium tracking-wide leading-5 transition-colors duration-200",
                                 active
                                   ? "text-blue-500"
-                                  : "text-zinc-400 hover:text-zinc-500",
+                                  : "text-zinc-500 hover:text-zinc-600",
                               )}
                             >
                               {row.label}
@@ -413,22 +411,23 @@ function MobileSectionMenu({
                           onClick={() => {
                             if (!filtering) onToggleExpand(row.id);
                           }}
-                          className="flex w-full min-h-11 items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors duration-200 hover:bg-zinc-50"
+                          className={SHEET_ROW}
                         >
                           <Chevron
                             direction="right"
                             size={iconSize("toolbar")}
                             className={clsx(
                               "shrink-0 transition-transform duration-200 ease-out",
-                              expanded ? "rotate-90 text-zinc-400" : "text-zinc-300",
+                              expanded ? "rotate-90 text-zinc-500" : "text-zinc-400",
                             )}
                           />
                           <span
                             className={clsx(
                               "text-base font-medium tracking-wide leading-5 transition-colors duration-200",
-                              groupActive
-                                ? "text-zinc-500"
-                                : "text-zinc-400 hover:text-zinc-500",
+                              // Open/active group one step darker than resting toggles.
+                              groupActive || expanded
+                                ? "text-zinc-600"
+                                : "text-zinc-500 hover:text-zinc-600",
                             )}
                           >
                             {row.label}
@@ -454,8 +453,10 @@ function MobileSectionMenu({
                                       role="option"
                                       aria-selected={active}
                                       onClick={() => selectLeaf(child.id)}
-                                      className="flex w-full min-h-11 items-center gap-2.5 rounded-lg py-2.5 pl-[2.375rem] pr-3 text-left transition-colors duration-200 hover:bg-zinc-50"
+                                      className={SHEET_ROW}
                                     >
+                                      {/* Same chevron column as group headers so labels share one left edge. */}
+                                      <span className={LEADING_ICON_SLOT} aria-hidden />
                                       <span
                                         className={clsx(
                                           "text-base font-medium tracking-wide leading-5 transition-colors duration-200",
@@ -487,26 +488,24 @@ function MobileSectionMenu({
   return (
     <>
       {/*
-        Outer h-8 matches the mobile seal hit target (size-8). Inner h-10
-        matches the morph control and centers within that band so Overview +
-        chevron share the seal's vertical midline. leading-normal keeps
-        descenders (e.g. “g”) from clipping under truncate.
+        Outer h-8 matches the mobile seal hit target (size-8). Full-width
+        inner button (h-10) spans the bar so the morph slot isn’t clipped by
+        the nav’s pr-5 — Overview + chevron share the seal’s vertical midline.
+        leading-normal keeps descenders (e.g. “g”) from clipping under truncate.
       */}
       <div className="flex h-8 w-full items-center overflow-visible">
-        <div className="flex h-10 w-full items-center gap-3 overflow-visible">
-          <button
-            ref={triggerRef}
-            type="button"
-            aria-haspopup="dialog"
-            aria-expanded={open}
-            aria-label={`Current section: ${activeLabel}. Open section menu.`}
-            onClick={openMenu}
-            className="min-w-0 flex-1 truncate text-left text-base font-medium leading-normal tracking-wide text-zinc-800 transition-colors duration-200"
-          >
-            {activeLabel}
-          </button>
+        <button
+          ref={triggerRef}
+          type="button"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-label={`Current section: ${activeLabel}. Open section menu.`}
+          onClick={openMenu}
+          className="flex h-10 w-full min-w-0 items-center gap-3 overflow-visible text-left text-base font-medium leading-normal tracking-wide text-zinc-900 transition-colors duration-200"
+        >
+          <span className="min-w-0 flex-1 truncate">{activeLabel}</span>
           <span ref={barSlotRef} className={MORPH_SLOT} aria-hidden />
-        </div>
+        </button>
       </div>
       {floatingToggle}
       {sheet}
@@ -533,8 +532,9 @@ export default function SystemPage() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   // Sticky-until-footer: TOC sticks until the footer would collide, then docks.
-  // Logo stays position:fixed (reliable hit target) and hides once the footer
-  // enters the viewport so only the footer brand shows near the bottom.
+  // Logo stays position:fixed (reliable hit target). On lg+ it hides once the
+  // footer enters the viewport so only the footer brand shows near the bottom;
+  // on mobile it stays top-left at all times.
   const zoneRef = useRef<HTMLDivElement>(null);
   const mobileStickySentinelRef = useRef<HTMLDivElement>(null);
   const desktopChromeRef = useRef<HTMLDivElement>(null);
@@ -542,14 +542,22 @@ export default function SystemPage() {
   const [logoHidden, setLogoHidden] = useState(false);
   /** True when the mobile section bar is stuck and overlapping content below. */
   const [mobileNavStuck, setMobileNavStuck] = useState(false);
+  // Where the seal returns — Art / About / Work. "/" until client reads the
+  // doorway marker (avoids SSR/sessionStorage hydration mismatch).
+  const [returnHref, setReturnHref] = useState("/");
 
   // Logo doorway + route entry: always land at the top of the DS.
+  // Prefetch + warm the return tab immediately — including `/` (previously
+  // skipped, which made DS → Work feel cold every time).
+  // Do NOT clearBlueprintDoorwaySticky here — unmount must leave the mark for
+  // the destination seal so it stays resting while the pointer hasn't moved.
   useEffect(() => {
     window.scrollTo(0, 0);
-    return () => {
-      clearBlueprintDoorwaySticky();
-    };
-  }, []);
+    const href = getDoorwayReturnPath();
+    setReturnHref(href);
+    router.prefetch(href);
+    warmDoorwayReturn(href);
+  }, [router]);
 
   // Mobile sticky bar: show bottom hairline only once the bar is stuck
   // (sentinel above it has scrolled out of view → content passes underneath).
@@ -566,20 +574,23 @@ export default function SystemPage() {
     return () => io.disconnect();
   }, []);
 
-  // Capture-phase home navigation. Next/Link soft-nav can miss while the
-  // blueprint morph re-renders mid-click; a document capture listener always
-  // sees the gesture (and still respects cmd/ctrl-click via early return).
+  // Capture-phase doorway-back navigation. Next/Link soft-nav can miss while
+  // the blueprint morph re-renders mid-click; a document capture listener
+  // always sees the gesture (and still respects cmd/ctrl-click via early return).
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const target = e.target as Element | null;
-      const a = target?.closest?.('a[aria-label="Back to home"]');
+      const a = target?.closest?.("a[data-blueprint-doorway-back]");
       if (!a) return;
       if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       if (getComputedStyle(a).pointerEvents === "none") return;
       e.preventDefault();
+      const href = getDoorwayReturnPath();
+      // Kick module load before push so we don't wait on a cold HomePageClient.
+      warmDoorwayReturn(href);
       markBlueprintDoorwayNav();
       window.scrollTo(0, 0);
-      router.push("/");
+      router.push(href);
     };
     document.addEventListener("click", onClick, true);
     return () => document.removeEventListener("click", onClick, true);
@@ -595,10 +606,10 @@ export default function SystemPage() {
       if (!footer) return;
       const footerTop = footer.getBoundingClientRect().top;
 
-      // Hide as soon as any part of the footer is on-screen. A collision-only
-      // threshold (~logo bottom) left both logos visible whenever the footer
-      // brand sat lower in a tall viewport.
-      const nextLogoHidden = footerTop < window.innerHeight;
+      // Desktop only: hide as soon as any part of the footer is on-screen.
+      // Mobile keeps the seal fixed top-left even over the footer.
+      const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+      const nextLogoHidden = isDesktop && footerTop < window.innerHeight;
       setLogoHidden((prev) => (prev === nextLogoHidden ? prev : nextLogoHidden));
 
       const desktop = desktopChromeRef.current;
@@ -752,20 +763,45 @@ export default function SystemPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-white font-['Michelle',sans-serif] text-base text-zinc-500">
-      <style>{fadeUpStyles}</style>
+    <div className="design-system-page min-h-dvh bg-white font-['Michelle',sans-serif] text-base text-zinc-500">
+      <style>{`
+        .design-system-page code,
+        .design-system-page .font-mono {
+          font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+            "Liberation Mono", "Courier New", monospace;
+          letter-spacing: -0.02em;
+        }
+      `}</style>
 
       {/*
         Fixed logo doorway — always a real hit target above body::before (z-40)
-        and the mobile section nav. Hides near the footer so it can't cover the
-        footer brand (which also links home).
+        and the mobile section nav. On lg+ hides near the footer so it can't
+        cover the footer brand; on mobile stays top-left at all times.
       */}
       <Link
-        href="/"
-        aria-label="Back to home"
+        href={returnHref}
+        prefetch
+        data-blueprint-doorway-back=""
+        aria-label={doorwayReturnLabel(returnHref)}
         aria-hidden={logoHidden}
         tabIndex={logoHidden ? -1 : undefined}
-        className={`group fixed left-6 top-3 z-50 size-8 overflow-visible transition-[opacity,transform] duration-200 ease-out [@media(hover:hover)]:hover:scale-[1.02] active:scale-95 md:left-16 md:top-8 md:size-11 ${
+        onMouseEnter={() => {
+          router.prefetch(returnHref);
+          warmDoorwayReturn(returnHref);
+        }}
+        onFocus={() => {
+          router.prefetch(returnHref);
+          warmDoorwayReturn(returnHref);
+        }}
+        onTouchStart={() => {
+          router.prefetch(returnHref);
+          warmDoorwayReturn(returnHref);
+        }}
+        onPointerDown={() => {
+          router.prefetch(returnHref);
+          warmDoorwayReturn(returnHref);
+        }}
+        className={`group fixed left-6 top-8 z-50 size-8 overflow-visible transition-[opacity,transform] duration-200 ease-out [@media(hover:hover)]:hover:scale-[1.02] active:scale-95 mid:left-16 mid:size-11 ${
           logoHidden ? "pointer-events-none opacity-0" : "opacity-100"
         }`}
       >
@@ -779,11 +815,14 @@ export default function SystemPage() {
       */}
       <div ref={zoneRef} className="relative">
         {/*
-          Mobile section menu — shares the seal's top + height (top-3 / size-8)
-          so the Overview + chevron band centers on the seal. Inner row stays
+          Mobile section menu — shares the seal's top + height (top-8 / size-8,
+          mid: size-11 at left-16) so the Overview + chevron band centers on the
+          seal and matches the home red seal (PageHeader pt-8). Inner row stays
           h-10 for the morph control and overflows ±4px inside that band.
-          pl-18 clears the seal; py-3 matches the sheet header chrome.
-          Bottom hairline only when stuck (sentinel leaves the viewport).
+          pl-18 / mid:pl-32 clears the seal; pt-8 pb-4 matches the sheet header
+          chrome on small screens. mid:pt-10 mid:pb-6 recenters the h-8 band on
+          the larger mid seal. Bottom hairline only when stuck (sentinel leaves
+          the viewport).
         */}
         <div
           ref={mobileStickySentinelRef}
@@ -793,7 +832,7 @@ export default function SystemPage() {
         <nav
           aria-label="Sections"
           className={clsx(
-            "sticky top-0 z-40 bg-white/90 py-3 pl-18 pr-5 backdrop-blur-md transition-[border-color] duration-200 lg:hidden",
+            "sticky top-0 z-40 bg-white/90 pt-8 pb-4 pl-18 pr-5 backdrop-blur-md transition-[border-color] duration-200 mid:pt-10 mid:pb-6 mid:pl-32 lg:hidden",
             mobileNavStuck ? "border-b border-zinc-100" : "border-b border-transparent",
           )}
         >
@@ -809,18 +848,24 @@ export default function SystemPage() {
         </nav>
 
         {/*
-          Desktop: TOC as left rail (sticky top-28 clears fixed logo, z-50 above
-          body::before). When the logo hides near the footer, collapse to top-0
-          so Overview isn't left with an empty clearance band. Outer aside is an
-          in-flow width spacer; inner chrome docks to the zone bottom when the
-          footer would collide.
+          Desktop: main is centered in the viewport (max-w-[720px] mx-auto),
+          matching Liveline-style equal gutters. TOC is absolute in the left
+          gutter so it does not push main off-center. Inner chrome stays sticky
+          (top-28 clears fixed logo; top-0 when logo hides) and docks to the
+          zone bottom when the footer would collide.
         */}
-        <div className="flex items-start gap-48 px-6 pt-24 md:px-16 lg:pt-28">
-          {/* self-stretch: tall containing block so sticky has a runway matching main */}
-          <aside className="relative hidden w-44 shrink-0 self-stretch lg:block">
+        <div className="relative px-6 pt-24 pb-16 mid:pl-32 mid:pr-16 lg:px-16 lg:pt-28">
+          {/*
+            Absolute left gutter: height comes from main (in-flow). Sticky
+            chrome needs a tall containing block — inset-y-0 matches main.
+            mid:pl-32 matches sticky nav (seal clearance) so section content
+            lines up with the sticky title between mid and lg; lg:px-16 restores
+            symmetric gutters once the desktop TOC takes over.
+          */}
+          <aside className="pointer-events-none absolute inset-y-0 left-6 hidden w-44 mid:left-16 lg:left-16 lg:block">
             <div
               ref={desktopChromeRef}
-              className={`z-50 w-44 transition-[top] duration-200 ease-out ${
+              className={`pointer-events-auto z-50 w-44 transition-[top] duration-200 ease-out ${
                 desktopDocked
                   ? "absolute bottom-0 left-0"
                   : logoHidden
@@ -834,36 +879,39 @@ export default function SystemPage() {
             </div>
           </aside>
 
-          <main className="min-w-0 w-full max-w-[720px] pb-8">
+          <main className="relative mx-auto min-w-0 w-full max-w-[720px]">
             {[
               /* Intro */
               <section key="intro" id="intro" className="scroll-mt-24 pb-8">
                 <h1 className="max-w-3xl font-['Michelle',sans-serif] text-4xl font-medium leading-normal tracking-[0.0125em] text-[#3f3f46] text-balance">
                   Design System
                 </h1>
-                <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-400">
-                  <span className="inline-flex items-center gap-2">
-                    <span className="rounded-lg bg-zinc-100 px-1.5 py-0.5 text-sm font-medium text-zinc-600">
-                      Canonical
-                    </span>
+                <p className="-mt-3 font-['Michelle',sans-serif] text-4xl font-normal leading-normal tracking-[0.0125em] text-zinc-400">
+                  liumichelle.com
+                </p>
+                <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400 text-pretty">
+                  A living inventory of the colors, type, space, motion, and
+                  components behind liumichelle.com. Specimens are built in React
+                  with Tailwind CSS.
+                </p>
+                <div className="mt-8 flex flex-wrap gap-x-6 gap-y-4 text-sm text-zinc-400">
+                  <span className="flex w-44 flex-col items-start gap-1">
+                    <TagChip tag="canonical" />
                     Core system
                   </span>
-                  <span className="inline-flex items-center gap-2">
-                    <span className="rounded-lg bg-amber-100 px-1.5 py-0.5 text-sm font-medium text-amber-600">
-                      One-off
-                    </span>
+                  <span className="flex w-44 flex-col items-start gap-1">
+                    <TagChip tag="one-off" />
                     Appears once / legacy
                   </span>
-                  <span className="inline-flex items-center gap-2">
-                    <span className="rounded-lg bg-blue-100 px-1.5 py-0.5 text-sm font-medium text-blue-600">
-                      Experiment
-                    </span>
+                  <span className="flex w-44 flex-col items-start gap-1">
+                    <TagChip tag="experiment" />
                     Specific to an experiment
                   </span>
                 </div>
               </section>,
 
               <ColorSection key="color" />,
+              <ComponentSection key="components" />,
               <TypographySection key="typography" />,
               <ShadowSection key="shadows" />,
               <SpacingSection key="spacing" />,
@@ -871,11 +919,10 @@ export default function SystemPage() {
               <RadiusSection key="radius" />,
               <MotionSection key="motion" />,
               <IconSection key="icons" />,
-              <ComponentSection key="components" />,
               <MaterialSection key="materials" />,
             ].map((block, i) => (
               <div
-                key={i}
+                key={block.key ?? i}
                 className="animate-fade-up"
                 style={{ animationDelay: `${Math.min(i * 60, 300)}ms` }}
               >
@@ -886,7 +933,7 @@ export default function SystemPage() {
         </div>
       </div>
 
-      <Footer logoVariant="blueprint" />
+      <Footer logoVariant="blueprint" logoHref={returnHref} />
     </div>
   );
 }

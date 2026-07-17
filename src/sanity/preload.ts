@@ -4,7 +4,6 @@
  * when users navigate to likely pages (Apple, Roblox, Adobe, NASA, Art, About)
  */
 
-import profilePic from "../assets/Website Profile Pic.png";
 import { client, urlFor } from "./client";
 import {
   ART_PIECES_QUERY,
@@ -17,6 +16,9 @@ import {
   LORE_ITEMS_QUERY,
   SHELF_BOOKS_QUERY,
   BOOK_YEARS_QUERY,
+  STARTUPS_QUERY,
+  PROJECTS_QUERY,
+  EXPERIMENT_PROJECTS_QUERY,
 } from "./queries";
 import type {
   Project,
@@ -28,7 +30,22 @@ import type {
   ShelfItem,
   LoreItem,
   AboutQuote,
+  Startup,
 } from "./types";
+
+/** Cache keys for Work tab Sanity payloads (HomePageClient hydrates from these). */
+export const WORK_SANITY_PROJECTS_KEY = "work:sanityProjects";
+export const WORK_EXPERIMENT_PROJECTS_KEY = "work:experimentProjects";
+
+type WorkSanityProject = {
+  company: string;
+  heroVideo?: string;
+};
+
+type WorkExperimentProject = {
+  muxPlaybackIdClip?: string;
+  muxPlaybackId?: string;
+};
 
 // Simple in-memory cache for preloaded data
 const cache = new Map<string, { data: unknown; timestamp: number }>();
@@ -36,6 +53,10 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Track if preloading is already in progress to avoid duplicate calls
 let preloadingInProgress = false;
+const projectRequests = new Map<
+  string,
+  Promise<{ project: Project | null; unlocked: boolean }>
+>();
 
 /**
  * Get cached data if available and not expired
@@ -49,10 +70,44 @@ export function getCachedData<T>(key: string): T | null {
 }
 
 /**
- * Set data in cache
+ * Set data in cache (also used by pages after a live fetch so revisits are instant)
  */
-function setCachedData(key: string, data: unknown): void {
+export function setCachedData(key: string, data: unknown): void {
   cache.set(key, { data, timestamp: Date.now() });
+}
+
+export function fetchProjectByCompany(
+  company: string,
+): Promise<{ project: Project | null; unlocked: boolean }> {
+  const existing = projectRequests.get(company);
+  if (existing) return existing;
+
+  const request = fetch(
+    `/api/project?company=${encodeURIComponent(company)}`,
+    {
+      cache: "no-store",
+      credentials: "same-origin",
+    },
+  ).then(async (response) => {
+    if (!response.ok) {
+      throw new Error(`Failed to fetch project ${company}: ${response.status}`);
+    }
+
+    return {
+      project: (await response.json()) as Project | null,
+      unlocked: response.headers.get("x-project-unlocked") === "true",
+    };
+  });
+
+  projectRequests.set(company, request);
+  const clear = () => {
+    if (projectRequests.get(company) === request) {
+      projectRequests.delete(company);
+    }
+  };
+  void request.then(clear, clear);
+
+  return request;
 }
 
 /**
@@ -90,8 +145,12 @@ function warmMuxManifest(playbackId: string | undefined): void {
  * Preload project data for a specific company. Also warms the browser cache
  * for the hero image and Mux video manifest so the popup opens without
  * showing the gray shimmer.
+ *
+ * Prefer calling this on project-card hover — not on Work mount. Hitting
+ * `/api/project` eagerly in dev queues a heavy Next compile that blocks
+ * Work → About / Art soft navigations for tens of seconds.
  */
-async function preloadProject(company: string): Promise<void> {
+export async function preloadProject(company: string): Promise<void> {
   const cacheKey = `project:${company}`;
   const existing = getCachedData<Project>(cacheKey);
   if (existing) {
@@ -103,14 +162,7 @@ async function preloadProject(company: string): Promise<void> {
   }
 
   try {
-    const response = await fetch(`/api/project?company=${encodeURIComponent(company)}`, {
-      cache: "no-store",
-      credentials: "same-origin",
-    });
-    if (!response.ok) {
-      throw new Error(`Project API returned ${response.status}`);
-    }
-    const data = (await response.json()) as Project;
+    const { project: data } = await fetchProjectByCompany(company);
     if (data) {
       setCachedData(cacheKey, data);
       if (data.heroImage) warmImage(urlFor(data.heroImage).width(1200).url());
@@ -121,39 +173,59 @@ async function preloadProject(company: string): Promise<void> {
   }
 }
 
+/** Warm above-the-fold art thumbs so Work → Art doesn't shimmer in. */
+function warmArtImages(
+  artPieces: ArtPiece[] | null,
+  sketchbooks: Sketchbook[] | null,
+): void {
+  if (artPieces) {
+    for (const piece of artPieces.slice(0, 8)) {
+      if (piece.image) warmImage(urlFor(piece.image).width(800).url());
+    }
+  }
+  const firstBook = sketchbooks?.[0];
+  if (firstBook?.images) {
+    for (const img of firstBook.images.slice(0, 4)) {
+      if (img.asset) warmImage(urlFor(img).height(600).url());
+    }
+  }
+}
+
 /**
- * Preload art page data
+ * Preload art page data (+ warm first gallery thumbs)
  */
-async function preloadArtPage(): Promise<void> {
+export async function preloadArtPage(): Promise<void> {
   const cacheKeyArt = "art:pieces";
   const cacheKeySketchbooks = "art:sketchbooks";
   const cacheKeyMurals = "art:murals";
 
-  // Skip if all data is already cached
-  if (
-    getCachedData(cacheKeyArt) &&
-    getCachedData(cacheKeySketchbooks) &&
-    getCachedData(cacheKeyMurals)
-  ) {
+  const cachedArt = getCachedData<ArtPiece[]>(cacheKeyArt);
+  const cachedSketchbooks = getCachedData<Sketchbook[]>(cacheKeySketchbooks);
+  const cachedMurals = getCachedData<Mural[]>(cacheKeyMurals);
+
+  // Data already cached — still warm media URLs (browser cache may be cold).
+  if (cachedArt && cachedSketchbooks && cachedMurals) {
+    warmArtImages(cachedArt, cachedSketchbooks);
     return;
   }
 
   try {
     const [artPieces, sketchbooks, murals] = await Promise.all([
-      !getCachedData(cacheKeyArt)
-        ? client.fetch<ArtPiece[]>(ART_PIECES_QUERY)
-        : Promise.resolve(null),
-      !getCachedData(cacheKeySketchbooks)
+      !cachedArt ? client.fetch<ArtPiece[]>(ART_PIECES_QUERY) : Promise.resolve(null),
+      !cachedSketchbooks
         ? client.fetch<Sketchbook[]>(SKETCHBOOKS_QUERY)
         : Promise.resolve(null),
-      !getCachedData(cacheKeyMurals)
-        ? client.fetch<Mural[]>(MURALS_QUERY)
-        : Promise.resolve(null),
+      !cachedMurals ? client.fetch<Mural[]>(MURALS_QUERY) : Promise.resolve(null),
     ]);
 
     if (artPieces) setCachedData(cacheKeyArt, artPieces);
     if (sketchbooks) setCachedData(cacheKeySketchbooks, sketchbooks);
     if (murals) setCachedData(cacheKeyMurals, murals);
+
+    warmArtImages(
+      artPieces ?? cachedArt,
+      sketchbooks ?? cachedSketchbooks,
+    );
   } catch (err) {
     console.warn("Failed to preload art page:", err);
   }
@@ -162,16 +234,14 @@ async function preloadArtPage(): Promise<void> {
 /**
  * Preload about page data
  */
-async function preloadAboutPage(): Promise<void> {
-  const img = new Image();
-  img.src = profilePic;
-
+export async function preloadAboutPage(): Promise<void> {
   const cacheKeys = {
     experiences: "about:experiences",
     communities: "about:communities",
     shelfItems: "about:shelfItems",
     quotes: "about:quotes",
     loreItems: "about:loreItems",
+    startups: "about:startups",
   };
 
   // Skip if all data is already cached
@@ -180,13 +250,14 @@ async function preloadAboutPage(): Promise<void> {
     getCachedData(cacheKeys.communities) &&
     getCachedData(cacheKeys.shelfItems) &&
     getCachedData(cacheKeys.quotes) &&
-    getCachedData(cacheKeys.loreItems)
+    getCachedData(cacheKeys.loreItems) &&
+    getCachedData(cacheKeys.startups)
   ) {
     return;
   }
 
   try {
-    const [experiences, communities, shelfItems, quotes, loreItems] =
+    const [experiences, communities, shelfItems, quotes, loreItems, startups] =
       await Promise.all([
         !getCachedData(cacheKeys.experiences)
           ? client.fetch<Experience[]>(EXPERIENCES_QUERY)
@@ -203,6 +274,9 @@ async function preloadAboutPage(): Promise<void> {
         !getCachedData(cacheKeys.loreItems)
           ? client.fetch<LoreItem[]>(LORE_ITEMS_QUERY)
           : Promise.resolve(null),
+        !getCachedData(cacheKeys.startups)
+          ? client.fetch<Startup[]>(STARTUPS_QUERY)
+          : Promise.resolve(null),
       ]);
 
     if (experiences) setCachedData(cacheKeys.experiences, experiences);
@@ -210,6 +284,7 @@ async function preloadAboutPage(): Promise<void> {
     if (shelfItems) setCachedData(cacheKeys.shelfItems, shelfItems);
     if (quotes) setCachedData(cacheKeys.quotes, quotes);
     if (loreItems) setCachedData(cacheKeys.loreItems, loreItems);
+    if (startups) setCachedData(cacheKeys.startups, startups);
   } catch (err) {
     console.warn("Failed to preload about page:", err);
   }
@@ -246,35 +321,110 @@ async function preloadLibraryPage(): Promise<void> {
   }
 }
 
+/** Warm Work project thumbnails so Art → Work doesn't shimmer in. */
+function warmWorkMedia(
+  projects: WorkSanityProject[] | null,
+  experiments: WorkExperimentProject[] | null,
+): void {
+  if (projects) {
+    for (const project of projects) {
+      if (project.heroVideo) {
+        warmImage(
+          `https://image.mux.com/${project.heroVideo}/thumbnail.png?width=1920`,
+        );
+      }
+    }
+  }
+  if (experiments) {
+    for (const experiment of experiments.slice(0, 8)) {
+      const playbackId =
+        experiment.muxPlaybackIdClip || experiment.muxPlaybackId;
+      if (playbackId) {
+        warmImage(
+          `https://image.mux.com/${playbackId}/thumbnail.png?width=1920`,
+        );
+      }
+    }
+  }
+}
+
 /**
- * Preload all likely pages when user enters homepage.
- * Apple and Roblox are fetched eagerly (most likely to be clicked first).
- * Everything else is deferred to idle time so it doesn't compete for bandwidth.
+ * Preload Work tab Sanity lists (+ warm first card thumbs).
+ * HomePageClient reads these keys synchronously on mount.
+ */
+export async function preloadWorkPage(): Promise<void> {
+  const cachedProjects = getCachedData<WorkSanityProject[]>(
+    WORK_SANITY_PROJECTS_KEY,
+  );
+  const cachedExperiments = getCachedData<WorkExperimentProject[]>(
+    WORK_EXPERIMENT_PROJECTS_KEY,
+  );
+
+  if (cachedProjects && cachedExperiments) {
+    warmWorkMedia(cachedProjects, cachedExperiments);
+    return;
+  }
+
+  try {
+    const [projects, experiments] = await Promise.all([
+      cachedProjects
+        ? Promise.resolve(null)
+        : client.fetch<WorkSanityProject[]>(PROJECTS_QUERY),
+      cachedExperiments
+        ? Promise.resolve(null)
+        : client.fetch<WorkExperimentProject[]>(EXPERIMENT_PROJECTS_QUERY),
+    ]);
+
+    if (projects) setCachedData(WORK_SANITY_PROJECTS_KEY, projects);
+    if (experiments) setCachedData(WORK_EXPERIMENT_PROJECTS_KEY, experiments);
+
+    warmWorkMedia(
+      projects ?? cachedProjects,
+      experiments ?? cachedExperiments,
+    );
+  } catch (err) {
+    console.warn("Failed to preload work page:", err);
+  }
+}
+
+/**
+ * Preload all likely pages when user enters a main tab.
+ * Work/Art/About Sanity data is fetched eagerly so tab switches feel instant.
+ * Project modal APIs stay off this path — they compile `/api/project` in dev
+ * and starve tab-route compiles. Cards call `preloadProject` on hover instead.
  */
 export function preloadLikelyPages(): void {
   if (preloadingInProgress) return;
   preloadingInProgress = true;
 
-  // High-priority: fetch immediately so data is ready before user clicks
-  Promise.all([preloadProject("apple"), preloadProject("roblox")]).then(
-    () => {
-      // Lower-priority: defer remaining fetches to idle time
+  void (async () => {
+    try {
+      // Tab destinations only — never compete with /about|/art route compiles
+      await Promise.all([
+        preloadWorkPage(),
+        preloadArtPage(),
+        preloadAboutPage(),
+      ]);
+
       const doRest = async () => {
-        await Promise.all([
-          preloadProject("adobe"),
-          preloadProject("nasa"),
-          preloadArtPage(),
-          preloadAboutPage(),
-          preloadLibraryPage(),
-        ]);
-        preloadingInProgress = false;
+        try {
+          await preloadLibraryPage();
+        } finally {
+          preloadingInProgress = false;
+        }
       };
 
       if ("requestIdleCallback" in window) {
-        requestIdleCallback(() => doRest(), { timeout: 3000 });
+        requestIdleCallback(() => {
+          void doRest();
+        }, { timeout: 5000 });
       } else {
-        setTimeout(doRest, 500);
+        setTimeout(() => {
+          void doRest();
+        }, 1500);
       }
-    },
-  );
+    } catch {
+      preloadingInProgress = false;
+    }
+  })();
 }
