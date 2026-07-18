@@ -70,6 +70,13 @@ export const shelfItem = defineType({
       hidden: ({document}) => document?.mediaType !== 'book',
     }),
     defineField({
+      name: 'dateWatched',
+      title: 'Date Watched',
+      description: 'Date watched (from Letterboxd diary)',
+      type: 'date',
+      hidden: ({document}) => document?.mediaType !== 'movie',
+    }),
+    defineField({
       name: 'rating',
       title: 'Rating',
       description: 'Optional rating (0.5-5 stars)',
