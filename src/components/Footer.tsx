@@ -8,6 +8,7 @@ import { OWNER_LOCATION_QUERY } from "../sanity/queries";
 import type { OwnerLocation } from "../sanity/types";
 import TextScramble from "./TextScramble";
 import { LinksBackgroundImageAndText, SocialIconLinks } from "./SocialLinks";
+import { Coffee } from "./Coffee";
 
 type FooterProps = {
   /** default: red seal; blueprint: gray outline logo (design-system) */
@@ -285,7 +286,10 @@ export default function Footer({
                   rocky's matcha
                 </a>
                 <span>{` lattes.`}</span>
-                <span className="text-zinc-400">{` ☕︎`}</span>
+                <Coffee
+                  size="10px"
+                  className="ml-1 -translate-y-px text-zinc-400"
+                />
               </span>
             </p>
             <a 
