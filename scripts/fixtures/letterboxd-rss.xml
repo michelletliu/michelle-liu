@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+  xmlns:letterboxd="https://letterboxd.com"
+  xmlns:tmdb="https://themoviedb.org">
+  <channel>
+    <title>LiuMichelle's Letterboxd</title>
+    <item>
+      <title>Mr. &amp; Mrs. Smith, 2005 - ★★★★</title>
+      <link>https://letterboxd.com/liumichelle/film/mr-mrs-smith-2005/</link>
+      <pubDate>Fri, 19 Jun 2026 21:42:22 +1200</pubDate>
+      <letterboxd:watchedDate>2026-06-19</letterboxd:watchedDate>
+      <letterboxd:filmTitle>Mr. &amp; Mrs. Smith</letterboxd:filmTitle>
+      <letterboxd:filmYear>2005</letterboxd:filmYear>
+      <letterboxd:memberRating>4.0</letterboxd:memberRating>
+      <tmdb:movieId>787</tmdb:movieId>
+      <description><![CDATA[<p><img src="https://a.ltrbxd.com/poster.jpg"/></p>]]></description>
+    </item>
+    <item>
+      <title>Mr. &amp; Mrs. Smith, 2005 - ★★★</title>
+      <link>https://letterboxd.com/liumichelle/film/mr-mrs-smith-2005/1/</link>
+      <pubDate>Mon, 01 Jan 2024 12:00:00 +0000</pubDate>
+      <letterboxd:watchedDate>2024-01-01</letterboxd:watchedDate>
+      <letterboxd:filmTitle>Mr. &amp; Mrs. Smith</letterboxd:filmTitle>
+      <letterboxd:filmYear>2005</letterboxd:filmYear>
+      <letterboxd:memberRating>3.0</letterboxd:memberRating>
+      <tmdb:movieId>787</tmdb:movieId>
+      <description><![CDATA[<p><img src="https://a.ltrbxd.com/poster-old.jpg"/></p>]]></description>
+    </item>
+    <item>
+      <title>Unrated Film, 2020</title>
+      <link>https://letterboxd.com/liumichelle/film/unrated-film/</link>
+      <pubDate>Sat, 15 May 2020 10:00:00 +0000</pubDate>
+      <letterboxd:watchedDate>2020-05-15</letterboxd:watchedDate>
+      <letterboxd:filmTitle>Unrated Film</letterboxd:filmTitle>
+      <letterboxd:filmYear>2020</letterboxd:filmYear>
+      <description><![CDATA[<p><img src="https://a.ltrbxd.com/unrated.jpg"/></p>]]></description>
+    </item>
+  </channel>
+</rss>
