@@ -42,7 +42,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   if (!categories || categories.length === 0) return null;
   
   return (
-    <div className="flex w-full flex-col gap-2 md:gap-4">
+    <div className="flex w-full flex-col gap-4">
       <HorizontalLine bleed />
       <div className="font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 text-base w-full hidden md:grid">
         {categories.map((category, idx) => (
@@ -249,7 +249,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   href={project.xLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="md:hidden self-start mb-2 bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 mt-1.5 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+                  className="md:hidden self-end mb-2 bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 mt-1.5 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
                 >
                   <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
                     View on
