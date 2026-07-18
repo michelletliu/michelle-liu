@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import MediaCard, { type MediaCardData } from "./MediaCard";
+import { getShelfDisplayItems } from "./shelfCoverDate";
 import { ArrowUpRight } from "../ArrowUpRight";
 import { FilterDropdown } from "../FilterDropdown";
 import { FilterPills } from "../FilterPills";
@@ -52,14 +53,8 @@ export default function ShelfSection({
   itemCount = 5,
   onItemClick,
 }: ShelfSectionProps) {
-  // Filter items based on active year
-  // If no year is selected, show featured items; otherwise show items from that year
-  const filteredItems = activeYear
-    ? items.filter(item => item.year === activeYear)
-    : items.filter(item => item.isFeatured);
-  
-  // When a year is selected, show all items from that year; otherwise limit to itemCount
-  const displayItems = activeYear ? filteredItems : filteredItems.slice(0, itemCount);
+  // Featured: keep Sanity order. Year filter: newest → oldest by coverDateRaw.
+  const displayItems = getShelfDisplayItems(items, activeYear, itemCount);
   const isSquare = mediaType === "music";
 
   // Animation state - triggers fade up on tab change using a key to force re-render

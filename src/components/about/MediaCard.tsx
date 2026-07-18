@@ -1,6 +1,13 @@
 import clsx from "clsx";
-import { useEffect, useRef, useState, useCallback } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  type SyntheticEvent,
+} from "react";
 import { detectWhiteImageBorder } from "../../lib/detectWhiteImageBorder";
+import Tooltip from "../Tooltip";
 
 export type MediaCardData = {
   id: string;
@@ -8,6 +15,10 @@ export type MediaCardData = {
   imageSrc?: string;
   /** Title of the media item */
   title?: string;
+  /** Preformatted short date for cover hover tooltip (About shelf) */
+  coverDateLabel?: string;
+  /** Raw ISO/date string used for chronological sorting (About shelf year views) */
+  coverDateRaw?: string;
   /** Type of media (defaults to "Book") */
   type?: "Book" | "Music" | "Movie" | "Quote";
   /** Year of the item (for filtering) */
@@ -207,36 +218,33 @@ export default function MediaCard({
 
   const externalUrl = getExternalUrl();
 
-  // Image loading state - check if already cached on mount
-  const [imageLoaded, setImageLoaded] = useState(() => {
-    if (!data?.imageSrc) return false;
-    // Check if image is already in browser cache
-    const img = new Image();
-    img.src = data.imageSrc;
-    return img.complete && img.naturalWidth > 0;
-  });
+  // Sync against the real <img>: cached/broken covers often skip onLoad/onError.
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [hasDetectedWhiteBorder, setHasDetectedWhiteBorder] = useState(false);
   const shouldDetectWhiteBorder = hasImage;
-  
-  // Reset image loading state when imageSrc changes
-  useEffect(() => {
-    if (!data?.imageSrc) {
-      setImageLoaded(false);
-      setImageError(false);
-      return;
-    }
-    // Check if new image is already cached
-    const img = new Image();
-    img.src = data.imageSrc;
-    if (img.complete && img.naturalWidth > 0) {
+
+  const syncImageStateFromElement = useCallback((img: HTMLImageElement | null) => {
+    if (!img || !img.src || !img.complete) return;
+    if (img.naturalWidth > 0) {
       setImageLoaded(true);
+      setImageError(false);
     } else {
       setImageLoaded(false);
+      setImageError(true);
     }
+  }, []);
+
+  useEffect(() => {
+    setImageLoaded(false);
     setImageError(false);
     setHasDetectedWhiteBorder(false);
-  }, [data?.imageSrc]);
+
+    if (!data?.imageSrc) return;
+
+    syncImageStateFromElement(imgRef.current);
+  }, [data?.imageSrc, syncImageStateFromElement]);
 
   useEffect(() => {
     let cancelled = false;
@@ -256,12 +264,16 @@ export default function MediaCard({
     };
   }, [data?.imageSrc, shouldDetectWhiteBorder]);
 
-  const handleImageLoad = useCallback(() => {
-    setImageLoaded(true);
-  }, []);
+  const handleImageLoad = useCallback(
+    (e: SyntheticEvent<HTMLImageElement>) => {
+      syncImageStateFromElement(e.currentTarget);
+    },
+    [syncImageStateFromElement],
+  );
 
   const handleImageError = useCallback(() => {
     setImageError(true);
+    setImageLoaded(false);
   }, []);
 
   const showShimmer = hasImage && !imageLoaded && !imageError;
@@ -275,8 +287,8 @@ export default function MediaCard({
     // Border radius based on variant
     variant === "default" && "rounded-xl md:rounded-md",
     variant === "expanded" && "rounded-lg md:rounded-md",
-    // Placeholder background when no image
-    !hasImage && "bg-zinc-300",
+    // Placeholder background when no image, or when the cover failed to load
+    (!hasImage || imageError) && "bg-zinc-300",
     // Put the shadow on the card itself so overflow-hidden does not clip it.
     shouldDetectWhiteBorder &&
       (hasDetectedWhiteBorder
@@ -297,6 +309,7 @@ export default function MediaCard({
       
       {hasImage && (
         <img
+          ref={imgRef}
           src={data.imageSrc}
           alt={data.title || "Media cover"}
           className={clsx(
@@ -313,29 +326,31 @@ export default function MediaCard({
     </>
   );
 
-  // Use button with window.open for external links (instant navigation, no about:blank delay)
-  if (externalUrl) {
-    return (
-      <button
-        onClick={() => window.open(externalUrl, '_blank')}
-        className={sharedClasses}
-        title={data?.title}
-        aria-label={data?.title || "Media item"}
-      >
-        {cardContent}
-      </button>
-    );
-  }
-
-  // Use button for onClick handlers only
-  return (
+  const coverButton = (
     <button
-      onClick={onClick}
+      onClick={
+        externalUrl
+          ? () => window.open(externalUrl, "_blank")
+          : onClick
+      }
       className={sharedClasses}
-      title={data?.title}
       aria-label={data?.title || "Media item"}
     >
       {cardContent}
     </button>
   );
+
+  if (data?.coverDateLabel) {
+    return (
+      <Tooltip
+        label={data.coverDateLabel}
+        position="top"
+        className="w-full"
+      >
+        {coverButton}
+      </Tooltip>
+    );
+  }
+
+  return coverButton;
 }
