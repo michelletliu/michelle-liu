@@ -142,7 +142,7 @@ function ToolsSection({ categories, large = false, noLine = false }: { categorie
   if (noLine) return grids;
 
   return (
-    <div className="flex w-full flex-col gap-2">
+    <div className={clsx("flex w-full flex-col gap-2", large && "md:gap-7")}>
       <HorizontalLine bleed />
       {grids}
     </div>
@@ -448,9 +448,9 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
   }, []);
 
   return (
-    <div className="content-stretch flex flex-col gap-3 py-6 relative shrink-0 w-full">
+    <div className="sundays-mobile-embed content-stretch flex flex-col gap-4 px-6 pt-2 pb-6 relative shrink-0 w-full">
       {/* Title row */}
-      <div className="flex flex-col min-w-0 gap-0.5 px-6">
+      <div className="flex flex-col min-w-0 gap-0.5">
         <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
           <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-zinc-900">
             {project.title}
@@ -467,8 +467,21 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
         </p>
       </div>
 
-      {/* Buttons: View on X then sundays.rsvp */}
-      <div className="flex flex-wrap gap-0.5 items-center mb-2 px-6">
+      {/* Buttons: sundays.rsvp then View on X, right-aligned */}
+      <div className="flex flex-wrap gap-0.5 items-center justify-end py-1">
+        <a
+          href="https://sundays.rsvp"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
+        >
+          <span className="font-['Michelle',sans-serif] font-medium leading-normal text-sm text-zinc-500 group-hover:text-blue-500 whitespace-nowrap">
+            sundays.rsvp
+          </span>
+          <span className="text-zinc-500 group-hover:text-blue-500 inline-flex items-center">
+            <ArrowUpRight size="12px" />
+          </span>
+        </a>
         {project.xLink && (
           <a
             href={project.xLink}
@@ -487,34 +500,19 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
             </span>
           </a>
         )}
-        <a
-          href="https://sundays.rsvp"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
-        >
-          <span className="font-['Michelle',sans-serif] font-medium leading-normal text-sm text-zinc-500 group-hover:text-blue-500 whitespace-nowrap">
-            sundays.rsvp
-          </span>
-          <span className="text-zinc-500 group-hover:text-blue-500 inline-flex items-center">
-            <ArrowUpRight size="12px" />
-          </span>
-        </a>
       </div>
 
       {/* Tools Section */}
       {project.toolCategories && project.toolCategories.length > 0 && (
-        <div className="flex w-full flex-col gap-2">
-          <HorizontalLine className="bg-zinc-200" />
-          <div className="px-6">
-            <ToolsSection categories={project.toolCategories} noLine />
-          </div>
+        <div className="flex w-full flex-col gap-4">
+          <HorizontalLine bleed />
+          <ToolsSection categories={project.toolCategories} noLine />
         </div>
       )}
 
       {/* Video/Image content area */}
       {project.imageSrc && (
-        <div className="relative rounded-2xl border border-zinc-100 border-solid w-[calc(100%-3rem)] aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0 mt-3 mx-6">
+        <div className="relative rounded-2xl border border-zinc-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0">
           <ShimmerImage
             alt=""
             className="absolute object-cover size-full"
