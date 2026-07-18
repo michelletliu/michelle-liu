@@ -72,9 +72,9 @@ export const shelfItem = defineType({
     defineField({
       name: 'rating',
       title: 'Rating',
-      description: 'Optional rating (1-5 stars)',
+      description: 'Optional rating (0.5-5 stars)',
       type: 'number',
-      validation: (rule) => rule.min(1).max(5),
+      validation: (rule) => rule.min(0.5).max(5),
     }),
     defineField({
       name: 'review',
@@ -112,6 +112,14 @@ export const shelfItem = defineType({
       description: 'URL slug for your Letterboxd review (e.g., "left-handed-girl" for letterboxd.com/liumichelle/film/left-handed-girl/)',
       type: 'string',
       hidden: ({document}) => document?.mediaType !== 'movie',
+    }),
+    defineField({
+      name: 'tmdbId',
+      title: 'TMDb ID',
+      description: 'Stable TMDb movie identifier used by the Letterboxd sync',
+      type: 'number',
+      hidden: ({document}) => document?.mediaType !== 'movie',
+      validation: (rule) => rule.integer().positive(),
     }),
     defineField({
       name: 'spotifyUrl',

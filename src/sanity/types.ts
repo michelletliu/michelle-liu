@@ -549,6 +549,7 @@ export interface ShelfItem {
   order?: number;
   goodreadsUrl?: string;
   letterboxdSlug?: string;
+  tmdbId?: number;
   spotifyUrl?: string;
 }
 

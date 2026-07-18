@@ -1,0 +1,29 @@
+name: Sync Letterboxd to Sanity
+
+on:
+  schedule:
+    - cron: "15 13 * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: sync-letterboxd
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --no-save --no-audit --no-fund @sanity/client@^7
+      - name: Sync Letterboxd diary into Sanity
+        env:
+          SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          LETTERBOXD_USERNAME: LiuMichelle
+        run: node scripts/sync-letterboxd-rss.js
