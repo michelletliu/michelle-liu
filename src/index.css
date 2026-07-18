@@ -286,14 +286,18 @@ video {
 .animate-shimmer {
   background: linear-gradient(
     105deg,
-    #f4f4f5 0%,
-    #e4e4e7 25%,
+    #e4e4e7 0%,
+    #e4e4e7 28%,
+    #ececee 40%,
+    #f4f4f5 46%,
     #fafafa 50%,
-    #e4e4e7 75%,
-    #f4f4f5 100%
+    #f4f4f5 54%,
+    #ececee 60%,
+    #e4e4e7 72%,
+    #e4e4e7 100%
   );
-  background-size: 200% 100%;
-  animation: shimmer 2s ease-in-out infinite;
+  background-size: 220% 100%;
+  animation: shimmer 2.2s ease-in-out infinite;
   /* Optimize for better performance */
   will-change: background-position;
   transform: translateZ(0);

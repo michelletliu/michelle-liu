@@ -551,6 +551,10 @@ export interface ShelfItem {
   letterboxdSlug?: string;
   tmdbId?: number;
   spotifyUrl?: string;
+  dateRead?: string;
+  dateStarted?: string;
+  dateWatched?: string;
+  _createdAt?: string;
 }
 
 export interface LoreItem {

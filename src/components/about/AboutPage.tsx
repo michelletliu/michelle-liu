@@ -57,6 +57,10 @@ import type { CommunityCardData, CommunityPhoto as CommunityPhotoType } from "./
 import type { LoreCardData } from "./LoreCard";
 import type { StartupCardData } from "./StartupCard";
 import type { MediaCardData } from "./MediaCard";
+import {
+  getShelfCoverDateLabel,
+  resolveShelfCoverDateRaw,
+} from "./shelfCoverDate";
 import { Close } from "../Close";
 import { ghostIconButtonClass } from "../ghostIconButton";
 
@@ -269,22 +273,42 @@ function transformCommunities(data: Community[]): CommunityCardData[] {
 }
 
 function transformShelfItems(data: ShelfItem[]): MediaCardData[] {
-  return data.map((item) => ({
-    id: item._id,
-    imageSrc: item.cover 
-      ? urlFor(item.cover).width(300).url() 
-      : item.externalCoverUrl || undefined,
-    title: item.title,
-    type: item.mediaType === "book" ? "Book" 
-      : item.mediaType === "music" ? "Music" 
-      : item.mediaType === "movie" ? "Movie"
-      : "Book",
-    year: item.year,
-    isFeatured: item.isFeatured,
-    goodreadsUrl: item.goodreadsUrl,
-    letterboxdSlug: item.letterboxdSlug,
-    spotifyUrl: item.spotifyUrl,
-  }));
+  return data.map((item) => {
+    const type =
+      item.mediaType === "book"
+        ? "Book"
+        : item.mediaType === "music"
+          ? "Music"
+          : item.mediaType === "movie"
+            ? "Movie"
+            : "Book";
+
+    const coverDateInput = {
+      mediaType: item.mediaType,
+      dateRead: item.dateRead,
+      dateStarted: item.dateStarted,
+      dateWatched: item.dateWatched,
+      _createdAt: item._createdAt,
+    };
+    const coverDateRaw = resolveShelfCoverDateRaw(coverDateInput);
+    const coverDateLabel = getShelfCoverDateLabel(coverDateInput);
+
+    return {
+      id: item._id,
+      imageSrc: item.cover
+        ? urlFor(item.cover).width(300).url()
+        : item.externalCoverUrl || undefined,
+      title: item.title,
+      type,
+      year: item.year,
+      isFeatured: item.isFeatured,
+      goodreadsUrl: item.goodreadsUrl,
+      letterboxdSlug: item.letterboxdSlug,
+      spotifyUrl: item.spotifyUrl,
+      ...(coverDateRaw ? { coverDateRaw } : {}),
+      ...(coverDateLabel ? { coverDateLabel } : {}),
+    };
+  });
 }
 
 function transformLoreItems(data: LoreItem[]): LoreCardData[] {

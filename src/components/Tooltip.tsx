@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import clsx from 'clsx';
 
 type TooltipProps = {
   label: string;
@@ -11,6 +12,8 @@ type TooltipProps = {
   disabled?: boolean;
   /** Keep tooltip permanently visible (e.g. design-system specimens) */
   forceOpen?: boolean;
+  /** Extra classes on the outer wrapper (merged with base) */
+  className?: string;
 };
 
 // Tooltip warmup state - tracks if any tooltip is currently open
@@ -57,6 +60,7 @@ export default function Tooltip({
   offset = 6,
   disabled = false,
   forceOpen = false,
+  className,
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
@@ -154,7 +158,7 @@ export default function Tooltip({
 
   return (
     <div
-      className="relative inline-flex"
+      className={clsx('relative inline-flex', className)}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onMouseDown={handleMouseDown}

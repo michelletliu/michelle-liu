@@ -278,7 +278,11 @@ export const SHELF_ITEMS_QUERY = `
     isFeatured,
     goodreadsUrl,
     letterboxdSlug,
-    spotifyUrl
+    spotifyUrl,
+    dateRead,
+    dateStarted,
+    dateWatched,
+    _createdAt
   }
 `;
 
