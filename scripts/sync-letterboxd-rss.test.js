@@ -129,6 +129,7 @@ test('uses a unique normalized title fallback and rejects ambiguity', () => {
 test('creates deterministic movie documents', () => {
   const {creates} = planMutations([], [{
     title: 'Before Sunrise',
+    watchedDate: '2026-06-19',
     watchedYear: '2026',
     rating: 3,
     letterboxdSlug: 'before-sunrise',
@@ -138,6 +139,8 @@ test('creates deterministic movie documents', () => {
   assert.equal(creates[0]._id, 'shelfItem-movie-tmdb-76');
   assert.equal(creates[0].isFeatured, false);
   assert.equal(creates[0].isPublished, true);
+  assert.equal(creates[0].year, '2026');
+  assert.equal(creates[0].dateWatched, '2026-06-19');
 });
 
 test('updates authoritative fields and preserves curated fields', () => {
@@ -145,6 +148,7 @@ test('updates authoritative fields and preserves curated fields', () => {
     _id: 'movie',
     title: 'Before Sunrise',
     year: '2025',
+    dateWatched: '2025-01-01',
     rating: 5,
     order: 12,
     isFeatured: true,
@@ -152,6 +156,7 @@ test('updates authoritative fields and preserves curated fields', () => {
   }];
   const {patches} = planMutations(existing, [{
     title: 'Before Sunrise',
+    watchedDate: '2026-06-19',
     watchedYear: '2026',
     rating: 3,
     letterboxdSlug: 'before-sunrise',
@@ -159,6 +164,7 @@ test('updates authoritative fields and preserves curated fields', () => {
   }]);
   assert.deepEqual(patches[0].set, {
     year: '2026',
+    dateWatched: '2026-06-19',
     rating: 3,
     letterboxdSlug: 'before-sunrise',
     tmdbId: 76,

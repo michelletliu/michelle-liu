@@ -13,7 +13,7 @@ const {createClient} = require('@sanity/client');
 const SANITY_QUERY = `*[_type == "shelfItem" && mediaType == "movie"
   && !(_id in path("drafts.**"))
   && !(_id in path("versions.**"))]{
-  _id, title, year, rating, letterboxdSlug, tmdbId,
+  _id, title, year, dateWatched, rating, letterboxdSlug, tmdbId,
   externalCoverUrl, order, isFeatured, isPublished,
   "hasCover": defined(cover)
 }`;
@@ -206,6 +206,7 @@ function buildCreateDoc(item) {
   };
 
   if (item.watchedYear) doc.year = item.watchedYear;
+  if (item.watchedDate) doc.dateWatched = item.watchedDate;
   if (item.rating != null) doc.rating = item.rating;
   if (item.letterboxdSlug) doc.letterboxdSlug = item.letterboxdSlug;
   if (item.tmdbId != null) doc.tmdbId = item.tmdbId;
@@ -222,6 +223,10 @@ function buildPatch(existing, item) {
 
   if (item.watchedDate || item.watchedYear) {
     if (existing.year !== item.watchedYear) set.year = item.watchedYear;
+  }
+
+  if (item.watchedDate && existing.dateWatched !== item.watchedDate) {
+    set.dateWatched = item.watchedDate;
   }
 
   if (item.rating != null) {
