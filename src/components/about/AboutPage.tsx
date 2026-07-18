@@ -115,7 +115,7 @@ function StartupLogosRow({
   return (
     <div
       ref={rowRef}
-      className="mx-auto flex w-full max-w-[26rem] flex-wrap justify-between gap-y-6 md:mx-0 md:max-w-lg"
+      className="mx-auto flex w-full max-w-[26rem] flex-wrap justify-between gap-y-6 px-3 md:mx-0 md:max-w-lg md:px-0"
     >
       {startups.map((startup, i) => (
         <div
