@@ -8,7 +8,13 @@ import { ghostIconButtonClass } from "../../ghostIconButton";
 import { iconSize } from "../../iconSizes";
 
 /** 2×2 grid glyph — matches Code / Chevron stroke style. */
-function GridIcon({ size = iconSize("inline") }: { size?: string }) {
+function GridIcon({
+  size = iconSize("inline"),
+  filled = false,
+}: {
+  size?: string;
+  filled?: boolean;
+}) {
   return (
     <svg
       width={size}
@@ -20,6 +26,7 @@ function GridIcon({ size = iconSize("inline") }: { size?: string }) {
     >
       <path
         d="M4 4h6v6H4V4ZM14 4h6v6h-6V4ZM4 14h6v6H4v-6ZM14 14h6v6h-6v-6Z"
+        fill={filled ? "currentColor" : "none"}
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinejoin="round"
@@ -35,9 +42,23 @@ const ROUND_PATH =
 const SQUIRCLE_PATH =
   "M41.575 1.575H95.975C123.375 1.575 135.975 14.055 135.975 41.575V95.975C135.975 123.375 123.495 135.975 95.975 135.975H41.575C14.175 135.975 1.575 123.495 1.575 95.975V41.575C1.575 14.175 14.055 1.575 41.575 1.575Z";
 
+/** Corner arcs only — same geometry as the closed paths above. */
+const ROUND_CORNERS = [
+  "M95.975 1.575A40 40 0 0 1 135.975 41.575",
+  "M135.975 95.975A40 40 0 0 1 95.975 135.975",
+  "M41.575 135.975A40 40 0 0 1 1.575 95.975",
+  "M1.575 41.575A40 40 0 0 1 41.575 1.575",
+] as const;
+const SQUIRCLE_CORNERS = [
+  "M95.975 1.575C123.375 1.575 135.975 14.055 135.975 41.575",
+  "M135.975 95.975C135.975 123.375 123.495 135.975 95.975 135.975",
+  "M41.575 135.975C14.175 135.975 1.575 123.495 1.575 95.975",
+  "M1.575 41.575C1.575 14.175 14.055 1.575 41.575 1.575",
+] as const;
+
 const CORNER_SPECIMENS = [
-  { label: "Round", d: ROUND_PATH, overlayD: SQUIRCLE_PATH },
-  { label: "Squircle", d: SQUIRCLE_PATH, overlayD: ROUND_PATH },
+  { label: "Round", d: ROUND_PATH, overlayCorners: SQUIRCLE_CORNERS },
+  { label: "Squircle", d: SQUIRCLE_PATH, overlayCorners: ROUND_CORNERS },
 ] as const;
 
 export default function RadiusSection() {
@@ -62,11 +83,11 @@ export default function RadiusSection() {
               showGrid && "bg-zinc-100 text-zinc-500 hover:bg-zinc-100",
             )}
           >
-            <GridIcon />
+            <GridIcon filled={showGrid} />
           </button>
 
           <div className="relative flex justify-center gap-8 sm:gap-16">
-            {CORNER_SPECIMENS.map(({ label, d, overlayD }) => (
+            {CORNER_SPECIMENS.map(({ label, d, overlayCorners }) => (
               <div
                 key={label}
                 className="flex w-[112px] flex-col items-center sm:w-[168px]"
@@ -110,14 +131,18 @@ export default function RadiusSection() {
                       fill="none"
                       aria-hidden
                     >
-                      <path
-                        d={overlayD}
-                        fill="none"
-                        stroke="#60a5fa"
-                        strokeOpacity="0.55"
-                        strokeWidth="1"
-                        vectorEffect="non-scaling-stroke"
-                      />
+                      {overlayCorners.map((corner) => (
+                        <path
+                          key={corner}
+                          d={corner}
+                          fill="none"
+                          stroke="#60a5fa"
+                          strokeOpacity="0.55"
+                          strokeWidth="1"
+                          strokeLinecap="round"
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      ))}
                     </svg>
                   )}
                 </div>
