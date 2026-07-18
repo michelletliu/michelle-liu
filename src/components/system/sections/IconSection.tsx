@@ -20,6 +20,7 @@ import LumaLogo from "../../../assets/LumaLogo.svg";
 import heartFillIcon from "../../../assets/HeartFill.svg";
 import academicCapIcon from "../../../assets/academic-cap.svg";
 import mapPinIcon from "../../../assets/map-pin.svg";
+import coffeeFillIcon from "../../../assets/coffee-fill.svg";
 import { Section, SubLabel, Grid } from "../primitives";
 
 const ICON_SIZE_RAMP: IconSizeName[] = [
@@ -313,6 +314,10 @@ const filledIcons: IconSpecimen[] = [
   {
     name: "Heart fill",
     sample: <FilledAssetIcon src={heartFillIcon} className="h-[18px] w-5" />,
+  },
+  {
+    name: "Coffee",
+    sample: <FilledAssetIcon src={coffeeFillIcon} />,
   },
   {
     name: "Academic cap",
