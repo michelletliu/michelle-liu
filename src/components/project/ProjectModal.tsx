@@ -7,8 +7,33 @@ import { urlFor } from "../../sanity/client";
 import {
   fetchProjectByCompany,
   getCachedData,
+  WORK_SANITY_PROJECTS_KEY,
 } from "../../sanity/preload";
 import type { Project, ContentSection } from "../../sanity/types";
+
+/** Resolve breadcrumb label with correct CMS casing — never invent sentence case from the slug. */
+function getBreadcrumbProjectName(projectId: string, project: Project | null): string {
+  if (
+    project?.title &&
+    (project.company === projectId || project.slug === projectId)
+  ) {
+    return project.title;
+  }
+
+  const cachedProject = getCachedData<Project>(`project:${projectId}`);
+  if (cachedProject?.title) return cachedProject.title;
+
+  const workProjects = getCachedData<
+    Array<{ company?: string; slug?: string; title?: string }>
+  >(WORK_SANITY_PROJECTS_KEY);
+  const fromWork = workProjects?.find(
+    (p) => p.company === projectId || p.slug === projectId,
+  )?.title;
+  if (fromWork) return fromWork;
+
+  // Last resort: uppercase so acronyms like NASA don't flash "Nasa" → "NASA".
+  return projectId.toUpperCase();
+}
 import Footer from "../Footer";
 import ShimmerImage from "../ShimmerImage";
 import ShimmerVideo from "../ShimmerVideo";
@@ -725,8 +750,12 @@ export default function ProjectModal({
   const [isScrolled, setIsScrolled] = useState(false);
   const [isPastHero, setIsPastHero] = useState(false);
   const [showSkipLink, setShowSkipLink] = useState(false);
-  const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [project, setProject] = useState<Project | null>(() =>
+    getCachedData<Project>(`project:${projectId}`),
+  );
+  const [loading, setLoading] = useState(
+    () => !getCachedData<Project>(`project:${projectId}`),
+  );
   const [error, setError] = useState<string | null>(null);
   // Check if project was previously unlocked in this session
   const [isUnlocked, setIsUnlocked] = useState(() => isProjectUnlocked(projectId));
@@ -761,8 +790,6 @@ export default function ProjectModal({
   useEffect(() => {
     async function fetchProject() {
       try {
-        setLoading(true);
-        
         // Check cache first (populated by preloadLikelyPages). Cached project
         // payloads are public-only, so bypass them once this tab is unlocked.
         const cacheKey = `project:${projectId}`;
@@ -774,6 +801,8 @@ export default function ProjectModal({
           setLoading(false);
           return;
         }
+
+        setLoading(true);
         
         const { project: data, unlocked } = await fetchProjectByCompany(projectId);
         if (unlocked) {
@@ -1205,7 +1234,7 @@ export default function ProjectModal({
                 
                 {/* Breadcrumb navigation */}
                 <Breadcrumb 
-                  projectName={project?.title || projectId.charAt(0).toUpperCase() + projectId.slice(1)}
+                  projectName={getBreadcrumbProjectName(projectId, project)}
                   onWorkClick={onViewAllProjects}
                   isScrolled={isScrolled}
                   isPastHero={isPastHero}
