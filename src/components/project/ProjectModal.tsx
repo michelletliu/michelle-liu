@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { PortableText } from "@portabletext/react";
@@ -7,8 +7,33 @@ import { urlFor } from "../../sanity/client";
 import {
   fetchProjectByCompany,
   getCachedData,
+  WORK_SANITY_PROJECTS_KEY,
 } from "../../sanity/preload";
 import type { Project, ContentSection } from "../../sanity/types";
+
+/** Resolve breadcrumb label with correct CMS casing — never invent sentence case from the slug. */
+function getBreadcrumbProjectName(projectId: string, project: Project | null): string {
+  if (
+    project?.title &&
+    (project.company === projectId || project.slug === projectId)
+  ) {
+    return project.title;
+  }
+
+  const cachedProject = getCachedData<Project>(`project:${projectId}`);
+  if (cachedProject?.title) return cachedProject.title;
+
+  const workProjects = getCachedData<
+    Array<{ company?: string; slug?: string; title?: string }>
+  >(WORK_SANITY_PROJECTS_KEY);
+  const fromWork = workProjects?.find(
+    (p) => p.company === projectId || p.slug === projectId,
+  )?.title;
+  if (fromWork) return fromWork;
+
+  // Last resort: uppercase so acronyms like NASA don't flash "Nasa" → "NASA".
+  return projectId.toUpperCase();
+}
 import Footer from "../Footer";
 import ShimmerImage from "../ShimmerImage";
 import ShimmerVideo from "../ShimmerVideo";
@@ -29,6 +54,8 @@ import { Close } from "../Close";
 import { ArrowRightIcon } from "../Arrow";
 import { HorizontalLine } from "../HorizontalLine";
 import { ghostIconButtonClass } from "../ghostIconButton";
+import ProjectCaseStudySidebar from "./ProjectCaseStudySidebar";
+import { getCaseStudyNavItems } from "./caseStudyNavItems";
 
 // Helper to render text with highlighted portion
 function renderHighlightedText(text: string, highlightedText?: string, highlightColor?: string): React.ReactNode {
@@ -725,8 +752,12 @@ export default function ProjectModal({
   const [isScrolled, setIsScrolled] = useState(false);
   const [isPastHero, setIsPastHero] = useState(false);
   const [showSkipLink, setShowSkipLink] = useState(false);
-  const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [project, setProject] = useState<Project | null>(() =>
+    getCachedData<Project>(`project:${projectId}`),
+  );
+  const [loading, setLoading] = useState(
+    () => !getCachedData<Project>(`project:${projectId}`),
+  );
   const [error, setError] = useState<string | null>(null);
   // Check if project was previously unlocked in this session
   const [isUnlocked, setIsUnlocked] = useState(() => isProjectUnlocked(projectId));
@@ -751,18 +782,32 @@ export default function ProjectModal({
   
   // Fullscreen state is controlled by URL via initialFullscreen prop
   const isFullscreen = initialFullscreen;
-  const [isPastTOC, setIsPastTOC] = useState(false);
-  const [tocItems, setTocItems] = useState<
-    { _key?: string; number?: string; title?: string; targetSectionId?: string }[]
-  >([]);
+  const [activeNavId, setActiveNavId] = useState<string | undefined>();
   const pendingUnlockTargetRef = React.useRef<string | null>(null);
+
+  const visibleSections = useMemo(() => {
+    if (!project?.content) return [];
+
+    return project.content.filter((section) => {
+      if (section._type === "protectedSection") return !isUnlocked;
+
+      const visibility = (section as { visibility?: string }).visibility || "both";
+      if (visibility === "both") return true;
+      if (visibility === "locked") return !isUnlocked;
+      if (visibility === "unlocked") return isUnlocked;
+      return true;
+    });
+  }, [project, isUnlocked]);
+
+  const navItems = useMemo(
+    () => getCaseStudyNavItems(visibleSections),
+    [visibleSections],
+  );
 
   // Fetch project data from Sanity (uses preloaded cache if available)
   useEffect(() => {
     async function fetchProject() {
       try {
-        setLoading(true);
-        
         // Check cache first (populated by preloadLikelyPages). Cached project
         // payloads are public-only, so bypass them once this tab is unlocked.
         const cacheKey = `project:${projectId}`;
@@ -774,6 +819,8 @@ export default function ProjectModal({
           setLoading(false);
           return;
         }
+
+        setLoading(true);
         
         const { project: data, unlocked } = await fetchProjectByCompany(projectId);
         if (unlocked) {
@@ -868,31 +915,52 @@ export default function ProjectModal({
   }, [project, loading]);
 
 
-  // Observe when TOC leaves viewport to show sticky mini-sidebar
+  // Track the section nearest the sticky header in fullscreen mode.
   useEffect(() => {
-    const tocElement = tocRef.current;
-    const scrollContainer = scrollContainerRef.current;
-    if (!tocElement || !scrollContainer || !isFullscreen) return;
+    if (!isFullscreen || isMobile || navItems.length === 0) return;
+    const container = scrollContainerRef.current;
+    if (!container) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const tocTop = entry.boundingClientRect.top;
-          const rootTop = entry.rootBounds?.top ?? 0;
-          const isPast = !entry.isIntersecting && tocTop < rootTop;
-          setIsPastTOC(isPast);
-        });
-      },
-      {
-        root: scrollContainer,
-        threshold: 0,
-        rootMargin: "0px 0px 0px 0px",
+    const getOffsetTop = (element: HTMLElement, root: HTMLElement): number => {
+      let offsetTop = 0;
+      let current: HTMLElement | null = element;
+      while (current && current !== root) {
+        offsetTop += current.offsetTop;
+        current = current.offsetParent as HTMLElement | null;
       }
-    );
+      return offsetTop;
+    };
 
-    observer.observe(tocElement);
-    return () => observer.disconnect();
-  }, [isFullscreen, project]);
+    const handleScroll = () => {
+      const threshold = 160;
+      let active: string | undefined;
+
+      for (let i = navItems.length - 1; i >= 0; i--) {
+        const item = navItems[i];
+        const element =
+          (container.querySelector(
+            `[data-section-number="${item.id}"]`,
+          ) as HTMLElement | null) ||
+          (container.querySelector(
+            `[data-section-key="${item.id}"]`,
+          ) as HTMLElement | null);
+        if (!element) continue;
+
+        const top = getOffsetTop(element, container) - container.scrollTop;
+        if (top <= threshold) {
+          active = item.id;
+          break;
+        }
+      }
+
+      active ||= navItems[0]?.id;
+      setActiveNavId((previous) => previous === active ? previous : active);
+    };
+
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [isFullscreen, isMobile, navItems, project, loading]);
 
   // Handle ESC key to close modal (only in popup mode, not fullscreen)
   useEffect(() => {
@@ -967,6 +1035,23 @@ export default function ProjectModal({
         onBack();
       }, 300);
     }
+  };
+
+  const scrollToNavTarget = (id: string) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const target =
+      (container.querySelector(
+        `[data-section-number="${id}"]`,
+      ) as HTMLElement | null) ||
+      (container.querySelector(
+        `[data-section-key="${id}"]`,
+      ) as HTMLElement | null);
+
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    setActiveNavId(id);
   };
 
   // If configured, scroll to a specific section after successful unlock.
@@ -1205,10 +1290,21 @@ export default function ProjectModal({
                 
                 {/* Breadcrumb navigation */}
                 <Breadcrumb 
-                  projectName={project?.title || projectId.charAt(0).toUpperCase() + projectId.slice(1)}
+                  projectName={getBreadcrumbProjectName(projectId, project)}
                   onWorkClick={onViewAllProjects}
                   isScrolled={isScrolled}
                   isPastHero={isPastHero}
+                />
+              </div>
+            </div>
+          )}
+          {isFullscreen && !isMobile && navItems.length > 0 && (
+            <div className="pointer-events-none fixed top-28 left-8 md:left-[8%] xl:left-[40px] z-20 hidden md:block">
+              <div className="pointer-events-auto max-w-[140px]">
+                <ProjectCaseStudySidebar
+                  items={navItems}
+                  activeId={activeNavId}
+                  onSelect={scrollToNavTarget}
                 />
               </div>
             </div>
@@ -1360,60 +1456,7 @@ export default function ProjectModal({
               </div>
 
               {/* Dynamic Content Sections */}
-              {isFullscreen && !isMobile && tocItems.length > 0 && isPastTOC && (
-                <div className="fixed left-6 top-28 z-30 hidden">
-                  <div className="backdrop-blur-sm rounded-xl px-4 py-3 flex flex-col gap-2">                    <div className="flex flex-col gap-1">
-                      {tocItems.map((item) => (
-                        <button
-                          key={item._key || item.title}
-                          type="button"
-                          onClick={() => {
-                            if (item.targetSectionId && scrollContainerRef?.current) {
-                              const targetElement = scrollContainerRef.current.querySelector(
-                                `[data-section-number="${item.targetSectionId}"]`
-                              );
-                              if (targetElement) {
-                                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                              }
-                            }
-                          }}
-                          className="text-left text-xs max-w-12 text-zinc-700 hover:text-zinc-900 transition-colors"
-                        >
-                          <span className="font-medium text-[#a1a1aa] mr-2">{item.number}</span>
-                          <span>{item.title}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {(() => {
-                // Filter content based on unlock state and visibility settings
-                let sections = project.content || [];
-                
-                // Helper to check if a section should be visible
-                const shouldShowSection = (section: ContentSection) => {
-                  // ProtectedSection: only show when locked
-                  if (section._type === "protectedSection") {
-                    return !isUnlocked;
-                  }
-                  
-                  // Check visibility setting (default to "both" if not set)
-                  const visibility = (section as any).visibility || "both";
-                  if (visibility === "both") return true;
-                  if (visibility === "locked") return !isUnlocked;
-                  if (visibility === "unlocked") return isUnlocked;
-                  return true;
-                };
-                
-                // Filter by visibility first
-                sections = sections.filter(shouldShowSection);
-                
-                // When locked, also include the protectedSection at its original position
-                // No longer truncating - just let visibility settings control everything
-                
-                return sections.map((section) => {
+              {visibleSections.map((section) => {
                   const sectionNumber =
                     section._type === "sectionTitleSection" ? section.number : undefined;
                   const sectionHeading = getSectionAnchorHeading(section);
@@ -1439,7 +1482,6 @@ export default function ProjectModal({
                         scrollContainerRef={scrollContainerRef}
                         missionRef={missionRef}
                         tocRef={tocRef}
-                        setTocItems={setTocItems}
                       />
                     </div>
                   ) : (
@@ -1461,14 +1503,12 @@ export default function ProjectModal({
                           projectId={projectId}
                           missionRef={missionRef}
                           tocRef={tocRef}
-                          setTocItems={setTocItems}
                         />
                       </ScrollReveal>
                     </div>
                   )
                   );
-                });
-              })()}
+                })}
 
               {/* Also Check Out Section */}
               {project.relatedProjects && project.relatedProjects.length > 0 && (
@@ -1749,7 +1789,6 @@ function ContentBlock({
   projectId,
   missionRef,
   tocRef,
-  setTocItems,
 }: { 
   section: ContentSection; 
   isFullscreen?: boolean; 
@@ -1761,21 +1800,7 @@ function ContentBlock({
   projectId?: string;
   missionRef?: React.RefObject<HTMLDivElement | null>;
   tocRef?: React.RefObject<HTMLDivElement | null>;
-  setTocItems?: (items: { _key?: string; number?: string; title?: string; targetSectionId?: string }[]) => void;
 }) {
-  // Sync TOC items upward for sidebar (only when this block is TOC)
-  useEffect(() => {
-    if (section._type === "tableOfContentsSection") {
-      setTocItems?.(
-        (section as any).items?.map((it: any) => ({
-          _key: it._key,
-          number: it.number,
-          title: it.title,
-          targetSectionId: it.targetSectionId,
-        })) || []
-      );
-    }
-  }, [section, setTocItems]);
   const renderContent = () => {
     switch (section._type) {
       case "missionSection":

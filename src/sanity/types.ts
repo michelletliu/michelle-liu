@@ -249,6 +249,10 @@ export interface SectionTitleSection {
   number?: string;
   numberColor?: string;
   title: string;
+  /** Short left-nav label; falls back to title when unset. */
+  sidebarLabel?: string;
+  /** When true, omit from case study left nav; section still renders on the page. */
+  hideFromSidebar?: boolean;
   titleColor?: string;
   lineColor?: string;
   showLine?: boolean;
@@ -353,6 +357,8 @@ export interface TocItem {
   externalImageUrl?: string;
   number?: string;
   title: string;
+  /** Short left-nav label; falls back to title when unset. */
+  sidebarLabel?: string;
   targetSectionId?: string;
 }
 
