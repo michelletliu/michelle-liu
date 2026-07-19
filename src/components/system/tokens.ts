@@ -437,6 +437,30 @@ export function slugify(text: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+export const DESIGN_SYSTEM_BASE_PATH = "/design-system";
+
+/** Path segment for a section DOM id. Overview (`intro`) → null. */
+export function sectionPathSlug(sectionId: string): string | null {
+  const section = tocSections.find((s) => s.id === sectionId);
+  if (!section || section.id === "intro") return null;
+  return slugify(section.label);
+}
+
+/** DOM id for a path slug, or null if unknown / Overview-like. */
+export function sectionIdFromPathSlug(slug: string): string | null {
+  if (!slug) return null;
+  const section = tocSections.find(
+    (s) => s.id !== "intro" && slugify(s.label) === slug,
+  );
+  return section?.id ?? null;
+}
+
+/** Full pathname for a section DOM id. Unknown / Overview → bare base. */
+export function pathForSectionId(sectionId: string): string {
+  const slug = sectionPathSlug(sectionId);
+  return slug ? `${DESIGN_SYSTEM_BASE_PATH}/${slug}` : DESIGN_SYSTEM_BASE_PATH;
+}
+
 /** DOM id (and nav id) for a SubLabel — prefixed so it never clashes with a section id. */
 export function subSlug(label: string): string {
   return `sub-${slugify(label)}`;
