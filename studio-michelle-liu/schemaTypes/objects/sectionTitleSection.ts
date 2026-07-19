@@ -43,6 +43,23 @@ export const sectionTitleSection = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'sidebarLabel',
+      title: 'Sidebar Label',
+      description:
+        'Short label for the case study left nav when this project has no TOC cards. Falls back to Section Title if empty.',
+      type: 'string',
+      validation: (rule) => rule.max(40),
+      hidden: ({parent}) => Boolean(parent?.hideFromSidebar),
+    }),
+    defineField({
+      name: 'hideFromSidebar',
+      title: 'Hide from Sidebar Nav',
+      type: 'boolean',
+      description:
+        'Hide this section from the case study left nav. The section still appears on the page.',
+      initialValue: false,
+    }),
+    defineField({
       name: 'titleColor',
       title: 'Title Color',
       type: 'string',
@@ -89,11 +106,12 @@ export const sectionTitleSection = defineType({
     select: {
       number: 'number',
       title: 'title',
+      hideFromSidebar: 'hideFromSidebar',
     },
-    prepare({number, title}) {
+    prepare({number, title, hideFromSidebar}) {
       return {
         title: `${number ? number + ' ' : ''}${title || 'Section Title'}`,
-        subtitle: 'Section Title',
+        subtitle: hideFromSidebar ? 'Section Title · hidden from nav' : 'Section Title',
       }
     },
   },

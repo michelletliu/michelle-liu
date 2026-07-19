@@ -108,6 +108,14 @@ export const tableOfContentsSection = defineType({
               validation: (rule) => rule.required(),
             }),
             defineField({
+              name: 'sidebarLabel',
+              title: 'Sidebar Label',
+              description:
+                'Short label for the case study left nav. Falls back to Title if empty (e.g., "Banners" instead of "JPL Banner Designs").',
+              type: 'string',
+              validation: (rule) => rule.max(40),
+            }),
+            defineField({
               name: 'targetSectionId',
               title: 'Target Section ID',
               description: 'ID of the section to scroll to when clicked (matches sectionTitleSection number)',
@@ -117,13 +125,16 @@ export const tableOfContentsSection = defineType({
           preview: {
             select: {
               title: 'title',
+              sidebarLabel: 'sidebarLabel',
               number: 'number',
               media: 'image',
             },
-            prepare({title, number, media}) {
+            prepare({title, sidebarLabel, number, media}) {
               return {
                 title: title || 'Untitled',
-                subtitle: number || '',
+                subtitle: [number, sidebarLabel ? `nav: ${sidebarLabel}` : null]
+                  .filter(Boolean)
+                  .join(' · '),
                 media,
               }
             },
