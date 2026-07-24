@@ -278,7 +278,9 @@ export default function BlueprintLogo({
     <span
       ref={rootRef}
       className={clsx(
-        "blueprint-logo relative block size-full overflow-visible",
+        // pointer-events-none: hit the parent <a class="group"> directly so
+        // morph re-renders on this node can't swallow the doorway click.
+        "blueprint-logo pointer-events-none relative block size-full overflow-visible",
         always && "blueprint-logo--always",
         showBlueprint && "blueprint-logo--blueprint",
         className

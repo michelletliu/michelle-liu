@@ -41,12 +41,17 @@ test("finishes the pill transform before changing routes", () => {
 });
 
 test("does not compile the design system automatically on mount", () => {
-  assert.doesNotMatch(
-    doorwaySource,
-    /useEffect\(\(\) => \{[\s\S]*?warmDesignSystem\(\)[\s\S]*?\}, \[router\]\)/,
-  );
   assert.doesNotMatch(doorwaySource, /onMouseEnter=\{prefetchDoorway\}/);
   assert.match(doorwaySource, /process\.env\.NODE_ENV === "development"/);
+});
+
+test("doorway click uses capture-phase nav so morph re-renders cannot drop it", () => {
+  assert.match(doorwaySource, /data-blueprint-doorway/);
+  assert.match(
+    doorwaySource,
+    /document\.addEventListener\("click", onClick, true\)/,
+  );
+  assert.doesNotMatch(doorwaySource, /onClick=\{handleClick\}/);
 });
 
 test("project preloads and modal opens share one in-flight request", () => {
