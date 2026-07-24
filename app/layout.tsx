@@ -4,7 +4,7 @@ import "@/index.css";
 import "@/styles/globals.css";
 
 const siteDescription =
-  "Designing useful products to spark moments of delight & human connection. Previously at Apple, Roblox, & NASA.";
+  "Designing products to spark moments of delight & human connection. Previously at Apple, Roblox, & NASA.";
 
 export const metadata: Metadata = {
   title: "michelle liu",
