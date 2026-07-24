@@ -6,7 +6,6 @@ import {
   useCallback,
   type SyntheticEvent,
 } from "react";
-import { detectWhiteImageBorder } from "../../lib/detectWhiteImageBorder";
 import Tooltip from "../Tooltip";
 
 export type MediaCardData = {
@@ -222,8 +221,6 @@ export default function MediaCard({
   const imgRef = useRef<HTMLImageElement>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [hasDetectedWhiteBorder, setHasDetectedWhiteBorder] = useState(false);
-  const shouldDetectWhiteBorder = hasImage;
 
   const syncImageStateFromElement = useCallback((img: HTMLImageElement | null) => {
     if (!img || !img.src || !img.complete) return;
@@ -239,30 +236,11 @@ export default function MediaCard({
   useEffect(() => {
     setImageLoaded(false);
     setImageError(false);
-    setHasDetectedWhiteBorder(false);
 
     if (!data?.imageSrc) return;
 
     syncImageStateFromElement(imgRef.current);
   }, [data?.imageSrc, syncImageStateFromElement]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    setHasDetectedWhiteBorder(false);
-
-    if (!shouldDetectWhiteBorder || !data?.imageSrc) return;
-
-    detectWhiteImageBorder(data.imageSrc).then((hasWhiteBorder) => {
-      if (!cancelled) {
-        setHasDetectedWhiteBorder(hasWhiteBorder);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [data?.imageSrc, shouldDetectWhiteBorder]);
 
   const handleImageLoad = useCallback(
     (e: SyntheticEvent<HTMLImageElement>) => {
@@ -289,11 +267,9 @@ export default function MediaCard({
     variant === "expanded" && "rounded-lg md:rounded-md",
     // Placeholder background when no image, or when the cover failed to load
     (!hasImage || imageError) && "bg-zinc-300",
-    // Put the shadow on the card itself so overflow-hidden does not clip it.
-    shouldDetectWhiteBorder &&
-      (hasDetectedWhiteBorder
-        ? "shadow-media"
-        : "shadow-soft"),
+    // Soft drop shadow on the card (img shadows clip). Deeper than shadow-media
+    // so pure-white Letterboxd posters still separate from the page.
+    hasImage && "shadow-[0_4px_16px_rgba(0,0,0,0.16)]",
     // Cursor style - pointer if has link
     externalUrl ? "cursor-pointer" : "",
     className
@@ -319,9 +295,6 @@ export default function MediaCard({
           onLoad={handleImageLoad}
           onError={handleImageError}
         />
-      )}
-      {hasDetectedWhiteBorder && (
-        <div className="pointer-events-none absolute inset-0 z-[2] rounded-[inherit] border border-zinc-50" />
       )}
     </>
   );
