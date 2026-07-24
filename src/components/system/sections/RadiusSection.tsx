@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import clsx from "clsx";
-import { radii, subSlug, uniformTag } from "../tokens";
-import { Section, SubLabel, Grid, TokenCard } from "../primitives";
+import { radii, uniformTag } from "../tokens";
+import { SubLabel, Grid, TokenCard } from "../primitives";
 import { ghostIconButtonClass } from "../../ghostIconButton";
 import { iconSize } from "../../iconSizes";
 
@@ -61,12 +61,14 @@ const CORNER_SPECIMENS = [
   { label: "Squircle", d: SQUIRCLE_PATH, overlayCorners: ROUND_CORNERS },
 ] as const;
 
-export default function RadiusSection() {
+/** Radius diagram + scale — first subhead under Borders. */
+export default function RadiusBlock() {
   const radiiTag = uniformTag(radii);
   const [showGrid, setShowGrid] = useState(false);
 
   return (
-    <Section id={subSlug("Border Radius")} title="Border Radius">
+    <>
+      <SubLabel>Radius</SubLabel>
       <div className="mb-10">
         <div className="relative overflow-hidden rounded-2xl bg-zinc-50 px-4 py-8 sm:px-6 sm:py-12">
           <button
@@ -104,7 +106,8 @@ export default function RadiusSection() {
                       fill="white"
                       stroke="#9F9FA9"
                       strokeOpacity={showGrid ? 0.15 : 0.3}
-                      strokeWidth="3.15"
+                      strokeWidth={showGrid ? 1 : 3.15}
+                      vectorEffect={showGrid ? "non-scaling-stroke" : undefined}
                     />
                   </svg>
                   {showGrid && (
@@ -183,6 +186,6 @@ export default function RadiusSection() {
           />
         ))}
       </Grid>
-    </Section>
+    </>
   );
 }

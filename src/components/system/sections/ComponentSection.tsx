@@ -132,13 +132,13 @@ const MATRIX_CONTENT_OPTIONS = [
 ];
 
 /**
- * Solid / Glass matrices — fluid height on mobile; locked on md+ so content
- * toggles don’t reflow the card.
+ * Solid / Glass matrices — locked height at every breakpoint so Label /
+ * Icon+label / Icon tabs don’t reflow the card (tallest is icon+label).
  */
 const BUTTON_MATRIX_CARD_CLASS =
-  "min-h-0 !items-stretch !justify-start overflow-hidden md:h-[30rem] md:min-h-[30rem] md:max-h-[30rem]";
+  "!h-[36rem] !min-h-[36rem] !max-h-[36rem] !items-stretch !justify-start overflow-hidden md:!h-[30rem] md:!min-h-[30rem] md:!max-h-[30rem]";
 
-/** Playground is shorter — size to content so the card has no empty bottom band. */
+/** Playground stage is fixed-height; card can size to the settings stack. */
 const BUTTON_PLAYGROUND_CARD_CLASS =
   "!items-stretch !justify-start";
 
@@ -272,27 +272,27 @@ function ButtonMatrixStage({
 }) {
   return (
     <div
-      className={`flex min-h-0 flex-1 items-stretch justify-center rounded-xl px-3 py-4 sm:px-6 sm:py-6 md:items-center ${stageClassName}`}
+      className={`flex min-h-0 flex-1 items-stretch justify-center rounded-xl px-6 py-6 md:items-center ${stageClassName}`}
     >
       <p className="sr-only">{caption}</p>
 
-      {/* Mobile: stacked variants; sizes wrap so icon+label never overflows */}
-      <div className="flex w-full flex-col gap-5 md:hidden">
+      {/* Mobile: stacked variants; 3 fixed columns so tab toggles don’t reflow height */}
+      <div className="flex w-full flex-col gap-5 overflow-y-auto md:hidden">
         {SPEC_BUTTON_VARIANTS.map((variant) => (
           <div key={variant} className="flex flex-col gap-2">
             <span className="text-sm font-normal text-zinc-400">
               {SPEC_BUTTON_VARIANT_LABELS[variant]}
             </span>
-            <div className="flex flex-wrap items-end justify-center gap-x-4 gap-y-3">
+            <div className="grid w-full grid-cols-3 items-end justify-items-center gap-x-2 gap-y-3">
               {SPEC_BUTTON_SIZES.map((size) => (
                 <div
                   key={size}
-                  className="flex flex-col items-center gap-1.5"
+                  className="flex w-full flex-col items-center gap-1.5"
                 >
                   <span className="text-xs font-normal text-zinc-400">
                     {size}
                   </span>
-                  <div className="flex min-h-12 items-center justify-center">
+                  <div className="flex h-12 w-full items-center justify-center">
                     {renderCell(variant, size, content)}
                   </div>
                 </div>
@@ -356,7 +356,7 @@ function ButtonMatrixSpecimen() {
   const [content, setContent] = useState<SpecButtonContent>("label");
 
   return (
-    <div className="flex h-full w-full flex-col items-stretch gap-5">
+    <div className="flex h-full min-h-0 w-full flex-col items-stretch gap-5">
       <ButtonMatrixStage
         content={content}
         caption="Solid button variants by size"
@@ -373,7 +373,7 @@ function ButtonMatrixSpecimen() {
         options={MATRIX_CONTENT_OPTIONS}
         value={content}
         onChange={(value) => setContent(value as SpecButtonContent)}
-        className="justify-center flex-wrap"
+        className="shrink-0 justify-center flex-wrap px-6"
       />
     </div>
   );
@@ -383,7 +383,7 @@ function GlassMatrixSpecimen() {
   const [content, setContent] = useState<SpecButtonContent>("label");
 
   return (
-    <div className="flex h-full w-full flex-col items-stretch gap-5">
+    <div className="flex h-full min-h-0 w-full flex-col items-stretch gap-5">
       <ButtonMatrixStage
         content={content}
         caption="Glass button variants by size"
@@ -400,7 +400,7 @@ function GlassMatrixSpecimen() {
         options={MATRIX_CONTENT_OPTIONS}
         value={content}
         onChange={(value) => setContent(value as SpecButtonContent)}
-        className="justify-center flex-wrap"
+        className="shrink-0 justify-center flex-wrap px-6"
       />
     </div>
   );
@@ -453,7 +453,7 @@ function ButtonPlaygroundSpecimen() {
     <div className="flex h-full w-full min-h-0 flex-col items-stretch gap-4">
       {/* Fixed stage height — lg / icon+label must not grow the card */}
       <div
-        className={`flex h-36 shrink-0 items-center justify-center rounded-xl px-3 sm:h-44 sm:px-6 ${
+        className={`flex h-36 shrink-0 items-center justify-center rounded-xl px-6 sm:h-44 ${
           isGlass
             ? "bg-gradient-to-br from-zinc-200 via-zinc-100 to-zinc-300"
             : "bg-white"
@@ -467,7 +467,7 @@ function ButtonPlaygroundSpecimen() {
       </div>
 
       <div
-        className="flex w-full shrink-0 flex-col gap-2.5 px-3 sm:px-6"
+        className="flex w-full shrink-0 flex-col gap-2.5 px-6"
         role="group"
         aria-label="Button playground settings"
       >
@@ -552,10 +552,10 @@ function Specimen({
     <div className="pl-1 text-base leading-snug text-zinc-400 text-pretty">{label}</div>
   );
   return (
-    <div className={`flex h-full w-full min-w-0 flex-col gap-1 self-stretch ${span}`}>
+    <div className={`flex h-full w-full min-w-0 flex-col gap-1.5 self-stretch ${span}`}>
       {labelPosition === "top" ? labelEl : null}
       <div
-        className={`flex min-h-64 w-full min-w-0 flex-1 items-center justify-center gap-4 overflow-visible rounded-2xl bg-zinc-50 px-6 py-6 ${className}`}
+        className={`flex min-h-64 w-full min-w-0 flex-1 items-center justify-center gap-4 overflow-visible rounded-2xl bg-zinc-50 px-3 py-3 sm:px-6 sm:py-6 ${className}`}
       >
         {children}
       </div>
@@ -824,75 +824,228 @@ function SidebarSpecimen() {
   );
 }
 
+/** Field compositions × interaction states — mirrors Button matrix layout. */
+const INPUT_MATRIX_CARD_CLASS =
+  "relative min-h-0 !items-stretch !justify-start overflow-hidden";
+
+type SpecInputComposition = "text" | "leading" | "trailing" | "muted";
+type SpecInputState = "default" | "focus" | "filled" | "disabled" | "error";
+
+const SPEC_INPUT_COMPOSITIONS: SpecInputComposition[] = [
+  "text",
+  "leading",
+  "trailing",
+  "muted",
+];
+const SPEC_INPUT_STATES: SpecInputState[] = [
+  "default",
+  "focus",
+  "filled",
+  "disabled",
+  "error",
+];
+
+const SPEC_INPUT_COMPOSITION_LABELS: Record<SpecInputComposition, string> = {
+  text: "Text",
+  leading: "Leading icon",
+  trailing: "Trailing icon",
+  muted: "Muted",
+};
+
+const SPEC_INPUT_STATE_LABELS: Record<SpecInputState, string> = {
+  default: "Default",
+  focus: "Focus",
+  filled: "Filled",
+  disabled: "Disabled",
+  error: "Error",
+};
+
+function SpecInputSample({
+  composition,
+  state,
+}: {
+  composition: SpecInputComposition;
+  state: SpecInputState;
+}) {
+  const isDisabled = state === "disabled";
+  const isError = state === "error";
+  const isFocus = state === "focus";
+  /** Filled + error show a value; focus is empty with active border only. */
+  const showValue = state === "filled" || state === "error";
+
+  const shellTone = composition === "leading" || composition === "muted" ? "muted" : "surface";
+  const shellClass =
+    composition === "leading"
+      ? "max-w-[11.5rem] gap-2.5"
+      : composition === "trailing"
+        ? "max-w-[11.5rem] justify-between"
+        : "max-w-[11.5rem]";
+
+  const placeholder =
+    composition === "leading"
+      ? "Filter"
+      : composition === "trailing"
+        ? "Enter"
+        : composition === "muted"
+          ? "Say Hi"
+          : "Book Title";
+
+  const filledValue =
+    composition === "trailing"
+      ? "••••"
+      : composition === "leading"
+        ? "Books"
+        : "Michelle";
+
+  return (
+    <FieldShell
+      tone={shellTone}
+      active={isFocus}
+      error={isError}
+      className={shellClass}
+    >
+      {composition === "leading" ? (
+        <FieldLeadingIcon>
+          <SearchMagnifierIcon />
+        </FieldLeadingIcon>
+      ) : null}
+      <FieldInput
+        type={composition === "trailing" ? "password" : "text"}
+        inputMode={composition === "leading" ? "search" : undefined}
+        placeholder={placeholder}
+        defaultValue={showValue ? filledValue : ""}
+        disabled={isDisabled}
+        readOnly={showValue || isFocus}
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
+        aria-label={`${SPEC_INPUT_COMPOSITION_LABELS[composition]} · ${SPEC_INPUT_STATE_LABELS[state]}`}
+        className={
+          composition === "leading"
+            ? "pr-3 font-medium tracking-[0.01em] text-zinc-700"
+            : composition === "muted"
+              ? "px-3.5"
+              : undefined
+        }
+      />
+      {composition === "trailing" ? (
+        <FieldTrailingIcon className="text-zinc-400">
+          <ArrowRightIcon size="14px" />
+        </FieldTrailingIcon>
+      ) : null}
+    </FieldShell>
+  );
+}
+
+/** Sticky first column — zinc-50 fill + shadow covers border-spacing gap while scrolling. */
+const INPUT_MATRIX_STICKY_COL =
+  "sticky left-0 z-20 bg-zinc-50 text-left text-sm font-normal text-zinc-400 shadow-[12px_0_0_0_theme(colors.zinc.50)] lg:shadow-[16px_0_0_0_theme(colors.zinc.50)]";
+
+function InputMatrixSpecimen() {
+  return (
+    <div className="relative flex h-full w-full min-w-0 flex-col items-stretch">
+      <div className="flex min-h-0 min-w-0 flex-1 items-stretch justify-center overflow-x-auto px-0 py-6 md:items-center">
+        <p className="sr-only">Field compositions by interaction state</p>
+
+        {/* Mobile: stacked compositions; states wrap */}
+        <div className="flex w-full flex-col gap-5 md:hidden">
+          {SPEC_INPUT_COMPOSITIONS.map((composition) => (
+            <div key={composition} className="flex flex-col gap-2">
+              <span className="text-sm font-normal text-zinc-400">
+                {SPEC_INPUT_COMPOSITION_LABELS[composition]}
+              </span>
+              <div className="flex flex-wrap items-end justify-center gap-x-4 gap-y-3">
+                {SPEC_INPUT_STATES.map((state) => (
+                  <div
+                    key={state}
+                    className="flex flex-col items-center gap-1.5"
+                  >
+                    <span className="text-xs font-normal text-zinc-400">
+                      {SPEC_INPUT_STATE_LABELS[state]}
+                    </span>
+                    <div className="flex min-h-12 w-[11.5rem] items-center justify-center">
+                      <SpecInputSample composition={composition} state={state} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/*
+          md+: fixed columns so state headers stay put across compositions.
+          Fields are ~11.5rem; table scrolls horizontally inside the card if needed.
+        */}
+        <div className="hidden w-max min-w-full md:block">
+          <table className="mx-auto w-max table-fixed border-separate border-spacing-x-3 border-spacing-y-4 lg:border-spacing-x-4">
+            <caption className="sr-only">
+              Field compositions by interaction state
+            </caption>
+            <colgroup>
+              <col className="w-[7.5rem]" />
+              {SPEC_INPUT_STATES.map((state) => (
+                <col key={state} className="w-[12.5rem]" />
+              ))}
+            </colgroup>
+            <thead>
+              <tr>
+                <th className={`${INPUT_MATRIX_STICKY_COL} pb-1`} />
+                {SPEC_INPUT_STATES.map((state) => (
+                  <th
+                    key={state}
+                    scope="col"
+                    className="pb-1 text-center text-sm font-normal text-zinc-400"
+                  >
+                    {SPEC_INPUT_STATE_LABELS[state]}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {SPEC_INPUT_COMPOSITIONS.map((composition) => (
+                <tr key={composition}>
+                  <th scope="row" className={INPUT_MATRIX_STICKY_COL}>
+                    {SPEC_INPUT_COMPOSITION_LABELS[composition]}
+                  </th>
+                  {SPEC_INPUT_STATES.map((state) => (
+                    <td key={state} className="text-center align-middle">
+                      <div className="flex h-12 items-center justify-center">
+                        <SpecInputSample
+                          composition={composition}
+                          state={state}
+                        />
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Right edge fade — matches Specimen zinc-50; hints horizontal scroll */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-zinc-50 to-transparent"
+      />
+    </div>
+  );
+}
+
 function InputSpecimensSection() {
   return (
     <>
-      <SubLabel>
-        Inputs
-      </SubLabel>
+      <SubLabel>Inputs</SubLabel>
       <div className={SPECIMEN_GRID}>
-        <Specimen label="Text" span={SPAN_WIDE}>
-          <FieldShell className="max-w-[280px]">
-            <FieldInput type="text" placeholder="Book Title" defaultValue="" aria-label="Text input specimen" />
-          </FieldShell>
-        </Specimen>
-
-        <Specimen label="Leading icon" span={SPAN_WIDE}>
-          <FieldShell tone="muted" className="max-w-[280px] gap-2.5">
-            <FieldLeadingIcon>
-              <SearchMagnifierIcon />
-            </FieldLeadingIcon>
-            <FieldInput
-              type="text"
-              inputMode="search"
-              placeholder="Filter"
-              defaultValue=""
-              autoComplete="off"
-              autoCorrect="off"
-              spellCheck={false}
-              aria-label="Leading icon search input specimen"
-              className="pr-3 font-medium tracking-[0.01em] text-zinc-700"
-            />
-          </FieldShell>
-        </Specimen>
-
-        <Specimen label="Trailing icon" span={SPAN_WIDE}>
-          <FieldShell className="max-w-[280px] justify-between">
-            <FieldInput type="password" placeholder="Enter" defaultValue="" aria-label="Trailing icon input specimen" />
-            <FieldTrailingIcon className="text-zinc-400">
-              <ArrowRightIcon size="14px" />
-            </FieldTrailingIcon>
-          </FieldShell>
-        </Specimen>
-
-        <Specimen label="Focused" span={SPAN_WIDE}>
-          <FieldShell active className="max-w-[240px]">
-            <FieldInput type="text" defaultValue="Michelle" aria-label="Focused input specimen" readOnly />
-          </FieldShell>
-        </Specimen>
-
-        <Specimen label="Muted (library)" span={SPAN_WIDE}>
-          <FieldShell tone="muted" className="max-w-[240px]">
-            <FieldInput
-              type="text"
-              placeholder="Say Hi"
-              defaultValue=""
-              className="px-3.5"
-              aria-label="Muted library input specimen"
-            />
-          </FieldShell>
-        </Specimen>
-
-        <Specimen label="Disabled" span={SPAN_WIDE}>
-          <FieldShell className="max-w-[240px]">
-            <FieldInput type="text" placeholder="Unavailable" disabled aria-label="Disabled input specimen" />
-          </FieldShell>
-        </Specimen>
-
-        <Specimen label="Error" span={SPAN_FULL}>
-          <FieldShell error className="max-w-[240px]">
-            <FieldInput type="password" placeholder="Enter" defaultValue="••••" aria-label="Error input specimen" readOnly />
-          </FieldShell>
+        <Specimen
+          label="Field"
+          span={SPAN_FULL}
+          className={INPUT_MATRIX_CARD_CLASS}
+          labelPosition="top"
+        >
+          <InputMatrixSpecimen />
         </Specimen>
       </div>
     </>
@@ -1070,11 +1223,11 @@ export default function ComponentSection() {
           <div className="flex flex-wrap items-end justify-center gap-8">
             <div className="flex flex-col items-center gap-3">
               <ContactBadge size="md" />
-              <code className="font-mono text-xs text-zinc-400">md · About</code>
+              <span className="text-xs text-zinc-400">md · About</span>
             </div>
             <div className="flex flex-col items-center gap-3">
               <ContactBadge size="sm" />
-              <code className="font-mono text-xs text-zinc-400">sm · Header</code>
+              <span className="text-xs text-zinc-400">sm · Header</span>
             </div>
           </div>
         </Specimen>

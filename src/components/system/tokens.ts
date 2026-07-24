@@ -76,9 +76,9 @@ export type MotionToken = {
 // ---------------------------------------------------------------------------
 
 export const colorGroups: ColorGroup[] = [
-  {
-    id: "zinc",
-    label: "Zinc",
+{
+    id: "primary",
+    label: "Primary",
     note: "The site's neutral backbone (Tailwind zinc-*).",
     colors: [
       { name: "zinc-900", value: "#18181b", className: "text-zinc-900", usage: "Headings, icons, --primary / --foreground tokens", tag: "canonical" },
@@ -94,9 +94,9 @@ export const colorGroups: ColorGroup[] = [
       { name: "white", value: "#ffffff", className: "bg-white", usage: "Page & card surfaces", tag: "canonical" },
     ],
   },
-  {
+{
     id: "accent",
-    label: "Blue",
+    label: "Accent",
     note: "Blue-500 is the single accent for links, CTAs, active states, and text selection.",
     colors: [
       { name: "blue-600", value: "#2563eb", className: "text-blue-600", usage: "Ikigai link hover, CMS title default", tag: "canonical" },
@@ -107,7 +107,7 @@ export const colorGroups: ColorGroup[] = [
       { name: "blue-50", value: "#eff6ff", className: "bg-blue-50", usage: "Polaroid project card bg", tag: "canonical" },
     ],
   },
-  {
+{
     id: "cms",
     label: "Case studies",
     note: "Project accent hues from Sanity case studies, plus CMS pink defaults.",
@@ -155,7 +155,7 @@ export const colorGroups: ColorGroup[] = [
       },
     ],
   },
-  {
+{
     id: "status",
     label: "Status",
     note: "Emerald for availability, red for errors.",
@@ -167,7 +167,8 @@ export const colorGroups: ColorGroup[] = [
       { name: "red-500", value: "#ef4444", usage: "Modal error state", tag: "canonical" },
       { name: "red-400", value: "#f87171", usage: "Form error text / border", tag: "canonical" },
     ],
-  },
+  }
+
 ];
 
 // ---------------------------------------------------------------------------
@@ -409,16 +410,17 @@ export const durationScale: ScaleToken[] = [
 // TABLE OF CONTENTS
 // ---------------------------------------------------------------------------
 
+/** Overview first; Materials last. Borders sits under Iconography. */
 export const tocSections: { id: string; label: string }[] = [
   { id: "intro", label: "Overview" },
   { id: "color", label: "Color" },
   { id: "components", label: "Components" },
-  { id: "typography", label: "Typography" },
-  { id: "shadows", label: "Shadows" },
-  { id: "spacing", label: "Spacing" },
+  { id: "icons", label: "Iconography" },
   { id: "borders", label: "Borders" },
   { id: "motion", label: "Motion" },
-  { id: "icons", label: "Iconography" },
+  { id: "shadows", label: "Shadows" },
+  { id: "spacing", label: "Spacing" },
+  { id: "typography", label: "Typography" },
   { id: "materials", label: "Materials" },
 ];
 
@@ -472,12 +474,8 @@ export function subSlug(label: string): string {
  * with the <SubLabel> children rendered inside each section.
  */
 export const tocSubsections: Record<string, string[]> = {
+  borders: ["Radius", "Focus states", "Styles"],
   color: colorGroups.map((g) => g.label),
-  typography: ["Families", "Properties"],
-  spacing: ["Gap scale", "Layout widths"],
-  borders: ["Styles", "Focus states", "Border Radius"],
-  motion: ["Animations", "Duration scale"],
-  icons: ["Size", "Stroke icons", "Filled icons", "Social"],
   components: [
     "Buttons",
     "Cards",
@@ -487,4 +485,8 @@ export const tocSubsections: Record<string, string[]> = {
     "Navigation",
     "Pills",
   ],
+  icons: ["Filled icons", "Size", "Social", "Stroke icons"],
+  motion: ["Animations", "Duration scale"],
+  spacing: ["Gap scale", "Layout widths"],
+  typography: ["Families", "Properties"],
 };

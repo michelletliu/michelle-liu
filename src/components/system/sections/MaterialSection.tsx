@@ -97,7 +97,7 @@ function MaterialSpecimen({ name }: { name: string }) {
       return (
         <Fill className="bg-zinc-50">
           <span
-            className="rounded px-1.5 py-0.5 text-sm"
+            className="rounded px-0.5 text-sm leading-none"
             style={{ color: "#3b82f6", backgroundColor: "#dbeafe" }}
           >
             Selected text
@@ -159,7 +159,7 @@ function MaterialSpecimen({ name }: { name: string }) {
 
     case "Canvas particles":
       return (
-        <Fill className="overflow-hidden bg-zinc-900">
+        <Fill className="overflow-hidden bg-zinc-50">
           {[
             { t: "18%", l: "22%", s: 3, o: 0.9 },
             { t: "32%", l: "58%", s: 2, o: 0.7 },
@@ -180,11 +180,11 @@ function MaterialSpecimen({ name }: { name: string }) {
                 height: p.s,
                 opacity: p.o,
                 backgroundColor:
-                  i % 3 === 0 ? "#fbcfe8" : i % 3 === 1 ? "#bfdbfe" : "#e4e4e7",
+                  i % 3 === 0 ? "#fbcfe8" : i % 3 === 1 ? "#bfdbfe" : "#a1a1aa",
               }}
             />
           ))}
-          <span className="relative text-sm text-zinc-400">Dust</span>
+          <span className="relative text-sm text-zinc-500">Dust</span>
         </Fill>
       );
 

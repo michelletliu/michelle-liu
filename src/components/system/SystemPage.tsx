@@ -39,7 +39,6 @@ import { TagChip } from "./primitives";
 import ColorSection from "./sections/ColorSection";
 import TypographySection from "./sections/TypographySection";
 import ShadowSection from "./sections/ShadowSection";
-import RadiusSection from "./sections/RadiusSection";
 import SpacingSection from "./sections/SpacingSection";
 import BorderSection from "./sections/BorderSection";
 
@@ -342,7 +341,7 @@ function MobileSectionMenu({
             <div className="px-5 pt-8 pb-6 mid:pt-10">
               <div className="flex h-8 w-full items-center overflow-visible pl-2.5">
                 <div className="flex h-10 w-full items-center gap-3 overflow-visible">
-                  <h2 className="min-w-0 flex-1 overflow-visible text-base font-medium leading-normal tracking-wide text-zinc-900">
+                  <h2 className="min-w-0 flex-1 overflow-visible text-lg font-medium leading-normal tracking-wide text-zinc-900">
                     Design System
                   </h2>
                   <span ref={sheetSlotRef} className={MORPH_SLOT} aria-hidden />
@@ -955,16 +954,16 @@ export default function SystemPage() {
             {[
               /* Intro */
               <section key="intro" id="intro" className="scroll-mt-24 pb-8">
-                <h1 className="max-w-3xl font-['Michelle',sans-serif] text-4xl font-medium leading-normal tracking-[0.0125em] text-[#3f3f46] text-balance">
+                <h1 className="max-w-3xl font-['Michelle',sans-serif] text-4xl font-normal leading-normal tracking-[0.0125em] text-[#3f3f46] text-balance">
                   Design System
                 </h1>
                 <p className="-mt-3 font-['Michelle',sans-serif] text-4xl font-normal leading-normal tracking-[0.0125em] text-zinc-400">
                   liumichelle.com
                 </p>
                 <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400 text-pretty">
-                  A living inventory of the colors, type, space, motion, and
-                  components behind liumichelle.com. Specimens are built in React
-                  with Tailwind CSS.
+                  The colors, type, space, motion, and components behind
+                  liumichelle.com. Specimens are built in React with Tailwind
+                  CSS.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-x-6 gap-y-4 text-sm text-zinc-400">
                   <span className="flex w-44 flex-col items-start gap-1">
@@ -984,13 +983,12 @@ export default function SystemPage() {
 
               <ColorSection key="color" />,
               <ComponentSection key="components" />,
-              <TypographySection key="typography" />,
+              <IconSection key="icons" />,
+              <BorderSection key="borders" />,
+              <MotionSection key="motion" />,
               <ShadowSection key="shadows" />,
               <SpacingSection key="spacing" />,
-              <BorderSection key="borders" />,
-              <RadiusSection key="radius" />,
-              <MotionSection key="motion" />,
-              <IconSection key="icons" />,
+              <TypographySection key="typography" />,
               <MaterialSection key="materials" />,
             ].map((block, i) => (
               <div

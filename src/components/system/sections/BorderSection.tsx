@@ -1,3 +1,5 @@
+"use client";
+
 import type { ReactNode } from "react";
 import { borders, uniformTag } from "../tokens";
 import {
@@ -7,6 +9,7 @@ import {
   TokenCard,
   GLASS_SPECIMEN_BG_CLASS,
 } from "../primitives";
+import RadiusBlock from "./RadiusSection";
 
 /** Width/color border tokens only — focus outline & ring live in Focus states below. */
 const borderTokens = borders.filter(
@@ -66,19 +69,7 @@ export default function BorderSection() {
 
   return (
     <Section id="borders" title="Borders">
-      <SubLabel tag={bordersTag}>Styles</SubLabel>
-      <Grid min="200px">
-        {borderTokens.map((b) => (
-          <TokenCard
-            key={b.name}
-            name={b.name}
-            tag={bordersTag ? undefined : b.tag}
-            value={b.value}
-            usage={b.usage}
-            sample={specimens[b.name]}
-          />
-        ))}
-      </Grid>
+      <RadiusBlock />
 
       <SubLabel tag={focusTag}>Focus states</SubLabel>
       <div className="grid grid-cols-1 gap-x-6 gap-y-9 md:grid-cols-2">
@@ -93,6 +84,20 @@ export default function BorderSection() {
           />
         ))}
       </div>
+
+      <SubLabel tag={bordersTag}>Styles</SubLabel>
+      <Grid min="200px">
+        {borderTokens.map((b) => (
+          <TokenCard
+            key={b.name}
+            name={b.name}
+            tag={bordersTag ? undefined : b.tag}
+            value={b.value}
+            usage={b.usage}
+            sample={specimens[b.name]}
+          />
+        ))}
+      </Grid>
     </Section>
   );
 }

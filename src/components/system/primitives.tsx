@@ -161,7 +161,7 @@ export function TokenCard({
   const hasCode = Boolean(value);
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1.5">
       <div className="relative flex h-[120px] min-h-[120px] items-center justify-center overflow-hidden rounded-xl bg-zinc-50 md:h-auto md:min-h-[200px]">
         {sample}
         {tag ? (
@@ -183,12 +183,12 @@ export function TokenCard({
           </div>
         ) : null}
         {hasCode && codeOpen ? (
-          <code className="absolute bottom-2 left-3 z-10 max-w-[calc(100%-1.5rem)] break-words font-mono text-sm leading-relaxed text-zinc-400">
+          <code className="absolute bottom-2 left-3 z-10 max-w-[calc(100%-1.5rem)] break-words font-mono text-sm leading-snug text-zinc-400">
             {value}
           </code>
         ) : null}
       </div>
-      <div className="flex flex-col gap-0 pl-2">
+      <div className={clsx("flex flex-col pl-2", usage ? "gap-0.5" : "gap-0")}>
         <span className="font-['Michelle',sans-serif] text-base font-medium text-zinc-700">
           {name}
         </span>

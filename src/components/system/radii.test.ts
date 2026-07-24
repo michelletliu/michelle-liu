@@ -64,12 +64,11 @@ test("round and squircle specimens overlay each other's corner segments", () => 
   assert.match(section, /filled=\{showGrid\}/);
 });
 
-test("token card labels and usage copy have no vertical gap", () => {
+test("token card title and usage use gap-0.5 when both are present", () => {
   const primitives = readFileSync(
     new URL("./primitives.tsx", import.meta.url),
     "utf8",
   );
 
-  assert.match(primitives, /className="flex flex-col gap-0 pl-2"/);
-  assert.doesNotMatch(primitives, /className="flex flex-col gap-1 pl-2"/);
+  assert.match(primitives, /usage \? "gap-0\.5" : "gap-0"/);
 });

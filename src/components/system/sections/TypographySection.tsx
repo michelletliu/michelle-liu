@@ -43,7 +43,7 @@ function PropertyRow({
   value: string;
 }) {
   return (
-    <div className="flex flex-col gap-2 py-3.5 sm:h-16 sm:flex-row sm:items-center sm:gap-4 sm:py-0">
+    <div className="flex flex-col gap-2 py-3.5 sm:h-20 sm:flex-row sm:items-center sm:gap-4 sm:py-0">
       {sample != null ? (
         <div className="flex h-8 w-full shrink-0 items-center overflow-hidden sm:h-10 sm:w-28 md:w-40">
           {sample}
@@ -123,7 +123,7 @@ export default function TypographySection() {
           </p>
           {(["body", "heading"] as const).map((role) => (
             <div key={role} className="mb-8 last:mb-0">
-              <p className="mb-1 text-xs font-medium text-zinc-400">
+              <p className="mb-1 text-sm font-medium text-zinc-400">
                 {role === "body" ? "Body" : "Heading"}
               </p>
               <RowList>
