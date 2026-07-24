@@ -6,7 +6,6 @@ import {
   useCallback,
   type SyntheticEvent,
 } from "react";
-import { detectWhiteImageBorder } from "../../lib/detectWhiteImageBorder";
 import Tooltip from "../Tooltip";
 
 export type MediaCardData = {
@@ -222,8 +221,6 @@ export default function MediaCard({
   const imgRef = useRef<HTMLImageElement>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [hasDetectedWhiteBorder, setHasDetectedWhiteBorder] = useState(false);
-  const shouldDetectWhiteBorder = hasImage;
 
   const syncImageStateFromElement = useCallback((img: HTMLImageElement | null) => {
     if (!img || !img.src || !img.complete) return;
@@ -239,30 +236,11 @@ export default function MediaCard({
   useEffect(() => {
     setImageLoaded(false);
     setImageError(false);
-    setHasDetectedWhiteBorder(false);
 
     if (!data?.imageSrc) return;
 
     syncImageStateFromElement(imgRef.current);
   }, [data?.imageSrc, syncImageStateFromElement]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    setHasDetectedWhiteBorder(false);
-
-    if (!shouldDetectWhiteBorder || !data?.imageSrc) return;
-
-    detectWhiteImageBorder(data.imageSrc).then((hasWhiteBorder) => {
-      if (!cancelled) {
-        setHasDetectedWhiteBorder(hasWhiteBorder);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [data?.imageSrc, shouldDetectWhiteBorder]);
 
   const handleImageLoad = useCallback(
     (e: SyntheticEvent<HTMLImageElement>) => {
@@ -289,9 +267,10 @@ export default function MediaCard({
     variant === "expanded" && "rounded-lg md:rounded-md",
     // Placeholder background when no image, or when the cover failed to load
     (!hasImage || imageError) && "bg-zinc-300",
-    // Media shadow on the card itself (overflow-hidden clips img shadows).
-    // Don't gate on white-border detection — Letterboxd posters block canvas CORS.
-    hasImage && "shadow-media",
+    // Hairline + drop shadow on the card (img shadows clip). CORS blocks
+    // white-border detection on Letterboxd, so pure-white posters need both.
+    hasImage &&
+      "shadow-[0_0_0_1px_rgba(24,24,27,0.06),0_4px_14px_rgba(0,0,0,0.14)]",
     // Cursor style - pointer if has link
     externalUrl ? "cursor-pointer" : "",
     className
@@ -317,9 +296,6 @@ export default function MediaCard({
           onLoad={handleImageLoad}
           onError={handleImageError}
         />
-      )}
-      {hasDetectedWhiteBorder && (
-        <div className="pointer-events-none absolute inset-0 z-[2] rounded-[inherit] border border-zinc-50" />
       )}
     </>
   );
