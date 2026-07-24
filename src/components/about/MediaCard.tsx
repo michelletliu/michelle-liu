@@ -267,10 +267,9 @@ export default function MediaCard({
     variant === "expanded" && "rounded-lg md:rounded-md",
     // Placeholder background when no image, or when the cover failed to load
     (!hasImage || imageError) && "bg-zinc-300",
-    // Hairline + drop shadow on the card (img shadows clip). CORS blocks
-    // white-border detection on Letterboxd, so pure-white posters need both.
-    hasImage &&
-      "shadow-[0_0_0_1px_rgba(24,24,27,0.06),0_4px_14px_rgba(0,0,0,0.14)]",
+    // Soft drop shadow on the card (img shadows clip). Deeper than shadow-media
+    // so pure-white Letterboxd posters still separate from the page.
+    hasImage && "shadow-[0_4px_16px_rgba(0,0,0,0.16)]",
     // Cursor style - pointer if has link
     externalUrl ? "cursor-pointer" : "",
     className
