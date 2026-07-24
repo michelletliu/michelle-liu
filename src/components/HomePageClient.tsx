@@ -1004,7 +1004,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                   )}
                 >
                   <span>
-                    Designing useful products to spark moments of{" "}</span>
+                    Designing products to spark moments of{" "}</span>
                   <span>delight</span>
                   <span>{` & `}</span>
                   <span>human connection.</span>
