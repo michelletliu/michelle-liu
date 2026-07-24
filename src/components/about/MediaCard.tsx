@@ -289,11 +289,9 @@ export default function MediaCard({
     variant === "expanded" && "rounded-lg md:rounded-md",
     // Placeholder background when no image, or when the cover failed to load
     (!hasImage || imageError) && "bg-zinc-300",
-    // Put the shadow on the card itself so overflow-hidden does not clip it.
-    shouldDetectWhiteBorder &&
-      (hasDetectedWhiteBorder
-        ? "shadow-media"
-        : "shadow-soft"),
+    // Media shadow on the card itself (overflow-hidden clips img shadows).
+    // Don't gate on white-border detection — Letterboxd posters block canvas CORS.
+    hasImage && "shadow-media",
     // Cursor style - pointer if has link
     externalUrl ? "cursor-pointer" : "",
     className
