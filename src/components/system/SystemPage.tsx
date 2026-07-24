@@ -25,14 +25,20 @@ import {
 } from "../FieldInput";
 import { iconSize } from "../iconSizes";
 import { useScrollLock } from "../../utils/useScrollLock";
-import { tocSections, tocSubsections, subSlug } from "./tokens";
+import {
+  tocSections,
+  tocSubsections,
+  subSlug,
+  pathForSectionId,
+  sectionIdFromPathSlug,
+  DESIGN_SYSTEM_BASE_PATH,
+} from "./tokens";
 import { TagChip } from "./primitives";
 // Light token sections ship with the shell so above-the-fold content isn't
 // blocked on a dynamic() waterfall (skeleton → chunk → fade).
 import ColorSection from "./sections/ColorSection";
 import TypographySection from "./sections/TypographySection";
 import ShadowSection from "./sections/ShadowSection";
-import RadiusSection from "./sections/RadiusSection";
 import SpacingSection from "./sections/SpacingSection";
 import BorderSection from "./sections/BorderSection";
 
@@ -335,7 +341,7 @@ function MobileSectionMenu({
             <div className="px-5 pt-8 pb-6 mid:pt-10">
               <div className="flex h-8 w-full items-center overflow-visible pl-2.5">
                 <div className="flex h-10 w-full items-center gap-3 overflow-visible">
-                  <h2 className="min-w-0 flex-1 overflow-visible text-base font-medium leading-normal tracking-wide text-zinc-900">
+                  <h2 className="min-w-0 flex-1 overflow-visible text-lg font-medium leading-normal tracking-wide text-zinc-900">
                     Design System
                   </h2>
                   <span ref={sheetSlotRef} className={MORPH_SLOT} aria-hidden />
@@ -522,10 +528,18 @@ const TOC_STICKY_TOP_PX = 112;
 /** Sticky offset once the logo is hidden near the footer — no reserved clearance. */
 const TOC_STICKY_TOP_COLLAPSED_PX = 0;
 
+function replaceDesignSystemPath(sectionId: string) {
+  const nextPath = pathForSectionId(sectionId);
+  if (typeof window === "undefined") return;
+  if (window.location.pathname === nextPath) return;
+  window.history.replaceState(null, "", nextPath);
+}
+
 export default function SystemPage() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<string>(tocSections[0].id);
   const [activeSub, setActiveSub] = useState<string | null>(null);
+  const [initialPathResolved, setInitialPathResolved] = useState(false);
   // Sticky expand: only switch which group is open when a *grouped* section
   // becomes active. Flat sections (Overview, Shadows) leave the prior group
   // open so scroll-spy boundary flicker can't thrash open/close animations.
@@ -546,17 +560,64 @@ export default function SystemPage() {
   // doorway marker (avoids SSR/sessionStorage hydration mismatch).
   const [returnHref, setReturnHref] = useState("/");
 
-  // Logo doorway + route entry: always land at the top of the DS.
+  // Logo doorway + route entry: bare routes land at the top; section routes
+  // wait for their (possibly dynamic) section before scrolling.
   // Prefetch + warm the return tab immediately — including `/` (previously
   // skipped, which made DS → Work feel cold every time).
   // Do NOT clearBlueprintDoorwaySticky here — unmount must leave the mark for
   // the destination seal so it stays resting while the pointer hasn't moved.
   useEffect(() => {
-    window.scrollTo(0, 0);
     const href = getDoorwayReturnPath();
     setReturnHref(href);
     router.prefetch(href);
     warmDoorwayReturn(href);
+
+    const parts = window.location.pathname
+      .replace(/\/+$/, "")
+      .split("/")
+      .filter(Boolean);
+    const slug = parts[0] === "design-system" ? parts[1] : undefined;
+
+    if (!slug) {
+      window.scrollTo(0, 0);
+      setInitialPathResolved(true);
+      return;
+    }
+
+    const sectionId = sectionIdFromPathSlug(slug);
+    if (!sectionId) {
+      window.history.replaceState(null, "", DESIGN_SYSTEM_BASE_PATH);
+      setActiveSection(tocSections[0].id);
+      setActiveSub(null);
+      window.scrollTo(0, 0);
+      setInitialPathResolved(true);
+      return;
+    }
+
+    setActiveSection(sectionId);
+    setActiveSub(null);
+
+    let cancelled = false;
+    const started = performance.now();
+    const tryScroll = () => {
+      if (cancelled) return;
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: "auto", block: "start" });
+        setInitialPathResolved(true);
+        return;
+      }
+      if (performance.now() - started > 2000) {
+        setInitialPathResolved(true);
+        return;
+      }
+      requestAnimationFrame(tryScroll);
+    };
+    tryScroll();
+
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   // Mobile sticky bar: show bottom hairline only once the bar is stuck
@@ -702,6 +763,8 @@ export default function SystemPage() {
   // Scroll-spy: last anchor whose top crossed the reference line. rAF-coalesced
   // and equality-guarded so boundary jitter doesn't re-render / re-expand.
   useEffect(() => {
+    if (!initialPathResolved) return;
+
     const LINE = 140;
     let raf = 0;
     let lastSection = tocSections[0].id;
@@ -745,20 +808,28 @@ export default function SystemPage() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [anchors]);
+  }, [anchors, initialPathResolved]);
 
   const activeId = activeSub ?? activeSection;
+
+  useEffect(() => {
+    if (!initialPathResolved) return;
+    replaceDesignSystemPath(activeSection);
+  }, [activeSection, initialPathResolved]);
 
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "start" });
     if (subToSection[id]) {
-      setActiveSection(subToSection[id]);
+      const parent = subToSection[id];
+      setActiveSection(parent);
       setActiveSub(id);
+      replaceDesignSystemPath(parent);
     } else {
       setActiveSection(id);
       setActiveSub(null);
+      replaceDesignSystemPath(id);
     }
   };
 
@@ -883,16 +954,16 @@ export default function SystemPage() {
             {[
               /* Intro */
               <section key="intro" id="intro" className="scroll-mt-24 pb-8">
-                <h1 className="max-w-3xl font-['Michelle',sans-serif] text-4xl font-medium leading-normal tracking-[0.0125em] text-[#3f3f46] text-balance">
+                <h1 className="max-w-3xl font-['Michelle',sans-serif] text-4xl font-normal leading-normal tracking-[0.0125em] text-[#3f3f46] text-balance">
                   Design System
                 </h1>
                 <p className="-mt-3 font-['Michelle',sans-serif] text-4xl font-normal leading-normal tracking-[0.0125em] text-zinc-400">
                   liumichelle.com
                 </p>
                 <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400 text-pretty">
-                  A living inventory of the colors, type, space, motion, and
-                  components behind liumichelle.com. Specimens are built in React
-                  with Tailwind CSS.
+                  The colors, type, space, motion, and components behind
+                  liumichelle.com. Specimens are built in React with Tailwind
+                  CSS.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-x-6 gap-y-4 text-sm text-zinc-400">
                   <span className="flex w-44 flex-col items-start gap-1">
@@ -912,13 +983,12 @@ export default function SystemPage() {
 
               <ColorSection key="color" />,
               <ComponentSection key="components" />,
-              <TypographySection key="typography" />,
+              <IconSection key="icons" />,
+              <BorderSection key="borders" />,
+              <MotionSection key="motion" />,
               <ShadowSection key="shadows" />,
               <SpacingSection key="spacing" />,
-              <BorderSection key="borders" />,
-              <RadiusSection key="radius" />,
-              <MotionSection key="motion" />,
-              <IconSection key="icons" />,
+              <TypographySection key="typography" />,
               <MaterialSection key="materials" />,
             ].map((block, i) => (
               <div

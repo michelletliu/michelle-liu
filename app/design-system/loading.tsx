@@ -25,7 +25,7 @@ export default function DesignSystemLoading() {
         </aside>
         <main className="relative mx-auto min-w-0 w-full max-w-[720px]">
           <div className="pb-8">
-            <h1 className="max-w-3xl font-['Michelle',sans-serif] text-4xl font-medium leading-normal tracking-[0.0125em] text-[#3f3f46]">
+            <h1 className="max-w-3xl font-['Michelle',sans-serif] text-4xl font-normal leading-normal tracking-[0.0125em] text-[#3f3f46]">
               Design System
             </h1>
             <div className="mt-8 h-48 animate-pulse rounded-xl bg-zinc-50 ring-1 ring-inset ring-zinc-100" />

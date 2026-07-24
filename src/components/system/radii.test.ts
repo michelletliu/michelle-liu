@@ -54,21 +54,20 @@ test("round and squircle specimens overlay each other's outlines", () => {
 
   assert.match(
     section,
-    /\{ label: "Round", d: ROUND_PATH, overlayD: SQUIRCLE_PATH \}/,
+    /\{ label: "Round", d: ROUND_PATH, overlayCorners: SQUIRCLE_CORNERS \}/,
   );
   assert.match(
     section,
-    /\{ label: "Squircle", d: SQUIRCLE_PATH, overlayD: ROUND_PATH \}/,
+    /\{ label: "Squircle", d: SQUIRCLE_PATH, overlayCorners: ROUND_CORNERS \}/,
   );
   assert.match(section, /strokeOpacity=\{showGrid \? 0\.15 : 0\.3\}/);
 });
 
-test("token card labels and usage copy have no vertical gap", () => {
+test("token card title and usage use gap-0.5 when both are present", () => {
   const primitives = readFileSync(
     new URL("./primitives.tsx", import.meta.url),
     "utf8",
   );
 
-  assert.match(primitives, /className="flex flex-col gap-0 pl-2"/);
-  assert.doesNotMatch(primitives, /className="flex flex-col gap-1 pl-2"/);
+  assert.match(primitives, /usage \? "gap-0\.5" : "gap-0"/);
 });
