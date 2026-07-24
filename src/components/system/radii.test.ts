@@ -46,7 +46,7 @@ test("the radius page contains no experimental radius group", () => {
   assert.doesNotMatch(section, /Experiment radii|oddRadii/);
 });
 
-test("round and squircle specimens overlay each other's outlines", () => {
+test("round and squircle specimens overlay each other's corner segments", () => {
   const section = readFileSync(
     new URL("./sections/RadiusSection.tsx", import.meta.url),
     "utf8",
@@ -61,6 +61,7 @@ test("round and squircle specimens overlay each other's outlines", () => {
     /\{ label: "Squircle", d: SQUIRCLE_PATH, overlayCorners: ROUND_CORNERS \}/,
   );
   assert.match(section, /strokeOpacity=\{showGrid \? 0\.15 : 0\.3\}/);
+  assert.match(section, /filled=\{showGrid\}/);
 });
 
 test("token card title and usage use gap-0.5 when both are present", () => {

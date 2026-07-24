@@ -174,7 +174,7 @@ export default function ShelfSection({
               ))}
             </div>
           ) : (
-            // Default view: 5 items - grid on mobile to fit width, flex centered on desktop
+            // Favorites: 5 items, no date hover tooltips (year tabs keep them)
             <div className="grid grid-cols-5 md:flex md:justify-center gap-2 md:gap-6 w-full py-2 lg:px-[118px]">
               {displayItems.map((item, index) => (
                 <div
@@ -183,7 +183,7 @@ export default function ShelfSection({
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <MediaCard
-                    data={item}
+                    data={{ ...item, coverDateLabel: undefined }}
                     variant="default"
                     aspectRatio={isSquare ? "square" : "portrait"}
                     onClick={() => onItemClick?.(item)}
