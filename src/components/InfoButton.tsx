@@ -162,11 +162,13 @@ export default function InfoButton({ project }: InfoButtonProps) {
   return (
     <>
       {/* Info Button - fixed top right. Wrapper height mirrors the logo's box
-          (32px mobile / 44px desktop) so the glyph centers with the seal. */}
+          (32px mobile / 44px desktop) so the glyph centers with the seal, and
+          the negative margin cancels the 10px the 40px hit area adds around the
+          20px glyph so the glyph itself sits on the gutter. */}
       <div className="fixed top-8 right-8 z-50 flex h-8 items-center md:right-16 md:h-11">
         <button
           onClick={handleOpen}
-          className={ghostIconButtonClass("md", "text-zinc-400")}
+          className={ghostIconButtonClass("md", "-mr-2.5 text-zinc-400")}
           aria-label="Project info"
         >
           <InfoIcon />

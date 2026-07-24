@@ -805,7 +805,9 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
             "absolute top-0 right-0 z-[60] pointer-events-none pr-7 pt-6"
           )}>
             <div className="pointer-events-auto relative inline-flex" data-info-button-container>
-              <Tooltip label="Info" position="bottom" disabled={showInfoModal}>
+              {/* Negative margin cancels the 10px the 40px hit area adds around
+                  the 20px glyph, so the glyph lines up with the expand icon. */}
+              <Tooltip label="Info" position="bottom" disabled={showInfoModal} className="-mr-2.5">
                 <button
                   onClick={() => setShowInfoModal(!showInfoModal)}
                   className={ghostIconButtonClass(
