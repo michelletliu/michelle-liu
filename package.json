@@ -60,12 +60,14 @@
     "tailwind-merge": "*",
     "tailwindcss": "^4.1.18",
     "tesseract.js": "^7.0.0",
+    "three": "^0.185.1",
     "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.185.1",
     "@vercel/node": "^5.5.22",
     "agentation": "^3.0.2",
     "react-doctor": "^0.2.8",
