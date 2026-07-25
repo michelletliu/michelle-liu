@@ -5,6 +5,8 @@ import { createPortal } from "react-dom";
 import { CloseIcon } from "@/components/Close";
 import { ghostIconButtonClass } from "@/components/ghostIconButton";
 import { useScrollLock } from "@/utils/useScrollLock";
+import { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
+import { GALLERY_DIALOG_ATTR, useGalleryDialogKeys } from "./galleryDialog";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { GALLERY_INFO_TEXT } from "./metArtworks";
 
@@ -21,15 +23,6 @@ const CLOSE_ANIMATION_MS = 300;
  */
 const GALLERY_CONTROLS_TEXT =
   "Use the arrow keys to move between paintings, + and − to zoom, and 0 to reset the view. The stick on the right does the same by dragging.";
-
-const FOCUSABLE = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  '[tabindex]:not([tabindex="-1"])',
-].join(",");
 
 /** Same glyph the site-wide InfoButton draws; it is not exported from there. */
 function InfoIcon() {
@@ -102,49 +95,7 @@ export default function GalleryInfoButton() {
     }, CLOSE_ANIMATION_MS);
   };
 
-  /**
-   * The room binds Escape (leave for home), the arrow keys (step to the next
-   * hang), and ⌘± (zoom) on `window`. This listener sits on `document`, which
-   * bubbles first, so while the panel is open none of those reach the room:
-   * Escape closes the panel only, and everything else is swallowed.
-   */
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      e.stopPropagation();
-      if (e.key === "Escape") {
-        e.preventDefault();
-        close();
-        return;
-      }
-
-      // Without this, Tab leaves the dialog and walks the room behind it while
-      // the panel is still covering it — focus visibly nowhere.
-      if (e.key !== "Tab") return;
-      const dialog = dialogRef.current;
-      if (!dialog) return;
-
-      const focusable = [...dialog.querySelectorAll<HTMLElement>(FOCUSABLE)];
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (!first || !last) {
-        e.preventDefault();
-        return;
-      }
-
-      // The `contains` arm catches focus that is already outside the dialog,
-      // which is how it recovers rather than letting Tab wander further away.
-      const active = document.activeElement;
-      const outside = !dialog.contains(active);
-      if (e.shiftKey ? active === first || outside : active === last || outside) {
-        e.preventDefault();
-        (e.shiftKey ? last : first).focus();
-      }
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  useGalleryDialogKeys(open, dialogRef, close);
 
   return (
     <>
@@ -155,6 +106,9 @@ export default function GalleryInfoButton() {
         aria-label="Gallery information"
         aria-haspopup="dialog"
         aria-expanded={open}
+        // Persistent room furniture: reaching for it must not fold away the
+        // composer the visitor is in the middle of filling in.
+        {...{ [KEEP_BAR_OPEN_ATTR]: "" }}
         className={ghostIconButtonClass(
           "md",
           `fixed top-8 right-6 z-50 text-zinc-400 md:right-16 ${GALLERY_FOCUS_RING}`,
@@ -165,19 +119,25 @@ export default function GalleryInfoButton() {
 
       {open &&
         createPortal(
-          <div className="fixed inset-0 z-[100] flex items-center justify-center px-8">
+          <div
+            {...{ [GALLERY_DIALOG_ATTR]: "gallery-info" }}
+            className="fixed inset-0 z-[100] flex items-center justify-center px-6"
+          >
             <div
               className={`absolute inset-0 bg-zinc-900/20 transition-opacity duration-300 ${
                 visible ? "opacity-100" : "opacity-0"
               }`}
               onClick={close}
             />
+            {/* Same card as the artwork details panel — 16px corners, 32px of
+                padding and the soft pop-up shadow — so the two read as one
+                surface that the gallery shows things on. */}
             <div
               ref={dialogRef}
               role="dialog"
               aria-modal="true"
               aria-labelledby={titleId}
-              className={`relative flex w-full max-w-md flex-col rounded-3xl bg-white px-6 pb-6 pt-5 transition-all duration-300 ease-out ${
+              className={`relative flex w-[550px] max-w-full flex-col rounded-2xl bg-white p-8 shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all duration-300 ease-out ${
                 visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
@@ -192,13 +152,13 @@ export default function GalleryInfoButton() {
                   aria-label="Close gallery information"
                   className={ghostIconButtonClass(
                     "sm",
-                    `-mr-2 -mt-1 text-zinc-400 ${GALLERY_FOCUS_RING}`,
+                    `-mr-3 -mt-3 text-zinc-400 ${GALLERY_FOCUS_RING}`,
                   )}
                 >
                   <CloseIcon size="16px" />
                 </button>
               </div>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-500">
+              <p className="mt-3 text-sm leading-relaxed text-zinc-500">
                 {GALLERY_INFO_TEXT}
               </p>
               <p className="mt-4 border-t border-zinc-100 pt-4 text-sm leading-relaxed text-zinc-500">

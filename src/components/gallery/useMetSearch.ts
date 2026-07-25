@@ -1,9 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MetArtwork, MetSearchResponse } from "./metArtworks";
 
 export type MetSearchStatus = "idle" | "loading" | "success" | "error";
+
+/** Whether the strip is showing the curated default or a search result. */
+export type MetStripMode = "curated" | "results";
+
+/**
+ * How long typing has to settle before a search leaves.
+ *
+ * Each search costs a Met `/search` plus a wave of `/objects` hydration, so
+ * firing per keystroke would spend a dozen upstream round trips to answer a
+ * prefix nobody asked about. Requests that do get sent are still aborted by
+ * the next one, so the debounce is about upstream load and the AbortController
+ * is about correctness — neither substitutes for the other.
+ */
+const SEARCH_DEBOUNCE_MS = 350;
 
 export type MetSearchState = {
   status: MetSearchStatus;
@@ -58,11 +72,66 @@ async function requestPage(
   };
 }
 
+/**
+ * The curated default set, fetched once per mount.
+ *
+ * Failure is silent by design. These works are an opening suggestion, not the
+ * feature; if The Met is unreachable the picker still searches, and an error
+ * banner about a list the visitor never asked for would be noise.
+ */
+function useCuratedArtworks() {
+  const [artworks, setArtworks] = useState<MetArtwork[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void (async () => {
+      try {
+        const res = await fetch("/api/met/curated", {
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        const data = (await res.json()) as { artworks?: MetArtwork[] };
+        if (controller.signal.aborted) return;
+        setArtworks(data.artworks ?? []);
+      } catch {
+        if (!controller.signal.aborted) setArtworks([]);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, []);
+
+  return { curated: artworks, curatedLoading: loading };
+}
+
 export function useMetSearch() {
   const [state, setState] = useState<MetSearchState>(INITIAL);
+  /**
+   * The text in the field, which is not the same thing as `state.query`: that
+   * one names the results currently on screen and only catches up when a
+   * request settles.
+   */
+  const [query, setQueryText] = useState("");
   const inFlight = useRef<AbortController | null>(null);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { curated, curatedLoading } = useCuratedArtworks();
 
-  useEffect(() => () => inFlight.current?.abort(), []);
+  const clearDebounce = useCallback(() => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+      debounceTimer.current = null;
+    }
+  }, []);
+
+  useEffect(
+    () => () => {
+      inFlight.current?.abort();
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    },
+    [],
+  );
 
   const search = useCallback(async (rawQuery: string) => {
     const query = rawQuery.trim();
@@ -99,6 +168,48 @@ export function useMetSearch() {
     }
   }, []);
 
+  const reset = useCallback(() => {
+    clearDebounce();
+    inFlight.current?.abort();
+    setState(INITIAL);
+  }, [clearDebounce]);
+
+  /**
+   * Type into the field.
+   *
+   * Emptying it is a cancel, not a search for nothing: the pending timer and
+   * any request already on the wire are dropped, and the strip falls back to
+   * the curated set rather than sitting on results for a query that is no
+   * longer on screen.
+   */
+  const setQuery = useCallback(
+    (next: string) => {
+      setQueryText(next);
+      clearDebounce();
+      if (!next.trim()) {
+        inFlight.current?.abort();
+        setState(INITIAL);
+        return;
+      }
+      debounceTimer.current = setTimeout(() => {
+        debounceTimer.current = null;
+        void search(next);
+      }, SEARCH_DEBOUNCE_MS);
+    },
+    [clearDebounce, search],
+  );
+
+  /** Submitting the form or pressing Search skips the debounce. */
+  const submit = useCallback(() => {
+    clearDebounce();
+    void search(query);
+  }, [clearDebounce, query, search]);
+
+  const clearQuery = useCallback(() => {
+    setQueryText("");
+    reset();
+  }, [reset]);
+
   const loadMore = useCallback(async () => {
     const { query, nextOffset, loadingMore, status } = state;
     if (status !== "success" || nextOffset === null || loadingMore) return;
@@ -131,13 +242,36 @@ export function useMetSearch() {
     }
   }, [state]);
 
-  const reset = useCallback(() => {
-    inFlight.current?.abort();
-    setState(INITIAL);
-  }, []);
+  /*
+   * An untouched field means the curated set is what the strip is for, so the
+   * search state is ignored entirely rather than merged with it — no
+   * backfilling, and no curated works padding out a thin set of results.
+   */
+  const mode: MetStripMode = state.status === "idle" ? "curated" : "results";
+  const artworks = useMemo(
+    () => (mode === "curated" ? curated : state.artworks),
+    [mode, curated, state.artworks],
+  );
 
-  return { ...state, search, loadMore, reset };
+  return {
+    ...state,
+    /** The field's text. `query` on the state is what the results answer. */
+    queryText: query,
+    setQuery,
+    submit,
+    clearQuery,
+    mode,
+    /** Curated set or results, whichever the strip should be showing. */
+    artworks,
+    curatedLoading,
+    curatedCount: curated.length,
+    search,
+    loadMore,
+    reset,
+  };
 }
+
+export type MetSearchController = ReturnType<typeof useMetSearch>;
 
 function dedupe(artworks: MetArtwork[]): MetArtwork[] {
   const seen = new Set<number>();

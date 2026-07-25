@@ -50,9 +50,12 @@ export function useWheelIsolation<T extends HTMLElement>() {
  * in the room needs it.
  *
  * `contentKey` should change whenever the content does, so the measurement is
- * retaken after results replace skeletons and the tiles rewrap.
+ * retaken after results replace skeletons and the tiles reflow.
  */
-export function useScrollEdges<T extends HTMLElement>(contentKey: unknown) {
+export function useScrollEdges<T extends HTMLElement>(
+  contentKey: unknown,
+  axis: "x" | "y" = "y",
+) {
   const ref = useRef<T | null>(null);
   const [edges, setEdges] = useState({ atStart: true, atEnd: true });
 
@@ -61,12 +64,18 @@ export function useScrollEdges<T extends HTMLElement>(contentKey: unknown) {
     if (!el) return;
 
     const measure = () => {
-      const overflow = el.scrollHeight - el.clientHeight;
-      // Sub-pixel layout means scrollTop rarely lands exactly on an extreme.
+      const horizontal = axis === "x";
+      const scrolled = horizontal ? el.scrollLeft : el.scrollTop;
+      const overflow = horizontal
+        ? el.scrollWidth - el.clientWidth
+        : el.scrollHeight - el.clientHeight;
+      // Sub-pixel layout means the scroll offset rarely lands exactly on an
+      // extreme, and a right-to-left strip reports it negative.
       const slack = 2;
+      const travelled = Math.abs(scrolled);
       setEdges({
-        atStart: el.scrollTop <= slack,
-        atEnd: overflow <= slack || el.scrollTop >= overflow - slack,
+        atStart: travelled <= slack,
+        atEnd: overflow <= slack || travelled >= overflow - slack,
       });
     };
 
@@ -86,7 +95,7 @@ export function useScrollEdges<T extends HTMLElement>(contentKey: unknown) {
       el.removeEventListener("scroll", measure);
       observer.disconnect();
     };
-  }, [contentKey]);
+  }, [contentKey, axis]);
 
   return { ref, ...edges };
 }

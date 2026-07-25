@@ -1,7 +1,9 @@
 "use client";
 
-import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
+import { Info, X } from "lucide-react";
 import { CloseIcon } from "@/components/Close";
+import MetArtworkDetails from "./MetArtworkDetails";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { stopGalleryKeys, useScrollEdges } from "./galleryInputGuards";
 import {
@@ -9,9 +11,23 @@ import {
   openAccessImageUrl,
   type MetArtwork,
 } from "./metArtworks";
-import { useMetSearch } from "./useMetSearch";
+import type { MetSearchController } from "./useMetSearch";
+
+/**
+ * The colour the tile strip dissolves into at a scrollable edge.
+ *
+ * It has to be the inset's own painted surface, and that surface is a
+ * composite — `bg-black/5` over the bar's `bg-white/90` over the room — so
+ * there is no token to point at. This is the resulting value, and the one the
+ * design specifies for the same fade.
+ */
+const STRIP_EDGE_FADE = "#ededed";
+
+/** How many placeholder tiles stand in for a page of results. */
+const SKELETON_TILES = 6;
 
 type MetArtworkPickerProps = {
+  search: MetSearchController;
   selected: MetArtwork | null;
   onSelect: (artwork: MetArtwork | null) => void;
   /** Locks the picker while a generation is in flight. */
@@ -33,15 +49,13 @@ function artworkLabel(artwork: MetArtwork): string {
 }
 
 export default function MetArtworkPicker({
+  search,
   selected,
   onSelect,
   disabled = false,
   searchRowTrailing,
 }: MetArtworkPickerProps) {
-  const [query, setQuery] = useState("");
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const detailsId = useId();
-  const inputRef = useRef<HTMLInputElement>(null);
   const {
     status,
     artworks,
@@ -49,39 +63,46 @@ export default function MetArtworkPicker({
     nextOffset,
     loadingMore,
     query: activeQuery,
+    queryText,
+    setQuery,
+    submit,
+    clearQuery,
     matchMode,
-    search,
+    mode,
+    curatedLoading,
     loadMore,
-    reset,
-  } = useMetSearch();
+  } = search;
 
   const {
     ref: stripRef,
     atStart,
     atEnd,
-  } = useScrollEdges<HTMLDivElement>(artworks.length);
+  } = useScrollEdges<HTMLDivElement>(`${mode}:${artworks.length}`, "x");
 
-  const onSearch = (e: FormEvent) => {
+  const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    void search(query);
-  };
-
-  const onClearQuery = () => {
-    setQuery("");
-    reset();
-    inputRef.current?.focus();
+    submit();
   };
 
   const eligibility = selected ? artworkEligibility(selected) : null;
+  const showSkeletons =
+    status === "loading" || (mode === "curated" && curatedLoading);
+  const showStrip = !showSkeletons && artworks.length > 0;
+  /*
+   * The strip is the only place a selection can be lifted, and a search can
+   * replace it with works that do not include what is already chosen. Without
+   * this the ⓘ would be the sole remaining trace of the pick.
+   */
+  const selectedIsVisible =
+    selected !== null && artworks.some((a) => a.objectID === selected.objectID);
 
   return (
-    <div className="flex flex-col gap-2">
-      <form onSubmit={onSearch} className="flex items-center gap-2">
+    <div className="flex flex-col gap-3 rounded-[10px] bg-black/5 p-2.5">
+      <form onSubmit={onSubmit} className="flex items-center gap-2">
         <div className="relative min-w-0 flex-1">
           <input
-            ref={inputRef}
             type="search"
-            value={query}
+            value={queryText}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={stopGalleryKeys}
             placeholder="Search The Met for inspiration…"
@@ -90,14 +111,14 @@ export default function MetArtworkPicker({
             // `type="search"` paints a heavy accent-coloured native clear glyph
             // in WebKit. Suppress it and use the design system's Close mark, so
             // the affordance matches every other dismiss control on the site.
-            className={`w-full rounded-xl border border-zinc-200 bg-white py-2 pl-3 text-sm text-zinc-900 placeholder:text-zinc-400 disabled:opacity-60 [&::-webkit-search-cancel-button]:appearance-none ${
-              query ? "pr-9" : "pr-3"
+            className={`h-[38px] w-full rounded-xl border border-zinc-200 bg-white pl-3 text-sm text-zinc-900 placeholder:text-zinc-400 disabled:opacity-60 [&::-webkit-search-cancel-button]:appearance-none ${
+              queryText ? "pr-9" : "pr-3"
             } ${GALLERY_FOCUS_RING}`}
           />
-          {query && (
+          {queryText && (
             <button
               type="button"
-              onClick={onClearQuery}
+              onClick={clearQuery}
               disabled={disabled}
               aria-label="Clear search"
               data-gallery-no-drag
@@ -109,25 +130,25 @@ export default function MetArtworkPicker({
         </div>
         <button
           type="submit"
-          disabled={disabled || !query.trim() || status === "loading"}
-          className={`shrink-0 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
+          disabled={disabled || !queryText.trim() || status === "loading"}
+          className={`h-[38px] shrink-0 rounded-xl border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
         >
-          {status === "loading" ? "Searching…" : "Search"}
+          Search
         </button>
         {searchRowTrailing}
       </form>
 
       {/* One polite region covers pending / empty / failed search so a screen
           reader hears each state change without nested live regions. */}
-      <div aria-live="polite" className="flex flex-col gap-2 empty:hidden">
-        {status === "loading" && <ThumbnailSkeletons />}
+      <div aria-live="polite" className="flex flex-col gap-3 empty:hidden">
+        {showSkeletons && <ThumbnailSkeletons />}
 
         {status === "error" && (
           <p className="px-1 text-xs text-red-600">
             {error}{" "}
             <button
               type="button"
-              onClick={() => void search(activeQuery)}
+              onClick={submit}
               className={`rounded-sm underline underline-offset-2 hover:text-red-700 ${GALLERY_FOCUS_RING}`}
             >
               Try again
@@ -155,61 +176,100 @@ export default function MetArtworkPicker({
           </p>
         )}
 
-        {status === "success" && artworks.length > 0 && (
-          <div className="relative rounded-xl">
+        {showStrip && (
+          // Bleeds to the inset's padding box so tiles scroll all the way to
+          // the edge and disappear under the fade, rather than stopping short
+          // of it.
+          <div className="relative -mx-2.5">
             <div
               ref={stripRef}
               role="group"
-              aria-label="Met artwork results"
-              // Roughly two and a half rows: enough to browse a page at a
-              // glance, and the clipped third row is itself a scroll cue.
-              // The padding keeps focus rings from being shorn off by the
-              // overflow, since `overflow-y-auto` clips the x axis too.
-              className="max-h-[11.5rem] overflow-y-auto overscroll-contain p-1.5"
+              aria-label={
+                mode === "curated"
+                  ? "Suggested artworks from The Met"
+                  : "Met artwork results"
+              }
+              className="flex gap-2 overflow-x-auto overscroll-contain px-2.5 py-1.5"
             >
-              <div className="flex flex-wrap gap-2">
-                {artworks.map((artwork) => (
-                  <ArtworkThumbnail
-                    key={artwork.objectID}
-                    artwork={artwork}
-                    selected={selected?.objectID === artwork.objectID}
-                    disabled={disabled}
-                    onToggle={() =>
-                      onSelect(
-                        selected?.objectID === artwork.objectID ? null : artwork,
-                      )
-                    }
-                  />
-                ))}
-                {nextOffset !== null && (
-                  <button
-                    type="button"
-                    onClick={() => void loadMore()}
-                    disabled={disabled || loadingMore}
-                    className={`h-16 w-16 shrink-0 rounded-lg border border-dashed border-zinc-300 text-[11px] leading-tight text-zinc-500 transition-colors hover:bg-zinc-50 disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
-                  >
-                    {loadingMore ? "Loading…" : "Load more"}
-                  </button>
-                )}
-              </div>
+              {artworks.map((artwork) => (
+                <ArtworkThumbnail
+                  key={artwork.objectID}
+                  artwork={artwork}
+                  selected={selected?.objectID === artwork.objectID}
+                  disabled={disabled}
+                  onToggle={() =>
+                    onSelect(
+                      selected?.objectID === artwork.objectID ? null : artwork,
+                    )
+                  }
+                />
+              ))}
+              {nextOffset !== null && (
+                <button
+                  type="button"
+                  onClick={() => void loadMore()}
+                  disabled={disabled || loadingMore}
+                  className={`size-25 shrink-0 rounded-md border border-dashed border-zinc-300 text-[11px] leading-tight text-zinc-500 transition-colors hover:bg-white/60 disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
+                >
+                  {loadingMore ? "Loading…" : "Load more"}
+                </button>
+              )}
             </div>
-            <ScrollFade edge="top" hidden={atStart} />
-            <ScrollFade edge="bottom" hidden={atEnd} />
+            <StripFade edge="left" hidden={atStart} />
+            <StripFade edge="right" hidden={atEnd} />
           </div>
         )}
       </div>
 
       {selected && (
-        <SelectedArtworkCard
+        <div className="flex items-center gap-5 pl-1 pr-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-medium leading-4 text-zinc-900">
+              Inspired by {selected.title}
+            </p>
+            <p className="truncate text-[11px] leading-[16.5px] text-zinc-500">
+              {[selected.artistDisplayName, selected.objectDate]
+                .filter(Boolean)
+                .join(" · ") || "The Met Open Access"}
+            </p>
+            {eligibility && !eligibility.eligible && (
+              <p
+                role="alert"
+                className="mt-1.5 rounded-lg bg-amber-50 px-2 py-1.5 text-[11px] leading-snug text-amber-900"
+              >
+                Generation is disabled for this artwork. {eligibility.message}
+              </p>
+            )}
+          </div>
+          {!selectedIsVisible && (
+            <button
+              type="button"
+              onClick={() => onSelect(null)}
+              disabled={disabled}
+              aria-label="Remove inspiration"
+              className={`shrink-0 text-zinc-400 transition-colors hover:text-zinc-600 disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
+            >
+              <X size={14} aria-hidden />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setDetailsOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={detailsOpen}
+            aria-label="Artwork details"
+            className={`shrink-0 text-zinc-400 transition-colors hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
+          >
+            <Info size={14} aria-hidden />
+          </button>
+        </div>
+      )}
+
+      {selected && (
+        <MetArtworkDetails
           artwork={selected}
-          detailsId={detailsId}
-          detailsOpen={detailsOpen}
-          onToggleDetails={() => setDetailsOpen((open) => !open)}
-          onClear={() => onSelect(null)}
-          blockedMessage={
-            eligibility && !eligibility.eligible ? eligibility.message : null
-          }
-          disabled={disabled}
+          open={detailsOpen}
+          onClose={() => setDetailsOpen(false)}
         />
       )}
     </div>
@@ -217,43 +277,46 @@ export default function MetArtworkPicker({
 }
 
 /**
- * Content dissolving into the bar's surface, marking an edge you can scroll
- * past. `from-white` is the bar's own `bg-white/90`, so it reads as the panel
- * swallowing the tiles rather than as a grey band laid over them.
+ * Content dissolving into the inset's surface, marking an edge you can scroll
+ * past. Painted only where the strip actually overflows, so it reads as an
+ * affordance rather than a rendering artefact.
  */
-function ScrollFade({
+function StripFade({
   edge,
   hidden,
 }: {
-  edge: "top" | "bottom";
+  edge: "left" | "right";
   hidden: boolean;
 }) {
   return (
     <div
       aria-hidden
       // Never intercepts clicks: tiles stay pressable through the fade.
-      className={`pointer-events-none absolute inset-x-0 h-7 transition-opacity duration-150 ${
-        edge === "top"
-          ? "top-0 rounded-t-xl bg-gradient-to-b"
-          : "bottom-0 rounded-b-xl bg-gradient-to-t"
-      } from-white to-transparent ${hidden ? "opacity-0" : "opacity-100"}`}
+      className={`pointer-events-none absolute inset-y-0 w-10 transition-opacity duration-150 ${
+        edge === "left" ? "left-0" : "right-0"
+      } ${hidden ? "opacity-0" : "opacity-100"}`}
+      style={{
+        backgroundImage: `linear-gradient(to ${
+          edge === "left" ? "right" : "left"
+        }, ${STRIP_EDGE_FADE}, transparent)`,
+      }}
     />
   );
 }
 
 /**
- * Wrapper and tile boxes match the loaded grid's, so the panel does not jump
+ * Wrapper and tile boxes match the loaded strip's, so the panel does not jump
  * when results replace the placeholders.
  */
 function ThumbnailSkeletons() {
   return (
-    <div className="flex flex-wrap gap-2 overflow-hidden p-1.5">
+    <div className="-mx-2.5 flex gap-2 overflow-hidden px-2.5 py-1.5">
       <span className="sr-only">Searching The Met…</span>
-      {Array.from({ length: 8 }, (_, i) => (
+      {Array.from({ length: SKELETON_TILES }, (_, i) => (
         <div
           key={i}
           aria-hidden
-          className="h-16 w-16 shrink-0 animate-pulse rounded-lg border border-black/10 bg-zinc-200/70"
+          className="size-25 shrink-0 animate-pulse rounded-md border-2 border-white/20 bg-zinc-200/70"
         />
       ))}
     </div>
@@ -282,11 +345,12 @@ function ArtworkThumbnail({
       onClick={onToggle}
       title={artworkLabel(artwork)}
       // Selection is a border and focus is a ring, so the two never fight over
-      // the same box-shadow when a selected thumbnail is also focused.
-      className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-zinc-100 transition-[border-color] disabled:opacity-40 ${GALLERY_FOCUS_RING} ${
+      // the same box-shadow when a selected thumbnail is also focused. The
+      // border is the same width either way, so nothing reflows on selection.
+      className={`relative size-25 shrink-0 overflow-hidden rounded-md border-2 bg-white shadow-lg transition-[border-color] disabled:opacity-40 ${GALLERY_FOCUS_RING} ${
         selected
-          ? "border-2 border-zinc-900"
-          : "border border-black/10 hover:border-zinc-400"
+          ? "border-zinc-900"
+          : "border-white/20 hover:border-zinc-300"
       }`}
     >
       {/* The alt text is the button's accessible name. */}
@@ -298,124 +362,16 @@ function ArtworkThumbnail({
         className="h-full w-full object-cover"
       />
       {selected && (
+        // Inside the button rather than beside it, so it cannot become a
+        // nested control: pressing the mark is pressing the tile, which is
+        // already what lifts the selection.
         <span
           aria-hidden
-          className="absolute bottom-0.5 right-0.5 grid h-4 w-4 place-items-center rounded-full bg-zinc-900 text-[9px] font-bold text-white"
+          className="absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-zinc-900 text-white"
         >
-          ✓
+          <X size={10} strokeWidth={3} />
         </span>
       )}
     </button>
-  );
-}
-
-function SelectedArtworkCard({
-  artwork,
-  detailsId,
-  detailsOpen,
-  onToggleDetails,
-  onClear,
-  blockedMessage,
-  disabled,
-}: {
-  artwork: MetArtwork;
-  detailsId: string;
-  detailsOpen: boolean;
-  onToggleDetails: () => void;
-  onClear: () => void;
-  blockedMessage: string | null;
-  disabled: boolean;
-}) {
-  const src = openAccessImageUrl(artwork);
-
-  return (
-    <div className="rounded-xl border border-black/10 bg-white/70 p-2">
-      <div className="flex items-center gap-2">
-        {src && (
-          <img
-            src={src}
-            alt={artworkLabel(artwork)}
-            loading="lazy"
-            decoding="async"
-            className="h-10 w-10 shrink-0 rounded-md object-cover"
-          />
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-medium text-zinc-900">
-            Inspired by {artwork.title}
-          </p>
-          <p className="truncate text-[11px] text-zinc-500">
-            {[artwork.artistDisplayName, artwork.objectDate]
-              .filter(Boolean)
-              .join(" · ") || "The Met Open Access"}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onToggleDetails}
-          aria-expanded={detailsOpen}
-          aria-controls={detailsId}
-          className={`shrink-0 rounded-lg px-2 py-1 text-[11px] text-zinc-600 transition-colors hover:bg-zinc-100 ${GALLERY_FOCUS_RING}`}
-        >
-          {detailsOpen ? "Hide details" : "Details"}
-        </button>
-        <button
-          type="button"
-          onClick={onClear}
-          disabled={disabled}
-          className={`shrink-0 rounded-lg px-2 py-1 text-[11px] text-zinc-600 transition-colors hover:bg-zinc-100 disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
-        >
-          Clear
-        </button>
-      </div>
-
-      {blockedMessage && (
-        <p
-          role="alert"
-          className="mt-2 rounded-lg bg-amber-50 px-2 py-1.5 text-[11px] leading-snug text-amber-900"
-        >
-          Generation is disabled for this artwork. {blockedMessage}
-        </p>
-      )}
-
-      {detailsOpen && (
-        <dl
-          id={detailsId}
-          className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[11px] leading-snug text-zinc-600"
-        >
-          <DetailRow label="Title" value={artwork.title} />
-          <DetailRow label="Artist" value={artwork.artistDisplayName} />
-          <DetailRow label="Date" value={artwork.objectDate} />
-          <DetailRow label="Medium" value={artwork.medium} />
-          <DetailRow label="Department" value={artwork.department} />
-          <DetailRow label="Rights" value={artwork.rightsAndReproduction} />
-          {artwork.objectURL && (
-            <>
-              <dt className="text-zinc-400">Source</dt>
-              <dd className="min-w-0">
-                <a
-                  href={artwork.objectURL}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="break-all underline underline-offset-2 hover:text-zinc-900"
-                >
-                  View on metmuseum.org
-                </a>
-              </dd>
-            </>
-          )}
-        </dl>
-      )}
-    </div>
-  );
-}
-
-function DetailRow({ label, value }: { label: string; value: string | null }) {
-  if (!value) return null;
-  return (
-    <>
-      <dt className="text-zinc-400">{label}</dt>
-      <dd className="min-w-0 text-zinc-600">{value}</dd>
-    </>
   );
 }

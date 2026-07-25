@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight, Minus, Plus } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { adjacentPaintingId } from "./galleryPaintings";
 import {
@@ -186,6 +187,9 @@ export default function GalleryThumbstick({
   return (
     <div
       data-gallery-no-drag
+      // Persistent room furniture: nudging the view to see the wall you are
+      // about to fill must not fold the composer away behind you.
+      {...{ [KEEP_BAR_OPEN_ATTR]: "" }}
       /*
        * Right edge, and never a right-hand corner: the info button holds the
        * top one, and the bottom one is where the action bar grows as its
@@ -203,8 +207,15 @@ export default function GalleryThumbstick({
        * drop into, so the stick stays centred — the one band the bar cannot
        * reach even fully expanded. Some overlap with the room is unavoidable at
        * that width, which is what the translucent base and blur are for.
+       *
+       * Wide, the right and bottom insets are the same 10rem so the stick sits
+       * in the corner squarely. They were 5rem and 10rem, and the stick read as
+       * pushed up against the right edge — a corner only looks deliberate when
+       * both of its gaps agree. Narrow keeps its own smaller inset: there is no
+       * bottom gap to agree with when the stick is vertically centred, and
+       * 10rem of a 390px viewport would put it over the middle of the room.
        */
-      className="pointer-events-none absolute top-1/2 right-8 z-40 -translate-y-1/2 md:top-auto md:bottom-40 md:right-20 md:translate-y-0"
+      className="pointer-events-none absolute top-1/2 right-8 z-40 -translate-y-1/2 md:top-auto md:right-40 md:bottom-40 md:translate-y-0"
     >
       <div
         ref={baseRef}
