@@ -25,7 +25,7 @@ type MetArtworkPickerProps = {
 };
 
 /** Accessible name for a thumbnail: the button takes its name from this alt. */
-export function artworkLabel(artwork: MetArtwork): string {
+function artworkLabel(artwork: MetArtwork): string {
   const parts = [artwork.title];
   if (artwork.artistDisplayName) parts.push(`by ${artwork.artistDisplayName}`);
   if (artwork.objectDate) parts.push(`(${artwork.objectDate})`);

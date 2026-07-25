@@ -5,7 +5,6 @@ import LogoBackButton from "@/components/LogoBackButton";
 import { useNavigate } from "@/lib/navigation";
 import GalleryActionBar from "./GalleryActionBar";
 import GalleryInfoButton from "./GalleryInfoButton";
-import GalleryNavArrows from "./GalleryNavArrows";
 import GalleryRoom from "./GalleryRoom";
 import GalleryThumbstick from "./GalleryThumbstick";
 import { downloadImage, generatedImageFilename } from "./downloadImage";
@@ -14,16 +13,8 @@ import { useGalleryCamera } from "./useGalleryCamera";
 
 export default function GalleryPage() {
   const navigate = useNavigate();
-  const {
-    focusedId,
-    pose,
-    zoom,
-    canZoomIn,
-    canZoomOut,
-    selectPainting,
-    zoomBy,
-    bindProps,
-  } = useGalleryCamera();
+  const { focusedId, pose, zoom, selectPainting, zoomBy, bindProps } =
+    useGalleryCamera();
   const { ref, ...pointerBindProps } = bindProps;
 
   const [imageById, setImageById] = useState<Record<string, string>>({});
@@ -121,21 +112,9 @@ export default function GalleryPage() {
         onSelectPainting={selectPainting}
         onDownload={onDownload}
       />
-      {/* One bottom-centre stack, so the arrows ride on top of the bar however
-          tall it gets — expanded with a results grid, or collapsed to its pen
-          icon. The column itself ignores pointer events so the room stays
-          draggable through the gaps between the two controls. */}
-      {/* The left padding is the thumbstick's gutter: below `md` the bar would
-          otherwise run under it. Above `md` there is room for both, so the bar
-          returns to true centre. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex flex-col items-center gap-3 pl-32 pr-4 pb-6 md:pb-8 md:pl-4">
-        <GalleryNavArrows
-          focusedId={focusedId}
-          onSelect={selectPainting}
-          onZoomBy={zoomBy}
-          canZoomIn={canZoomIn}
-          canZoomOut={canZoomOut}
-        />
+      {/* Ignores pointer events itself so the room stays draggable through the
+          gaps either side of the bar. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex flex-col items-center px-4 pb-6 md:pb-8">
         <GalleryActionBar
           generating={generatingId !== null}
           onGenerate={onGenerate}

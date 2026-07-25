@@ -10,6 +10,27 @@ import { GALLERY_INFO_TEXT } from "./metArtworks";
 
 const CLOSE_ANIMATION_MS = 300;
 
+/**
+ * The room's controls, written down somewhere.
+ *
+ * Removing the on-screen arrow and zoom buttons left the thumbstick as the only
+ * visible affordance, and it is drag-only and unlabelled — so without this
+ * nothing tells a reader that the keyboard drives the room at all. Lives here
+ * rather than in `metArtworks`, which is Met integration and not a place for
+ * copy about this component.
+ */
+const GALLERY_CONTROLS_TEXT =
+  "Use the arrow keys to move between paintings, + and − to zoom, and 0 to reset the view. The stick on the right does the same by dragging.";
+
+const FOCUSABLE = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
+
 /** Same glyph the site-wide InfoButton draws; it is not exported from there. */
 function InfoIcon() {
   return (
@@ -35,6 +56,7 @@ export default function GalleryInfoButton() {
   const titleId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useScrollLock(open);
@@ -50,10 +72,34 @@ export default function GalleryInfoButton() {
     if (closeTimer.current) clearTimeout(closeTimer.current);
   }, []);
 
+  /**
+   * Reopening during the close animation is the case this exists for. `open` is
+   * still true for another 300ms, so `setOpen(true)` changes nothing, the
+   * effect above never runs again, and the pending timer arrives and shuts a
+   * panel the user just asked for. Clearing the timer stops that, and since the
+   * effect is not going to fire, the entry state it would have set is set here
+   * instead — but only when interrupting, so a fresh open still fades in.
+   */
+  const openPanel = () => {
+    const interrupting = closeTimer.current !== null;
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+    setOpen(true);
+    if (interrupting) {
+      setVisible(true);
+      closeRef.current?.focus();
+    }
+  };
+
   const close = () => {
     setVisible(false);
     triggerRef.current?.focus();
-    closeTimer.current = setTimeout(() => setOpen(false), CLOSE_ANIMATION_MS);
+    closeTimer.current = setTimeout(() => {
+      closeTimer.current = null;
+      setOpen(false);
+    }, CLOSE_ANIMATION_MS);
   };
 
   /**
@@ -69,6 +115,30 @@ export default function GalleryInfoButton() {
       if (e.key === "Escape") {
         e.preventDefault();
         close();
+        return;
+      }
+
+      // Without this, Tab leaves the dialog and walks the room behind it while
+      // the panel is still covering it — focus visibly nowhere.
+      if (e.key !== "Tab") return;
+      const dialog = dialogRef.current;
+      if (!dialog) return;
+
+      const focusable = [...dialog.querySelectorAll<HTMLElement>(FOCUSABLE)];
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) {
+        e.preventDefault();
+        return;
+      }
+
+      // The `contains` arm catches focus that is already outside the dialog,
+      // which is how it recovers rather than letting Tab wander further away.
+      const active = document.activeElement;
+      const outside = !dialog.contains(active);
+      if (e.shiftKey ? active === first || outside : active === last || outside) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
       }
     };
     document.addEventListener("keydown", onKeyDown);
@@ -81,7 +151,7 @@ export default function GalleryInfoButton() {
       <button
         ref={triggerRef}
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={openPanel}
         aria-label="Gallery information"
         aria-haspopup="dialog"
         aria-expanded={open}
@@ -103,6 +173,7 @@ export default function GalleryInfoButton() {
               onClick={close}
             />
             <div
+              ref={dialogRef}
               role="dialog"
               aria-modal="true"
               aria-labelledby={titleId}
@@ -129,6 +200,9 @@ export default function GalleryInfoButton() {
               </div>
               <p className="mt-2 text-sm leading-relaxed text-zinc-500">
                 {GALLERY_INFO_TEXT}
+              </p>
+              <p className="mt-4 border-t border-zinc-100 pt-4 text-sm leading-relaxed text-zinc-500">
+                {GALLERY_CONTROLS_TEXT}
               </p>
             </div>
           </div>,

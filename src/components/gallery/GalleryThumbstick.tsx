@@ -47,9 +47,12 @@ const ICON_SIZE = 15;
  * Roblox-style thumbstick: push left or right to step between hangs, push up or
  * down to zoom, release to spring back.
  *
- * Deliberately supplementary. The arrow keys, the on-screen arrows and the zoom
- * buttons all reach the same capabilities, which is what makes a drag-only
- * control acceptable — it adds a way to move, it is never the only one.
+ * Drag-only, and since the on-screen arrow and zoom buttons were removed this
+ * is the only pointer affordance for either. That is acceptable only because
+ * the keyboard reaches both independently — arrow keys step between hangs and
+ * ⌘/Ctrl with plus, minus or zero drives zoom, both bound in `useGalleryCamera`
+ * and neither routed through this component. Anything added here that the
+ * keyboard cannot also do would strand keyboard and assistive-tech users.
  */
 export default function GalleryThumbstick({
   focusedId,
@@ -183,9 +186,25 @@ export default function GalleryThumbstick({
   return (
     <div
       data-gallery-no-drag
-      // Mirrors the logo's `top-8 left-6 md:left-16` across the horizontal
-      // axis, so the two corner controls are inset by the same amounts.
-      className="pointer-events-none absolute bottom-8 left-6 z-40 md:bottom-10 md:left-16"
+      /*
+       * Right edge, and never a right-hand corner: the info button holds the
+       * top one, and the bottom one is where the action bar grows as its
+       * results grid opens.
+       *
+       * The vertical anchor differs by width because the room does. Wide, the
+       * hangs sit in a band across the middle and leave clear floor beneath
+       * them, so the stick drops below the canvases rather than sitting
+       * concentric with the right-hand one, where it read as a sticker stuck to
+       * the painting. It is out of the bar's way there for a reason that does
+       * not depend on the bar's height: the bar is centred and capped at
+       * `max-w-xl`, so at this width it never reaches this column at all.
+       *
+       * Narrow, the room fills the viewport and there is no clear floor left to
+       * drop into, so the stick stays centred — the one band the bar cannot
+       * reach even fully expanded. Some overlap with the room is unavoidable at
+       * that width, which is what the translucent base and blur are for.
+       */
+      className="pointer-events-none absolute top-1/2 right-8 z-40 -translate-y-1/2 md:top-auto md:bottom-40 md:right-20 md:translate-y-0"
     >
       <div
         ref={baseRef}

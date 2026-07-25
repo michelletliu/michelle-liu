@@ -536,6 +536,32 @@ function buildClosedRoom(scene: THREE.Scene): THREE.Vector3[] {
   return downlights;
 }
 
+/**
+ * Dispose every geometry and material reachable from the scene graph.
+ *
+ * The room — floor, four walls, corner beams, baseboards, crown molding, the
+ * coffered soffit and the downlight cans — is built, added, and then never
+ * referenced again, so the graph itself is the only thing that knows where any
+ * of it is. Traversing is what makes it reachable again. Threading a
+ * disposables list back out through every builder would do the same job, spread
+ * across more places and easy to forget in the next one added.
+ *
+ * This deliberately overlaps the per-frame disposal below. Traversal only sees
+ * the material a mesh is currently wearing, so a frame's blank, art or shimmer
+ * material — whichever two are not showing — stay invisible to it. three.js
+ * tolerates disposing twice, so covering everything from both directions is
+ * cheaper than reasoning about which half owns what.
+ */
+function disposeSceneGraph(scene: THREE.Scene) {
+  scene.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) return;
+    object.geometry.dispose();
+    const material = object.material as THREE.Material | THREE.Material[];
+    if (Array.isArray(material)) for (const m of material) m.dispose();
+    else material.dispose();
+  });
+}
+
 function buildFrames(
   paintings: GalleryPainting[],
   root: THREE.Group,
@@ -722,6 +748,14 @@ export default function GalleryScene({
     const frames = buildFrames(paintingsRef.current, framesRoot);
     framesRef.current = frames;
 
+    /*
+     * Decoding outlives the mount easily, and generated images arrive as
+     * multi-megabyte base64 data URLs. Writing one onto a torn-down entry
+     * strands it: nothing holds the entry any more, so nothing will ever
+     * dispose it.
+     */
+    let cancelled = false;
+
     // Apply any images already present when the scene boots.
     for (const painting of paintingsRef.current) {
       if (!painting.imageUrl) continue;
@@ -729,6 +763,10 @@ export default function GalleryScene({
       if (!entry) continue;
       const url = painting.imageUrl;
       new THREE.TextureLoader().load(url, (tex) => {
+        if (cancelled) {
+          tex.dispose();
+          return;
+        }
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.userData.url = url;
         setFrameTexture(entry, tex);
@@ -908,6 +946,7 @@ export default function GalleryScene({
     renderer.domElement.addEventListener("click", onClick);
 
     return () => {
+      cancelled = true;
       cancelAnimationFrame(raf);
       ro.disconnect();
       renderer.domElement.removeEventListener("click", onClick);
@@ -916,11 +955,18 @@ export default function GalleryScene({
         entry.texture?.dispose();
         entry.blankMaterial.dispose();
         entry.artMaterial.dispose();
-        entry.mesh.geometry.dispose();
-        entry.frame.geometry.dispose();
-        entry.frameMaterial.dispose();
       }
+      disposeSceneGraph(scene);
+
       renderer.dispose();
+      /*
+       * dispose() only clears three.js's own caches; the WebGL context itself
+       * stays live until the browser garbage-collects the canvas, which it is
+       * in no hurry to do. Navigation here is client-side, so without this a
+       * few round trips through /gallery pile up contexts until Chrome hits its
+       * limit and force-loses the oldest — and the room comes back blank.
+       */
+      renderer.forceContextLoss();
       if (renderer.domElement.parentNode === mount) {
         mount.removeChild(renderer.domElement);
       }
@@ -931,6 +977,17 @@ export default function GalleryScene({
   useEffect(() => {
     const frames = framesRef.current;
     if (!frames) return;
+
+    /*
+     * Covers unmount and ordering in one flag. A new url for a frame can only
+     * arrive as a change to `paintings`, which tears this closure down before
+     * running the next one — so a callback that finds itself cancelled is
+     * either orphaned by unmount or superseded by a later request, and in both
+     * cases the right move is to drop the texture. Without it, two loads for
+     * the same frame race and whichever decodes last wins, regardless of which
+     * was asked for last.
+     */
+    let cancelled = false;
 
     for (const painting of paintings) {
       const entry = frames.get(painting.id);
@@ -950,12 +1007,20 @@ export default function GalleryScene({
 
       const loader = new THREE.TextureLoader();
       loader.load(url, (tex) => {
+        if (cancelled) {
+          tex.dispose();
+          return;
+        }
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.userData.url = url;
         entry.texture?.dispose();
         setFrameTexture(entry, tex);
       });
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [paintings]);
 
   return (

@@ -202,6 +202,16 @@ export function useGalleryCamera(): GalleryCamera {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      /*
+       * The room's fields also stop propagation before this listener is
+       * reached, so this is the second of two guards. It is worth keeping both
+       * now that zoom answers to bare punctuation: a field that is ever added
+       * without the propagation guard would otherwise zoom the camera every
+       * time someone typed a hyphen or a zero into it.
+       */
+      const target = e.target as HTMLElement | null;
+      if (target?.closest?.("input, textarea, [contenteditable=true]")) return;
+
       const isStep =
         e.key === "ArrowRight" ||
         e.key === "ArrowDown" ||
@@ -218,14 +228,18 @@ export function useGalleryCamera(): GalleryCamera {
         return;
       }
 
-      const mod = e.metaKey || e.ctrlKey;
-      if (!mod) return;
+      /*
+       * Bare keys, and nothing is claimed from the browser or the OS.
+       *
+       * These were once ⌘/Ctrl + = / - / 0, which is exactly where the browser
+       * keeps page zoom — so the one page a reader might most need to enlarge
+       * was the one page where they could not. Bailing out on a modifier is
+       * what hands those chords back; shift is allowed through because it is
+       * how "+" and "_" are typed in the first place.
+       */
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
 
-      const target = e.target as HTMLElement | null;
-      if (target?.closest?.("input, textarea, [contenteditable=true]")) return;
-
-      // ⌘/Ctrl + / = zoom in; - zoom out; 0 reset
-      if (e.key === "=" || e.key === "+" || e.code === "NumpadAdd") {
+      if (e.key === "+" || e.key === "=" || e.code === "NumpadAdd") {
         e.preventDefault();
         zoomBy(GALLERY_ZOOM_STEP);
       } else if (e.key === "-" || e.key === "_" || e.code === "NumpadSubtract") {
