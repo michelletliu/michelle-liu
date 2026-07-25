@@ -6,12 +6,62 @@ import {
 import {
   artworkEligibility,
   composeInspiredPrompt,
+  openAccessImageUrl,
   type MetArtwork,
 } from "@/components/gallery/metArtworks";
 import { MetApiError, fetchMetObject } from "@/lib/met/metClient";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
+
+const REVE_CREATE_URL = "https://api.reve.com/v1/image/create/";
+/** Takes `reference_images`; `create` does not. */
+const REVE_REMIX_URL = "https://api.reve.com/v1/image/remix/";
+/** Met's web derivative, ~2-4MB at most, well inside a JSON request body. */
+const MAX_REFERENCE_BYTES = 8 * 1024 * 1024;
+
+/**
+ * The artwork's Open Access image, base64-encoded for Reve's `reference_images`.
+ *
+ * Text alone could not carry style: prompts describing impasto and broken
+ * colour still came back as smooth digital illustration. Conditioning on the
+ * image itself is the only lever that moves it. Legal footing is checked before
+ * this runs — only `isPublicDomain` Open Access records get here — and the
+ * prompt directs the model to take handling from the reference while depicting
+ * the user's subject, so the output stays an original picture.
+ *
+ * Returns `null` on any failure: a missing reference downgrades to a text-only
+ * generation rather than failing the request.
+ */
+async function fetchReferenceImage(artwork: MetArtwork): Promise<string | null> {
+  // Every downgrade is logged: a text-only generation looks exactly like a
+  // style failure from the outside, and silently swallowing the cause once cost
+  // several rounds of chasing the prompt instead of the transport.
+  const downgrade = (why: string) => {
+    console.warn(
+      `[gallery/generate] no style reference for objectID=${artwork.objectID} (${why}); falling back to text-only create`,
+    );
+    return null;
+  };
+
+  const url = openAccessImageUrl(artwork);
+  if (!url) return downgrade("record has no Open Access image");
+
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+    if (!res.ok) return downgrade(`image fetch returned ${res.status}`);
+
+    const bytes = await res.arrayBuffer();
+    if (bytes.byteLength === 0) return downgrade("image body was empty");
+    if (bytes.byteLength > MAX_REFERENCE_BYTES) {
+      return downgrade(`image is ${bytes.byteLength} bytes, over the limit`);
+    }
+    // Raw base64, no data: prefix — Reve rejects URLs and prefixed payloads.
+    return Buffer.from(bytes).toString("base64");
+  } catch (err) {
+    return downgrade(err instanceof Error ? err.message : "image fetch failed");
+  }
+}
 
 type GenerateBody = {
   prompt?: string;
@@ -24,8 +74,21 @@ type GenerateBody = {
   inspirationObjectID?: number;
 };
 
-function aspectForPainting(painting: GalleryPainting): "2:3" | "3:2" {
-  return painting.aspect === "portrait" ? "2:3" : "3:2";
+/**
+ * The closest ratio Reve offers to the frame the image is being generated for.
+ *
+ * The hangs are 1.15 x 1.55 and 1.95 x 1.32, so 0.742 and 1.477. Reve's menu is
+ * 16:9, 3:2, 4:3, 1:1, 3:4, 2:3, 9:16, and the nearest members are 3:4 (0.750,
+ * 1% out) and 3:2 (1.500, 1.5% out).
+ *
+ * Portrait used to ask for 2:3, which is 0.667 and a full 11% narrower than the
+ * frame — every portrait generation came back stretched sideways once hung.
+ * Nothing was cropped, so it read as a subtly wrong picture rather than an
+ * obvious bug, which is the worst kind. The scene letterboxes whatever is left
+ * over, so these only have to be close, not exact.
+ */
+function aspectForPainting(painting: GalleryPainting): "3:4" | "3:2" {
+  return painting.aspect === "portrait" ? "3:4" : "3:2";
 }
 
 export async function POST(req: NextRequest) {
@@ -96,21 +159,46 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const composed = composeInspiredPrompt(prompt, inspiration);
+  const referenceImage = inspiration
+    ? await fetchReferenceImage(inspiration)
+    : null;
+
+  const composed = composeInspiredPrompt(prompt, inspiration, {
+    referenceImage: referenceImage !== null,
+  });
   const aspect_ratio = aspectForPainting(painting);
+
+  /*
+   * Reve rejects unknown fields with a 400 rather than ignoring them, so this
+   * is the whole recognised set for remix minus `test_time_scaling` (a paid
+   * quality dial) and `postprocessing`. There is no strength or negative-prompt
+   * parameter — the frame tag and the prompt wording are the only style dial.
+   *
+   * Exactly one reference is sent, which is what keeps the frame index at 0.
+   */
+  const payload = {
+    prompt: composed.prompt,
+    aspect_ratio,
+    version: "latest",
+    ...(referenceImage ? { reference_images: [referenceImage] } : {}),
+  };
+
+  console.info(
+    `[gallery/generate] painting=${painting.id} inspiration=${
+      composed.inspiredByObjectID ?? "none"
+    } endpoint=${referenceImage ? "remix" : "create"} aspect=${aspect_ratio}\n` +
+      `[gallery/generate] prompt: ${composed.prompt}`,
+  );
+
   let reveRes: Response;
   try {
-    reveRes = await fetch("https://api.reve.com/v1/image/create/", {
+    reveRes = await fetch(referenceImage ? REVE_REMIX_URL : REVE_CREATE_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        prompt: composed.prompt,
-        aspect_ratio,
-        version: "latest",
-      }),
+      body: JSON.stringify(payload),
     });
   } catch {
     return NextResponse.json(
@@ -120,6 +208,13 @@ export async function POST(req: NextRequest) {
   }
 
   const raw = await reveRes.text();
+  // Reve support cannot look up a request without this id.
+  console.info(
+    `[gallery/generate] reve status=${reveRes.status} request-id=${
+      reveRes.headers.get("x-reve-request-id") ?? "none"
+    }`,
+  );
+
   if (!reveRes.ok) {
     let message = `Reve error (${reveRes.status})`;
     try {

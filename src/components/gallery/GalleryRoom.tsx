@@ -10,6 +10,7 @@ type GalleryRoomProps = {
   paintings?: GalleryPainting[];
   generatingId?: string | null;
   onSelectPainting: (id: string) => void;
+  onDownload?: () => void;
 };
 
 const GalleryScene = dynamic(() => import("./GalleryScene"), {

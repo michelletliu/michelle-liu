@@ -26,13 +26,6 @@ export const GALLERY_ROOM = {
   eyeY: 1.62,
   /** Inward offset so frames sit slightly off the wall. */
   frameInset: 0.04,
-  /** Stand-off from side hangs (toward room center). */
-  standOff: 4.6,
-  /**
-   * Distance from an end-wall hang to the eye — near the opposite wall so the
-   * side hangs stay in frame without turning the space into a tunnel.
-   */
-  backStandOff: 10.5,
   /** Span the left/right hangs occupy along Z, leaving corner margins. */
   sideHangSpan: 6.4,
   /** Span the back/front hangs occupy along X, leaving corner margins. */
@@ -222,6 +215,69 @@ export function progressForPainting(
   return paintings.find((p) => p.id === id)?.depth ?? 0;
 }
 
+export const GALLERY_ZOOM_MIN = 0.65;
+export const GALLERY_ZOOM_MAX = 2.8;
+export const GALLERY_ZOOM_DEFAULT = 1;
+export const GALLERY_ZOOM_STEP = 0.18;
+export const GALLERY_BASE_FOV = 62;
+
+export function clampGalleryZoom(zoom: number): number {
+  // A non-finite zoom would spread NaN through the pose and into the camera
+  // matrix, and three.js renders nothing at all from that — a blank room.
+  if (!Number.isFinite(zoom)) return GALLERY_ZOOM_DEFAULT;
+  if (zoom < GALLERY_ZOOM_MIN) return GALLERY_ZOOM_MIN;
+  if (zoom > GALLERY_ZOOM_MAX) return GALLERY_ZOOM_MAX;
+  return zoom;
+}
+
+/**
+ * Fraction of a zoom taken as a narrower lens; the rest is a dolly. Zooming
+ * only the lens leaves the viewer stranded across the room, and dollying in at
+ * the full 62° splays the walls as the eye closes on the canvas.
+ */
+const ZOOM_FOV_SHARE = 0.35;
+
+export function fovForZoom(zoom: number): number {
+  return GALLERY_BASE_FOV / Math.pow(clampGalleryZoom(zoom), ZOOM_FOV_SHARE);
+}
+
+/** Size the scene's frame lip adds around a canvas, per dimension. */
+const FRAME_LIP = 0.12;
+/** Share of the viewport height a framed hang covers at rest. */
+const REST_FILL = 0.3;
+/**
+ * Ceiling on that share, so zooming can never crop the frame or push the
+ * control that hangs under it off screen.
+ */
+const MAX_FILL = 0.85;
+/** Narrowest viewport planned for; a wide hang must still fit across it. */
+const MIN_VIEWPORT_ASPECT = 1.3;
+/**
+ * Floor on the dolly, whatever a zoom or a canvas size asks for. The scene's
+ * near plane is 0.08 and a frame stands ~0.1 proud of its wall, so an eye
+ * closer than this clips the artwork away instead of filling the view with it.
+ */
+const MIN_STAND_OFF = 0.6;
+
+/**
+ * How far off the wall the eye stands to frame a hang. Derived from the canvas
+ * and the lens rather than fixed per wall, so a hang covers the same share of
+ * the viewport wherever it hangs, and zoom walks the viewer toward it instead
+ * of only tightening the lens.
+ */
+export function standOffForPainting(
+  aspect: GalleryPainting["aspect"],
+  zoom: number = GALLERY_ZOOM_DEFAULT,
+): number {
+  const size = paintingSize(aspect);
+  const fill = Math.min(MAX_FILL, REST_FILL * clampGalleryZoom(zoom));
+  const halfFrame = Math.tan((fovForZoom(zoom) * Math.PI) / 360);
+  const byHeight = (size.height + FRAME_LIP) / (2 * fill * halfFrame);
+  const byWidth =
+    (size.width + FRAME_LIP) / (2 * fill * halfFrame * MIN_VIEWPORT_ASPECT);
+  return Math.max(byHeight, byWidth, MIN_STAND_OFF);
+}
+
 /** World-space camera eye + look-at target. */
 export type GalleryRoomPose = {
   x: number;
@@ -233,56 +289,46 @@ export type GalleryRoomPose = {
 };
 
 /**
- * Stand in front of the focused hang and face its wall.
+ * Stand squarely in front of the focused hang and face it.
  * Hangs stay fixed; the camera relocates between canvases.
+ *
+ * The eye backs straight off the hang's own center along its wall normal, so
+ * it is laterally aligned with that canvas and looks down the normal at it.
+ * Anchoring the eye to the wall's midpoint instead — as the end walls used to,
+ * for a one-point view of the room — centers only the middle hang of a wall
+ * and leaves its neighbours off to one side by the full hang spacing.
  */
 export function roomPoseForPainting(
   id: string,
+  zoom: number = GALLERY_ZOOM_DEFAULT,
   paintings: GalleryPainting[] = GALLERY_PAINTINGS,
 ): GalleryRoomPose {
   const painting = paintings.find((p) => p.id === id) ?? paintings[0]!;
   const layout = paintingLayout(painting);
-  const { standOff, backStandOff, width, depth, eyeY } = GALLERY_ROOM;
+  const { width, depth, eyeY, frameInset } = GALLERY_ROOM;
 
   const lookX = layout.position.x;
   const lookY = layout.position.y;
   const lookZ = layout.position.z;
 
-  let x: number;
-  const y = eyeY;
-  let z: number;
-
-  let targetLookX = lookX;
-  const targetLookY = lookY;
-  const targetLookZ = lookZ;
-
-  if (painting.wall === "back" || painting.wall === "front") {
-    // Stay on the room centerline so both side walls read (classic one-point).
-    // The eye backs off along Z away from whichever end wall is in view.
-    x = 0;
-    z = painting.wall === "back" ? lookZ + backStandOff : lookZ - backStandOff;
-    targetLookX = lookX * 0.35;
-  } else {
-    // Stand near the room center, looking straight at the hang (no Z bias).
-    // That keeps the front wall on one side of the frame and the back wall on
-    // the other — the closed box reads clearly instead of an open corridor.
-    const towardCenter = painting.wall === "left" ? standOff : -standOff;
-    x = lookX + towardCenter;
-    z = lookZ;
-  }
-
-  // Keep the eye inside the box with a comfortable margin.
+  // Bound the dolly along the wall normal rather than bounding x and z apart.
+  // The eye only ever travels that one axis, so a distance bound keeps it both
+  // inside the box and square with the canvas, where independent axis clamps
+  // could slide it off the hang's own center and undo the framing.
   const margin = 1.1;
-  x = Math.min(width / 2 - margin, Math.max(-width / 2 + margin, x));
-  z = Math.min(depth / 2 - margin, Math.max(-depth / 2 + margin, z));
+  const acrossRoom = layout.normal.x !== 0 ? width : depth;
+  const standOff = Math.min(
+    Math.max(standOffForPainting(painting.aspect, zoom), MIN_STAND_OFF),
+    acrossRoom - frameInset - margin,
+  );
 
   return {
-    x,
-    y,
-    z,
-    lookX: targetLookX,
-    lookY: targetLookY,
-    lookZ: targetLookZ,
+    x: lookX + layout.normal.x * standOff,
+    y: eyeY,
+    z: lookZ + layout.normal.z * standOff,
+    lookX,
+    lookY,
+    lookZ,
   };
 }
 
@@ -300,20 +346,4 @@ export function lerpRoomPose(
     lookY: from.lookY + (to.lookY - from.lookY) * u,
     lookZ: from.lookZ + (to.lookZ - from.lookZ) * u,
   };
-}
-
-export const GALLERY_ZOOM_MIN = 0.65;
-export const GALLERY_ZOOM_MAX = 2.4;
-export const GALLERY_ZOOM_DEFAULT = 1;
-export const GALLERY_ZOOM_STEP = 0.12;
-export const GALLERY_BASE_FOV = 62;
-
-export function clampGalleryZoom(zoom: number): number {
-  if (zoom < GALLERY_ZOOM_MIN) return GALLERY_ZOOM_MIN;
-  if (zoom > GALLERY_ZOOM_MAX) return GALLERY_ZOOM_MAX;
-  return zoom;
-}
-
-export function fovForZoom(zoom: number): number {
-  return GALLERY_BASE_FOV / clampGalleryZoom(zoom);
 }

@@ -10,6 +10,8 @@ import {
 } from "react";
 import {
   GALLERY_ZOOM_DEFAULT,
+  GALLERY_ZOOM_MAX,
+  GALLERY_ZOOM_MIN,
   GALLERY_ZOOM_STEP,
   adjacentPaintingId,
   clampGalleryZoom,
@@ -24,6 +26,8 @@ import {
 } from "./galleryPointer";
 
 const EASE_MS = 780;
+/** Zoom steps are small and arrive in bursts, so they settle much faster. */
+const ZOOM_EASE_MS = 220;
 const SWITCH_THRESHOLD = 48;
 /** Pinch / ctrl+wheel sensitivity (trackpad reports pinch as wheel+ctrl on macOS). */
 const PINCH_ZOOM_SCALE = 0.01;
@@ -42,15 +46,46 @@ export {
   isGalleryNoDragTarget,
 } from "./galleryPointer";
 
-/** Back hang keeps the opening view a centered one-point corridor. */
-const DEFAULT_FOCUS = "back-1";
+export type GalleryCamera = {
+  /** Tour progress of the focused hang, in [0, 1]. */
+  progress: number;
+  focusedId: string;
+  pose: GalleryRoomPose;
+  /** Current zoom factor, always within [GALLERY_ZOOM_MIN, GALLERY_ZOOM_MAX]. */
+  zoom: number;
+  /** False once zoom sits at its limit, so a control can dim instead of no-op. */
+  canZoomIn: boolean;
+  canZoomOut: boolean;
+  selectPainting: (id: string) => void;
+  /**
+   * Zoom to an absolute factor. Clamped, so any continuous input — a
+   * thumbstick, a slider — can push raw values at it every frame.
+   */
+  setZoom: (zoom: number) => void;
+  /** Zoom by an increment from wherever zoom currently sits. Clamped too. */
+  zoomBy: (delta: number) => void;
+  bindProps: GalleryCameraBindProps;
+};
 
-export function useGalleryCamera() {
+/**
+ * Guards the ends of the range against float drift, so a control disables
+ * exactly when the last step has landed rather than one step late.
+ */
+const ZOOM_EPSILON = 1e-6;
+
+/**
+ * Middle back hang: the camera stands square to whichever hang is focused, so
+ * only the middle of an end wall opens on the room's centerline — the centered
+ * one-point view the entrance is meant to give.
+ */
+const DEFAULT_FOCUS = "back-2";
+
+export function useGalleryCamera(): GalleryCamera {
   const [focusedId, setFocusedId] = useState(DEFAULT_FOCUS);
   const [pose, setPose] = useState<GalleryRoomPose>(() =>
-    roomPoseForPainting(DEFAULT_FOCUS),
+    roomPoseForPainting(DEFAULT_FOCUS, GALLERY_ZOOM_DEFAULT),
   );
-  const [zoom, setZoom] = useState(GALLERY_ZOOM_DEFAULT);
+  const [zoom, setZoomState] = useState(GALLERY_ZOOM_DEFAULT);
   const [rootNode, setRootNode] = useState<HTMLDivElement | null>(null);
 
   const focusedIdRef = useRef(focusedId);
@@ -69,12 +104,6 @@ export function useGalleryCamera() {
   poseRef.current = pose;
   zoomRef.current = zoom;
 
-  const applyZoom = useCallback((next: number) => {
-    const z = clampGalleryZoom(next);
-    zoomRef.current = z;
-    setZoom(z);
-  }, []);
-
   const setRootRef = useCallback<RefCallback<HTMLDivElement>>((node) => {
     setRootNode(node);
   }, []);
@@ -87,14 +116,14 @@ export function useGalleryCamera() {
   }, []);
 
   const easePoseTo = useCallback(
-    (id: string) => {
+    (id: string, zoomLevel: number, durationMs: number = EASE_MS) => {
       cancelEase();
       const from = poseRef.current;
-      const to = roomPoseForPainting(id);
+      const to = roomPoseForPainting(id, zoomLevel);
       const start = performance.now();
 
       const tick = (now: number) => {
-        const t = Math.min(1, (now - start) / EASE_MS);
+        const t = Math.min(1, (now - start) / durationMs);
         const eased = 1 - Math.pow(1 - t, 3);
         const next = lerpRoomPose(from, to, eased);
         poseRef.current = next;
@@ -110,16 +139,39 @@ export function useGalleryCamera() {
     [cancelEase],
   );
 
+  /**
+   * The single way zoom ever changes, for the trackpad, the keyboard and any
+   * on-screen control alike: clamp first, then dolly the eye to match, because
+   * zoom moves the viewer rather than only narrowing the lens. Clamping here
+   * rather than at each call site is what keeps the camera inside the room and
+   * off the near plane no matter what a caller asks for.
+   */
+  const setZoom = useCallback(
+    (next: number) => {
+      const z = clampGalleryZoom(next);
+      if (z === zoomRef.current) return;
+      zoomRef.current = z;
+      setZoomState(z);
+      easePoseTo(focusedIdRef.current, z, ZOOM_EASE_MS);
+    },
+    [easePoseTo],
+  );
+
+  const zoomBy = useCallback(
+    (delta: number) => setZoom(zoomRef.current + delta),
+    [setZoom],
+  );
+
   const selectPainting = useCallback(
     (id: string) => {
       if (id === focusedIdRef.current) {
-        easePoseTo(id);
+        easePoseTo(id, zoomRef.current);
         return;
       }
       focusedIdRef.current = id;
       setFocusedId(id);
       switchAccum.current = 0;
-      easePoseTo(id);
+      easePoseTo(id, zoomRef.current);
     },
     [easePoseTo],
   );
@@ -175,18 +227,18 @@ export function useGalleryCamera() {
       // ⌘/Ctrl + / = zoom in; - zoom out; 0 reset
       if (e.key === "=" || e.key === "+" || e.code === "NumpadAdd") {
         e.preventDefault();
-        applyZoom(zoomRef.current + GALLERY_ZOOM_STEP);
+        zoomBy(GALLERY_ZOOM_STEP);
       } else if (e.key === "-" || e.key === "_" || e.code === "NumpadSubtract") {
         e.preventDefault();
-        applyZoom(zoomRef.current - GALLERY_ZOOM_STEP);
+        zoomBy(-GALLERY_ZOOM_STEP);
       } else if (e.key === "0" || e.code === "Numpad0") {
         e.preventDefault();
-        applyZoom(GALLERY_ZOOM_DEFAULT);
+        setZoom(GALLERY_ZOOM_DEFAULT);
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [applyZoom, stepFocus]);
+  }, [setZoom, stepFocus, zoomBy]);
 
   useEffect(() => {
     const el = rootNode;
@@ -196,7 +248,7 @@ export function useGalleryCamera() {
       e.preventDefault();
       // Trackpad pinch is reported as wheel + ctrlKey in Chromium / Safari.
       if (e.ctrlKey || e.metaKey) {
-        applyZoom(zoomRef.current - e.deltaY * PINCH_ZOOM_SCALE);
+        zoomBy(-e.deltaY * PINCH_ZOOM_SCALE);
         return;
       }
       accumulateSwitch(e.deltaY);
@@ -204,7 +256,7 @@ export function useGalleryCamera() {
 
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [accumulateSwitch, applyZoom, rootNode]);
+  }, [accumulateSwitch, rootNode, zoomBy]);
 
   useEffect(() => {
     return () => cancelEase();
@@ -263,5 +315,16 @@ export function useGalleryCamera() {
 
   const progress = progressForPainting(focusedId);
 
-  return { progress, focusedId, pose, zoom, selectPainting, bindProps };
+  return {
+    progress,
+    focusedId,
+    pose,
+    zoom,
+    canZoomIn: zoom < GALLERY_ZOOM_MAX - ZOOM_EPSILON,
+    canZoomOut: zoom > GALLERY_ZOOM_MIN + ZOOM_EPSILON,
+    selectPainting,
+    setZoom,
+    zoomBy,
+    bindProps,
+  };
 }

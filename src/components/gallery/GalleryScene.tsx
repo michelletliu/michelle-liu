@@ -1,7 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Download } from "lucide-react";
 import * as THREE from "three";
+import { ghostIconButtonClass } from "@/components/ghostIconButton";
+import { GALLERY_FOCUS_RING } from "./galleryFocus";
+import {
+  createShimmerMaterial,
+  shimmerProgress,
+  shimmerTimeStep,
+} from "./generationShimmer";
 import {
   GALLERY_PAINTINGS,
   GALLERY_ROOM,
@@ -18,15 +26,118 @@ type GallerySceneProps = {
   paintings?: GalleryPainting[];
   generatingId?: string | null;
   onSelectPainting: (id: string) => void;
+  /** Fires when the download control under the focused frame is pressed. */
+  onDownload?: () => void;
 };
+
+/** Gap between a frame's bottom edge and the download control, in world units. */
+const DOWNLOAD_ANCHOR_DROP = 0.16;
 
 type FrameEntry = {
   id: string;
   mesh: THREE.Mesh;
   frame: THREE.Mesh;
-  material: THREE.MeshStandardMaterial;
+  /** Held directly so the focus tint can be eased without a per-frame cast. */
+  frameMaterial: THREE.MeshStandardMaterial;
+  /** Lit paper for a blank canvas, so it picks up the room's white. */
+  blankMaterial: THREE.MeshStandardMaterial;
+  /** A hung image. Unlit when focused, lit by the room when not — see `setArtLighting`. */
+  artMaterial: THREE.MeshStandardMaterial;
+  /** Current 0..1 focus lighting, eased toward the target each frame. */
+  artLit: number;
+  /** Frame width / height, for fitting an image of a different shape. */
+  frameAspect: number;
+  /** Mesh scale that fits the current texture inside the frame undistorted. */
+  artFit: { x: number; y: number };
   texture: THREE.Texture | null;
 };
+
+/**
+ * Scale that fits an image inside the frame without distorting it.
+ *
+ * The canvas mesh is the frame's exact shape and a texture maps across all of
+ * it, so an image of any other shape gets stretched to match — silently, since
+ * nothing is cut off. Requested ratios are chosen to be within about 1% of the
+ * frames, but "about" is doing work there, and a Met reference or an older
+ * generation can be any shape at all. Fitting rather than filling because
+ * cropping a generated painting throws away part of what the user asked for,
+ * while a millimetre of matte around it is invisible.
+ */
+function containScale(imageAspect: number, frameAspect: number) {
+  return {
+    x: Math.min(1, imageAspect / frameAspect),
+    y: Math.min(1, frameAspect / imageAspect),
+  };
+}
+
+/** The texture's pixel aspect, or null before its image has decoded. */
+function textureAspect(texture: THREE.Texture | null): number | null {
+  const image = texture?.image as
+    | { width?: number; height?: number }
+    | undefined;
+  if (!image?.width || !image?.height) return null;
+  return image.width / image.height;
+}
+
+/**
+ * How much of the room's irradiance an unfocused painting keeps.
+ *
+ * The room deliberately over-lights — ambient 1.5 plus hemisphere 1.3 — because
+ * that is what makes matte white walls read as white rather than grey. Feeding
+ * a texture through that irradiance at full albedo blows it out, which is the
+ * "light film" the artwork was originally decoupled from the lighting to
+ * escape. Scaling the albedo down by this much lands an unfocused painting a
+ * little below its true value, so it shades with the room and recedes while
+ * staying legible instead of turning into a white rectangle.
+ *
+ * Measured on the same hung image, focused against unfocused: mean luma 140 vs
+ * 103 and chroma 61 vs 40. Enough to read as the softer part of the room and to
+ * make approaching it feel like the light coming up, without going murky.
+ */
+const ART_UNFOCUSED_ALBEDO = 0.42;
+/** Exponential-ease time constant for the focus lighting, ~95% in 260ms. */
+const ART_LIGHT_TAU = 0.088;
+
+/**
+ * Light a hung image according to how focused it is: 1 renders it unlit at
+ * exactly its source values, 0 hands it entirely to the room's lights.
+ *
+ * Both ends come out of one material and one parameter rather than a swap
+ * between a lit and an unlit material, so the transition can be eased and the
+ * painting is never seen popping between two states. The two contributions are
+ * complementary by construction — albedo fades out as emissive fades in — so no
+ * value of `lit` double-exposes the texture.
+ */
+function setArtLighting(material: THREE.MeshStandardMaterial, lit: number) {
+  material.emissiveIntensity = lit;
+  const albedo = ART_UNFOCUSED_ALBEDO * (1 - lit);
+  material.color.setScalar(albedo);
+}
+
+/**
+ * Hang an image, or clear back to a blank canvas.
+ *
+ * Blank canvases keep their own material: they are paper, and the room's
+ * ambient wash is what makes them read white, so they have no unlit state to
+ * interpolate toward.
+ */
+function setFrameTexture(entry: FrameEntry, texture: THREE.Texture | null) {
+  entry.texture = texture;
+  entry.artMaterial.map = texture;
+  // Driving both channels off the same texture is what lets emissive stand in
+  // for the lit term exactly, rather than approximating it with a flat colour.
+  entry.artMaterial.emissiveMap = texture;
+  entry.artMaterial.needsUpdate = true;
+
+  const aspect = textureAspect(texture);
+  entry.artFit = aspect
+    ? containScale(aspect, entry.frameAspect)
+    : { x: 1, y: 1 };
+  entry.mesh.material = texture ? entry.artMaterial : entry.blankMaterial;
+  // A blank canvas and the shimmer both fill the frame; only artwork is fitted.
+  if (texture) entry.mesh.scale.set(entry.artFit.x, entry.artFit.y, 1);
+  else entry.mesh.scale.set(1, 1, 1);
+}
 
 /**
  * White-cube palette. Planes differ by only a few values so corners stay
@@ -38,12 +149,48 @@ const WALL_FRONT = 0xfafafa;
 const FLOOR = 0xf6f6f6;
 const CEILING = 0xfbfbfb;
 const COFFER_SIDE = 0xfafafa;
+/** Recessed panel at the top of each coffer, a step under the soffit grid. */
+const COFFER_CAP = 0xf0f0f0;
 const FRAME = 0xffffff;
 /** Mid gray — the one deliberately dark note, so hangs read against white. */
 const FRAME_LIP = 0xc4c4c4;
-/** Trim reads as a fine shadow line at each junction, not a gray band. */
-const TRIM = 0xe6e6e6;
-const POST = 0xe8e8e8;
+/**
+ * The focused hang's frame, near-black.
+ *
+ * Selection used to be a 5% scale bump on the frame, which meant the geometry
+ * moved every time you stepped to the next painting and the whole wall felt
+ * unsettled. Colour carries the same signal while the frames stay put.
+ *
+ * Not pure black: the room runs a strong ambient wash and the lip keeps a
+ * little metalness, so 0x000000 picks up a specular sheen and reads as an
+ * uneven dark grey. Measured on the back wall, this renders around luma 25 next
+ * to an unfocused lip near 195 — unmistakable at across-the-room distance.
+ */
+const FRAME_LIP_FOCUSED = 0x3d3d3d;
+/**
+ * Exponential-ease time constant for the focus tint, ~95% of the way in 180ms.
+ * Fast enough to feel like a response to the keypress, slow enough not to snap.
+ */
+const FRAME_TINT_TAU = 0.06;
+/** Reused every frame so the ease allocates nothing. */
+const tintTarget = new THREE.Color();
+/**
+ * Fine molding: the baseboard at the floor and the crown line under the
+ * ceiling. Kept only a step under the walls so it reads as white trim catching
+ * slightly different light rather than as a grey band.
+ */
+const MOLDING = 0xf1f1f1;
+/**
+ * Structural beams at the wall junctions.
+ *
+ * These used to share the molding's value, which meant the two could not be
+ * tuned apart — and they want opposite things. The molding is a hairline and
+ * disappears if it goes dark; the beams are what tell you the room is a box,
+ * and at the molding's value the corners dissolved into the walls. Two steps
+ * under the molding is enough to read the corner from across the room while
+ * still sitting in the white family rather than becoming a grey element.
+ */
+const BEAM = 0xdedede;
 
 /** Recessed ceiling grid, matching the coffered reference. */
 const COFFER = {
@@ -66,8 +213,26 @@ function makeWallMaterial(color: number, roughness = 0.92) {
 }
 
 /**
+ * How much light each bevel of a coffer keeps, in facet order (the -Z wall
+ * first, then +X, +Z, -X).
+ *
+ * The room's lamps hang directly under the ceiling, so every bevel of every
+ * coffer receives near-identical irradiance and the grid renders as one flat
+ * tone — the "very flat" the ceiling was reported as. Real coffers read because
+ * a room has directional light, so this bakes a fixed key from the front: the
+ * bevel facing the viewer down the room stays bright, the one facing away sits
+ * in shadow, and the two side bevels land between them. Baked rather than lit
+ * because an actual directional light would also fall across the walls, and the
+ * walls are meant to stay white.
+ */
+const COFFER_FACET_TONE = [1.0, 0.945, 0.885, 0.925] as const;
+/** Light kept at the deepest point of a recess. Fakes the occlusion a real one has. */
+const COFFER_DEPTH_TONE = 0.84;
+
+/**
  * Inward-facing sides of one coffer: a rectangular frustum that narrows as it
- * rises. Built non-indexed so each bevel keeps its own flat normal.
+ * rises. Built non-indexed so each bevel keeps its own flat normal, and carries
+ * a baked shading term per vertex (see `COFFER_FACET_TONE`).
  */
 function cofferSideGeometry(
   openW: number,
@@ -95,6 +260,7 @@ function cofferSideGeometry(
   ];
 
   const pos: number[] = [];
+  const col: number[] = [];
   for (let i = 0; i < 4; i++) {
     const next = (i + 1) % 4;
     const b0 = bottom[i]!;
@@ -103,10 +269,20 @@ function cofferSideGeometry(
     const t1 = top[next]!;
     pos.push(...b0, ...t0, ...t1);
     pos.push(...b0, ...t1, ...b1);
+
+    // Vertices at `depth` are the deep end of the recess, so they take the
+    // occlusion term; vertices at the soffit plane stay open to the room.
+    const facet = COFFER_FACET_TONE[i]!;
+    const mouth = facet;
+    const deep = facet * COFFER_DEPTH_TONE;
+    for (const v of [mouth, deep, deep, mouth, deep, mouth]) {
+      col.push(v, v, v);
+    }
   }
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
   geo.computeVertexNormals();
   return geo;
 }
@@ -170,10 +346,14 @@ function buildCofferedCeiling(
     metalness: 0,
     flatShading: true,
     side: THREE.DoubleSide,
+    // Multiplies the baked facet/depth shading over the base tone.
+    vertexColors: true,
   });
   const topGeo = new THREE.PlaneGeometry(innerW, innerD);
+  // The recessed panel sits behind the soffit grid, so it reads as the back of
+  // a box rather than the brightest thing on the ceiling.
   const topMat = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
+    color: COFFER_CAP,
     roughness: 0.85,
     metalness: 0,
   });
@@ -317,8 +497,8 @@ function buildClosedRoom(scene: THREE.Scene): THREE.Vector3[] {
   right.position.set(w / 2, h / 2, 0);
   scene.add(right);
 
-  const postMat = new THREE.MeshStandardMaterial({
-    color: POST,
+  const beamMat = new THREE.MeshStandardMaterial({
+    color: BEAM,
     roughness: 0.85,
   });
   const corners: [number, number][] = [
@@ -328,16 +508,16 @@ function buildClosedRoom(scene: THREE.Scene): THREE.Vector3[] {
     [w / 2, d / 2],
   ];
   for (const [cx, cz] of corners) {
-    const post = new THREE.Mesh(new THREE.BoxGeometry(t, h, t), postMat);
-    post.position.set(cx, h / 2, cz);
-    scene.add(post);
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(t, h, t), beamMat);
+    beam.position.set(cx, h / 2, cz);
+    scene.add(beam);
   }
 
-  const trimMat = new THREE.MeshStandardMaterial({
-    color: TRIM,
+  const moldingMat = new THREE.MeshStandardMaterial({
+    color: MOLDING,
     roughness: 0.7,
   });
-  addBaseboard(scene, w, d, trimMat);
+  addBaseboard(scene, w, d, moldingMat);
 
   // Crown molding line under the ceiling
   const crownH = 0.08;
@@ -348,7 +528,7 @@ function buildClosedRoom(scene: THREE.Scene): THREE.Vector3[] {
     [new THREE.BoxGeometry(0.04, crownH, d), [-w / 2 + 0.02, crownY, 0]],
     [new THREE.BoxGeometry(0.04, crownH, d), [w / 2 - 0.02, crownY, 0]],
   ] as const) {
-    const mesh = new THREE.Mesh(geo, trimMat);
+    const mesh = new THREE.Mesh(geo, moldingMat);
     mesh.position.set(pos[0], pos[1], pos[2]);
     scene.add(mesh);
   }
@@ -371,13 +551,14 @@ function buildFrames(
     else if (painting.wall === "front") group.rotation.y = Math.PI;
 
     // Outer frame lip — light gray so hangs still read on white walls
+    const frameMaterial = new THREE.MeshStandardMaterial({
+      color: FRAME_LIP,
+      roughness: 0.45,
+      metalness: 0.08,
+    });
     const frame = new THREE.Mesh(
       new THREE.BoxGeometry(layout.width + 0.12, layout.height + 0.12, 0.06),
-      new THREE.MeshStandardMaterial({
-        color: FRAME_LIP,
-        roughness: 0.45,
-        metalness: 0.08,
-      }),
+      frameMaterial,
     );
     frame.position.z = 0.01;
     group.add(frame);
@@ -393,16 +574,24 @@ function buildFrames(
     matte.position.z = 0.045;
     group.add(matte);
 
-    const material = new THREE.MeshStandardMaterial({
+    const blankMaterial = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       roughness: 0.9,
       metalness: 0,
-      emissive: 0xffffff,
-      emissiveIntensity: 0.08,
     });
+    const artMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      emissive: 0xffffff,
+      roughness: 0.94,
+      metalness: 0,
+      // Keeps the focused, emissive-only state at exactly its source values if a
+      // tone curve is ever switched on at the renderer.
+      toneMapped: false,
+    });
+    setArtLighting(artMaterial, 0);
     const mesh = new THREE.Mesh(
       new THREE.PlaneGeometry(layout.width, layout.height),
-      material,
+      blankMaterial,
     );
     mesh.position.z = 0.055;
     mesh.userData.paintingId = painting.id;
@@ -414,7 +603,12 @@ function buildFrames(
       id: painting.id,
       mesh,
       frame,
-      material,
+      frameMaterial,
+      blankMaterial,
+      artMaterial,
+      artLit: 0,
+      frameAspect: layout.width / layout.height,
+      artFit: { x: 1, y: 1 },
       texture: null,
     });
   }
@@ -429,6 +623,7 @@ export default function GalleryScene({
   paintings = GALLERY_PAINTINGS,
   generatingId = null,
   onSelectPainting,
+  onDownload,
 }: GallerySceneProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const poseRef = useRef(pose);
@@ -439,12 +634,29 @@ export default function GalleryScene({
   const onSelectRef = useRef(onSelectPainting);
   const framesRef = useRef<Map<string, FrameEntry> | null>(null);
 
+  const downloadRef = useRef<HTMLButtonElement>(null);
+  // Scene is imported with ssr: false, so reading matchMedia here is safe.
+  const [reduceMotion] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+
   poseRef.current = pose;
   zoomRef.current = zoom;
   focusedRef.current = focusedId;
   generatingRef.current = generatingId;
   paintingsRef.current = paintings;
   onSelectRef.current = onSelectPainting;
+
+  /**
+   * Whether the control should exist at all is the only part React decides.
+   * Where it sits is written straight to the element in the render loop: the
+   * camera eases for ~780ms, and a state update per frame would re-render the
+   * page 60 times a second.
+   */
+  const showDownload =
+    Boolean(onDownload) &&
+    generatingId !== focusedId &&
+    paintings.some((p) => p.id === focusedId && Boolean(p.imageUrl));
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -519,10 +731,7 @@ export default function GalleryScene({
       new THREE.TextureLoader().load(url, (tex) => {
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.userData.url = url;
-        entry.texture = tex;
-        entry.material.map = tex;
-        entry.material.color.set(0xffffff);
-        entry.material.needsUpdate = true;
+        setFrameTexture(entry, tex);
       });
     }
 
@@ -540,8 +749,69 @@ export default function GalleryScene({
     const ro = new ResizeObserver(resize);
     ro.observe(mount);
 
+    const shimmer = createShimmerMaterial();
+    /** Wall-clock start of the current generation, or `null` when idle. */
+    let shimmerStartedAt: number | null = null;
+    const clock = new THREE.Clock();
+    const anchor = new THREE.Vector3();
+    const camForward = new THREE.Vector3();
+    const toAnchor = new THREE.Vector3();
+
+    /**
+     * Pin the download control under the focused frame. Called after each
+     * render so it tracks the camera ease and any zoom change, and written
+     * directly to the element rather than through React.
+     */
+    const positionDownloadControl = (focused: string) => {
+      const el = downloadRef.current;
+      if (!el) return;
+
+      const hide = () => {
+        el.style.visibility = "hidden";
+        el.style.opacity = "0";
+      };
+
+      const painting = paintingsRef.current.find((p) => p.id === focused);
+      if (!painting) {
+        hide();
+        return;
+      }
+
+      const layout = paintingLayout(painting);
+      anchor.set(
+        layout.position.x + layout.normal.x * 0.06,
+        layout.position.y - layout.height / 2 - DOWNLOAD_ANCHOR_DROP,
+        layout.position.z + layout.normal.z * 0.06,
+      );
+
+      // project() happily returns coordinates for points behind the camera, so
+      // the hemisphere test has to come first or the button ghosts over the room.
+      camera.getWorldDirection(camForward);
+      toAnchor.copy(anchor).sub(camera.position);
+      if (toAnchor.dot(camForward) <= 0) {
+        hide();
+        return;
+      }
+
+      anchor.project(camera);
+      const offScreen =
+        anchor.z > 1 || Math.abs(anchor.x) > 1 || Math.abs(anchor.y) > 1;
+      if (offScreen) {
+        hide();
+        return;
+      }
+
+      const { clientWidth: cw, clientHeight: ch } = renderer.domElement;
+      const x = (anchor.x * 0.5 + 0.5) * cw;
+      const y = (-anchor.y * 0.5 + 0.5) * ch;
+      el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) translate(-50%, 0)`;
+      el.style.visibility = "visible";
+      el.style.opacity = "1";
+    };
+
     let raf = 0;
     const tick = () => {
+      const delta = clock.getDelta();
       const p = poseRef.current;
       camera.position.set(p.x, p.y, p.z);
       camera.lookAt(p.lookX, p.lookY, p.lookZ);
@@ -550,20 +820,75 @@ export default function GalleryScene({
 
       const focused = focusedRef.current;
       const generating = generatingRef.current;
+
+      // Only burn shader time while something is actually generating.
+      if (generating !== null && frames.has(generating)) {
+        shimmer.uniforms.uTime.value += shimmerTimeStep(delta, reduceMotion);
+        // Clock starts on the first frame of each generation and is cleared
+        // below, so a second run begins pale again rather than resuming at the
+        // previous depth. It is bound to the generating canvas, not the focused
+        // one, so moving focus mid-flight does not disturb it.
+        shimmerStartedAt ??= performance.now();
+        shimmer.uniforms.uProgress.value = shimmerProgress(
+          performance.now() - shimmerStartedAt,
+        );
+      } else if (shimmerStartedAt !== null) {
+        shimmerStartedAt = null;
+        shimmer.uniforms.uProgress.value = 0;
+      }
+
       for (const [id, entry] of frames) {
         const isFocused = id === focused;
         const isGenerating = id === generating;
         entry.mesh.position.z = isFocused ? 0.08 : 0.055;
-        entry.frame.scale.setScalar(isFocused ? 1.05 : 1);
-        entry.material.opacity = isGenerating ? 0.55 : 1;
-        entry.material.transparent = isGenerating;
-        entry.material.emissiveIntensity = isFocused ? 0.14 : 0.04;
+
+        // Selection is colour only. The frame's geometry is identical in both
+        // states, so stepping along a wall never resizes anything.
+        tintTarget.set(isFocused ? FRAME_LIP_FOCUSED : FRAME_LIP);
+        if (reduceMotion) {
+          entry.frameMaterial.color.copy(tintTarget);
+        } else {
+          entry.frameMaterial.color.lerp(
+            tintTarget,
+            1 - Math.exp(-delta / FRAME_TINT_TAU),
+          );
+        }
+
+        // Straight assignment each frame, never a new material: generating wins,
+        // then a hung image, then blank paper. Because the surface is chosen
+        // rather than mutated, a failed or aborted generation drops back to a
+        // clean canvas on its own — no opacity or shader state can get stuck.
+        const surface = isGenerating
+          ? shimmer
+          : entry.texture
+            ? entry.artMaterial
+            : entry.blankMaterial;
+        if (entry.mesh.material !== surface) {
+          entry.mesh.material = surface;
+          // The shimmer and a blank canvas are the canvas itself, so they fill
+          // the frame; a hung image keeps whatever fit its shape needs.
+          const fit = surface === entry.artMaterial ? entry.artFit : null;
+          entry.mesh.scale.set(fit?.x ?? 1, fit?.y ?? 1, 1);
+        }
+
+        // Approaching a painting lights it: the focused one renders unlit at its
+        // true values, everything else is left to the room. Eased rather than
+        // switched, so stepping along a wall reads as the light coming up on the
+        // next canvas instead of two paintings swapping appearance on one frame.
+        const litTarget = isFocused ? 1 : 0;
+        entry.artLit = reduceMotion
+          ? litTarget
+          : entry.artLit +
+            (litTarget - entry.artLit) * (1 - Math.exp(-delta / ART_LIGHT_TAU));
+        setArtLighting(entry.artMaterial, entry.artLit);
+
         if (!entry.texture) {
-          entry.material.color.set(isFocused ? 0xffffff : 0xf3f3f3);
+          entry.blankMaterial.color.set(isFocused ? 0xffffff : 0xf3f3f3);
         }
       }
 
       renderer.render(scene, camera);
+      positionDownloadControl(focused);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -586,12 +911,14 @@ export default function GalleryScene({
       cancelAnimationFrame(raf);
       ro.disconnect();
       renderer.domElement.removeEventListener("click", onClick);
+      shimmer.dispose();
       for (const entry of frames.values()) {
         entry.texture?.dispose();
-        entry.material.dispose();
+        entry.blankMaterial.dispose();
+        entry.artMaterial.dispose();
         entry.mesh.geometry.dispose();
         entry.frame.geometry.dispose();
-        (entry.frame.material as THREE.Material).dispose();
+        entry.frameMaterial.dispose();
       }
       renderer.dispose();
       if (renderer.domElement.parentNode === mount) {
@@ -613,9 +940,7 @@ export default function GalleryScene({
       if (!url) {
         if (entry.texture) {
           entry.texture.dispose();
-          entry.texture = null;
-          entry.material.map = null;
-          entry.material.needsUpdate = true;
+          setFrameTexture(entry, null);
         }
         continue;
       }
@@ -628,19 +953,40 @@ export default function GalleryScene({
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.userData.url = url;
         entry.texture?.dispose();
-        entry.texture = tex;
-        entry.material.map = tex;
-        entry.material.color.set(0xffffff);
-        entry.material.needsUpdate = true;
+        setFrameTexture(entry, tex);
       });
     }
   }, [paintings]);
 
   return (
-    <div
-      ref={mountRef}
-      className="absolute inset-0 z-10 h-full w-full"
-      aria-label="3D gallery room"
-    />
+    <div className="absolute inset-0 z-10 h-full w-full">
+      <div
+        ref={mountRef}
+        className="absolute inset-0 h-full w-full"
+        aria-label="3D gallery room"
+      />
+      {showDownload && (
+        <button
+          ref={downloadRef}
+          type="button"
+          data-gallery-no-drag
+          onClick={onDownload}
+          aria-label="Download the generated image on this canvas"
+          style={{
+            visibility: "hidden",
+            opacity: 0,
+            // Only opacity transitions: the transform is rewritten every frame
+            // to track the camera, so easing it would smear the anchor.
+            transition: reduceMotion ? "none" : "opacity 180ms ease-out",
+          }}
+          className={ghostIconButtonClass(
+            "sm",
+            `absolute left-0 top-0 z-20 border border-black/10 bg-white/90 text-zinc-500 shadow-[0_4px_16px_rgba(0,0,0,0.10)] backdrop-blur-sm hover:bg-white hover:text-zinc-700 ${GALLERY_FOCUS_RING}`,
+          )}
+        >
+          <Download size={15} aria-hidden />
+        </button>
+      )}
+    </div>
   );
 }

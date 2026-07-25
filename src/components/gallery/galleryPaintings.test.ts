@@ -13,12 +13,14 @@ import {
   clampGalleryZoom,
   clampProgress,
   focusedPaintingId,
+  fovForZoom,
   lerpRoomPose,
   paintingLayout,
   paintingsByDepth,
   paintingsByOrder,
   progressForPainting,
   roomPoseForPainting,
+  standOffForPainting,
   type GalleryWall,
 } from "./galleryPaintings.ts";
 import {
@@ -28,6 +30,35 @@ import {
 } from "./galleryPointer.ts";
 
 const WALLS: GalleryWall[] = ["left", "right", "back", "front"];
+
+const ZOOM_LEVELS = [GALLERY_ZOOM_MIN, GALLERY_ZOOM_DEFAULT, GALLERY_ZOOM_MAX];
+
+/** The axis that runs along a hang's wall — the one centering happens on. */
+const lateralAxis = (wall: GalleryWall): "x" | "z" =>
+  wall === "left" || wall === "right" ? "z" : "x";
+
+/**
+ * Share of the viewport a framed hang covers when viewed from its own pose,
+ * on the narrowest viewport the framing plans for.
+ */
+const NARROWEST_VIEWPORT_ASPECT = 1.3;
+const frameShare = (id: string, zoom: number) => {
+  const painting = GALLERY_PAINTINGS.find((p) => p.id === id)!;
+  const layout = paintingLayout(painting);
+  const pose = roomPoseForPainting(id, zoom);
+  const distance = Math.hypot(
+    pose.x - layout.position.x,
+    pose.z - layout.position.z,
+  );
+  // The scene's frame lip stands proud of the canvas on every side.
+  const lip = 0.12;
+  const viewH = 2 * distance * Math.tan((fovForZoom(zoom) * Math.PI) / 360);
+  return {
+    distance,
+    height: (layout.height + lip) / viewH,
+    width: (layout.width + lip) / (viewH * NARROWEST_VIEWPORT_ASPECT),
+  };
+};
 
 const wallOf = (id: string): GalleryWall =>
   GALLERY_PAINTINGS.find((p) => p.id === id)!.wall;
@@ -402,14 +433,144 @@ test("roomPoseForPainting stands in front of each hang facing its wall", () => {
   assert.ok(nearLeft.z - farLeft.z > 2);
 });
 
+/**
+ * The regression this guards: the end walls used to park the eye on the room's
+ * centerline for a one-point view, which centers only the middle hang of a
+ * wall and leaves its neighbours off by the full hang spacing.
+ */
+test("the eye lines up with each hang's own center, not its wall's", () => {
+  for (const zoom of ZOOM_LEVELS) {
+    for (const p of GALLERY_PAINTINGS) {
+      const pose = roomPoseForPainting(p.id, zoom);
+      const art = positionOf(p.id);
+      const axis = lateralAxis(p.wall);
+      const offset = axis === "z" ? pose.z - art.z : pose.x - art.x;
+      assert.ok(
+        Math.abs(offset) < 1e-9,
+        `${p.id} eye sits ${offset.toFixed(2)} off its own center along ${axis} at zoom ${zoom}`,
+      );
+
+      // Aimed at that canvas too, not at a point pulled toward the wall's middle.
+      assert.equal(pose.lookX, art.x, `${p.id} look x`);
+      assert.equal(pose.lookZ, art.z, `${p.id} look z`);
+    }
+  }
+});
+
+test("the eye faces every wall square on, with no yaw off the hang", () => {
+  for (const zoom of ZOOM_LEVELS) {
+    for (const p of GALLERY_PAINTINGS) {
+      const pose = roomPoseForPainting(p.id, zoom);
+      const { normal } = paintingLayout(p);
+      const fx = pose.lookX - pose.x;
+      const fz = pose.lookZ - pose.z;
+      const len = Math.hypot(fx, fz);
+      assert.ok(len > 0.5, `${p.id} has a view direction`);
+
+      // Standing off along the inward normal means looking straight back down it.
+      assert.ok(
+        Math.abs(fx / len + normal.x) < 1e-9 &&
+          Math.abs(fz / len + normal.z) < 1e-9,
+        `${p.id} views its wall at an angle at zoom ${zoom}`,
+      );
+    }
+  }
+});
+
 test("roomPoseForPainting keeps the eye inside the room for every hang", () => {
   const { width, depth, height } = GALLERY_ROOM;
-  for (const p of GALLERY_PAINTINGS) {
-    const pose = roomPoseForPainting(p.id);
-    assert.ok(Math.abs(pose.x) < width / 2, `${p.id} eye x inside room`);
-    assert.ok(Math.abs(pose.z) < depth / 2, `${p.id} eye z inside room`);
-    assert.ok(pose.y > 0 && pose.y < height, `${p.id} eye y inside room`);
+  for (const zoom of ZOOM_LEVELS) {
+    for (const p of GALLERY_PAINTINGS) {
+      const pose = roomPoseForPainting(p.id, zoom);
+      assert.ok(Math.abs(pose.x) < width / 2, `${p.id} eye x inside room`);
+      assert.ok(Math.abs(pose.z) < depth / 2, `${p.id} eye z inside room`);
+      assert.ok(pose.y > 0 && pose.y < height, `${p.id} eye y inside room`);
+    }
   }
+});
+
+test("zoom walks the eye in far enough to fill the frame with the hang", () => {
+  for (const p of GALLERY_PAINTINGS) {
+    const rest = frameShare(p.id, GALLERY_ZOOM_DEFAULT);
+    const close = frameShare(p.id, GALLERY_ZOOM_MAX);
+    const wide = frameShare(p.id, GALLERY_ZOOM_MIN);
+
+    assert.ok(
+      close.distance < rest.distance * 0.6,
+      `${p.id} only closed from ${rest.distance.toFixed(2)} to ${close.distance.toFixed(2)}`,
+    );
+    assert.ok(wide.distance > rest.distance, `${p.id} zooms back out`);
+    assert.ok(
+      close.height > 0.7,
+      `${p.id} still covers only ${(close.height * 100).toFixed(0)}% of the frame`,
+    );
+  }
+});
+
+test("a hang and its frame stay fully in view, and the eye clear of the wall", () => {
+  for (const zoom of ZOOM_LEVELS) {
+    for (const p of GALLERY_PAINTINGS) {
+      const share = frameShare(p.id, zoom);
+      assert.ok(
+        share.height <= 0.86 && share.width <= 0.86,
+        `${p.id} frame is cropped at zoom ${zoom} (${(share.height * 100).toFixed(0)}% tall, ${(share.width * 100).toFixed(0)}% wide)`,
+      );
+      // Well beyond the scene's 0.08 near plane and the frame's own depth.
+      assert.ok(
+        share.distance > 1,
+        `${p.id} eye is ${share.distance.toFixed(2)} from the wall at zoom ${zoom}`,
+      );
+    }
+  }
+});
+
+test("no zoom value, however broken, puts the eye through a wall", () => {
+  const { width, depth } = GALLERY_ROOM;
+  for (const zoom of [-50, 0, 1e6, Number.NaN, Number.POSITIVE_INFINITY]) {
+    for (const p of GALLERY_PAINTINGS) {
+      const pose = roomPoseForPainting(p.id, zoom);
+      const art = positionOf(p.id);
+      const distance = Math.hypot(pose.x - art.x, pose.z - art.z);
+
+      assert.ok(
+        distance > 0.5,
+        `${p.id} dollied to ${distance} at zoom ${zoom}`,
+      );
+      assert.ok(
+        Math.abs(pose.x) < width / 2 && Math.abs(pose.z) < depth / 2,
+        `${p.id} eye left the room at zoom ${zoom}`,
+      );
+
+      // Still square with the canvas, so a clamp can never cost the centering.
+      const axis = lateralAxis(p.wall);
+      const offset = axis === "z" ? pose.z - art.z : pose.x - art.x;
+      assert.ok(
+        Math.abs(offset) < 1e-9,
+        `${p.id} lost its centering at zoom ${zoom}`,
+      );
+    }
+  }
+});
+
+test("standOffForPainting frames both aspects from the same lens", () => {
+  for (const aspect of ["portrait", "landscape"] as const) {
+    const rest = standOffForPainting(aspect, GALLERY_ZOOM_DEFAULT);
+    assert.ok(rest > 3 && rest < 6, `${aspect} rest stand-off ${rest}`);
+    assert.ok(
+      standOffForPainting(aspect, GALLERY_ZOOM_MAX) < rest,
+      `${aspect} zoom closes in`,
+    );
+    assert.ok(
+      standOffForPainting(aspect, GALLERY_ZOOM_MIN) > rest,
+      `${aspect} zoom backs off`,
+    );
+  }
+
+  // Zoom is clamped before it is used, so out-of-range values are inert.
+  assert.equal(
+    standOffForPainting("portrait", GALLERY_ZOOM_MAX + 5),
+    standOffForPainting("portrait", GALLERY_ZOOM_MAX),
+  );
 });
 
 test("lerpRoomPose interpolates each axis", () => {

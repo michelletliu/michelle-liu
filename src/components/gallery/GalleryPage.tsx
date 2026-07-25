@@ -4,17 +4,33 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import LogoBackButton from "@/components/LogoBackButton";
 import { useNavigate } from "@/lib/navigation";
 import GalleryActionBar from "./GalleryActionBar";
+import GalleryInfoButton from "./GalleryInfoButton";
+import GalleryNavArrows from "./GalleryNavArrows";
 import GalleryRoom from "./GalleryRoom";
+import GalleryThumbstick from "./GalleryThumbstick";
+import { downloadImage, generatedImageFilename } from "./downloadImage";
 import { GALLERY_PAINTINGS } from "./galleryPaintings";
 import { useGalleryCamera } from "./useGalleryCamera";
 
 export default function GalleryPage() {
   const navigate = useNavigate();
-  const { focusedId, pose, zoom, selectPainting, bindProps } =
-    useGalleryCamera();
+  const {
+    focusedId,
+    pose,
+    zoom,
+    canZoomIn,
+    canZoomOut,
+    selectPainting,
+    zoomBy,
+    bindProps,
+  } = useGalleryCamera();
   const { ref, ...pointerBindProps } = bindProps;
 
   const [imageById, setImageById] = useState<Record<string, string>>({});
+  /** Artwork that inspired each canvas, kept for the download filename. */
+  const [inspirationById, setInspirationById] = useState<
+    Record<string, string>
+  >({});
   const [generatingId, setGeneratingId] = useState<string | null>(null);
 
   const paintings = useMemo(
@@ -27,14 +43,21 @@ export default function GalleryPage() {
   );
 
   const onGenerate = useCallback(
-    async (prompt: string) => {
+    async (
+      prompt: string,
+      inspiration?: { objectID: number; title: string },
+    ) => {
       const paintingId = focusedId;
       setGeneratingId(paintingId);
       try {
         const res = await fetch("/api/gallery/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt, paintingId }),
+          body: JSON.stringify({
+            prompt,
+            paintingId,
+            inspirationObjectID: inspiration?.objectID,
+          }),
         });
         const data = (await res.json()) as {
           imageUrl?: string;
@@ -44,12 +67,29 @@ export default function GalleryPage() {
           throw new Error(data.error || "Generation failed");
         }
         setImageById((prev) => ({ ...prev, [paintingId]: data.imageUrl! }));
+        setInspirationById((prev) => ({
+          ...prev,
+          [paintingId]: inspiration?.title ?? "",
+        }));
       } finally {
+        // Runs on failure too, so a canvas never keeps shimmering after an error.
         setGeneratingId(null);
       }
     },
     [focusedId],
   );
+
+  const onDownload = useCallback(() => {
+    const imageUrl = imageById[focusedId];
+    if (!imageUrl) return;
+    void downloadImage(
+      imageUrl,
+      generatedImageFilename({
+        inspirationTitle: inspirationById[focusedId] || null,
+        imageUrl,
+      }),
+    );
+  }, [focusedId, imageById, inspirationById]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -70,6 +110,7 @@ export default function GalleryPage() {
     >
       <div data-gallery-no-drag className="relative z-40">
         <LogoBackButton onClick={() => navigate("/")} />
+        <GalleryInfoButton />
       </div>
       <GalleryRoom
         pose={pose}
@@ -78,11 +119,32 @@ export default function GalleryPage() {
         paintings={paintings}
         generatingId={generatingId}
         onSelectPainting={selectPainting}
+        onDownload={onDownload}
       />
-      <GalleryActionBar
+      {/* One bottom-centre stack, so the arrows ride on top of the bar however
+          tall it gets — expanded with a results grid, or collapsed to its pen
+          icon. The column itself ignores pointer events so the room stays
+          draggable through the gaps between the two controls. */}
+      {/* The left padding is the thumbstick's gutter: below `md` the bar would
+          otherwise run under it. Above `md` there is room for both, so the bar
+          returns to true centre. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex flex-col items-center gap-3 pl-32 pr-4 pb-6 md:pb-8 md:pl-4">
+        <GalleryNavArrows
+          focusedId={focusedId}
+          onSelect={selectPainting}
+          onZoomBy={zoomBy}
+          canZoomIn={canZoomIn}
+          canZoomOut={canZoomOut}
+        />
+        <GalleryActionBar
+          generating={generatingId !== null}
+          onGenerate={onGenerate}
+        />
+      </div>
+      <GalleryThumbstick
         focusedId={focusedId}
-        generating={generatingId !== null}
-        onGenerate={onGenerate}
+        onSelect={selectPainting}
+        onZoomBy={zoomBy}
       />
     </div>
   );
