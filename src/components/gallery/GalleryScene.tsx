@@ -24,6 +24,7 @@ import {
   type GalleryPainting,
   type GalleryRoomPose,
 } from "./galleryPaintings";
+import { frameGeometryForArtwork } from "./galleryFrameGeometry";
 
 type GallerySceneProps = {
   pose: GalleryRoomPose;
@@ -49,6 +50,7 @@ type FrameEntry = {
   id: string;
   mesh: THREE.Mesh;
   frame: THREE.Mesh;
+  matte: THREE.Mesh;
   /** Held directly so the focus tint can be eased without a per-frame cast. */
   frameMaterial: THREE.MeshStandardMaterial;
   /** Lit paper for a blank canvas, so it picks up the room's white. */
@@ -57,30 +59,12 @@ type FrameEntry = {
   artMaterial: THREE.MeshStandardMaterial;
   /** Current 0..1 focus lighting, eased toward the target each frame. */
   artLit: number;
-  /** Frame width / height, for fitting an image of a different shape. */
-  frameAspect: number;
+  /** Largest artwork aperture for this hang, before aspect fitting. */
+  maxArtSize: { width: number; height: number };
   /** Mesh scale that fits the current texture inside the frame undistorted. */
   artFit: { x: number; y: number };
   texture: THREE.Texture | null;
 };
-
-/**
- * Scale that fits an image inside the frame without distorting it.
- *
- * The canvas mesh is the frame's exact shape and a texture maps across all of
- * it, so an image of any other shape gets stretched to match — silently, since
- * nothing is cut off. Requested ratios are chosen to be within about 1% of the
- * frames, but "about" is doing work there, and a Met reference or an older
- * generation can be any shape at all. Fitting rather than filling because
- * cropping a generated painting throws away part of what the user asked for,
- * while a millimetre of matte around it is invisible.
- */
-function containScale(imageAspect: number, frameAspect: number) {
-  return {
-    x: Math.min(1, imageAspect / frameAspect),
-    y: Math.min(1, frameAspect / imageAspect),
-  };
-}
 
 /** The texture's pixel aspect, or null before its image has decoded. */
 function textureAspect(texture: THREE.Texture | null): number | null {
@@ -148,10 +132,38 @@ function setFrameTexture(entry: FrameEntry, texture: THREE.Texture | null) {
   entry.artMaterial.emissiveMap = texture;
   entry.artMaterial.needsUpdate = true;
 
-  const aspect = textureAspect(texture);
-  entry.artFit = aspect
-    ? containScale(aspect, entry.frameAspect)
-    : { x: 1, y: 1 };
+  const geometry = frameGeometryForArtwork(
+    entry.maxArtSize.width,
+    entry.maxArtSize.height,
+    textureAspect(texture),
+  );
+  entry.artFit = {
+    x: geometry.art.width / entry.maxArtSize.width,
+    y: geometry.art.height / entry.maxArtSize.height,
+  };
+
+  const previousFrameGeometry = entry.frame.geometry;
+  const nextFrameGeometry = new THREE.BoxGeometry(
+    geometry.frame.width,
+    geometry.frame.height,
+    0.06,
+  );
+  scaleBoxUvsToWorld(
+    nextFrameGeometry,
+    geometry.frame.width,
+    geometry.frame.height,
+    0.06,
+  );
+  entry.frame.geometry = nextFrameGeometry;
+  previousFrameGeometry.dispose();
+
+  const previousMatteGeometry = entry.matte.geometry;
+  entry.matte.geometry = new THREE.PlaneGeometry(
+    geometry.matte.width,
+    geometry.matte.height,
+  );
+  previousMatteGeometry.dispose();
+
   entry.mesh.material = texture ? entry.artMaterial : entry.blankMaterial;
   // A blank canvas and the shimmer both fill the frame; only artwork is fitted.
   if (texture) entry.mesh.scale.set(entry.artFit.x, entry.artFit.y, 1);
@@ -595,6 +607,11 @@ function buildFrames(
 
   for (const painting of paintings) {
     const layout = paintingLayout(painting);
+    const geometry = frameGeometryForArtwork(
+      layout.width,
+      layout.height,
+      null,
+    );
     const group = new THREE.Group();
     group.position.set(layout.position.x, layout.position.y, layout.position.z);
     if (painting.wall === "left") group.rotation.y = Math.PI / 2;
@@ -610,8 +627,8 @@ function buildFrames(
       // frame's colour is left entirely to the focus tint.
       normalMap: woodgrain,
     });
-    const frameWidth = layout.width + 0.12;
-    const frameHeight = layout.height + 0.12;
+    const frameWidth = geometry.frame.width;
+    const frameHeight = geometry.frame.height;
     const frameGeometry = new THREE.BoxGeometry(frameWidth, frameHeight, 0.06);
     scaleBoxUvsToWorld(frameGeometry, frameWidth, frameHeight, 0.06);
     const frame = new THREE.Mesh(frameGeometry, frameMaterial);
@@ -619,7 +636,7 @@ function buildFrames(
     group.add(frame);
 
     const matte = new THREE.Mesh(
-      new THREE.PlaneGeometry(layout.width + 0.04, layout.height + 0.04),
+      new THREE.PlaneGeometry(geometry.matte.width, geometry.matte.height),
       new THREE.MeshStandardMaterial({
         color: FRAME,
         roughness: 0.7,
@@ -658,11 +675,12 @@ function buildFrames(
       id: painting.id,
       mesh,
       frame,
+      matte,
       frameMaterial,
       blankMaterial,
       artMaterial,
       artLit: 0,
-      frameAspect: layout.width / layout.height,
+      maxArtSize: { width: layout.width, height: layout.height },
       artFit: { x: 1, y: 1 },
       texture: null,
     });

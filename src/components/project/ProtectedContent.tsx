@@ -3,6 +3,7 @@ import clsx from "clsx";
 import lockIcon from "../../assets/lock.svg";
 import { FieldInput, FieldShell, fieldIconSlotClassName } from "../FieldInput";
 import { ArrowRightIcon } from "../Arrow";
+import { INLINE_LINK_CLASS } from "../inlineLink";
 
 // Lock icon with circular background and shadow (matches Figma exactly)
 const LockIcon = () => (
@@ -85,7 +86,7 @@ export default function ProtectedContent({
                     Please{" "}
                     <a
                       href={`mailto:${email}`}
-                      className="underline decoration-solid hover:text-blue-500 transition-colors"
+                      className={INLINE_LINK_CLASS}
                     >
                       email me
                     </a>
@@ -96,7 +97,7 @@ export default function ProtectedContent({
                     Curious? Feel free to{" "}
                     <a
                       href={`mailto:${email}`}
-                      className="underline decoration-solid hover:text-blue-500 transition-colors"
+                      className={INLINE_LINK_CLASS}
                     >
                       email me
                     </a>
@@ -107,7 +108,7 @@ export default function ProtectedContent({
                     Interested? Please{" "}
                     <a
                       href={`mailto:${email}`}
-                      className="underline decoration-solid hover:text-blue-500 transition-colors"
+                      className={INLINE_LINK_CLASS}
                     >
                       email me
                     </a>
