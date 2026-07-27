@@ -4,6 +4,8 @@ import clsx from "clsx";
 import { Chevron } from "./Chevron";
 import { iconSize } from "./iconSizes";
 
+const PANEL_LEFT_OFFSET = 5;
+
 export type FilterDropdownOption = {
   value: string;
   label: string;
@@ -40,7 +42,7 @@ export function FilterDropdown({
   const syncPanelPos = () => {
     if (buttonRef.current && panelRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      panelRef.current.style.transform = `translate(${rect.left}px, ${rect.bottom + 4}px)`;
+      panelRef.current.style.transform = `translate(${rect.left - PANEL_LEFT_OFFSET}px, ${rect.bottom + 4}px)`;
     }
   };
 
@@ -48,7 +50,7 @@ export function FilterDropdown({
   useEffect(() => {
     if (defaultOpen && usePortal && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      snapRef.current = { top: rect.bottom + 4, left: rect.left };
+      snapRef.current = { top: rect.bottom + 4, left: rect.left - PANEL_LEFT_OFFSET };
       syncPanelPos();
     }
   }, []);
@@ -98,7 +100,7 @@ export function FilterDropdown({
       }}
       className={clsx(
         "bg-white rounded-xl shadow-elevated border border-zinc-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200",
-        usePortal ? "fixed" : "absolute left-0 top-[calc(100%+4px)]"
+        usePortal ? "fixed" : "absolute -left-[5px] top-[calc(100%+4px)]"
       )}
       style={usePortal ? {
         top: 0,
@@ -106,7 +108,7 @@ export function FilterDropdown({
         willChange: "transform",
       } : undefined}
     >
-      <div className="flex flex-col gap-1 py-1.5 px-1.5">
+      <div className="flex flex-col gap-1 p-1">
         {options.map((option) => {
           const isActive = activeValue === option.value;
           return (
@@ -146,7 +148,7 @@ export function FilterDropdown({
         onClick={() => {
           if (!open && buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
-            snapRef.current = { top: rect.bottom + 4, left: rect.left };
+            snapRef.current = { top: rect.bottom + 4, left: rect.left - PANEL_LEFT_OFFSET };
           }
           setOpen(!open);
         }}
