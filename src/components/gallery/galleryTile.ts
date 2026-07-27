@@ -4,8 +4,7 @@
  * A tile appears in three places — the strip, the loading placeholders that
  * hold its spot, and the fan of peek cards behind the collapsed bar — and the
  * three have to agree exactly, or a tile changes shape as its image arrives or
- * as the panel opens. Since the same nodes now fly between the fan and the
- * strip, a mismatch would also be visible mid-flight rather than only at rest.
+ * as the panel opens.
  *
  * `rounded-xl` rather than a hand-written radius because `index.css` bumps that
  * class to 20px under `corner-shape: squircle`, which is what makes these read
@@ -24,7 +23,7 @@ export const TILE_SHAPE = "size-25 rounded-xl";
  * white frame — 20% of nothing. An inset ring paints over the image, where the
  * 20% is actually 20% of the picture underneath. It also costs no layout: the
  * image keeps the tile's full footprint rather than being pushed in by two
- * pixels, which matters when the same node is mid-flight between layouts.
+ * pixels, which keeps the strip and fan footprints aligned.
  *
  * `inset-ring` and not `shadow-[inset_…]`, which is what this was first written
  * as and which rendered nothing at all: Tailwind composes `box-shadow` out of
@@ -55,14 +54,3 @@ export const TILE_HOVER_RING = "hover:inset-ring-white/50";
  * stack — the same ink the Generate button uses.
  */
 export const TILE_SELECTED_RING = "inset-ring-2 inset-ring-zinc-900";
-
-/**
- * Ties a tile in the strip to the same artwork's card in the collapsed fan, so
- * framer-motion moves one node between the two layouts instead of crossfading
- * two. Only the works the fan actually shows have a counterpart; the rest of
- * the strip has nothing to fly to and simply fades, which is correct — they
- * have no position in the collapsed state to move from.
- */
-export function tileLayoutId(objectID: number): string {
-  return `gallery-tile-${objectID}`;
-}

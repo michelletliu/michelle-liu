@@ -12,7 +12,6 @@ import {
   AnimatePresence,
   motion,
   useReducedMotion,
-  type Transition,
 } from "framer-motion";
 import { ChevronDown, Images, SquarePen } from "lucide-react";
 import Tooltip from "@/components/Tooltip";
@@ -20,7 +19,11 @@ import MetArtworkPicker from "./MetArtworkPicker";
 import { isGalleryDialogOpen } from "./galleryDialog";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { stopGalleryKeys } from "./galleryInputGuards";
-import { TILE_SHAPE, tileLayoutId } from "./galleryTile";
+import {
+  galleryPanelContentTransition,
+  galleryPanelMorphTransition,
+} from "./galleryMotion";
+import { TILE_SHAPE } from "./galleryTile";
 import {
   artworkEligibility,
   openAccessImageUrl,
@@ -198,28 +201,20 @@ export default function GalleryActionBar({
     }
   };
 
-  /**
-   * The shell's own movement, and the only thing that describes the change of
-   * size. Everything else in the bar borrows this duration and curve so the
-   * panel, the strip and the fanned cards read as one gesture rather than
-   * three animations that happen to start together.
-   */
-  const shellTransition = reduceMotion
-    ? { duration: 0 }
-    : { duration: 0.32, ease: [0.4, 0, 0.2, 1] as const };
-
-  /**
-   * Contents only fade. They used to arrive on their own `y` and `scale`,
-   * which is what made the pen and the panel look like two separate things
-   * changing places: the shell was going one way while its contents went
-   * another. With the shell carrying all the movement, anything the contents
-   * add is a second animation competing with it.
-   */
+  const shellTransition = galleryPanelMorphTransition(Boolean(reduceMotion));
   const contentFade = {
     initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 },
-    transition: { duration: reduceMotion ? 0 : 0.12 },
+    animate: {
+      opacity: 1,
+      transition: galleryPanelContentTransition(
+        Boolean(reduceMotion),
+        "enter",
+      ),
+    },
+    exit: {
+      opacity: 0,
+      transition: galleryPanelContentTransition(Boolean(reduceMotion), "exit"),
+    },
   };
 
   /**
@@ -280,21 +275,18 @@ export default function GalleryActionBar({
             key="stack"
             artworks={search.artworks}
             controls={pickerId}
-            transition={shellTransition}
+            reduceMotion={Boolean(reduceMotion)}
             onOpen={() => setPickerOpen(true)}
           />
         )}
       </AnimatePresence>
       {/*
-       * One shell for both states, rather than a circle that leaves and a
-       * panel that arrives. `layout` interpolates the box — position, size and
-       * the corner radius with it — so the pen grows into the panel instead of
-       * the two crossfading past each other. The contents inside only fade,
-       * which is the other half of the same fix: whatever they animate is an
-       * animation running against the shell's.
+       * One shell still carries both states, but the projection is deliberately
+       * brief and non-springy. Reduced motion disables projection entirely,
+       * leaving only an effectively instant content swap.
        */}
       <motion.div
-        layout
+        layout={!reduceMotion}
         transition={shellTransition}
         className={
           expanded
@@ -306,11 +298,10 @@ export default function GalleryActionBar({
           {expanded ? (
             <motion.div
               key="panel"
-              // `layout="position"` moves this without stretching it, so the
-              // fields inside keep their shape while the shell resizes around
-              // them — the skew that otherwise gives a layout morph away.
-              layout="position"
-              {...contentFade}
+              variants={contentFade}
+              initial="initial"
+              animate="animate"
+              exit="exit"
               className="flex w-full flex-col gap-2"
             >
               {pickerOpen && (
@@ -381,8 +372,10 @@ export default function GalleryActionBar({
               aria-expanded={false}
               aria-controls={barId}
               aria-label="Open prompt bar"
-              layout="position"
-              {...contentFade}
+              variants={contentFade}
+              initial="initial"
+              animate="animate"
+              exit="exit"
               // Fills the shell rather than being one: the shell already draws
               // the circle, the border and the shadow, and it has to keep
               // drawing them while it grows into a panel.
@@ -408,12 +401,12 @@ export default function GalleryActionBar({
 function RestingStack({
   artworks,
   controls,
-  transition,
+  reduceMotion,
   onOpen,
 }: {
   artworks: MetArtwork[];
   controls: string;
-  transition: Transition;
+  reduceMotion: boolean;
   onOpen: () => void;
 }) {
   const [focused, setFocused] = useState(false);
@@ -426,16 +419,25 @@ function RestingStack({
 
   if (cards.length === 0) {
     return (
-      <button
+      <motion.button
         type="button"
         onClick={onOpen}
         aria-expanded={false}
         aria-controls={controls}
+        initial={{ opacity: 0 }}
+        animate={{
+          opacity: 1,
+          transition: galleryPanelContentTransition(reduceMotion, "enter"),
+        }}
+        exit={{
+          opacity: 0,
+          transition: galleryPanelContentTransition(reduceMotion, "exit"),
+        }}
         className={`absolute bottom-full right-4 mb-1 inline-flex items-center gap-1.5 rounded-xl border border-black/10 bg-white/90 px-2.5 py-1.5 text-xs text-zinc-500 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-md transition-colors hover:text-zinc-700 ${GALLERY_FOCUS_RING}`}
       >
         <Images size={14} aria-hidden />
         Find inspiration in The Met
-      </button>
+      </motion.button>
     );
   }
 
@@ -460,7 +462,18 @@ function RestingStack({
      * inline-flex`, so taking that away to make room for our own placement
      * would have unmoored the bubble in the act of anchoring the cards.
      */
-    <div className="absolute right-6 bottom-[calc(100%-2rem)]">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{
+        opacity: 1,
+        transition: galleryPanelContentTransition(reduceMotion, "enter"),
+      }}
+      exit={{
+        opacity: 0,
+        transition: galleryPanelContentTransition(reduceMotion, "exit"),
+      }}
+      className="absolute right-6 bottom-[calc(100%-2rem)]"
+    >
       {/* Reuses the site's tooltip rather than growing a gallery-only one.
           Hover is the component's own; `forceOpen` is how focus gets the same
           hint, since the shared tooltip has no focus path of its own and this
@@ -486,11 +499,9 @@ function RestingStack({
         >
           <span className="sr-only">Find inspiration in The Met</span>
           {/*
-           * The lift lives here rather than on the cards, which are mid-flight
-           * between layouts whenever the picker opens: a transform on a node
-           * framer-motion is projecting fights the projection and lands the
-           * cards in the wrong place. On a plain wrapper it is just CSS, and
-           * the cards keep their own coordinates.
+           * The lift lives here so the fan rises as one control. The cards
+           * themselves keep static fan coordinates and only crossfade when the
+           * picker changes state.
            */}
           <span className="absolute inset-0 block transition-transform duration-200 ease-out group-hover:-translate-y-1.5 group-focus-visible:-translate-y-1.5 motion-reduce:transform-none motion-reduce:transition-none">
             {/* Painted back to front, so the first work in the strip — the most
@@ -498,18 +509,15 @@ function RestingStack({
             {[...cards].reverse().map(({ artwork, src }, i) => {
               const { rotate, x, y } = fan[i]!;
               return (
-                <motion.img
-                  // The same id the strip tile carries, so this card and that
-                  // tile are one node to framer-motion and it moves between the
-                  // two layouts instead of one fading out as the other fades in.
-                  layoutId={tileLayoutId(artwork.objectID)}
+                <img
                   key={artwork.objectID}
                   src={src}
                   alt=""
                   aria-hidden
                   decoding="async"
-                  transition={transition}
-                  style={{ rotate, x, y }}
+                  style={{
+                    transform: `translate(${x}px, ${y}px) rotate(${rotate}deg)`,
+                  }}
                   className={`absolute bottom-0 left-0 border-2 border-white/20 bg-white object-cover shadow-lg ${TILE_SHAPE}`}
                 />
               );
@@ -517,6 +525,6 @@ function RestingStack({
           </span>
         </button>
       </Tooltip>
-    </div>
+    </motion.div>
   );
 }

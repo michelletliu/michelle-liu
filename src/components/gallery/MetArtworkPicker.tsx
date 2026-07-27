@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type FormEvent, type ReactNode } from "react";
-import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { CloseIcon } from "@/components/Close";
 import { Info } from "@/components/Info";
@@ -14,7 +13,6 @@ import {
   TILE_INSET_RING,
   TILE_SELECTED_RING,
   TILE_SHAPE,
-  tileLayoutId,
 } from "./galleryTile";
 import {
   artworkEligibility,
@@ -370,8 +368,7 @@ function ArtworkThumbnail({
   if (!src) return null;
 
   return (
-    <motion.button
-      layoutId={tileLayoutId(artwork.objectID)}
+    <button
       type="button"
       aria-pressed={selected}
       disabled={disabled}
@@ -405,6 +402,6 @@ function ArtworkThumbnail({
           <X size={10} strokeWidth={3} />
         </span>
       )}
-    </motion.button>
+    </button>
   );
 }

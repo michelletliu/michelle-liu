@@ -27,15 +27,11 @@ import {
   dragPastDeadzone,
   isGalleryNoDragTarget,
 } from "./galleryPointer";
+import { GALLERY_PANEL_MORPH_MS } from "./galleryMotion";
 
 const EASE_MS = 780;
 /** Zoom steps are small and arrive in bursts, so they settle much faster. */
 const ZOOM_EASE_MS = 220;
-/**
- * The action bar's own expand/collapse duration. Reframing for it is a
- * response to that movement, so it runs on its span and its curve.
- */
-const FRAMING_EASE_MS = 320;
 const SWITCH_THRESHOLD = 48;
 /** Pinch / ctrl+wheel sensitivity (trackpad reports pinch as wheel+ctrl on macOS). */
 const PINCH_ZOOM_SCALE = 0.01;
@@ -393,7 +389,7 @@ export function useGalleryCamera({
     easePoseTo(
       focusedIdRef.current,
       zoomRef.current,
-      prefersReducedMotion() ? 0 : FRAMING_EASE_MS,
+      prefersReducedMotion() ? 0 : GALLERY_PANEL_MORPH_MS,
       easeWithPanel,
     );
   }, [bottomOcclusionPx, viewportHeight, easePoseTo]);
