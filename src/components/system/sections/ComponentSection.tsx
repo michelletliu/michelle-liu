@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   useCallback,
   useLayoutEffect,
@@ -1234,12 +1235,12 @@ export default function ComponentSection() {
         </Specimen>
 
         <Specimen label="Social / meta link" span="col-span-1 lg:col-span-4">
-          <a
+          <Link
             href="/about"
             className={`inline-flex items-center gap-1 text-sm font-medium text-zinc-600 ${INLINE_LINK_CLASS}`}
           >
             Read more <ArrowUpRight />
-          </a>
+          </Link>
         </Specimen>
       </div>
 
