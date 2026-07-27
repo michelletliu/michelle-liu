@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import type { Book } from "./types";
 import ShimmerImage from "../ShimmerImage";
 import { ArrowRightIcon } from "./icons";
+import { iconSize } from "../iconSizes";
 
 // Format a YYYY-MM-DD date string. Force UTC so the stored calendar date isn't
 // shifted a day earlier when rendered in a negative-offset timezone.
@@ -293,7 +294,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                     {hasRange ? (
                       <span className="inline-flex items-center">
                         {formatBookDate(book.dateStarted!)}
-                        <ArrowRightIcon className="mx-1.5 size-4 shrink-0 text-zinc-400" />
+                        <ArrowRightIcon size={iconSize("toolbar")} className="mx-1.5 text-zinc-400" />
                         {formatBookDate(finished!)}
                       </span>
                     ) : (
@@ -410,7 +411,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                       {hasRange ? (
                         <span className="inline-flex items-center">
                           {formatBookDate(book.dateStarted!)}
-                          <ArrowRightIcon className="mx-1.5 size-4 shrink-0 text-zinc-400" />
+                          <ArrowRightIcon size={iconSize("toolbar")} className="mx-1.5 text-zinc-400" />
                           {formatBookDate(finished!)}
                         </span>
                       ) : (
