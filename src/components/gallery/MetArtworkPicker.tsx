@@ -48,7 +48,7 @@ const SKELETON_TILES = 6;
  * of the scroller got wide enough to draw in.
  */
 const STRIP_PADDING = "px-4 py-4";
-const STRIP_BLEED = "-mx-4 -my-2.5";
+const STRIP_BLEED = "-mx-4";
 
 type MetArtworkPickerProps = {
   search: MetSearchController;
@@ -121,7 +121,7 @@ export default function MetArtworkPicker({
     selected !== null && artworks.some((a) => a.objectID === selected.objectID);
 
   return (
-    <div className="flex flex-col gap-3 rounded-[10px] bg-black/5 p-2.5">
+    <div className="flex flex-col gap-3 rounded-[10px] bg-black/5 px-4 py-2.5">
       <form onSubmit={onSubmit} className="flex items-center gap-2">
         <div className="relative min-w-0 flex-1">
           <input
