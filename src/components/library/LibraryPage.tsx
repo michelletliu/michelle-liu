@@ -13,6 +13,7 @@ import { BookDetailModal } from "./BookDetailModal";
 import { AddBookModal } from "./AddBookModal";
 import { PlusIcon } from "./icons";
 import type { Book, ShelfBookData } from "./types";
+import { booksForShelf } from "./sortBooks";
 import imgLogo from '../../assets/logo.png';
 import InfoButton from '../InfoButton';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
@@ -276,12 +277,7 @@ export default function LibraryPage({
     window.history.replaceState(null, "", url);
   }, [activeFilter, isLoading, filterOptions, location.pathname, searchParams]);
 
-  // Filter books based on active filter (favorites, all, or by year)
-  const filteredBooks = activeFilter === 'all' 
-    ? books 
-    : activeFilter === 'favorites'
-    ? books.filter(book => book.isFavorite)
-    : books.filter(book => book.year === activeFilter);
+  const filteredBooks = booksForShelf(books, activeFilter);
 
   // Backward compatibility for old ?book=<id> links: resolve and redirect to slug path
   useEffect(() => {
