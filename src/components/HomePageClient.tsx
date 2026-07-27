@@ -3,6 +3,11 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useNavigate } from "@/lib/navigation";
+import {
+  bookSlugFromPathname,
+  pushPathPreservingSearch,
+  replacePathPreservingSearch,
+} from "@/lib/shallowPath";
 import svgPaths from "../imports/svg-2tsxp86msm";
 import clsx from "clsx";
 import VideoPlayer from "./VideoPlayer";
@@ -890,7 +895,18 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
 
   // Local fullscreen state for instant expand/collapse; URL syncs in background
   const [localFullscreen, setLocalFullscreen] = useState(mode === "full");
-  const [localBookSlug, setLocalBookSlug] = useState(bookSlug);
+  const [localBookSlug, setLocalBookSlug] = useState(() => {
+    if (typeof window !== "undefined" && slug) {
+      return (
+        bookSlugFromPathname(
+          window.location.pathname,
+          slug,
+          window.location.pathname.includes("/full"),
+        ) ?? bookSlug
+      );
+    }
+    return bookSlug;
+  });
 
   // Sync when the Next.js router eventually catches up
   useEffect(() => {
@@ -900,6 +916,20 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
   useEffect(() => {
     setLocalBookSlug(bookSlug);
   }, [bookSlug]);
+
+  // Keep local book state in sync with back/forward after shallow history updates.
+  useEffect(() => {
+    const onPopState = () => {
+      if (!localSlug || !SIDE_PROJECT_IDS.includes(localSlug)) return;
+      const fullscreen = window.location.pathname.includes("/full");
+      setLocalFullscreen(fullscreen);
+      setLocalBookSlug(
+        bookSlugFromPathname(window.location.pathname, localSlug, fullscreen),
+      );
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [localSlug]);
 
   const isFullscreenFromUrl = localFullscreen;
 
@@ -946,10 +976,14 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     if (localSlug) {
       setLocalFullscreen(true);
       setLocalBookSlug(bookSlug);
+      const nextPath = bookSlug
+        ? `/project/${localSlug}/full/${encodeURIComponent(bookSlug)}`
+        : (localSlug === 'film' ? '/film' : `/project/${localSlug}/full`);
+      // Preserve ?shelf= so the library filter doesn't bounce through a second nav.
       navigate(
-        bookSlug
-          ? `/project/${localSlug}/full/${encodeURIComponent(bookSlug)}`
-          : (localSlug === 'film' ? '/film' : `/project/${localSlug}/full`)
+        typeof window !== "undefined"
+          ? `${nextPath}${window.location.search}`
+          : nextPath,
       );
     }
   };
@@ -972,8 +1006,15 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
       ? `${basePath}/${encodeURIComponent(nextBookSlug)}`
       : basePath;
 
+    // Local state opens the modal immediately. Soft-update the URL with the
+    // History API so Next doesn't remount the library across the bookSlug
+    // page segment (that remount is the flicker when clicking books).
     setLocalBookSlug(nextBookSlug);
-    navigate(nextPath, { replace: options?.replace });
+    if (options?.replace) {
+      replacePathPreservingSearch(nextPath);
+    } else {
+      pushPathPreservingSearch(nextPath);
+    }
   };
 
   const handleProjectSwitch = (projectId: string) => {

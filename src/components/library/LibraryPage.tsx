@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useSearchParams } from "@/lib/navigation";
+import {
+  pushPathPreservingSearch,
+  replacePathPreservingSearch,
+} from "@/lib/shallowPath";
 import { client, urlFor } from "../../sanity/client";
 import { SHELF_BOOKS_QUERY, BOOK_YEARS_QUERY } from "../../sanity/queries";
 import { BookCard } from "./BookCard";
@@ -78,13 +82,38 @@ export default function LibraryPage({
   const location = useLocation();
 
   // Derive bookSlug from URL if not passed as prop (e.g. when rendered inside ExperimentModal)
-  const bookSlug = bookSlugProp ?? (() => {
-    const fullMatch = location.pathname.match(/\/project\/library\/full\/(.+)/);
+  const bookSlugFromPath = (path: string) => {
+    const fullMatch = path.match(/\/project\/library\/full\/(.+)/);
     if (fullMatch) return decodeURIComponent(fullMatch[1]);
-    const directMatch = location.pathname.match(/\/library\/(.+)/);
+    const directMatch = path.match(/\/library\/(.+)/);
     if (directMatch) return decodeURIComponent(directMatch[1]);
     return undefined;
-  })();
+  };
+
+  // Shallow history updates don't notify usePathname — keep a local copy so the
+  // modal still opens when we pushState instead of router.push.
+  const [shallowBookSlug, setShallowBookSlug] = useState<string | undefined>(() =>
+    bookSlugProp ?? bookSlugFromPath(location.pathname),
+  );
+
+  useEffect(() => {
+    if (bookSlugProp !== undefined) {
+      setShallowBookSlug(bookSlugProp);
+      return;
+    }
+    setShallowBookSlug(bookSlugFromPath(location.pathname));
+  }, [bookSlugProp, location.pathname]);
+
+  useEffect(() => {
+    if (bookSlugProp !== undefined) return;
+    const onPopState = () => {
+      setShallowBookSlug(bookSlugFromPath(window.location.pathname));
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [bookSlugProp]);
+
+  const bookSlug = bookSlugProp ?? shallowBookSlug;
   const [searchParams, setSearchParams] = useSearchParams();
   const isEmbedded = Boolean(onCollapse || onOpenBookInFullscreen || onBookSlugChange);
   const isPopupMode = isEmbedded && !isFullscreen;
@@ -139,13 +168,23 @@ export default function LibraryPage({
       : "/library";
 
   const updateStandaloneLibraryPath = (nextPath: string, options?: { replace?: boolean }) => {
-    if (window.location.pathname === nextPath) return;
+    if (typeof window !== "undefined") {
+      const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      const target = `${nextPath}${window.location.search}${window.location.hash}`;
+      if (current === target) return;
+    }
 
-    if (!isEmbedded && nextPath.startsWith("/library")) {
+    // Standalone /library and /project/library book opens need shallow history
+    // updates — router.push across the bookSlug segment remounts the page and
+    // flashes the loading state.
+    if (
+      (!isEmbedded && nextPath.startsWith("/library")) ||
+      nextPath.startsWith("/project/library")
+    ) {
       if (options?.replace) {
-        window.history.replaceState(null, "", nextPath);
+        replacePathPreservingSearch(nextPath);
       } else {
-        window.history.pushState(null, "", nextPath);
+        pushPathPreservingSearch(nextPath);
       }
       return;
     }
@@ -193,36 +232,49 @@ export default function LibraryPage({
 
   // Sync the active filter with the URL (?shelf=). On first load, adopt a valid
   // ?shelf= value from the URL; afterwards, keep the URL in sync with the active
-  // filter (re-asserting it after book open/close navigations drop the query).
+  // filter. Query writes use the live address-bar path so a shallow book-open
+  // isn't clobbered by a stale usePathname(), and History API so restoring
+  // ?shelf= doesn't trigger a Next soft-navigation flicker.
   // "favorites" is the default shelf, so it stays out of the URL for a clean link.
   useEffect(() => {
-    const path = location.pathname;
+    const livePath =
+      typeof window !== "undefined" ? window.location.pathname : location.pathname;
     const isLibraryPath =
-      path === "/library" ||
-      path.startsWith("/library/") ||
-      path.startsWith("/project/library");
+      livePath === "/library" ||
+      livePath.startsWith("/library/") ||
+      livePath.startsWith("/project/library");
     if (!isLibraryPath) return;
 
     // First pass: adopt the filter from the URL, then let state settle.
     if (!didInitFilterRef.current) {
       if (isLoading) return;
       didInitFilterRef.current = true;
-      const shelf = searchParams.get("shelf");
+      const shelf =
+        (typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("shelf")
+          : null) ?? searchParams.get("shelf");
       if (shelf && filterOptions.some((option) => option.value === shelf)) {
         setActiveFilter(shelf);
         return;
       }
     }
 
-    const current = searchParams.get("shelf");
+    const current =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("shelf")
+        : searchParams.get("shelf");
     const desired = activeFilter === "favorites" ? null : activeFilter;
     if ((current ?? null) === (desired ?? null)) return;
 
-    const next = new URLSearchParams(searchParams.toString());
+    const next = new URLSearchParams(
+      typeof window !== "undefined" ? window.location.search : searchParams.toString(),
+    );
     if (desired) next.set("shelf", desired);
     else next.delete("shelf");
-    setSearchParams(next, { replace: true });
-  }, [activeFilter, isLoading, filterOptions, location.pathname, searchParams, setSearchParams]);
+    const qs = next.toString();
+    const url = qs ? `${livePath}?${qs}` : livePath;
+    window.history.replaceState(null, "", url);
+  }, [activeFilter, isLoading, filterOptions, location.pathname, searchParams]);
 
   // Filter books based on active filter (favorites, all, or by year)
   const filteredBooks = activeFilter === 'all' 
@@ -439,6 +491,7 @@ export default function LibraryPage({
                     if (onBookSlugChange && location.pathname.startsWith("/project/library/full")) {
                       onBookSlugChange(slug);
                     } else {
+                      setShallowBookSlug(slug);
                       const nextPath = openBookPath(slug);
                       updateStandaloneLibraryPath(nextPath);
                     }
@@ -460,6 +513,7 @@ export default function LibraryPage({
             if (onBookSlugChange && location.pathname.startsWith("/project/library/full")) {
               onBookSlugChange(undefined, { replace: true });
             } else {
+              setShallowBookSlug(undefined);
               const closePath = closeBookPath();
               updateStandaloneLibraryPath(closePath, { replace: true });
             }
