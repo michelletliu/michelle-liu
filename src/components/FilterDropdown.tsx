@@ -97,7 +97,8 @@ export function FilterDropdown({
         }
       }}
       className={clsx(
-        "bg-white rounded-xl shadow-elevated border border-zinc-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200",
+        // ring instead of border so the hairline sits outside the box and doesn't nudge text
+        "bg-white rounded-xl shadow-elevated ring-1 ring-zinc-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200",
         usePortal ? "fixed" : "absolute left-0 top-[calc(100%+4px)]"
       )}
       style={usePortal ? {
@@ -106,7 +107,7 @@ export function FilterDropdown({
         willChange: "transform",
       } : undefined}
     >
-      <div className="flex flex-col gap-1 py-1.5 px-1.5">
+      <div className="flex flex-col gap-0.5 p-1">
         {options.map((option) => {
           const isActive = activeValue === option.value;
           return (
@@ -117,7 +118,8 @@ export function FilterDropdown({
                 setOpen(false);
               }}
               className={clsx(
-                "flex items-center px-3 py-1 rounded-[10px] transition-colors text-left",
+                // px-2 + the wrapper's p-1 lines option text up with the trigger pill's px-3
+                "flex items-center px-2 py-1 rounded-lg transition-colors text-left",
                 isActive ? "bg-zinc-100" : "hover:bg-zinc-50"
               )}
             >
