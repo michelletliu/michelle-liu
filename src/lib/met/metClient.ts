@@ -1,7 +1,8 @@
 // Relative and extension-qualified rather than the `@/` alias, so `node --test`
 // can resolve it: the repo's unit tests run on bare Node with no bundler path
-// mapping. This is the same import shape the existing `.test.ts` files use, and
-// it carries the same pre-existing TS5097 diagnostic they do.
+// mapping, and its ESM resolver will not infer the extension. This is the same
+// import shape the existing `.test.ts` files use; `allowImportingTsExtensions`
+// in tsconfig is what keeps it legal for `next build`.
 import {
   MET_API_BASE,
   normalizeMetObject,
