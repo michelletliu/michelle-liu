@@ -36,19 +36,17 @@ const STRIP_EDGE_FADE = "#ededed";
 /** How many placeholder tiles stand in for a page of results. */
 const SKELETON_TILES = 6;
 
+/** Compact inset shared by loaded tiles and their loading placeholders. */
+const STRIP_PADDING = "px-4 py-2";
 /**
- * Room for a tile's own shadow inside the thing that clips it.
+ * Extends the scroller's vertical clip 16px below its 116px layout footprint.
  *
- * `overflow-x: auto` clips both axes, so the strip was shearing the bottom off
- * every tile's `shadow-lg` and the leading tile's left side with it. The
- * shadow reaches about 15px down and the selected tile's ✕ sits proud of the
- * top corner, so the padding has to cover the largest of those rather than the
- * tiles themselves. The wrapper pulls most of it back with negative margins,
- * leaving the strip's outer spacing near enough where it was while the inside
- * of the scroller got wide enough to draw in.
+ * Horizontal scrolling computes `overflow-y` to `auto`, so `py-2` alone would
+ * clip `shadow-lg`. A 132px clip leaves 24px below the 100px tile; the negative
+ * margin keeps the visible strip and its skeleton at the same compact height.
  */
-const STRIP_PADDING = "px-4 py-4";
-const STRIP_BLEED = "-mx-4 -my-2.5";
+const STRIP_SHADOW_CLIP = "h-[132px] -mb-4";
+const STRIP_BLEED = "-mx-4";
 
 type MetArtworkPickerProps = {
   search: MetSearchController;
@@ -121,7 +119,7 @@ export default function MetArtworkPicker({
     selected !== null && artworks.some((a) => a.objectID === selected.objectID);
 
   return (
-    <div className="flex flex-col gap-3 rounded-[10px] bg-black/5 p-2.5">
+    <div className="flex flex-col gap-3 rounded-[10px] bg-black/5 px-4 py-2.5">
       <form onSubmit={onSubmit} className="flex items-center gap-2">
         <div className="relative min-w-0 flex-1">
           <input
@@ -213,7 +211,7 @@ export default function MetArtworkPicker({
                   ? "Suggested artworks from The Met"
                   : "Met artwork results"
               }
-              className={`flex gap-2 overflow-x-auto overscroll-contain ${STRIP_PADDING}`}
+              className={`flex gap-2 overflow-x-auto overscroll-contain ${STRIP_PADDING} ${STRIP_SHADOW_CLIP}`}
             >
               {artworks.map((artwork) => (
                 <ArtworkThumbnail

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CloseIcon } from "@/components/Close";
 import { ghostIconButtonClass } from "@/components/ghostIconButton";
+import { INLINE_LINK_CLASS } from "@/components/inlineLink";
 import { GALLERY_DIALOG_ATTR, useGalleryDialogKeys } from "./galleryDialog";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { openAccessImageUrl, type MetArtwork } from "./metArtworks";
@@ -137,7 +138,7 @@ export default function MetArtworkDetails({
                         href={artwork.objectURL}
                         target="_blank"
                         rel="noreferrer noopener"
-                        className={`rounded-sm underline underline-offset-2 hover:text-zinc-900 ${GALLERY_FOCUS_RING}`}
+                        className={`${INLINE_LINK_CLASS} ${GALLERY_FOCUS_RING}`}
                       >
                         metmuseum.org
                       </a>

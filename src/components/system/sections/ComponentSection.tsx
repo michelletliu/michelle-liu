@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   useCallback,
   useLayoutEffect,
@@ -27,6 +28,7 @@ import { iconSize } from "../../iconSizes";
 import { ArrowRightIcon } from "../../Arrow";
 import { SendIcon } from "../../library/icons";
 import { HorizontalLine } from "../../HorizontalLine";
+import { INLINE_LINK_CLASS } from "../../inlineLink";
 import { Section, SubLabel, TagChip } from "../primitives";
 import type { Tag } from "../tokens";
 
@@ -1233,12 +1235,12 @@ export default function ComponentSection() {
         </Specimen>
 
         <Specimen label="Social / meta link" span="col-span-1 lg:col-span-4">
-          <button
-            type="button"
-            className="inline-flex cursor-pointer items-center gap-1 text-sm font-medium text-zinc-600 transition-colors hover:text-blue-500"
+          <Link
+            href="/about"
+            className={`inline-flex items-center gap-1 text-sm font-medium text-zinc-600 ${INLINE_LINK_CLASS}`}
           >
             Read more <ArrowUpRight />
-          </button>
+          </Link>
         </Specimen>
       </div>
 
