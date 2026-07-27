@@ -509,15 +509,13 @@ function RestingStack({
             {[...cards].reverse().map(({ artwork, src }, i) => {
               const { rotate, x, y } = fan[i]!;
               return (
-                <img
+                <motion.img
                   key={artwork.objectID}
                   src={src}
                   alt=""
                   aria-hidden
                   decoding="async"
-                  style={{
-                    transform: `translate(${x}px, ${y}px) rotate(${rotate}deg)`,
-                  }}
+                  style={{ rotate, x, y }}
                   className={`absolute bottom-0 left-0 border-2 border-white/20 bg-white object-cover shadow-lg ${TILE_SHAPE}`}
                 />
               );
