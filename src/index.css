@@ -110,11 +110,23 @@ body {
   max-width: 100vw;
 }
 
-/* Aesthetic focus rings - subtle radius and offset for keyboard navigation */
+/* Aesthetic focus rings - subtle offset for keyboard navigation.
+   Deliberately no border-radius here: this rule is unlayered, so it outranks
+   Tailwind's layered `rounded-*` utilities and would flatten every focused
+   rounded control (and, under corner-shape: squircle, square it off outright).
+   Outlines already follow the element's own radius. */
 *:focus-visible {
   outline: 2px solid #d4d4d8; /* zinc-300 */
   outline-offset: 2px;
-  border-radius: 2px;
+}
+
+/* Controls in the gallery's floating bar draw focus as a ring instead, so the
+   indicator hugs their rounded corners. The rule above is unlayered, so it
+   outranks Tailwind's `outline-none` utility and would otherwise sit outside
+   the ring as a second boundary — which is exactly what "two stacked rings"
+   looked like. Opting out here leaves the ring as the single indicator. */
+.gallery-focus:focus-visible {
+  outline: none;
 }
 
 /* Remove focus outline from text inputs */

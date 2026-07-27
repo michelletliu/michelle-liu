@@ -7,6 +7,10 @@
       "DOM.Iterable"
     ],
     "allowJs": true,
+    // The unit tests run on bare Node (`node --test --experimental-strip-types`),
+    // whose ESM resolver needs the extension on relative specifiers. Safe here
+    // because `noEmit` is set, so no specifier ever reaches emitted output.
+    "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
