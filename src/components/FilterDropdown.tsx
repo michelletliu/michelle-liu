@@ -129,7 +129,7 @@ export function FilterDropdown({
                 setOpen(false);
               }}
               className={clsx(
-                "flex items-center px-3 py-1 rounded-[10px] transition-colors text-left",
+                "flex items-center px-3 py-1 rounded-[11px] transition-colors text-left",
                 isActive ? "bg-zinc-100" : "hover:bg-zinc-50"
               )}
             >

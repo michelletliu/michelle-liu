@@ -16,4 +16,5 @@ test("aligns and sizes the panel symmetrically around the trigger", () => {
   assert.match(source, /absolute -left-\[5px\] top-\[calc\(100%\+2px\)\] w-\[calc\(100%\+10px\)\]/);
   assert.match(source, /flex flex-col gap-1 p-1/);
   assert.match(source, /flex items-center px-3 py-1/);
+  assert.match(source, /rounded-\[11px\]/);
 });
