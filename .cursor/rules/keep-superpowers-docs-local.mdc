@@ -1,0 +1,13 @@
+---
+description: Keep superpowers plan/spec docs out of implementation PRs
+alwaysApply: true
+---
+
+# Keep superpowers plans and specs local
+
+Planning and design-spec files under `docs/superpowers/plans/` and `docs/superpowers/specs/` are local working artifacts by default.
+
+- Do not stage or include them in implementation pull requests unless the user explicitly asks to ship that documentation.
+- Prefer leaving them untracked, or committing them only on a local/notes branch that is never opened as a PR.
+- When opening a PR, run `git diff --name-only <base>...HEAD` and remove any `docs/superpowers/plans/**` or `docs/superpowers/specs/**` artifacts from the branch before pushing.
+- Implementation code and tests still belong in the PR; only the plan/spec markdown is excluded.
