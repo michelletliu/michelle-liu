@@ -294,7 +294,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                     {hasRange ? (
                       <span className="inline-flex items-center">
                         {formatBookDate(book.dateStarted!)}
-                        <ArrowRightIcon size={iconSize("toolbar")} className="mx-1.5 text-zinc-400" />
+                        <ArrowRightIcon size={iconSize("inline")} className="mx-1.5 text-zinc-300" />
                         {formatBookDate(finished!)}
                       </span>
                     ) : (
@@ -411,7 +411,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                       {hasRange ? (
                         <span className="inline-flex items-center">
                           {formatBookDate(book.dateStarted!)}
-                          <ArrowRightIcon size={iconSize("toolbar")} className="mx-1.5 text-zinc-400" />
+                          <ArrowRightIcon size={iconSize("inline")} className="mx-1.5 text-zinc-300" />
                           {formatBookDate(finished!)}
                         </span>
                       ) : (

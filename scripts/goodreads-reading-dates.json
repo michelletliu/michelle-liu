@@ -1,0 +1,1592 @@
+[
+  {
+    "bookId": "4929",
+    "title": "Kafka on the Shore",
+    "started": null,
+    "read": "2019-02-01"
+  },
+  {
+    "bookId": "41022133",
+    "title": "Colorless Tsukuru Tazaki and His Years of Pilgrimage",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "10357575",
+    "title": "1Q84 (1Q84, #1-3)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "22822858",
+    "title": "A Little Life",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "11275",
+    "title": "The Wind-Up Bird Chronicle",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "11297",
+    "title": "Norwegian Wood",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "2195464",
+    "title": "What I Talk About When I Talk About Running",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "170448",
+    "title": "Animal Farm",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "5107",
+    "title": "The Catcher in the Rye",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "28921",
+    "title": "The Remains of the Day",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "194746",
+    "title": "No Longer Human",
+    "started": null,
+    "read": "2020-01-01"
+  },
+  {
+    "bookId": "2165",
+    "title": "The Old Man and the Sea",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "11298",
+    "title": "A Wild Sheep Chase (The Rat, #3)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "17803",
+    "title": "After Dark",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "10374",
+    "title": "Hard-Boiled Wonderland and the End of the World",
+    "started": null,
+    "read": "2020-01-01"
+  },
+  {
+    "bookId": "20518872",
+    "title": "The Three-Body Problem (Remembrance of Earth’s Past, #1)",
+    "started": "2022-06-09",
+    "read": "2022-06-12"
+  },
+  {
+    "bookId": "166997",
+    "title": "Stoner",
+    "started": "2025-10-16",
+    "read": "2025-10-20"
+  },
+  {
+    "bookId": "44525305",
+    "title": "The Ride of a Lifetime: Lessons Learned from 15 Years as CEO of the Walt Disney Company",
+    "started": null,
+    "read": "2020-01-01"
+  },
+  {
+    "bookId": "27220736",
+    "title": "Shoe Dog: A Memoir by the Creator of Nike",
+    "started": "2019-12-27",
+    "read": "2026-07-23"
+  },
+  {
+    "bookId": "18077903",
+    "title": "Creativity, Inc.: Overcoming the Unseen Forces That Stand in the Way of True Inspiration",
+    "started": null,
+    "read": "2020-01-01"
+  },
+  {
+    "bookId": "4865",
+    "title": "How to Win Friends & Influence People",
+    "started": null,
+    "read": "2020-01-01"
+  },
+  {
+    "bookId": "3228917",
+    "title": "Outliers: The Story of Success",
+    "started": null,
+    "read": "2020-01-01"
+  },
+  {
+    "bookId": "3431",
+    "title": "The Five People You Meet in Heaven",
+    "started": null,
+    "read": "2020-01-01"
+  },
+  {
+    "bookId": "890",
+    "title": "Of Mice and Men",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "40961427",
+    "title": "1984",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "157993",
+    "title": "The Little Prince",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "23692271",
+    "title": "Sapiens: A Brief History of Humankind",
+    "started": "2023-07-25",
+    "read": "2023-07-30"
+  },
+  {
+    "bookId": "30186948",
+    "title": "Think and Grow Rich",
+    "started": null,
+    "read": "2020-01-01"
+  },
+  {
+    "bookId": "34536488",
+    "title": "Principles: Life and Work",
+    "started": null,
+    "read": "2020-01-01"
+  },
+  {
+    "bookId": "4406",
+    "title": "East of Eden",
+    "started": "2020-12-23",
+    "read": "2020-12-29"
+  },
+  {
+    "bookId": "4069",
+    "title": "Man's Search for Meaning",
+    "started": null,
+    "read": "2020-01-01"
+  },
+  {
+    "bookId": "320",
+    "title": "One Hundred Years of Solitude",
+    "started": "2025-03-06",
+    "read": "2025-05-07"
+  },
+  {
+    "bookId": "17799",
+    "title": "South of the Border, West of the Sun",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "9557",
+    "title": "Sputnik Sweetheart",
+    "started": "2024-09-03",
+    "read": "2024-10-19"
+  },
+  {
+    "bookId": "9833",
+    "title": "Blind Willow, Sleeping Woman",
+    "started": "2021-02-08",
+    "read": "2021-07-16"
+  },
+  {
+    "bookId": "17800",
+    "title": "Dance Dance Dance",
+    "started": "2024-07-24",
+    "read": "2024-07-31"
+  },
+  {
+    "bookId": "9555",
+    "title": "The Elephant Vanishes",
+    "started": "2025-01-27",
+    "read": "2025-02-09"
+  },
+  {
+    "bookId": "11299",
+    "title": "After the Quake",
+    "started": "2021-01-19",
+    "read": "2021-02-08"
+  },
+  {
+    "bookId": "23128304",
+    "title": "The Strange Library",
+    "started": null,
+    "read": "2020-01-01"
+  },
+  {
+    "bookId": "33652490",
+    "title": "Men Without Women",
+    "started": "2024-04-23",
+    "read": "2024-04-25"
+  },
+  {
+    "bookId": "24013720",
+    "title": "Wind/Pinball: Two Novels",
+    "started": "2025-07-12",
+    "read": "2025-07-16"
+  },
+  {
+    "bookId": "242006",
+    "title": "Running with Scissors",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "7763",
+    "title": "The Joy Luck Club",
+    "started": "2020-12-30",
+    "read": "2021-01-01"
+  },
+  {
+    "bookId": "12555",
+    "title": "The Bonesetter's Daughter",
+    "started": "2025-10-22",
+    "read": "2025-12-01"
+  },
+  {
+    "bookId": "22318578",
+    "title": "The Life-Changing Magic of Tidying Up: The Japanese Art of Decluttering and Organizing",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "34051011",
+    "title": "Pachinko",
+    "started": null,
+    "read": "2020-01-01"
+  },
+  {
+    "bookId": "41160292",
+    "title": "Exhalation",
+    "started": null,
+    "read": "2020-01-01"
+  },
+  {
+    "bookId": "194740",
+    "title": "The Setting Sun",
+    "started": "2024-07-15",
+    "read": "2024-07-16"
+  },
+  {
+    "bookId": "62772",
+    "title": "I Am a Cat",
+    "started": "2020-12-29",
+    "read": "2020-12-29"
+  },
+  {
+    "bookId": "40603383",
+    "title": "Vincent and Theo: The Van Gogh Brothers",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "395233",
+    "title": "The Letters of Vincent van Gogh",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "5308",
+    "title": "The Pearl",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "4799",
+    "title": "Cannery Row (Cannery Row, #1)",
+    "started": "2025-06-19",
+    "read": "2025-06-21"
+  },
+  {
+    "bookId": "34466963",
+    "title": "Why We Sleep: Unlocking the Power of Sleep and Dreams",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "34898",
+    "title": "My Father's Dragon (My Father's Dragon, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "1845",
+    "title": "Into the Wild",
+    "started": "2021-07-14",
+    "read": "2021-07-14"
+  },
+  {
+    "bookId": "52838315",
+    "title": "Greenlights",
+    "started": "2022-07-30",
+    "read": "2022-08-05"
+  },
+  {
+    "bookId": "11588",
+    "title": "The Shining (The Shining, #1)",
+    "started": "2022-01-14",
+    "read": "2022-01-17"
+  },
+  {
+    "bookId": "514210",
+    "title": "The Way of Zen",
+    "started": "2021-02-27",
+    "read": "2021-09-24"
+  },
+  {
+    "bookId": "17350491",
+    "title": "Rooftoppers",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "16190803",
+    "title": "It's All About Who You Hire, How They Lead...and Other Essential Advice from a Self-Made Leader (Warren Bennis Signature)",
+    "started": null,
+    "read": "2021-01-01"
+  },
+  {
+    "bookId": "355190",
+    "title": "Orientalism",
+    "started": null,
+    "read": "2021-08-19"
+  },
+  {
+    "bookId": "4671",
+    "title": "The Great Gatsby",
+    "started": null,
+    "read": "2021-01-01"
+  },
+  {
+    "bookId": "12296",
+    "title": "The Scarlet Letter",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "50",
+    "title": "Hatchet (Brian's Saga, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "2998",
+    "title": "The Secret Garden",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "6310",
+    "title": "Charlie and the Chocolate Factory (Charlie Bucket, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "31187954",
+    "title": "An Immigrant's Experience on Air Force 1: Winston Chen",
+    "started": null,
+    "read": "2021-03-14"
+  },
+  {
+    "bookId": "6667",
+    "title": "Boy: Tales of Childhood (Roald Dahl's Autobiography, #1)",
+    "started": "2022-05-28",
+    "read": "2022-05-29"
+  },
+  {
+    "bookId": "6678",
+    "title": "Going Solo (Roald Dahl's Autobiography, #2)",
+    "started": "2022-05-17",
+    "read": "2022-05-18"
+  },
+  {
+    "bookId": "6689",
+    "title": "James and the Giant Peach",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "6327",
+    "title": "The Witches",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "6319",
+    "title": "The BFG",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "22155",
+    "title": "Let My People Go Surfing: The Education of a Reluctant Businessman",
+    "started": "2022-09-14",
+    "read": "2022-09-16"
+  },
+  {
+    "bookId": "6149",
+    "title": "Beloved",
+    "started": "2021-07-12",
+    "read": "2021-07-13"
+  },
+  {
+    "bookId": "10369987",
+    "title": "Without Tess",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "11337",
+    "title": "The Bluest Eye",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "49552",
+    "title": "The Stranger",
+    "started": null,
+    "read": "2021-10-12"
+  },
+  {
+    "bookId": "11250317",
+    "title": "The Song of Achilles",
+    "started": "2022-12-15",
+    "read": "2022-12-16"
+  },
+  {
+    "bookId": "46041199",
+    "title": "Kim Jiyoung, Born 1982",
+    "started": "2025-08-13",
+    "read": "2025-08-14"
+  },
+  {
+    "bookId": "7327327",
+    "title": "The Search for WondLa (The Search for WondLa, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "179064",
+    "title": "The Goose Girl (The Books of Bayern, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "8112318",
+    "title": "The Candymakers (The Candymakers, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "40605329",
+    "title": "The Mysterious Benedict Society (The Mysterious Benedict Society, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "9151181",
+    "title": "Onward: How Starbucks Fought for Its Life without Losing Its Soul",
+    "started": "2023-01-13",
+    "read": "2023-01-29"
+  },
+  {
+    "bookId": "52381081",
+    "title": "Trust Exercise",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "920607",
+    "title": "The Arrival",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "10883",
+    "title": "Benjamin Franklin: An American Life",
+    "started": "2023-06-02",
+    "read": "2023-06-13"
+  },
+  {
+    "bookId": "40180098",
+    "title": "The Overstory",
+    "started": "2022-12-08",
+    "read": "2022-12-20"
+  },
+  {
+    "bookId": "25191",
+    "title": "A Personal Matter",
+    "started": "2026-07-05",
+    "read": "2026-07-12"
+  },
+  {
+    "bookId": "11438",
+    "title": "What We Talk About When We Talk About Love",
+    "started": "2025-08-09",
+    "read": "2025-08-12"
+  },
+  {
+    "bookId": "1058052",
+    "title": "The Metamorphosis",
+    "started": "2021-06-15",
+    "read": "2021-06-15"
+  },
+  {
+    "bookId": "53308149",
+    "title": "Let Me Tell You What I Mean",
+    "started": "2021-06-27",
+    "read": "2021-07-30"
+  },
+  {
+    "bookId": "15881",
+    "title": "Harry Potter and the Chamber of Secrets (Harry Potter, #2)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "28214365",
+    "title": "Commonwealth",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "7815",
+    "title": "The Year of Magical Thinking",
+    "started": "2024-11-17",
+    "read": "2024-12-10"
+  },
+  {
+    "bookId": "428",
+    "title": "Play It As It Lays",
+    "started": "2025-12-10",
+    "read": "2025-12-29"
+  },
+  {
+    "bookId": "30529",
+    "title": "A Philosophical Enquiry into the Origin of Our Ideas of the Sublime and Beautiful",
+    "started": "2025-08-15",
+    "read": "2025-08-20"
+  },
+  {
+    "bookId": "26114",
+    "title": "The Joke",
+    "started": "2026-01-31",
+    "read": "2026-02-28"
+  },
+  {
+    "bookId": "189989",
+    "title": "Finite and Infinite Games: A Vision of Life as Play and Possibility",
+    "started": "2023-09-18",
+    "read": "2023-09-22"
+  },
+  {
+    "bookId": "6751",
+    "title": "Consider the Lobster and Other Essays",
+    "started": "2021-11-23",
+    "read": "2021-11-27"
+  },
+  {
+    "bookId": "18144590",
+    "title": "The Alchemist",
+    "started": "2022-08-29",
+    "read": "2022-09-02"
+  },
+  {
+    "bookId": "58470804",
+    "title": "Grimm's Fairy Tales",
+    "started": "2021-07-01",
+    "read": "2021-07-01"
+  },
+  {
+    "bookId": "7624",
+    "title": "Lord of the Flies",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "231804",
+    "title": "The Outsiders",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "35031085",
+    "title": "Frankenstein: The 1818 Text",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "3636",
+    "title": "The Giver (Giver, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "6185",
+    "title": "Wuthering Heights",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "5",
+    "title": "Harry Potter and the Prisoner of Azkaban (Harry Potter, #3)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "6",
+    "title": "Harry Potter and the Goblet of Fire (Harry Potter, #4)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "1",
+    "title": "Harry Potter and the Half-Blood Prince (Harry Potter, #6)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "1618",
+    "title": "The Curious Incident of the Dog in the Night-Time",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "100915",
+    "title": "The Lion, the Witch and the Wardrobe (Chronicles of Narnia, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "34268",
+    "title": "Peter Pan (Peter Pan, #2)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "37415",
+    "title": "Their Eyes Were Watching God",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "1852",
+    "title": "The Call of the Wild",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "40940121",
+    "title": "Bridge to Terabithia",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "2696",
+    "title": "The Canterbury Tales",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "10507293",
+    "title": "The Selection (The Selection, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "24337",
+    "title": "Ella Enchanted (Ella Enchanted, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "9328",
+    "title": "The House of the Spirits",
+    "started": "2021-07-15",
+    "read": "2021-07-19"
+  },
+  {
+    "bookId": "2",
+    "title": "Harry Potter and the Order of the Phoenix (Harry Potter, #5)",
+    "started": "2022-06-06",
+    "read": "2022-06-08"
+  },
+  {
+    "bookId": "2657",
+    "title": "To Kill a Mockingbird",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "2767052",
+    "title": "The Hunger Games (The Hunger Games, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "13079982",
+    "title": "Fahrenheit 451",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "24213",
+    "title": "Alice’s Adventures in Wonderland / Through the Looking-Glass",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "18135",
+    "title": "Romeo and Juliet",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "3",
+    "title": "Harry Potter and the Sorcerer's Stone (Harry Potter, #1)",
+    "started": "2022-05-27",
+    "read": "2022-05-29"
+  },
+  {
+    "bookId": "8127",
+    "title": "Anne of Green Gables (Anne of Green Gables, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "28187",
+    "title": "The Lightning Thief (Percy Jackson and the Olympians, #1)",
+    "started": "2022-05-03",
+    "read": "2022-05-04"
+  },
+  {
+    "bookId": "33574273",
+    "title": "A Wrinkle in Time (Time Quintet, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "1381",
+    "title": "The Odyssey",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "136251",
+    "title": "Harry Potter and the Deathly Hallows (Harry Potter, #7)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "39988",
+    "title": "Matilda",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "2626492",
+    "title": "Rapunzel's Revenge (Rapunzel's Revenge, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "25899336",
+    "title": "When Breath Becomes Air",
+    "started": "2023-02-01",
+    "read": "2023-02-10"
+  },
+  {
+    "bookId": "261879",
+    "title": "Pedro y el Capitán",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "762476",
+    "title": "Kokoro",
+    "started": "2024-07-16",
+    "read": "2024-07-20"
+  },
+  {
+    "bookId": "6753",
+    "title": "Brief Interviews with Hideous Men",
+    "started": "2021-07-19",
+    "read": "2021-07-21"
+  },
+  {
+    "bookId": "33313",
+    "title": "Kitchen Confidential: Adventures in the Culinary Underbelly",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "50033",
+    "title": "Dandelion Wine",
+    "started": "2025-02-11",
+    "read": "2025-03-06"
+  },
+  {
+    "bookId": "50351108",
+    "title": "The House of the Spirits",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "29044",
+    "title": "The Secret History",
+    "started": "2023-03-09",
+    "read": "2023-03-15"
+  },
+  {
+    "bookId": "21400742",
+    "title": "Outline",
+    "started": "2023-04-21",
+    "read": "2023-05-07"
+  },
+  {
+    "bookId": "298275",
+    "title": "Nausea",
+    "started": "2024-03-18",
+    "read": "2024-03-30"
+  },
+  {
+    "bookId": "17694",
+    "title": "The Zürau Aphorisms",
+    "started": "2021-12-12",
+    "read": "2021-12-22"
+  },
+  {
+    "bookId": "22232",
+    "title": "Stargirl (Stargirl, #1)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "439173",
+    "title": "Frindle",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "846984",
+    "title": "Love, Stargirl (Stargirl, #2)",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "58673915",
+    "title": "The Sun Also Rises",
+    "started": "2025-06-14",
+    "read": "2025-06-18"
+  },
+  {
+    "bookId": "34473",
+    "title": "In Praise of Shadows",
+    "started": "2024-12-16",
+    "read": "2024-12-18"
+  },
+  {
+    "bookId": "14942",
+    "title": "Mrs. Dalloway",
+    "started": "2021-11-16",
+    "read": "2021-12-10"
+  },
+  {
+    "bookId": "6748",
+    "title": "A Supposedly Fun Thing I'll Never Do Again:  Essays and Arguments",
+    "started": "2021-12-16",
+    "read": "2021-12-28"
+  },
+  {
+    "bookId": "56922687",
+    "title": "These Precious Days: Essays",
+    "started": "2022-09-22",
+    "read": "2022-09-26"
+  },
+  {
+    "bookId": "52036",
+    "title": "Siddhartha",
+    "started": "2024-07-22",
+    "read": "2024-07-24"
+  },
+  {
+    "bookId": "55145261",
+    "title": "The Anthropocene Reviewed: Essays on a Human-Centered Planet",
+    "started": "2021-12-24",
+    "read": "2021-12-26"
+  },
+  {
+    "bookId": "10569",
+    "title": "On Writing: A Memoir of the Craft",
+    "started": "2021-12-28",
+    "read": "2021-12-31"
+  },
+  {
+    "bookId": "7728",
+    "title": "Antigone (Theban Plays, #3)",
+    "started": null,
+    "read": "2021-10-10"
+  },
+  {
+    "bookId": "12996",
+    "title": "Othello",
+    "started": "2022-01-10",
+    "read": "2022-01-30"
+  },
+  {
+    "bookId": "10592",
+    "title": "Carrie",
+    "started": "2022-01-19",
+    "read": "2022-01-23"
+  },
+  {
+    "bookId": "10614",
+    "title": "Misery",
+    "started": "2023-01-04",
+    "read": "2023-01-07"
+  },
+  {
+    "bookId": "11437",
+    "title": "Where I'm Calling From: Selected Stories",
+    "started": "2022-01-30",
+    "read": "2022-05-10"
+  },
+  {
+    "bookId": "7588",
+    "title": "A Portrait of the Artist as a Young Man",
+    "started": "2022-02-04",
+    "read": "2022-03-03"
+  },
+  {
+    "bookId": "16299",
+    "title": "And Then There Were None",
+    "started": "2024-06-04",
+    "read": "2024-06-06"
+  },
+  {
+    "bookId": "53285047",
+    "title": "Bunny (Bunny, #1)",
+    "started": "2023-09-06",
+    "read": "2023-09-09"
+  },
+  {
+    "bookId": "7736182",
+    "title": "The Lost Hero (The Heroes of Olympus, #1)",
+    "started": "2022-05-06",
+    "read": "2022-05-08"
+  },
+  {
+    "bookId": "7331435",
+    "title": "A Visit from the Goon Squad",
+    "started": "2025-08-23",
+    "read": "2025-08-29"
+  },
+  {
+    "bookId": "9520360",
+    "title": "The Son of Neptune (The Heroes of Olympus, #2)",
+    "started": "2022-05-12",
+    "read": "2022-05-13"
+  },
+  {
+    "bookId": "12127750",
+    "title": "The Mark of Athena (The Heroes of Olympus, #3)",
+    "started": "2022-05-12",
+    "read": "2022-05-13"
+  },
+  {
+    "bookId": "12127810",
+    "title": "The House of Hades (The Heroes of Olympus, #4)",
+    "started": "2022-05-13",
+    "read": "2022-05-16"
+  },
+  {
+    "bookId": "231560",
+    "title": "Uncle Vanya",
+    "started": "2023-06-20",
+    "read": "2023-06-25"
+  },
+  {
+    "bookId": "18705209",
+    "title": "The Blood of Olympus (The Heroes of Olympus, #5)",
+    "started": "2022-05-29",
+    "read": "2022-05-29"
+  },
+  {
+    "bookId": "12898",
+    "title": "Death of a Salesman",
+    "started": "2022-09-02",
+    "read": "2022-09-04"
+  },
+  {
+    "bookId": "10534",
+    "title": "The Art of War",
+    "started": "2022-05-29",
+    "read": "2022-05-29"
+  },
+  {
+    "bookId": "18143977",
+    "title": "All the Light We Cannot See",
+    "started": "2023-08-04",
+    "read": "2023-08-05"
+  },
+  {
+    "bookId": "35224286",
+    "title": "Room to Dream",
+    "started": "2024-05-20",
+    "read": "2024-06-03"
+  },
+  {
+    "bookId": "36809135",
+    "title": "Where the Crawdads Sing",
+    "started": "2024-09-11",
+    "read": "2024-09-11"
+  },
+  {
+    "bookId": "9717",
+    "title": "The Unbearable Lightness of Being",
+    "started": "2022-06-03",
+    "read": "2022-06-06"
+  },
+  {
+    "bookId": "18007564",
+    "title": "The Martian",
+    "started": "2023-12-12",
+    "read": "2023-12-17"
+  },
+  {
+    "bookId": "58446227",
+    "title": "Sea of Tranquility",
+    "started": "2023-03-01",
+    "read": "2023-03-11"
+  },
+  {
+    "bookId": "333538",
+    "title": "The Castle",
+    "started": "2022-08-05",
+    "read": "2022-08-20"
+  },
+  {
+    "bookId": "38820047",
+    "title": "Killing Commendatore",
+    "started": "2022-08-21",
+    "read": "2022-08-28"
+  },
+  {
+    "bookId": "43868109",
+    "title": "Empire of Pain: The Secret History of the Sackler Dynasty",
+    "started": "2022-09-04",
+    "read": "2022-09-14"
+  },
+  {
+    "bookId": "5306",
+    "title": "Travels with Charley: In Search of America",
+    "started": "2022-09-16",
+    "read": "2022-09-21"
+  },
+  {
+    "bookId": "60387307",
+    "title": "Novelist as a Vocation",
+    "started": "2023-02-12",
+    "read": "2023-03-01"
+  },
+  {
+    "bookId": "11084145",
+    "title": "Steve Jobs",
+    "started": "2022-11-23",
+    "read": "2022-12-06"
+  },
+  {
+    "bookId": "40338442",
+    "title": "The White Book",
+    "started": "2023-08-23",
+    "read": "2023-08-23"
+  },
+  {
+    "bookId": "58231782",
+    "title": "James Patterson by James Patterson: The Stories of My Life",
+    "started": "2023-01-08",
+    "read": "2023-01-13"
+  },
+  {
+    "bookId": "58784475",
+    "title": "Tomorrow, and Tomorrow, and Tomorrow",
+    "started": "2023-04-01",
+    "read": "2023-04-02"
+  },
+  {
+    "bookId": "261240",
+    "title": "The Cask of Amontillado",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "4708",
+    "title": "The Beautiful and Damned",
+    "started": "2023-05-07",
+    "read": "2023-05-25"
+  },
+  {
+    "bookId": "57141034",
+    "title": "When We Cease to Understand the World",
+    "started": "2024-07-25",
+    "read": "2024-08-21"
+  },
+  {
+    "bookId": "17333223",
+    "title": "The Goldfinch",
+    "started": "2023-02-12",
+    "read": "2023-02-26"
+  },
+  {
+    "bookId": "54614599",
+    "title": "First Person Singular: Stories",
+    "started": "2023-05-26",
+    "read": "2023-06-02"
+  },
+  {
+    "bookId": "35959740",
+    "title": "Circe",
+    "started": "2023-04-15",
+    "read": "2023-04-21"
+  },
+  {
+    "bookId": "1303",
+    "title": "The 48 Laws of Power",
+    "started": "2023-07-23",
+    "read": "2023-08-14"
+  },
+  {
+    "bookId": "60965426",
+    "title": "The Creative Act: A Way of Being",
+    "started": "2024-08-22",
+    "read": "2024-08-27"
+  },
+  {
+    "bookId": "89731",
+    "title": "Kira-Kira",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "56294820",
+    "title": "Oh William! (Amgash, #3)",
+    "started": "2023-06-20",
+    "read": "2023-06-24"
+  },
+  {
+    "bookId": "49455",
+    "title": "Notes from Underground",
+    "started": "2023-06-25",
+    "read": "2023-07-08"
+  },
+  {
+    "bookId": "14546626",
+    "title": "Total Recall: My Unbelievably True Life Story",
+    "started": "2023-07-09",
+    "read": "2023-07-15"
+  },
+  {
+    "bookId": "13589182",
+    "title": "Mastery",
+    "started": "2023-07-16",
+    "read": "2023-07-21"
+  },
+  {
+    "bookId": "27833670",
+    "title": "Dark Matter",
+    "started": "2023-08-24",
+    "read": "2023-08-29"
+  },
+  {
+    "bookId": "59336625",
+    "title": "All the Lovers in the Night",
+    "started": "2025-06-29",
+    "read": "2025-07-04"
+  },
+  {
+    "bookId": "38359036",
+    "title": "The Tattooist of Auschwitz (The Tattooist of Auschwitz, #1)",
+    "started": "2023-07-30",
+    "read": "2023-08-04"
+  },
+  {
+    "bookId": "52520830",
+    "title": "In the Dream House",
+    "started": "2023-07-28",
+    "read": "2023-07-30"
+  },
+  {
+    "bookId": "35133922",
+    "title": "Educated",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "19063",
+    "title": "The Book Thief",
+    "started": "2023-08-29",
+    "read": "2023-09-06"
+  },
+  {
+    "bookId": "20995",
+    "title": "The Art of Seduction",
+    "started": "2023-08-15",
+    "read": "2023-08-21"
+  },
+  {
+    "bookId": "42380121",
+    "title": "Tell Them of Battles, Kings, and Elephants",
+    "started": "2025-07-03",
+    "read": "2025-07-04"
+  },
+  {
+    "bookId": "747746",
+    "title": "The Curious Case of Benjamin Button",
+    "started": "2025-05-02",
+    "read": "2025-05-02"
+  },
+  {
+    "bookId": "122765395",
+    "title": "Elon Musk",
+    "started": "2023-10-12",
+    "read": "2023-11-06"
+  },
+  {
+    "bookId": "18373",
+    "title": "Flowers for Algernon",
+    "started": null,
+    "read": null
+  },
+  {
+    "bookId": "30091914",
+    "title": "Human Acts",
+    "started": "2023-12-31",
+    "read": "2024-01-07"
+  },
+  {
+    "bookId": "2547",
+    "title": "The Prophet",
+    "started": "2023-08-30",
+    "read": "2023-08-30"
+  },
+  {
+    "bookId": "76479",
+    "title": "A Field Guide to Getting Lost",
+    "started": "2024-04-28",
+    "read": "2024-05-15"
+  },
+  {
+    "bookId": "575020",
+    "title": "The Body Artist",
+    "started": "2025-12-20",
+    "read": "2025-12-26"
+  },
+  {
+    "bookId": "28109997",
+    "title": "Slow Days, Fast Company: The World, the Flesh, and L.A.",
+    "started": "2023-10-06",
+    "read": "2023-10-08"
+  },
+  {
+    "bookId": "28862",
+    "title": "The Prince",
+    "started": "2024-04-12",
+    "read": "2024-04-15"
+  },
+  {
+    "bookId": "15903745",
+    "title": "An Ideal Husband",
+    "started": "2025-05-02",
+    "read": "2025-05-02"
+  },
+  {
+    "bookId": "4588",
+    "title": "Extremely Loud & Incredibly Close",
+    "started": "2024-04-16",
+    "read": "2024-04-18"
+  },
+  {
+    "bookId": "629",
+    "title": "Zen and the Art of Motorcycle Maintenance: An Inquiry Into Values (Phaedrus, #1)",
+    "started": "2025-10-07",
+    "read": "2025-10-07"
+  },
+  {
+    "bookId": "44442944",
+    "title": "No Self, No Problem: How Neuropsychology Is Catching Up to Buddhism (The No Self Wisdom Series)",
+    "started": "2023-11-24",
+    "read": "2023-12-12"
+  },
+  {
+    "bookId": "53492652",
+    "title": "An Apprenticeship or The Book of Pleasures",
+    "started": "2026-06-06",
+    "read": "2026-06-08"
+  },
+  {
+    "bookId": "103758",
+    "title": "Zen in the Art of Archery",
+    "started": "2026-07-23",
+    "read": "2026-07-23"
+  },
+  {
+    "bookId": "58678702",
+    "title": "Simple Passion",
+    "started": "2024-01-07",
+    "read": "2024-01-07"
+  },
+  {
+    "bookId": "6334",
+    "title": "Never Let Me Go",
+    "started": "2024-01-31",
+    "read": "2024-02-01"
+  },
+  {
+    "bookId": "58210933",
+    "title": "Trust",
+    "started": "2024-02-11",
+    "read": "2024-03-07"
+  },
+  {
+    "bookId": "54785515",
+    "title": "Four Thousand Weeks: Time Management for Mortals",
+    "started": "2024-03-30",
+    "read": "2024-04-09"
+  },
+  {
+    "bookId": "11991",
+    "title": "The Fall (Vintage International)",
+    "started": "2024-06-10",
+    "read": "2024-06-10"
+  },
+  {
+    "bookId": "38447",
+    "title": "The Handmaid’s Tale (The Handmaid's Tale, #1)",
+    "started": "2024-05-14",
+    "read": "2024-05-18"
+  },
+  {
+    "bookId": "225343",
+    "title": "Heartburn",
+    "started": "2024-06-15",
+    "read": "2024-06-15"
+  },
+  {
+    "bookId": "89724",
+    "title": "We Have Always Lived in the Castle",
+    "started": "2026-06-14",
+    "read": "2026-06-20"
+  },
+  {
+    "bookId": "762390",
+    "title": "The Hour of the Star",
+    "started": "2025-06-14",
+    "read": "2025-06-14"
+  },
+  {
+    "bookId": "61918819",
+    "title": "The Wisdom of the Bullfrog: Leadership Made Simple (But Not Easy)",
+    "started": "2024-07-20",
+    "read": "2024-07-21"
+  },
+  {
+    "bookId": "867247",
+    "title": "A Book of Five Rings: The Classic Guide to Strategy",
+    "started": "2025-08-06",
+    "read": "2025-08-09"
+  },
+  {
+    "bookId": "66863",
+    "title": "Only the Paranoid Survive: How to Exploit the Crisis Points that Challenge Every Company and Career",
+    "started": null,
+    "read": "2024-08-21"
+  },
+  {
+    "bookId": "62971594",
+    "title": "Tell Me Everything",
+    "started": "2024-08-12",
+    "read": "2024-08-14"
+  },
+  {
+    "bookId": "6900",
+    "title": "Tuesdays with Morrie: An Old Man, a Young Man, and Life's Greatest Lesson",
+    "started": "2024-08-15",
+    "read": "2024-08-16"
+  },
+  {
+    "bookId": "209192695",
+    "title": "The City and Its Uncertain Walls",
+    "started": "2024-12-10",
+    "read": "2024-12-13"
+  },
+  {
+    "bookId": "54814676",
+    "title": "Crying in H Mart",
+    "started": "2024-10-19",
+    "read": "2024-11-11"
+  },
+  {
+    "bookId": "20696006",
+    "title": "Being Mortal: Medicine and What Matters in the End",
+    "started": "2025-07-21",
+    "read": "2025-07-30"
+  },
+  {
+    "bookId": "41721428",
+    "title": "Can't Hurt Me: Master Your Mind and Defy the Odds",
+    "started": "2024-12-16",
+    "read": "2024-12-29"
+  },
+  {
+    "bookId": "59148726",
+    "title": "Rogues: True Stories of Grifters, Killers, Rebels and Crooks",
+    "started": "2024-12-29",
+    "read": "2025-01-24"
+  },
+  {
+    "bookId": "27793819",
+    "title": "Madonna in a Fur Coat",
+    "started": "2025-05-28",
+    "read": "2025-06-05"
+  },
+  {
+    "bookId": "40102",
+    "title": "Blink: The Power of Thinking Without Thinking",
+    "started": "2025-03-08",
+    "read": "2025-03-20"
+  },
+  {
+    "bookId": "54898389",
+    "title": "The Almanack of Naval Ravikant: A Guide to Wealth and Happiness",
+    "started": "2025-07-30",
+    "read": "2025-08-01"
+  },
+  {
+    "bookId": "199348906",
+    "title": "Never Enough: From Barista to Billionaire",
+    "started": "2025-06-06",
+    "read": "2025-06-14"
+  },
+  {
+    "bookId": "223436601",
+    "title": "Careless People: A Cautionary Tale of Power, Greed, and Lost Idealism",
+    "started": "2025-08-30",
+    "read": "2025-09-10"
+  },
+  {
+    "bookId": "406235",
+    "title": "Giovanni’s Room",
+    "started": "2026-07-17",
+    "read": "2026-07-21"
+  },
+  {
+    "bookId": "53223710",
+    "title": "Heaven",
+    "started": "2025-05-20",
+    "read": "2025-05-26"
+  },
+  {
+    "bookId": "37004370",
+    "title": "The Memory Police",
+    "started": "2025-07-04",
+    "read": "2025-07-07"
+  },
+  {
+    "bookId": "35289",
+    "title": "The 33 Strategies of War",
+    "started": "2026-04-28",
+    "read": "2026-06-06"
+  },
+  {
+    "bookId": "50144",
+    "title": "Kitchen",
+    "started": "2025-08-01",
+    "read": "2025-08-06"
+  },
+  {
+    "bookId": "5128",
+    "title": "The Doors of Perception & Heaven and Hell",
+    "started": "2026-07-23",
+    "read": "2026-07-25"
+  },
+  {
+    "bookId": "2052",
+    "title": "The Big Sleep (Philip Marlowe, #1)",
+    "started": "2025-09-13",
+    "read": "2025-09-21"
+  },
+  {
+    "bookId": "25489025",
+    "title": "The Vegetarian",
+    "started": "2025-09-21",
+    "read": "2025-09-21"
+  },
+  {
+    "bookId": "9809",
+    "title": "Invisible Cities",
+    "started": "2026-01-07",
+    "read": "2026-01-31"
+  },
+  {
+    "bookId": "374233",
+    "title": "If on a Winter's Night a Traveler",
+    "started": "2025-12-29",
+    "read": "2026-01-05"
+  },
+  {
+    "bookId": "214331246",
+    "title": "Sunrise on the Reaping (The Hunger Games, #0.5)",
+    "started": "2025-12-01",
+    "read": "2025-12-06"
+  },
+  {
+    "bookId": "275",
+    "title": "The Lover",
+    "started": "2026-03-01",
+    "read": "2026-03-13"
+  },
+  {
+    "bookId": "241434373",
+    "title": "The Infinity Machine: Demis Hassabis, DeepMind, and the Quest for Superintelligence",
+    "started": "2026-04-01",
+    "read": "2026-04-22"
+  },
+  {
+    "bookId": "44421460",
+    "title": "Before the Coffee Gets Cold (Before the Coffee Gets Cold, #1)",
+    "started": "2026-07-12",
+    "read": "2026-07-16"
+  },
+  {
+    "bookId": "1772910",
+    "title": "White Nights",
+    "started": "2026-07-02",
+    "read": "2026-07-03"
+  },
+  {
+    "bookId": "58662236",
+    "title": "Small Things Like These",
+    "started": "2026-07-25",
+    "read": "2026-07-26"
+  }
+]
