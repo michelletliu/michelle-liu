@@ -9,12 +9,20 @@ import GalleryRoom from "./GalleryRoom";
 import GalleryThumbstick from "./GalleryThumbstick";
 import { downloadImage, generatedImageFilename } from "./downloadImage";
 import { GALLERY_PAINTINGS } from "./galleryPaintings";
-import { useGalleryCamera } from "./useGalleryCamera";
+import { resolveShimmerHues, type ShimmerHues } from "./shimmerPalette";
+import { useGalleryCamera, useMeasuredHeight } from "./useGalleryCamera";
 
 export default function GalleryPage() {
   const navigate = useNavigate();
+  /*
+   * The bottom stack covers the foot of the room, and the action bar inside it
+   * changes height as it opens, so how much of the focused frame is hidden is
+   * something only the rendered bar can answer. The camera drops by whatever
+   * this measures rather than by a number picked for one of its states.
+   */
+  const bottomStack = useMeasuredHeight();
   const { focusedId, pose, zoom, selectPainting, zoomBy, bindProps } =
-    useGalleryCamera();
+    useGalleryCamera({ bottomOcclusionPx: bottomStack.height });
   const { ref, ...pointerBindProps } = bindProps;
 
   const [imageById, setImageById] = useState<Record<string, string>>({});
@@ -23,6 +31,8 @@ export default function GalleryPage() {
     Record<string, string>
   >({});
   const [generatingId, setGeneratingId] = useState<string | null>(null);
+  /** Hues for the in-flight shimmer, from the artwork that inspired it. */
+  const [shimmerHues, setShimmerHues] = useState<ShimmerHues | null>(null);
 
   const paintings = useMemo(
     () =>
@@ -40,6 +50,12 @@ export default function GalleryPage() {
     ) => {
       const paintingId = focusedId;
       setGeneratingId(paintingId);
+      // Deliberately not awaited. The shimmer opens on its default hues and
+      // eases onto the artwork's when they land, because making the canvas
+      // wait on an image decode to start animating would trade the whole point
+      // of the shimmer for a detail almost nobody would notice arriving late.
+      setShimmerHues(null);
+      if (inspiration) void resolveShimmerHues(inspiration.objectID).then(setShimmerHues);
       try {
         const res = await fetch("/api/gallery/generate", {
           method: "POST",
@@ -109,12 +125,16 @@ export default function GalleryPage() {
         focusedId={focusedId}
         paintings={paintings}
         generatingId={generatingId}
+        shimmerHues={shimmerHues}
         onSelectPainting={selectPainting}
         onDownload={onDownload}
       />
       {/* Ignores pointer events itself so the room stays draggable through the
           gaps either side of the bar. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex flex-col items-center px-4 pb-6 md:pb-8">
+      <div
+        ref={bottomStack.ref}
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex flex-col items-center px-4 pb-6 md:pb-8"
+      >
         <GalleryActionBar
           generating={generatingId !== null}
           onGenerate={onGenerate}

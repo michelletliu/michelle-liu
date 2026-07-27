@@ -332,6 +332,182 @@ export function roomPoseForPainting(
   };
 }
 
+/**
+ * Gap kept between the top of an occluding UI band and the bottom of the
+ * frame, so the frame clears the band rather than resting exactly on it.
+ */
+export const FRAMING_BREATHING_PX = 16;
+
+/**
+ * Share of the gap above the frame the lift may spend.
+ *
+ * Buying room under the frame by pushing its top edge off screen is not
+ * showing the whole frame, so there has to be a ceiling on this. Half rather
+ * than all of it, because spending all of it is what a hang zoomed up to fill
+ * the viewport would do: the panel covers more of it than any offset could
+ * recover, and the lift would answer by jamming the frame against the top of
+ * the window for a few px of the bottom edge it still could not uncover.
+ *
+ * A share rather than a px count so it scales with the framing it is bounding
+ * — generous where the hang is small in the viewport and there is room to
+ * move, close to nothing where it already fills the screen.
+ */
+export const FRAMING_HEADROOM_SHARE = 0.5;
+
+/**
+ * How close to the floor or the ceiling this offset may drive the eye.
+ *
+ * Nothing else in the room moves the eye off `eyeY` — the dolly runs along the
+ * wall normal and the stand-off clamp bounds it there — so vertical travel had
+ * no bound at all before this offset existed and this is it.
+ */
+const FRAMING_EYE_MARGIN = 0.5;
+
+/** The viewport, and the UI band covering the bottom of it. Both CSS px. */
+export type GalleryFraming = {
+  viewportHeightPx: number;
+  occlusionPx: number;
+};
+
+/**
+ * Bound on the vertical framing offset, in world units. Signed, so a future
+ * offset that raises the eye is held off the ceiling by the same margin that
+ * holds this one off the floor.
+ */
+export function clampFramingDrop(drop: number): number {
+  if (!Number.isFinite(drop)) return 0;
+  const { eyeY, height } = GALLERY_ROOM;
+  const maxDown = Math.max(0, eyeY - FRAMING_EYE_MARGIN);
+  const maxUp = Math.max(0, height - FRAMING_EYE_MARGIN - eyeY);
+  if (drop > maxDown) return maxDown;
+  if (drop < -maxUp) return -maxUp;
+  return drop;
+}
+
+/**
+ * How far to drop the camera so a band of UI along the bottom of the viewport
+ * stops covering the bottom of the focused frame.
+ *
+ * Measured rather than chosen: the pose's own stand-off and lens give world
+ * units per viewport pixel on the plane the canvas hangs in, which converts
+ * the band's real pixel height into the world distance that clears it. A fixed
+ * number cannot do this — the same panel hides a different amount of frame at
+ * every zoom, on every viewport, and between the two panel heights.
+ */
+export function framingDropForPose(
+  pose: GalleryRoomPose,
+  painting: GalleryPainting,
+  zoom: number,
+  framing: GalleryFraming | null,
+): number {
+  if (!framing) return 0;
+  const { viewportHeightPx: viewH, occlusionPx } = framing;
+  if (!Number.isFinite(viewH) || viewH <= 0) return 0;
+  if (!Number.isFinite(occlusionPx) || occlusionPx <= 0) return 0;
+
+  // Read the distance back off the pose rather than recomputing it. The
+  // stand-off is clamped against the room on the way in, and measuring the
+  // pose that survived that clamp is what keeps this in step with it.
+  const distance = Math.hypot(pose.x - pose.lookX, pose.z - pose.lookZ);
+  if (distance <= 0) return 0;
+
+  const worldPerPx =
+    (2 * distance * Math.tan((fovForZoom(zoom) * Math.PI) / 360)) / viewH;
+  if (!(worldPerPx > 0)) return 0;
+
+  // The pose aims at the canvas center, so the frame sits vertically centered
+  // and the clear band under it is the same height as the one over it.
+  const size = paintingSize(painting.aspect);
+  const frameHalfPx = (size.height + FRAME_LIP) / 2 / worldPerPx;
+  const clearPx = viewH / 2 - frameHalfPx;
+  if (clearPx <= 0) return 0;
+
+  const coveredPx = occlusionPx + FRAMING_BREATHING_PX - clearPx;
+  if (coveredPx <= 0) return 0;
+
+  const liftPx = Math.min(coveredPx, clearPx * FRAMING_HEADROOM_SHARE);
+  if (liftPx <= 0) return 0;
+
+  /*
+   * And never drop the eye past the bottom of the frame, whatever the pixels
+   * ask for. It is the viewer that moves here, and below that edge they are no
+   * longer level with the art but under it, looking up at it.
+   *
+   * This is what binds on a short viewport, where a panel taking half the
+   * screen asks for more than framing can honestly give — clearing it outright
+   * on a 560px window would put the eye at knee height. Capped, most of the
+   * frame comes out from under the panel rather than all of it.
+   */
+  const frameBottomY = pose.lookY - (size.height + FRAME_LIP) / 2;
+  const drop = Math.min(liftPx * worldPerPx, pose.y - frameBottomY);
+  if (drop <= 0) return 0;
+
+  return clampFramingDrop(drop);
+}
+
+/**
+ * `roomPoseForPainting`, lowered far enough that a band of UI along the bottom
+ * of the viewport stops covering the focused frame.
+ *
+ * Eye and target drop together, so the view stays level and the hang rises in
+ * the viewport. Tilting the camera down instead — moving only the target —
+ * would lift the frame just as well and keystone it doing so, and a canvas
+ * rendered as a trapezoid is the one distortion a gallery cannot afford.
+ *
+ * The hangs themselves never move. They are hung on the walls of a closed room
+ * against its molding and its coffered ceiling, and lifting twelve of them to
+ * uncover one would cost the room its symmetry.
+ */
+export function framedRoomPose(
+  id: string,
+  zoom: number = GALLERY_ZOOM_DEFAULT,
+  framing: GalleryFraming | null = null,
+  paintings: GalleryPainting[] = GALLERY_PAINTINGS,
+): GalleryRoomPose {
+  const pose = roomPoseForPainting(id, zoom, paintings);
+  if (!framing) return pose;
+
+  const painting = paintings.find((p) => p.id === id) ?? paintings[0]!;
+  const drop = framingDropForPose(pose, painting, zoom, framing);
+  if (drop === 0) return pose;
+
+  return { ...pose, y: pose.y - drop, lookY: pose.lookY - drop };
+}
+
+/**
+ * Sampler for `cubic-bezier(0.4, 0, 0.2, 1)`, the curve the action bar expands
+ * and collapses on.
+ *
+ * The framing move happens at the same moment as the panel's own and over the
+ * same span, and on a different curve the two read as one gesture that cannot
+ * keep time — the camera arriving early while the panel is still growing.
+ */
+export function easeWithPanel(t: number): number {
+  if (t <= 0) return 0;
+  if (t >= 1) return 1;
+
+  const axis = (s: number, p1: number, p2: number) => {
+    const u = 1 - s;
+    return 3 * u * u * s * p1 + 3 * u * s * s * p2 + s * s * s;
+  };
+  const slope = (s: number, p1: number, p2: number) => {
+    const u = 1 - s;
+    return 3 * u * u * p1 + 6 * u * s * (p2 - p1) + 3 * s * s * (1 - p2);
+  };
+
+  // Newton on x(s) = t. The curve is monotonic in x and t is a good first
+  // guess, so this is well inside a pixel after a handful of passes.
+  let s = t;
+  for (let i = 0; i < 6; i++) {
+    const dx = slope(s, 0.4, 0.2);
+    if (dx === 0) break;
+    const error = axis(s, 0.4, 0.2) - t;
+    if (Math.abs(error) < 1e-6) break;
+    s = Math.min(1, Math.max(0, s - error / dx));
+  }
+  return axis(s, 0, 1);
+}
+
 export function lerpRoomPose(
   from: GalleryRoomPose,
   to: GalleryRoomPose,

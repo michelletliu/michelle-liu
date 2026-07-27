@@ -1,11 +1,21 @@
 "use client";
 
 import { useState, type FormEvent, type ReactNode } from "react";
-import { Info, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { X } from "lucide-react";
 import { CloseIcon } from "@/components/Close";
+import { Info } from "@/components/Info";
+import { iconSize } from "@/components/iconSizes";
 import MetArtworkDetails from "./MetArtworkDetails";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { stopGalleryKeys, useScrollEdges } from "./galleryInputGuards";
+import {
+  TILE_HOVER_RING,
+  TILE_INSET_RING,
+  TILE_SELECTED_RING,
+  TILE_SHAPE,
+  tileLayoutId,
+} from "./galleryTile";
 import {
   artworkEligibility,
   openAccessImageUrl,
@@ -25,6 +35,20 @@ const STRIP_EDGE_FADE = "#ededed";
 
 /** How many placeholder tiles stand in for a page of results. */
 const SKELETON_TILES = 6;
+
+/**
+ * Room for a tile's own shadow inside the thing that clips it.
+ *
+ * `overflow-x: auto` clips both axes, so the strip was shearing the bottom off
+ * every tile's `shadow-lg` and the leading tile's left side with it. The
+ * shadow reaches about 15px down and the selected tile's ✕ sits proud of the
+ * top corner, so the padding has to cover the largest of those rather than the
+ * tiles themselves. The wrapper pulls most of it back with negative margins,
+ * leaving the strip's outer spacing near enough where it was while the inside
+ * of the scroller got wide enough to draw in.
+ */
+const STRIP_PADDING = "px-4 py-4";
+const STRIP_BLEED = "-mx-4 -my-2.5";
 
 type MetArtworkPickerProps = {
   search: MetSearchController;
@@ -111,7 +135,7 @@ export default function MetArtworkPicker({
             // `type="search"` paints a heavy accent-coloured native clear glyph
             // in WebKit. Suppress it and use the design system's Close mark, so
             // the affordance matches every other dismiss control on the site.
-            className={`h-[38px] w-full rounded-xl border border-zinc-200 bg-white pl-3 text-sm text-zinc-900 placeholder:text-zinc-400 disabled:opacity-60 [&::-webkit-search-cancel-button]:appearance-none ${
+            className={`h-[38px] w-full rounded-xl border border-zinc-200 bg-white pl-3 text-base text-zinc-900 placeholder:text-zinc-400 disabled:opacity-60 [&::-webkit-search-cancel-button]:appearance-none ${
               queryText ? "pr-9" : "pr-3"
             } ${GALLERY_FOCUS_RING}`}
           />
@@ -131,7 +155,7 @@ export default function MetArtworkPicker({
         <button
           type="submit"
           disabled={disabled || !queryText.trim() || status === "loading"}
-          className={`h-[38px] shrink-0 rounded-xl border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
+          className={`h-[38px] shrink-0 rounded-xl border border-zinc-200 bg-white px-3 text-base font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
         >
           Search
         </button>
@@ -144,7 +168,7 @@ export default function MetArtworkPicker({
         {showSkeletons && <ThumbnailSkeletons />}
 
         {status === "error" && (
-          <p className="px-1 text-xs text-red-600">
+          <p className="px-1 text-base text-red-600">
             {error}{" "}
             <button
               type="button"
@@ -157,7 +181,7 @@ export default function MetArtworkPicker({
         )}
 
         {status === "success" && artworks.length === 0 && (
-          <p className="px-1 text-xs leading-snug text-zinc-500">
+          <p className="px-1 text-base leading-snug text-zinc-500">
             {matchMode === "artist" ? (
               // Monet is the case here: The Met holds his work but has released
               // none of it under Open Access. Saying so beats an empty grid,
@@ -177,10 +201,10 @@ export default function MetArtworkPicker({
         )}
 
         {showStrip && (
-          // Bleeds to the inset's padding box so tiles scroll all the way to
-          // the edge and disappear under the fade, rather than stopping short
-          // of it.
-          <div className="relative -mx-2.5">
+          // Pulls back the scroller's shadow padding so the strip still
+          // reaches the inset's edge and slides under the fade, rather than
+          // stopping short of it with four pixels of gutter showing.
+          <div className={`relative ${STRIP_BLEED}`}>
             <div
               ref={stripRef}
               role="group"
@@ -189,7 +213,7 @@ export default function MetArtworkPicker({
                   ? "Suggested artworks from The Met"
                   : "Met artwork results"
               }
-              className="flex gap-2 overflow-x-auto overscroll-contain px-2.5 py-1.5"
+              className={`flex gap-2 overflow-x-auto overscroll-contain ${STRIP_PADDING}`}
             >
               {artworks.map((artwork) => (
                 <ArtworkThumbnail
@@ -209,7 +233,7 @@ export default function MetArtworkPicker({
                   type="button"
                   onClick={() => void loadMore()}
                   disabled={disabled || loadingMore}
-                  className={`size-25 shrink-0 rounded-md border border-dashed border-zinc-300 text-[11px] leading-tight text-zinc-500 transition-colors hover:bg-white/60 disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
+                  className={`shrink-0 border border-dashed border-zinc-300 text-base leading-tight text-zinc-500 transition-colors hover:bg-white/60 disabled:opacity-40 ${TILE_SHAPE} ${GALLERY_FOCUS_RING}`}
                 >
                   {loadingMore ? "Loading…" : "Load more"}
                 </button>
@@ -222,12 +246,22 @@ export default function MetArtworkPicker({
       </div>
 
       {selected && (
-        <div className="flex items-center gap-5 pl-1 pr-3">
+        // Named for a screen reader, which gets only the title otherwise and
+        // no hint that this row is the chosen inspiration rather than a
+        // caption. Sighted readers have the strip and the ✕ above to say so.
+        <div
+          role="group"
+          aria-label={`Selected inspiration: ${selected.title}`}
+          className="flex items-center gap-5 pl-1 pr-3"
+        >
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-medium leading-4 text-zinc-900">
-              Inspired by {selected.title}
+            <p className="truncate text-base font-medium leading-6 text-zinc-900">
+              {selected.title}
             </p>
-            <p className="truncate text-[11px] leading-[16.5px] text-zinc-500">
+            {/* Same size as the title now, so the difference has to be carried
+                by weight and colour alone — medium zinc-900 over normal
+                zinc-400 — rather than by shrinking the secondary line. */}
+            <p className="truncate text-base leading-6 text-zinc-400">
               {[selected.artistDisplayName, selected.objectDate]
                 .filter(Boolean)
                 .join(" · ") || "The Met Open Access"}
@@ -235,7 +269,7 @@ export default function MetArtworkPicker({
             {eligibility && !eligibility.eligible && (
               <p
                 role="alert"
-                className="mt-1.5 rounded-lg bg-amber-50 px-2 py-1.5 text-[11px] leading-snug text-amber-900"
+                className="mt-1.5 rounded-lg bg-amber-50 px-2 py-1.5 text-base leading-snug text-amber-900"
               >
                 Generation is disabled for this artwork. {eligibility.message}
               </p>
@@ -258,9 +292,9 @@ export default function MetArtworkPicker({
             aria-haspopup="dialog"
             aria-expanded={detailsOpen}
             aria-label="Artwork details"
-            className={`shrink-0 text-zinc-400 transition-colors hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
+            className={`shrink-0 rounded-full text-zinc-400 transition-colors hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
           >
-            <Info size={14} aria-hidden />
+            <Info size={iconSize("inline")} />
           </button>
         </div>
       )}
@@ -310,13 +344,13 @@ function StripFade({
  */
 function ThumbnailSkeletons() {
   return (
-    <div className="-mx-2.5 flex gap-2 overflow-hidden px-2.5 py-1.5">
+    <div className={`flex gap-2 overflow-hidden ${STRIP_PADDING}`}>
       <span className="sr-only">Searching The Met…</span>
       {Array.from({ length: SKELETON_TILES }, (_, i) => (
         <div
           key={i}
           aria-hidden
-          className="size-25 shrink-0 animate-pulse rounded-md border-2 border-white/20 bg-zinc-200/70"
+          className={`shrink-0 animate-pulse bg-zinc-200/70 ${TILE_SHAPE} ${TILE_INSET_RING}`}
         />
       ))}
     </div>
@@ -338,19 +372,20 @@ function ArtworkThumbnail({
   if (!src) return null;
 
   return (
-    <button
+    <motion.button
+      layoutId={tileLayoutId(artwork.objectID)}
       type="button"
       aria-pressed={selected}
       disabled={disabled}
       onClick={onToggle}
       title={artworkLabel(artwork)}
-      // Selection is a border and focus is a ring, so the two never fight over
-      // the same box-shadow when a selected thumbnail is also focused. The
-      // border is the same width either way, so nothing reflows on selection.
-      className={`relative size-25 shrink-0 overflow-hidden rounded-md border-2 bg-white shadow-lg transition-[border-color] disabled:opacity-40 ${GALLERY_FOCUS_RING} ${
-        selected
-          ? "border-zinc-900"
-          : "border-white/20 hover:border-zinc-300"
+      // Selection and the white edge are both inset rings, so they occupy the
+      // same box-shadow slot and swap rather than stack — and neither changes
+      // the tile's footprint, so selecting one mid-scroll shifts nothing. The
+      // focus ring is a separate outset ring, so a selected tile that is also
+      // focused reads as both without the two fighting.
+      className={`relative shrink-0 overflow-hidden bg-white shadow-lg transition-shadow disabled:opacity-40 ${TILE_SHAPE} ${GALLERY_FOCUS_RING} ${
+        selected ? TILE_SELECTED_RING : `${TILE_INSET_RING} ${TILE_HOVER_RING}`
       }`}
     >
       {/* The alt text is the button's accessible name. */}
@@ -367,11 +402,11 @@ function ArtworkThumbnail({
         // already what lifts the selection.
         <span
           aria-hidden
-          className="absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-zinc-900 text-white"
+          className="absolute right-1.5 top-1.5 grid size-4 place-items-center rounded-full bg-zinc-900 text-white"
         >
           <X size={10} strokeWidth={3} />
         </span>
       )}
-    </button>
+    </motion.button>
   );
 }

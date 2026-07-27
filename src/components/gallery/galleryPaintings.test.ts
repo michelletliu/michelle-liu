@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  FRAMING_BREATHING_PX,
+  FRAMING_HEADROOM_SHARE,
   GALLERY_PAINTINGS,
   GALLERY_ROOM,
   GALLERY_ZOOM_DEFAULT,
@@ -10,10 +12,13 @@ import {
   WALL_LOOP,
   WALL_TRAVEL,
   adjacentPaintingId,
+  clampFramingDrop,
   clampGalleryZoom,
   clampProgress,
+  easeWithPanel,
   focusedPaintingId,
   fovForZoom,
+  framedRoomPose,
   lerpRoomPose,
   paintingLayout,
   paintingsByDepth,
@@ -21,6 +26,7 @@ import {
   progressForPainting,
   roomPoseForPainting,
   standOffForPainting,
+  type GalleryFraming,
   type GalleryWall,
 } from "./galleryPaintings.ts";
 import {
@@ -571,6 +577,346 @@ test("standOffForPainting frames both aspects from the same lens", () => {
     standOffForPainting("portrait", GALLERY_ZOOM_MAX + 5),
     standOffForPainting("portrait", GALLERY_ZOOM_MAX),
   );
+});
+
+/**
+ * Where the focused frame's top and bottom edges land in the viewport, in px
+ * measured down from its top, for a pose that may have been dropped to clear
+ * a bar along the bottom.
+ */
+const frameEdgesPx = (id: string, zoom: number, framing: GalleryFraming) => {
+  const layout = paintingLayout(GALLERY_PAINTINGS.find((p) => p.id === id)!);
+  const pose = framedRoomPose(id, zoom, framing);
+  const distance = Math.hypot(
+    pose.x - layout.position.x,
+    pose.z - layout.position.z,
+  );
+  const viewH = framing.viewportHeightPx;
+  const worldPerPx =
+    (2 * distance * Math.tan((fovForZoom(zoom) * Math.PI) / 360)) / viewH;
+  const lip = 0.12;
+  const halfPx = (layout.height + lip) / 2 / worldPerPx;
+  // The eye aims at `lookY`, and the canvas center stands above it by whatever
+  // the offset dropped the pose. Screen y counts downward from the top.
+  const centerPx = viewH / 2 - (layout.position.y - pose.lookY) / worldPerPx;
+  return { top: centerPx - halfPx, bottom: centerPx + halfPx };
+};
+
+/** World units the framing offset moved the eye down by, for one pose. */
+const framingDrop = (id: string, zoom: number, framing: GalleryFraming) =>
+  roomPoseForPainting(id, zoom).y - framedRoomPose(id, zoom, framing).y;
+
+/** World height of a hang's bottom frame edge — the floor for the eye. */
+const frameBottomY = (id: string) => {
+  const layout = paintingLayout(GALLERY_PAINTINGS.find((p) => p.id === id)!);
+  const lip = 0.12;
+  return layout.position.y - (layout.height + lip) / 2;
+};
+
+test("with no bar measured, the framed pose is the plain pose", () => {
+  for (const zoom of ZOOM_LEVELS) {
+    for (const p of GALLERY_PAINTINGS) {
+      const plain = roomPoseForPainting(p.id, zoom);
+      assert.deepEqual(framedRoomPose(p.id, zoom), plain);
+      assert.deepEqual(
+        framedRoomPose(p.id, zoom, { viewportHeightPx: 900, occlusionPx: 0 }),
+        plain,
+        `${p.id} moved for a bar of no height`,
+      );
+    }
+  }
+});
+
+/**
+ * The collapsed state, and the requirement that it costs nothing: folded to
+ * its pen the bar is a 40px circle over the room's floor, nowhere near the
+ * frame, so the framing has to go back to exactly where it was.
+ */
+test("a bar too short to reach the frame does not move the camera", () => {
+  const pen: GalleryFraming = { viewportHeightPx: 900, occlusionPx: 72 };
+  for (const p of GALLERY_PAINTINGS) {
+    assert.deepEqual(
+      framedRoomPose(p.id, GALLERY_ZOOM_DEFAULT, pen),
+      roomPoseForPainting(p.id, GALLERY_ZOOM_DEFAULT),
+      `${p.id} moved for the folded bar`,
+    );
+  }
+});
+
+test("an expanded bar drops the camera until the frame clears it", () => {
+  // Short-and-wide through tall-and-narrow, against the bar's two open
+  // heights — prompt row alone, and the results grid above it.
+  const viewports = [518, 620, 760, 900, 1080];
+  const bars = [200, 260, 340];
+
+  let moved = 0;
+  for (const viewportHeightPx of viewports) {
+    for (const occlusionPx of bars) {
+      for (const zoom of ZOOM_LEVELS) {
+        for (const p of GALLERY_PAINTINGS) {
+          const framing = { viewportHeightPx, occlusionPx };
+          const at = `${p.id} ${viewportHeightPx}px/${occlusionPx}px bar, zoom ${zoom}`;
+          const before = frameEdgesPx(p.id, zoom, {
+            viewportHeightPx,
+            occlusionPx: 0,
+          });
+          const after = frameEdgesPx(p.id, zoom, framing);
+          const barTop = viewportHeightPx - occlusionPx;
+
+          // Lifting the bottom edge clear by pushing the top edge off screen
+          // would not be showing the whole frame, so the offset never spends
+          // more than its share of the gap it started with.
+          assert.ok(
+            after.top >= before.top * (1 - FRAMING_HEADROOM_SHARE) - 1e-6,
+            `${at} spent ${(before.top - after.top).toFixed(1)}px of ${before.top.toFixed(1)}px of headroom`,
+          );
+
+          if (before.bottom <= barTop - FRAMING_BREATHING_PX) {
+            assert.equal(framingDrop(p.id, zoom, framing), 0, `${at} moved`);
+            continue;
+          }
+
+          moved += 1;
+          assert.ok(after.bottom < before.bottom - 1e-6, `${at} did not move`);
+          assert.ok(
+            after.bottom <= barTop - FRAMING_BREATHING_PX + 1e-6 ||
+              // Or it gave up short of clearing, which it is allowed to do
+              // only by running into one of the two bounds. Which one, and
+              // whether the answer is good enough, is settled below and in the
+              // real-viewport test; here it only has to be one of them.
+              after.top <= before.top * (1 - FRAMING_HEADROOM_SHARE) + 1e-6 ||
+              framedRoomPose(p.id, zoom, framing).y <=
+                frameBottomY(p.id) + 1e-6,
+            `${at} stopped ${(after.bottom - barTop).toFixed(1)}px into the bar with ${after.top.toFixed(1)}px free above and the eye still at ${framedRoomPose(p.id, zoom, framing).y.toFixed(2)}`,
+          );
+
+          // The eye never ends up below the art it is looking at.
+          assert.ok(
+            framedRoomPose(p.id, zoom, framing).y >= frameBottomY(p.id) - 1e-6,
+            `${at} put the eye under the frame`,
+          );
+        }
+      }
+    }
+  }
+
+  assert.ok(moved > 0, "no case in the grid actually needed reframing");
+});
+
+/**
+ * The three heights the bar is actually rendered at, measured in the browser:
+ * folded to its pen, open on the prompt row, and open with the results grid.
+ * The grid varies by a row of padding depending on whether The Met's
+ * thumbnails have landed, which is its own small argument against picking a
+ * number instead of measuring one.
+ */
+const BAR_PX = { pen: 72, promptRow: 102, grid: 292, gridLoading: 312 };
+
+/**
+ * The bug as it was reported: the middle back hang, the bar open on its
+ * results grid, on a laptop viewport. This is the case that has to come out
+ * from under the panel cleanly — no headroom excuse, no clamp excuse.
+ */
+test("the bar's real heights clear the frame on real viewports", () => {
+  for (const viewportHeightPx of [560, 720, 900]) {
+    for (const occlusionPx of Object.values(BAR_PX)) {
+      for (const id of ["back-2", "left-2"]) {
+        const framing = { viewportHeightPx, occlusionPx };
+        const zoom = GALLERY_ZOOM_DEFAULT;
+        const at = `${id} on ${viewportHeightPx}px with a ${occlusionPx}px bar`;
+        const before = frameEdgesPx(id, zoom, { ...framing, occlusionPx: 0 });
+        const after = frameEdgesPx(id, zoom, framing);
+        const barTop = viewportHeightPx - occlusionPx;
+
+        if (before.bottom <= barTop - FRAMING_BREATHING_PX) {
+          assert.equal(
+            framingDrop(id, zoom, framing),
+            0,
+            `${at} moved the camera for a bar that was never in the way`,
+          );
+          continue;
+        }
+
+        const hidden = after.bottom - barTop;
+        if (viewportHeightPx >= 720) {
+          // Room to solve it properly, so it has to be solved properly.
+          assert.ok(
+            hidden <= -FRAMING_BREATHING_PX + 1e-6,
+            `${at} still sits ${hidden.toFixed(1)}px into the bar`,
+          );
+        } else {
+          // Not enough screen to clear it outright, so most of the way and a
+          // camera left somewhere sane — never worse than it started.
+          assert.ok(hidden < before.bottom - barTop, `${at} did not improve`);
+          assert.ok(
+            hidden < (before.bottom - barTop) * 0.4,
+            `${at} recovered only ${(before.bottom - barTop - hidden).toFixed(1)}px of ${(before.bottom - barTop).toFixed(1)}px`,
+          );
+        }
+
+        assert.ok(
+          after.top >= before.top * (1 - FRAMING_HEADROOM_SHARE) - 1e-6,
+          `${at} pushed the frame's top edge to ${after.top.toFixed(1)}px`,
+        );
+
+        // The eye stays level with the art rather than dropping under it.
+        const eyeY = framedRoomPose(id, zoom, framing).y;
+        assert.ok(
+          eyeY >= frameBottomY(id) - 1e-9,
+          `${at} dropped the eye to ${eyeY.toFixed(2)}, below the frame`,
+        );
+      }
+    }
+  }
+});
+
+/** The two states that need no help, and must therefore get none. */
+test("the folded bar and the prompt row leave a laptop framing untouched", () => {
+  for (const viewportHeightPx of [720, 900]) {
+    for (const occlusionPx of [BAR_PX.pen, BAR_PX.promptRow]) {
+      for (const p of GALLERY_PAINTINGS) {
+        assert.deepEqual(
+          framedRoomPose(p.id, GALLERY_ZOOM_DEFAULT, {
+            viewportHeightPx,
+            occlusionPx,
+          }),
+          roomPoseForPainting(p.id, GALLERY_ZOOM_DEFAULT),
+          `${p.id} moved for a ${occlusionPx}px bar on ${viewportHeightPx}px`,
+        );
+      }
+    }
+  }
+});
+
+/**
+ * The reason this is measured rather than picked: the bar is a different
+ * height folded, open on its prompt row, and open with the results grid, and
+ * one number cannot be right for all three.
+ */
+test("the drop tracks the bar's real height", () => {
+  const viewportHeightPx = 620;
+  const bars = [72, 120, 200, 260, 340];
+
+  for (const p of GALLERY_PAINTINGS) {
+    const drops = bars.map((occlusionPx) =>
+      framingDrop(p.id, GALLERY_ZOOM_DEFAULT, {
+        viewportHeightPx,
+        occlusionPx,
+      }),
+    );
+    for (let i = 1; i < drops.length; i++) {
+      assert.ok(
+        drops[i]! >= drops[i - 1]! - 1e-9,
+        `${p.id} drop fell from ${drops[i - 1]} to ${drops[i]} as the bar grew`,
+      );
+    }
+    assert.ok(
+      drops.at(-1)! > drops[0]! + 1e-6,
+      `${p.id} answered the tallest and the shortest bar identically`,
+    );
+  }
+});
+
+/**
+ * The clamp this guards is new. Every other camera move runs along a wall
+ * normal, where the stand-off bound holds it inside the room; this is the
+ * first one with a vertical component, so it is the first that could put the
+ * eye through the floor or the ceiling.
+ */
+test("no bar, however tall, drives the eye out of the room", () => {
+  const { width, depth, height } = GALLERY_ROOM;
+  const viewports = [240, 518, 900, 4000];
+  const bars = [300, 2000, 1e6, Number.MAX_SAFE_INTEGER];
+  const zooms = [...ZOOM_LEVELS, GALLERY_ZOOM_MAX * 4, 1e6];
+
+  for (const viewportHeightPx of viewports) {
+    for (const occlusionPx of bars) {
+      for (const zoom of zooms) {
+        for (const p of GALLERY_PAINTINGS) {
+          const framing = { viewportHeightPx, occlusionPx };
+          const pose = framedRoomPose(p.id, zoom, framing);
+          const at = `${p.id} ${viewportHeightPx}px/${occlusionPx}px bar, zoom ${zoom}`;
+
+          for (const [axis, v] of Object.entries(pose)) {
+            assert.ok(Number.isFinite(v), `${at} produced a broken ${axis}`);
+          }
+          assert.ok(pose.y > 0.2, `${at} sank the eye to ${pose.y}`);
+          assert.ok(pose.y < height - 0.2, `${at} raised the eye to ${pose.y}`);
+          assert.ok(Math.abs(pose.x) < width / 2, `${at} eye left the room in x`);
+          assert.ok(Math.abs(pose.z) < depth / 2, `${at} eye left the room in z`);
+
+          // The dolly is untouched: reframing is vertical only, so the eye
+          // stays as far off the wall, and as centered on the hang, as it was.
+          const plain = roomPoseForPainting(p.id, zoom);
+          assert.equal(pose.x, plain.x, `${at} slid off the hang in x`);
+          assert.equal(pose.z, plain.z, `${at} slid off the hang in z`);
+          assert.equal(pose.lookX, plain.lookX, `${at} look x`);
+          assert.equal(pose.lookZ, plain.lookZ, `${at} look z`);
+
+          // Eye and target dropped together, so the view is no more tilted
+          // than it was — a canvas is a flat plane and a tilt keystones it.
+          assert.ok(
+            Math.abs(pose.y - pose.lookY - (plain.y - plain.lookY)) < 1e-9,
+            `${at} tilted the camera off level`,
+          );
+        }
+      }
+    }
+  }
+});
+
+test("a broken measurement leaves the framing alone", () => {
+  const broken: GalleryFraming[] = [
+    { viewportHeightPx: Number.NaN, occlusionPx: 240 },
+    { viewportHeightPx: 900, occlusionPx: Number.NaN },
+    { viewportHeightPx: 0, occlusionPx: 240 },
+    { viewportHeightPx: -900, occlusionPx: 240 },
+    { viewportHeightPx: 900, occlusionPx: -240 },
+    { viewportHeightPx: Number.POSITIVE_INFINITY, occlusionPx: 240 },
+    { viewportHeightPx: 900, occlusionPx: Number.POSITIVE_INFINITY },
+  ];
+  for (const framing of broken) {
+    for (const p of GALLERY_PAINTINGS) {
+      assert.deepEqual(
+        framedRoomPose(p.id, GALLERY_ZOOM_DEFAULT, framing),
+        roomPoseForPainting(p.id, GALLERY_ZOOM_DEFAULT),
+        `${p.id} moved for ${JSON.stringify(framing)}`,
+      );
+    }
+  }
+});
+
+test("clampFramingDrop keeps the eye clear of the floor and the ceiling", () => {
+  const { eyeY, height } = GALLERY_ROOM;
+
+  assert.equal(clampFramingDrop(0), 0);
+  assert.equal(clampFramingDrop(0.2), 0.2);
+  assert.equal(clampFramingDrop(-0.2), -0.2);
+  assert.equal(clampFramingDrop(Number.NaN), 0);
+
+  assert.ok(eyeY - clampFramingDrop(1e6) > 0.2, "floor");
+  assert.ok(eyeY - clampFramingDrop(-1e6) < height - 0.2, "ceiling");
+});
+
+test("easeWithPanel samples the curve the action bar opens on", () => {
+  assert.equal(easeWithPanel(0), 0);
+  assert.equal(easeWithPanel(1), 1);
+  assert.equal(easeWithPanel(-1), 0);
+  assert.equal(easeWithPanel(2), 1);
+
+  let previous = 0;
+  for (let i = 1; i <= 100; i++) {
+    const v = easeWithPanel(i / 100);
+    assert.ok(v >= previous - 1e-9, `fell back at t=${i / 100}`);
+    assert.ok(v >= 0 && v <= 1, `left [0,1] at t=${i / 100}`);
+    previous = v;
+  }
+
+  // cubic-bezier(0.4, 0, 0.2, 1) is front-loaded — three quarters of the way
+  // there by the midpoint of its run. An ease that were merely symmetric
+  // would sit at 0.5 here and lag the panel through the whole transition.
+  const mid = easeWithPanel(0.5);
+  assert.ok(Math.abs(mid - 0.7757) < 0.005, `midpoint sampled ${mid}`);
 });
 
 test("lerpRoomPose interpolates each axis", () => {

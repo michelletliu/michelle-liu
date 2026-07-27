@@ -5,11 +5,17 @@ import { Download } from "lucide-react";
 import * as THREE from "three";
 import { ghostIconButtonClass } from "@/components/ghostIconButton";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
+import { createWoodgrainTexture, scaleBoxUvsToWorld } from "./frameWoodgrain";
 import {
   createShimmerMaterial,
   shimmerProgress,
   shimmerTimeStep,
 } from "./generationShimmer";
+import {
+  easeHues,
+  FALLBACK_HUES,
+  type ShimmerHues,
+} from "./shimmerPalette";
 import {
   GALLERY_PAINTINGS,
   GALLERY_ROOM,
@@ -25,6 +31,12 @@ type GallerySceneProps = {
   focusedId: string;
   paintings?: GalleryPainting[];
   generatingId?: string | null;
+  /**
+   * Hues for the generation shimmer, from the artwork that inspired it. Null
+   * for a text-only generation, or before extraction has finished, in which
+   * case the shimmer's own default set is used.
+   */
+  shimmerHues?: ShimmerHues | null;
   onSelectPainting: (id: string) => void;
   /** Fires when the download control under the focused frame is pressed. */
   onDownload?: () => void;
@@ -90,11 +102,18 @@ function textureAspect(texture: THREE.Texture | null): number | null {
  * little below its true value, so it shades with the room and recedes while
  * staying legible instead of turning into a white rectangle.
  *
- * Measured on the same hung image, focused against unfocused: mean luma 140 vs
- * 103 and chroma 61 vs 40. Enough to read as the softer part of the room and to
- * make approaching it feel like the light coming up, without going murky.
+ * The ceiling on this is clipping, not taste. Scaling the albedo does not touch
+ * how the surface responds to the room — irradiance still varies with angle and
+ * position, so the painting still shades — but push it high enough and the
+ * bright end saturates against that over-lighting, the variation flattens out,
+ * and the "light film" comes straight back.
+ *
+ * Measured on the same hung image, focused against unfocused: mean luma 138 vs
+ * 111 and chroma 64 vs 53, with nothing clipped. Was 0.42, which measured 90
+ * luma — legible, but murky enough against the white room that an unfocused
+ * painting read as switched off rather than as one waiting to be walked over to.
  */
-const ART_UNFOCUSED_ALBEDO = 0.42;
+const ART_UNFOCUSED_ALBEDO = 0.66;
 /** Exponential-ease time constant for the focus lighting, ~95% in 260ms. */
 const ART_LIGHT_TAU = 0.088;
 
@@ -163,10 +182,15 @@ const FRAME_LIP = 0xc4c4c4;
  *
  * Not pure black: the room runs a strong ambient wash and the lip keeps a
  * little metalness, so 0x000000 picks up a specular sheen and reads as an
- * uneven dark grey. Measured on the back wall, this renders around luma 25 next
- * to an unfocused lip near 195 — unmistakable at across-the-room distance.
+ * uneven dark grey. Well above black for a second reason too — against a room
+ * this bright, anything near it stops reading as a dark frame and starts
+ * reading as a hole cut in the wall.
+ *
+ * Measured on the back wall, this renders at luma 86 against an unfocused lip
+ * at 186 — a gap of 100, or 2.2x. Selection is carried by that gap rather than
+ * by darkness, and it is far wider than it needs to be to read across a room.
  */
-const FRAME_LIP_FOCUSED = 0x3d3d3d;
+const FRAME_LIP_FOCUSED = 0x5a5a5a;
 /**
  * Exponential-ease time constant for the focus tint, ~95% of the way in 180ms.
  * Fast enough to feel like a response to the keypress, slow enough not to snap.
@@ -565,6 +589,7 @@ function disposeSceneGraph(scene: THREE.Scene) {
 function buildFrames(
   paintings: GalleryPainting[],
   root: THREE.Group,
+  woodgrain: THREE.Texture,
 ): Map<string, FrameEntry> {
   const frames = new Map<string, FrameEntry>();
 
@@ -581,11 +606,15 @@ function buildFrames(
       color: FRAME_LIP,
       roughness: 0.45,
       metalness: 0.08,
+      // Relief only — see `frameWoodgrain` for why not roughness or bump. The
+      // frame's colour is left entirely to the focus tint.
+      normalMap: woodgrain,
     });
-    const frame = new THREE.Mesh(
-      new THREE.BoxGeometry(layout.width + 0.12, layout.height + 0.12, 0.06),
-      frameMaterial,
-    );
+    const frameWidth = layout.width + 0.12;
+    const frameHeight = layout.height + 0.12;
+    const frameGeometry = new THREE.BoxGeometry(frameWidth, frameHeight, 0.06);
+    scaleBoxUvsToWorld(frameGeometry, frameWidth, frameHeight, 0.06);
+    const frame = new THREE.Mesh(frameGeometry, frameMaterial);
     frame.position.z = 0.01;
     group.add(frame);
 
@@ -648,6 +677,7 @@ export default function GalleryScene({
   focusedId,
   paintings = GALLERY_PAINTINGS,
   generatingId = null,
+  shimmerHues = null,
   onSelectPainting,
   onDownload,
 }: GallerySceneProps) {
@@ -656,6 +686,7 @@ export default function GalleryScene({
   const zoomRef = useRef(zoom);
   const focusedRef = useRef(focusedId);
   const generatingRef = useRef(generatingId);
+  const shimmerHuesRef = useRef(shimmerHues);
   const paintingsRef = useRef(paintings);
   const onSelectRef = useRef(onSelectPainting);
   const framesRef = useRef<Map<string, FrameEntry> | null>(null);
@@ -670,6 +701,7 @@ export default function GalleryScene({
   zoomRef.current = zoom;
   focusedRef.current = focusedId;
   generatingRef.current = generatingId;
+  shimmerHuesRef.current = shimmerHues;
   paintingsRef.current = paintings;
   onSelectRef.current = onSelectPainting;
 
@@ -745,7 +777,12 @@ export default function GalleryScene({
 
     const framesRoot = new THREE.Group();
     scene.add(framesRoot);
-    const frames = buildFrames(paintingsRef.current, framesRoot);
+    // One grain for all twelve frames. Generating it per frame would be twelve
+    // 512x512 canvases and twelve textures to lose track of, which is the leak
+    // that used to blank the room; per-frame UVs give the variety instead.
+    const woodgrain = createWoodgrainTexture();
+    woodgrain.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    const frames = buildFrames(paintingsRef.current, framesRoot, woodgrain);
     framesRef.current = frames;
 
     /*
@@ -870,9 +907,17 @@ export default function GalleryScene({
         shimmer.uniforms.uProgress.value = shimmerProgress(
           performance.now() - shimmerStartedAt,
         );
+        easeHues(
+          shimmer.uniforms.uHues.value,
+          shimmerHuesRef.current ?? FALLBACK_HUES,
+          delta,
+        );
       } else if (shimmerStartedAt !== null) {
         shimmerStartedAt = null;
         shimmer.uniforms.uProgress.value = 0;
+        // Back to the default set between runs, so a text-only generation that
+        // follows an inspired one does not open on the previous artwork's hues.
+        shimmer.uniforms.uHues.value.set(...FALLBACK_HUES);
       }
 
       for (const [id, entry] of frames) {
@@ -951,6 +996,9 @@ export default function GalleryScene({
       ro.disconnect();
       renderer.domElement.removeEventListener("click", onClick);
       shimmer.dispose();
+      // Materials do not own their maps, so disposing the frame materials
+      // leaves this behind. It is shared by all twelve, hence disposed here.
+      woodgrain.dispose();
       for (const entry of frames.values()) {
         entry.texture?.dispose();
         entry.blankMaterial.dispose();

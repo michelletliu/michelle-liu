@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import type { GalleryPainting, GalleryRoomPose } from "./galleryPaintings";
+import type { ShimmerHues } from "./shimmerPalette";
 
 type GalleryRoomProps = {
   pose: GalleryRoomPose;
@@ -9,6 +10,7 @@ type GalleryRoomProps = {
   focusedId: string;
   paintings?: GalleryPainting[];
   generatingId?: string | null;
+  shimmerHues?: ShimmerHues | null;
   onSelectPainting: (id: string) => void;
   onDownload?: () => void;
 };

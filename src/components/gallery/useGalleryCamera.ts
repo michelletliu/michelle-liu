@@ -15,9 +15,12 @@ import {
   GALLERY_ZOOM_STEP,
   adjacentPaintingId,
   clampGalleryZoom,
+  easeWithPanel,
+  framedRoomPose,
   lerpRoomPose,
   progressForPainting,
   roomPoseForPainting,
+  type GalleryFraming,
   type GalleryRoomPose,
 } from "./galleryPaintings";
 import {
@@ -28,9 +31,65 @@ import {
 const EASE_MS = 780;
 /** Zoom steps are small and arrive in bursts, so they settle much faster. */
 const ZOOM_EASE_MS = 220;
+/**
+ * The action bar's own expand/collapse duration. Reframing for it is a
+ * response to that movement, so it runs on its span and its curve.
+ */
+const FRAMING_EASE_MS = 320;
 const SWITCH_THRESHOLD = 48;
 /** Pinch / ctrl+wheel sensitivity (trackpad reports pinch as wheel+ctrl on macOS). */
 const PINCH_ZOOM_SCALE = 0.01;
+
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/**
+ * Tracks an element's rendered height.
+ *
+ * The gallery's bottom bar changes height in three ways — folded to its pen,
+ * open on the prompt row, open with the results grid above it — and each of
+ * those hides a different amount of the room. Measuring is what lets the
+ * camera answer the panel that is actually on screen instead of the tallest
+ * one it might be.
+ */
+export function useMeasuredHeight(): {
+  ref: RefCallback<HTMLElement>;
+  height: number;
+} {
+  const [node, setNode] = useState<HTMLElement | null>(null);
+  const [height, setHeight] = useState(0);
+
+  const ref = useCallback<RefCallback<HTMLElement>>((next) => {
+    setNode(next);
+  }, []);
+
+  useEffect(() => {
+    if (!node) {
+      setHeight(0);
+      return;
+    }
+    const measure = () => setHeight(node.getBoundingClientRect().height);
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [node]);
+
+  return { ref, height };
+}
+
+export type GalleryCameraOptions = {
+  /**
+   * Height in CSS px of the UI band covering the bottom of the viewport. The
+   * camera drops by however much of the focused frame that band is hiding.
+   */
+  bottomOcclusionPx?: number;
+};
 
 export type GalleryCameraBindProps = {
   ref: RefCallback<HTMLDivElement>;
@@ -80,17 +139,21 @@ const ZOOM_EPSILON = 1e-6;
  */
 const DEFAULT_FOCUS = "back-2";
 
-export function useGalleryCamera(): GalleryCamera {
+export function useGalleryCamera({
+  bottomOcclusionPx = 0,
+}: GalleryCameraOptions = {}): GalleryCamera {
   const [focusedId, setFocusedId] = useState(DEFAULT_FOCUS);
   const [pose, setPose] = useState<GalleryRoomPose>(() =>
     roomPoseForPainting(DEFAULT_FOCUS, GALLERY_ZOOM_DEFAULT),
   );
   const [zoom, setZoomState] = useState(GALLERY_ZOOM_DEFAULT);
   const [rootNode, setRootNode] = useState<HTMLDivElement | null>(null);
+  const [viewportHeight, setViewportHeight] = useState(0);
 
   const focusedIdRef = useRef(focusedId);
   const poseRef = useRef(pose);
   const zoomRef = useRef(zoom);
+  const framingRef = useRef<GalleryFraming | null>(null);
   const pendingDrag = useRef(false);
   const dragging = useRef(false);
   const pointerIdRef = useRef<number | null>(null);
@@ -103,6 +166,15 @@ export function useGalleryCamera(): GalleryCamera {
   focusedIdRef.current = focusedId;
   poseRef.current = pose;
   zoomRef.current = zoom;
+  /*
+   * Both halves have to be real before any of this means anything: the offset
+   * is a share of the viewport, so without a measured viewport there is no
+   * scale to read the panel's pixels against.
+   */
+  framingRef.current =
+    viewportHeight > 0 && bottomOcclusionPx > 0
+      ? { viewportHeightPx: viewportHeight, occlusionPx: bottomOcclusionPx }
+      : null;
 
   const setRootRef = useCallback<RefCallback<HTMLDivElement>>((node) => {
     setRootNode(node);
@@ -116,16 +188,34 @@ export function useGalleryCamera(): GalleryCamera {
   }, []);
 
   const easePoseTo = useCallback(
-    (id: string, zoomLevel: number, durationMs: number = EASE_MS) => {
+    (
+      id: string,
+      zoomLevel: number,
+      durationMs: number = EASE_MS,
+      ease: (t: number) => number = easeOutCubic,
+    ) => {
       cancelEase();
       const from = poseRef.current;
-      const to = roomPoseForPainting(id, zoomLevel);
+      // Every target the camera is ever given already carries the framing
+      // offset, so a reframe blends into a focus change or a zoom rather than
+      // arriving as a second animation on top of one.
+      const to = framedRoomPose(id, zoomLevel, framingRef.current);
+
+      // Guards the reduced-motion path, where `(now - start) / 0` is Infinity
+      // on any later frame but NaN on a frame that lands on the same
+      // millisecond — and a NaN pose spreads into the camera matrix and
+      // renders nothing at all.
+      if (durationMs <= 0) {
+        poseRef.current = to;
+        setPose(to);
+        return;
+      }
+
       const start = performance.now();
 
       const tick = (now: number) => {
         const t = Math.min(1, (now - start) / durationMs);
-        const eased = 1 - Math.pow(1 - t, 3);
-        const next = lerpRoomPose(from, to, eased);
+        const next = lerpRoomPose(from, to, ease(t));
         poseRef.current = next;
         setPose(next);
         if (t < 1) {
@@ -271,6 +361,42 @@ export function useGalleryCamera(): GalleryCamera {
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
   }, [accumulateSwitch, rootNode, zoomBy]);
+
+  /** The room fills this element, so its height is the viewport's. */
+  useEffect(() => {
+    const el = rootNode;
+    if (!el) return;
+    const measure = () => setViewportHeight(el.clientHeight);
+    measure();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", measure);
+      return () => window.removeEventListener("resize", measure);
+    }
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [rootNode]);
+
+  /*
+   * Reframe when the bottom bar or the viewport changes size, and only then.
+   *
+   * Keyed on the two measurements rather than on the offset they produce, which
+   * also moves with focus and zoom — and those already run eases of their own
+   * that a second one starting in the same frame would cut short.
+   */
+  const framingSettled = useRef(false);
+  useEffect(() => {
+    if (!framingSettled.current) {
+      framingSettled.current = true;
+      return;
+    }
+    easePoseTo(
+      focusedIdRef.current,
+      zoomRef.current,
+      prefersReducedMotion() ? 0 : FRAMING_EASE_MS,
+      easeWithPanel,
+    );
+  }, [bottomOcclusionPx, viewportHeight, easePoseTo]);
 
   useEffect(() => {
     return () => cancelEase();

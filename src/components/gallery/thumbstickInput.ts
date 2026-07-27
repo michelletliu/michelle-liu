@@ -22,6 +22,15 @@ export const NAV_INITIAL_DELAY_MS = 620;
 export const NAV_REPEAT_MS = 900;
 /** Zoom units per second at full deflection: the whole range in about 2.5s. */
 export const ZOOM_RATE_PER_S = 0.85;
+/**
+ * One press of + or −.
+ *
+ * Sized against the drag path rather than picked: `ZOOM_RATE_PER_S` crosses the
+ * usable range in about 2.5 seconds, so this is roughly a sixth of a second of
+ * holding the stick. Small enough that a press reads as a nudge and repeated
+ * presses stay controllable, large enough to see.
+ */
+export const ZOOM_STEP = 0.14;
 
 /**
  * Deflection with the dead zone removed, rescaled so full travel still gives 1.
