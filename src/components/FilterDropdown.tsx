@@ -5,6 +5,8 @@ import { Chevron } from "./Chevron";
 import { iconSize } from "./iconSizes";
 
 const PANEL_LEFT_OFFSET = 5;
+const PANEL_GAP = 2;
+const PANEL_WIDTH_EXPANSION = PANEL_LEFT_OFFSET * 2;
 
 export type FilterDropdownOption = {
   value: string;
@@ -36,13 +38,14 @@ export function FilterDropdown({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   // Snapshot of button rect captured synchronously before portal mounts
-  const snapRef = useRef({ top: 0, left: 0 });
+  const snapRef = useRef({ top: 0, left: 0, width: 0 });
 
   // Sync position update — called directly in scroll handler, no RAF lag
   const syncPanelPos = () => {
     if (buttonRef.current && panelRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      panelRef.current.style.transform = `translate(${rect.left - PANEL_LEFT_OFFSET}px, ${rect.bottom + 4}px)`;
+      panelRef.current.style.transform = `translate(${rect.left - PANEL_LEFT_OFFSET}px, ${rect.bottom + PANEL_GAP}px)`;
+      panelRef.current.style.width = `${rect.width + PANEL_WIDTH_EXPANSION}px`;
     }
   };
 
@@ -50,7 +53,11 @@ export function FilterDropdown({
   useEffect(() => {
     if (defaultOpen && usePortal && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      snapRef.current = { top: rect.bottom + 4, left: rect.left - PANEL_LEFT_OFFSET };
+      snapRef.current = {
+        top: rect.bottom + PANEL_GAP,
+        left: rect.left - PANEL_LEFT_OFFSET,
+        width: rect.width + PANEL_WIDTH_EXPANSION,
+      };
       syncPanelPos();
     }
   }, []);
@@ -96,11 +103,14 @@ export function FilterDropdown({
         if (el && usePortal) {
           // Set position synchronously on mount — before browser paints — so no jank
           el.style.transform = `translate(${snapRef.current.left}px, ${snapRef.current.top}px)`;
+          el.style.width = `${snapRef.current.width}px`;
         }
       }}
       className={clsx(
         "bg-white rounded-xl shadow-elevated border border-zinc-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200",
-        usePortal ? "fixed" : "absolute -left-[5px] top-[calc(100%+4px)]"
+        usePortal
+          ? "fixed"
+          : "absolute -left-[5px] top-[calc(100%+2px)] w-[calc(100%+10px)]"
       )}
       style={usePortal ? {
         top: 0,
@@ -148,7 +158,11 @@ export function FilterDropdown({
         onClick={() => {
           if (!open && buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
-            snapRef.current = { top: rect.bottom + 4, left: rect.left - PANEL_LEFT_OFFSET };
+            snapRef.current = {
+              top: rect.bottom + PANEL_GAP,
+              left: rect.left - PANEL_LEFT_OFFSET,
+              width: rect.width + PANEL_WIDTH_EXPANSION,
+            };
           }
           setOpen(!open);
         }}
