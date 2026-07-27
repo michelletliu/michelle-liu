@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import LogoBackButton from "@/components/LogoBackButton";
 import { useNavigate } from "@/lib/navigation";
 import GalleryActionBar from "./GalleryActionBar";
@@ -33,6 +33,17 @@ export default function GalleryPage() {
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   /** Hues for the in-flight shimmer, from the artwork that inspired it. */
   const [shimmerHues, setShimmerHues] = useState<ShimmerHues | null>(null);
+  /**
+   * Which generation the in-flight hue extraction belongs to.
+   *
+   * Extraction is deliberately not awaited, so it is not bound to the
+   * generation that asked for it: a slow read — a cold proxy fetch, an eight
+   * second timeout — can still be outstanding when that generation ends and
+   * the next one begins. Landing then, it would paint the new canvas in the
+   * previous artwork's colours. Stamping each request and dropping the ones
+   * that come back superseded is what keeps the hues with their own run.
+   */
+  const shimmerRequestRef = useRef(0);
 
   const paintings = useMemo(
     () =>
@@ -54,8 +65,13 @@ export default function GalleryPage() {
       // eases onto the artwork's when they land, because making the canvas
       // wait on an image decode to start animating would trade the whole point
       // of the shimmer for a detail almost nobody would notice arriving late.
+      const shimmerRequest = ++shimmerRequestRef.current;
       setShimmerHues(null);
-      if (inspiration) void resolveShimmerHues(inspiration.objectID).then(setShimmerHues);
+      if (inspiration) {
+        void resolveShimmerHues(inspiration.objectID).then((hues) => {
+          if (shimmerRequestRef.current === shimmerRequest) setShimmerHues(hues);
+        });
+      }
       try {
         const res = await fetch("/api/gallery/generate", {
           method: "POST",
