@@ -118,8 +118,10 @@ export function FilterDropdown({
                 setOpen(false);
               }}
               className={clsx(
-                // px-2 + the wrapper's p-1 lines option text up with the trigger pill's px-3
-                "flex items-center px-2 py-1 rounded-lg transition-colors text-left",
+                // px-2 + the wrapper's p-1 lines option text up with the trigger pill's px-3.
+                // Radius is the panel's minus the 1 (4px) inset so the corners stay concentric;
+                // under squircles the panel is 20px, and 1rem dodges index.css's 16px remap.
+                "flex items-center px-2 py-1 rounded-lg supports-[corner-shape:squircle]:rounded-[1rem] transition-colors text-left",
                 isActive ? "bg-zinc-100" : "hover:bg-zinc-50"
               )}
             >
