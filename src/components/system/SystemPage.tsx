@@ -650,6 +650,20 @@ export default function SystemPage() {
       // Kick module load before push so we don't wait on a cold HomePageClient.
       warmDoorwayReturn(href);
       markBlueprintDoorwayNav();
+
+      // Section paths use history.replaceState so SystemPage stays mounted
+      // while scrolling. That desyncs the App Router from the browser URL, and
+      // soft push then no-ops — only scrollTo(0) ran, so a scrolled seal needed
+      // two clicks (first: jump to DS top; second: actually leave). Hard-assign
+      // from a section path leaves in one gesture; warmed chunks still hit cache.
+      const onSectionPath = window.location.pathname.startsWith(
+        `${DESIGN_SYSTEM_BASE_PATH}/`,
+      );
+      if (onSectionPath) {
+        window.location.assign(href);
+        return;
+      }
+
       window.scrollTo(0, 0);
       router.push(href);
     };
