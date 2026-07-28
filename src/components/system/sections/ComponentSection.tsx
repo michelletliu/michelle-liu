@@ -562,7 +562,7 @@ function ButtonPlaygroundSpecimen() {
   };
 
   return (
-    <div className="flex h-full w-full min-h-0 flex-col items-stretch gap-4">
+    <div className="flex h-full w-full min-h-0 flex-col items-stretch gap-6">
       {/* Fixed stage height — lg / icon+label must not grow the card */}
       <div
         className={`relative flex h-36 shrink-0 items-center justify-center rounded-xl px-6 sm:h-44 ${
