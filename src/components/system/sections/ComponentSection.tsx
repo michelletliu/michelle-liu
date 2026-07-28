@@ -1068,18 +1068,10 @@ function SpecInputSample({
   );
 }
 
-/**
- * Sticky first column — pinned at border-spacing-x so the label holds its
- * resting x instead of jumping to the container edge on first scroll.
- * zinc-50 fill + shadows on both sides cover the spacing gaps while scrolling.
- */
-const INPUT_MATRIX_STICKY_COL =
-  "sticky left-3 z-20 bg-zinc-50 text-left text-sm font-normal text-zinc-400 shadow-[-12px_0_0_0_theme(colors.zinc.50),12px_0_0_0_theme(colors.zinc.50)] lg:left-4 lg:shadow-[-16px_0_0_0_theme(colors.zinc.50),16px_0_0_0_theme(colors.zinc.50)]";
-
 function InputMatrixSpecimen() {
   return (
     <div className="relative flex h-full w-full min-w-0 flex-col items-stretch">
-      <div className="flex min-h-0 min-w-0 flex-1 items-stretch justify-center overflow-x-auto px-0 py-6 md:items-center">
+      <div className="flex min-h-0 min-w-0 flex-1 items-stretch justify-center overflow-hidden px-0 py-6 md:items-center">
         <p className="sr-only">Field compositions by interaction state</p>
 
         {/* Mobile: stacked compositions; states wrap */}
@@ -1108,63 +1100,58 @@ function InputMatrixSpecimen() {
           ))}
         </div>
 
-        {/*
-          md+: fixed columns so state headers stay put across compositions.
-          Fields are ~11.5rem; table scrolls horizontally inside the card if needed.
-        */}
-        <div className="hidden w-max min-w-full md:block">
-          <table className="mx-auto w-max table-fixed border-separate border-spacing-x-3 border-spacing-y-4 lg:border-spacing-x-4">
-            <caption className="sr-only">
-              Field compositions by interaction state
-            </caption>
-            <colgroup>
-              <col className="w-[7.5rem]" />
-              {SPEC_INPUT_STATES.map((state) => (
-                <col key={state} className="w-[12.5rem]" />
-              ))}
-            </colgroup>
-            <thead>
-              <tr>
-                <th className={`${INPUT_MATRIX_STICKY_COL} pb-1`} />
+        {/* Desktop: labels are outside the horizontal scroller, so they never move. */}
+        <div className="relative hidden w-full min-w-0 md:grid md:grid-cols-[7.5rem_minmax(0,1fr)] md:gap-x-3 lg:gap-x-4">
+          <div className="relative z-20 grid grid-rows-[1.5rem_repeat(4,3rem)] gap-y-4 bg-zinc-50">
+            <div aria-hidden />
+            {SPEC_INPUT_COMPOSITIONS.map((composition) => (
+              <div
+                key={composition}
+                className="flex h-12 items-center text-left text-sm font-normal text-zinc-400"
+              >
+                {SPEC_INPUT_COMPOSITION_LABELS[composition]}
+              </div>
+            ))}
+          </div>
+
+          <div className="relative min-w-0">
+            <div className="h-full min-w-0 overflow-x-auto">
+              <div className="grid w-max grid-cols-[repeat(5,12.5rem)] grid-rows-[1.5rem_repeat(4,3rem)] gap-x-3 gap-y-4 lg:gap-x-4">
                 {SPEC_INPUT_STATES.map((state) => (
-                  <th
+                  <div
                     key={state}
-                    scope="col"
-                    className="pb-1 text-center text-sm font-normal text-zinc-400"
+                    className="flex items-start justify-center pb-1 text-center text-sm font-normal text-zinc-400"
                   >
                     {SPEC_INPUT_STATE_LABELS[state]}
-                  </th>
+                  </div>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {SPEC_INPUT_COMPOSITIONS.map((composition) => (
-                <tr key={composition}>
-                  <th scope="row" className={INPUT_MATRIX_STICKY_COL}>
-                    {SPEC_INPUT_COMPOSITION_LABELS[composition]}
-                  </th>
-                  {SPEC_INPUT_STATES.map((state) => (
-                    <td key={state} className="text-center align-middle">
-                      <div className="flex h-12 items-center justify-center">
-                        <SpecInputSample
-                          composition={composition}
-                          state={state}
-                        />
-                      </div>
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                {SPEC_INPUT_COMPOSITIONS.flatMap((composition) =>
+                  SPEC_INPUT_STATES.map((state) => (
+                    <div
+                      key={`${composition}-${state}`}
+                      className="flex h-12 items-center justify-center"
+                    >
+                      <SpecInputSample
+                        composition={composition}
+                        state={state}
+                      />
+                    </div>
+                  )),
+                )}
+              </div>
+            </div>
+
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-zinc-50 to-transparent"
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-zinc-50 to-transparent"
+            />
+          </div>
         </div>
       </div>
-
-      {/* Right edge fade — matches Specimen zinc-50; hints horizontal scroll */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-zinc-50 to-transparent"
-      />
     </div>
   );
 }
