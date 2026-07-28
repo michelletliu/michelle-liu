@@ -1005,10 +1005,10 @@ function SpecInputSample({
   /** Filled + error show a value; focus is empty with active border only. */
   const showValue = state === "filled" || state === "error";
 
-  const shellTone = composition === "leading" || composition === "muted" ? "muted" : "surface";
+  const shellTone = composition === "muted" ? "muted" : "surface";
   const shellClass =
     composition === "leading"
-      ? "max-w-[11.5rem] gap-2.5"
+      ? "max-w-[11.5rem] gap-2.5 !pl-1"
       : composition === "trailing"
         ? "max-w-[11.5rem] justify-between"
         : "max-w-[11.5rem]";
