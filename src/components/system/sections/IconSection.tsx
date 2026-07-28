@@ -408,15 +408,6 @@ const socialIcons: IconSpecimen[] = [
 export default function IconSection() {
   return (
     <Section id="icons" title="Iconography">
-      <SubLabel note="Solid glyphs. Zinc-500.">
-        Filled icons
-      </SubLabel>
-      <Grid min="160px">
-        {filledIcons.map((icon) => (
-          <IconCard key={icon.name} {...icon} />
-        ))}
-      </Grid>
-
       <SubLabel>Size</SubLabel>
       <div className="mb-10 grid h-[200px] grid-cols-5 items-center gap-x-8 rounded-xl bg-zinc-50 px-6">
         {ICON_SIZE_RAMP.map((name) => {
@@ -440,6 +431,15 @@ export default function IconSection() {
           );
         })}
       </div>
+
+      <SubLabel note="Solid glyphs. Zinc-500.">
+        Filled icons
+      </SubLabel>
+      <Grid min="160px">
+        {filledIcons.map((icon) => (
+          <IconCard key={icon.name} {...icon} />
+        ))}
+      </Grid>
 
       <SubLabel note="Social marks. Zinc-500.">Social</SubLabel>
       <Grid min="160px">
