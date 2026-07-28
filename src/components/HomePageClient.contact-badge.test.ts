@@ -12,4 +12,8 @@ test("uses large contact text and deeper intro fade on Work", () => {
     /<ContactBadge[\s\S]*?size="lg"[\s\S]*?onExpandedChange=\{setIsContactBadgeExpanded\}/,
   );
   assert.match(badgeSource, /resolvedSize === "lg" \? "text-lg"/);
+  assert.match(
+    badgeSource,
+    /resolvedSize === "lg" &&\s+"gap-1 py-0 pl-1\.5 pr-2\.5"/,
+  );
 });
