@@ -249,119 +249,50 @@ function IconCard({ name, sample }: IconSpecimen) {
   );
 }
 
-const uiIcons: IconSpecimen[] = [
+/** Stroke specimens always use toolbar (20px) so the grid reads as one size. */
+const TOOLBAR = iconSize("toolbar");
+
+/** Filled icons — solid glyphs, A–Z by display label. */
+const filledIcons: IconSpecimen[] = [
   {
-    name: "ArrowUpRight",
-    sample: <ArrowUpRight size={iconSize("toolbar")} />,
+    name: "Academic cap",
+    sample: <FilledAssetIcon src={academicCapIcon} />,
   },
   {
-    name: "Chevron",
-    sample: <Chevron size={iconSize("toolbar")} />,
-  },
-  {
-    name: "Plus",
-    sample: <PlusIcon className="size-5" />,
-  },
-  {
-    name: "Close",
-    sample: <Close size={iconSize("touch")} />,
-  },
-  {
-    name: "Code",
-    sample: <Code size={iconSize("toolbar")} />,
-  },
-  {
-    name: "Expand",
-    sample: <ExpandIcon />,
-  },
-  {
-    name: "Grid",
-    sample: <GridIcon className="size-5" />,
-  },
-  {
-    name: "Circle",
-    sample: <CircleIcon className="size-5" />,
-  },
-  {
-    name: "Squircle",
-    sample: <SquircleIcon className="size-5" />,
-  },
-  {
-    name: "Send",
-    sample: <SendIcon className="size-5" />,
-  },
-  {
-    name: "Smiley",
-    sample: <SmileyIcon className="size-5" />,
-  },
-  {
-    name: "Arrow",
-    sample: <Arrow size={iconSize("toolbar")} />,
-  },
-  {
-    name: "Link",
-    sample: <LinkIcon size={iconSize("toolbar")} />,
-  },
-  {
-    name: "Eye / eye-off",
+    name: "Apple",
     sample: (
-      <div className="flex items-center gap-4">
-        <EyeIcon />
-        <EyeOffIcon />
-      </div>
+      <svg className="h-5 w-4" viewBox="0 0 814 1000" fill="currentColor" aria-hidden>
+        <path d={APPLE_LOGO_PATH} />
+      </svg>
     ),
   },
   {
-    name: "Check",
-    sample: <CheckIcon />,
-  },
-  {
-    name: "Info",
-    sample: <InfoIcon />,
-  },
-  {
-    name: "Touch",
-    sample: <TouchIcon size={iconSize("toolbar")} />,
-  },
-];
-
-const filledIcons: IconSpecimen[] = [
-  {
-    name: "Grid fill",
-    sample: <GridIcon className="size-5" filled />,
-  },
-  {
-    name: "Heart fill",
-    sample: <FilledAssetIcon src={heartFillIcon} className="h-[18px] w-5" />,
+    name: "Circle",
+    sample: <CircleIcon size={iconSizes.toolbar} />,
   },
   {
     name: "Coffee",
     sample: <FilledAssetIcon src={coffeeFillIcon} />,
   },
   {
-    name: "Academic cap",
-    sample: <FilledAssetIcon src={academicCapIcon} />,
-  },
-  {
-    name: "Map pin",
-    sample: <FilledAssetIcon src={mapPinIcon} />,
-  },
-  {
     name: "Favorites star",
     sample: <span className="text-2xl leading-none text-current">★</span>,
+  },
+  {
+    name: "Grid fill",
+    sample: <GridIcon size={iconSizes.toolbar} filled />,
+  },
+  {
+    name: "Heart fill",
+    sample: <FilledAssetIcon src={heartFillIcon} className="h-[18px] w-5" />,
   },
   {
     name: "Lock",
     sample: <LockIcon />,
   },
   {
-    name: "Sun / moon",
-    sample: (
-      <div className="flex items-center gap-4">
-        <SunIcon />
-        <MoonIcon />
-      </div>
-    ),
+    name: "Map pin",
+    sample: <FilledAssetIcon src={mapPinIcon} />,
   },
   {
     name: "Play / pause / rewind",
@@ -374,15 +305,21 @@ const filledIcons: IconSpecimen[] = [
     ),
   },
   {
-    name: "Apple",
+    name: "Squircle",
+    sample: <SquircleIcon size={iconSizes.toolbar} />,
+  },
+  {
+    name: "Sun / moon",
     sample: (
-      <svg className="h-5 w-4" viewBox="0 0 814 1000" fill="currentColor" aria-hidden>
-        <path d={APPLE_LOGO_PATH} />
-      </svg>
+      <div className="flex items-center gap-4">
+        <SunIcon />
+        <MoonIcon />
+      </div>
     ),
   },
 ];
 
+/** Social marks — A–Z by display label. */
 const socialIcons: IconSpecimen[] = [
   {
     name: "Instagram",
@@ -390,14 +327,6 @@ const socialIcons: IconSpecimen[] = [
       <SocialLinksBackgroundImage>
         <path d={svgPaths.p2c5f2300} fill="currentColor" />
       </SocialLinksBackgroundImage>
-    ),
-  },
-  {
-    name: "X",
-    sample: (
-      <svg className="h-4 w-[19px] fill-current" viewBox="0 0 19 18" aria-hidden>
-        <path d={X_LOGO_PATH} />
-      </svg>
     ),
   },
   {
@@ -421,6 +350,83 @@ const socialIcons: IconSpecimen[] = [
         }}
       />
     ),
+  },
+  {
+    name: "X",
+    sample: (
+      <svg className="h-4 w-[19px] fill-current" viewBox="0 0 19 18" aria-hidden>
+        <path d={X_LOGO_PATH} />
+      </svg>
+    ),
+  },
+];
+
+/** Stroke icons — A–Z by display label; all specimens at toolbar size. */
+const uiIcons: IconSpecimen[] = [
+  {
+    name: "Arrow",
+    sample: <Arrow size={TOOLBAR} />,
+  },
+  {
+    name: "ArrowUpRight",
+    sample: <ArrowUpRight size={TOOLBAR} />,
+  },
+  {
+    name: "Check",
+    sample: <CheckIcon />,
+  },
+  {
+    name: "Chevron",
+    sample: <Chevron size={TOOLBAR} />,
+  },
+  {
+    name: "Close",
+    sample: <Close size={TOOLBAR} />,
+  },
+  {
+    name: "Code",
+    sample: <Code size={TOOLBAR} />,
+  },
+  {
+    name: "Expand",
+    sample: <ExpandIcon />,
+  },
+  {
+    name: "Eye / eye-off",
+    sample: (
+      <div className="flex items-center gap-4">
+        <EyeIcon />
+        <EyeOffIcon />
+      </div>
+    ),
+  },
+  {
+    name: "Grid",
+    sample: <GridIcon size={iconSizes.toolbar} />,
+  },
+  {
+    name: "Info",
+    sample: <InfoIcon />,
+  },
+  {
+    name: "Link",
+    sample: <LinkIcon size={TOOLBAR} />,
+  },
+  {
+    name: "Plus",
+    sample: <PlusIcon className="size-5" />,
+  },
+  {
+    name: "Send",
+    sample: <SendIcon className="size-5" />,
+  },
+  {
+    name: "Smiley",
+    sample: <SmileyIcon className="size-5" />,
+  },
+  {
+    name: "Touch",
+    sample: <TouchIcon size={TOOLBAR} />,
   },
 ];
 
