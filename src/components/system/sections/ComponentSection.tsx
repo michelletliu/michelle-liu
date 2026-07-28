@@ -1066,9 +1066,13 @@ function SpecInputSample({
   );
 }
 
-/** Sticky first column — zinc-50 fill + shadow covers border-spacing gap while scrolling. */
+/**
+ * Sticky first column — pinned at border-spacing-x so the label holds its
+ * resting x instead of jumping to the container edge on first scroll.
+ * zinc-50 fill + shadows on both sides cover the spacing gaps while scrolling.
+ */
 const INPUT_MATRIX_STICKY_COL =
-  "sticky left-0 z-20 bg-zinc-50 text-left text-sm font-normal text-zinc-400 shadow-[12px_0_0_0_theme(colors.zinc.50)] lg:shadow-[16px_0_0_0_theme(colors.zinc.50)]";
+  "sticky left-3 z-20 bg-zinc-50 text-left text-sm font-normal text-zinc-400 shadow-[-12px_0_0_0_theme(colors.zinc.50),12px_0_0_0_theme(colors.zinc.50)] lg:left-4 lg:shadow-[-16px_0_0_0_theme(colors.zinc.50),16px_0_0_0_theme(colors.zinc.50)]";
 
 function InputMatrixSpecimen() {
   return (
