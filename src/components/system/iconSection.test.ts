@@ -7,8 +7,12 @@ const section = readFileSync(
   "utf8",
 );
 
-test("filled icon specimens use consistent 20px canvases with optical compensation", () => {
+test("filled icon specimens use consistent optical sizing", () => {
   assert.match(section, /function LockIcon\(\) \{[\s\S]*?<svg className="size-5"/);
+  assert.match(
+    section,
+    /name: "Academic cap",[\s\S]*?<FilledAssetIcon src=\{academicCapIcon\} className="size-6" \/>/,
+  );
   assert.match(
     section,
     /name: "Apple",[\s\S]*?<svg className="size-5"[\s\S]*?APPLE_LOGO_PATH/,
@@ -25,9 +29,18 @@ test("filled icon specimens use consistent 20px canvases with optical compensati
     section,
     /name: "Circle",[\s\S]*?<CircleIcon size=\{FILLED_COMPACT_SIZE\} \/>/,
   );
+  assert.match(section, /const FILLED_COMPACT_SIZE = 24/);
+  assert.match(
+    section,
+    /name: "Coffee",[\s\S]*?<FilledAssetIcon src=\{coffeeFillIcon\} className="size-6" \/>/,
+  );
   assert.match(
     section,
     /name: "Grid fill",[\s\S]*?<GridIcon size=\{FILLED_COMPACT_SIZE\} filled \/>/,
+  );
+  assert.match(
+    section,
+    /name: "Map pin",[\s\S]*?<FilledAssetIcon src=\{mapPinIcon\} className="size-6" \/>/,
   );
   assert.match(
     section,

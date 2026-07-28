@@ -256,13 +256,13 @@ function IconCard({ name, sample }: IconSpecimen) {
 
 /** Standard specimen canvas. Compact filled paths receive optical compensation below. */
 const TOOLBAR = iconSize("toolbar");
-const FILLED_COMPACT_SIZE = 28;
+const FILLED_COMPACT_SIZE = 24;
 
 /** Filled icons — solid glyphs, A–Z by display label. */
 const filledIcons: IconSpecimen[] = [
   {
     name: "Academic cap",
-    sample: <FilledAssetIcon src={academicCapIcon} />,
+    sample: <FilledAssetIcon src={academicCapIcon} className="size-6" />,
   },
   {
     name: "Apple",
@@ -278,7 +278,7 @@ const filledIcons: IconSpecimen[] = [
   },
   {
     name: "Coffee",
-    sample: <FilledAssetIcon src={coffeeFillIcon} />,
+    sample: <FilledAssetIcon src={coffeeFillIcon} className="size-6" />,
   },
   {
     name: "Favorites star",
@@ -302,7 +302,7 @@ const filledIcons: IconSpecimen[] = [
   },
   {
     name: "Map pin",
-    sample: <FilledAssetIcon src={mapPinIcon} />,
+    sample: <FilledAssetIcon src={mapPinIcon} className="size-6" />,
   },
   {
     name: "Play / pause / rewind",
