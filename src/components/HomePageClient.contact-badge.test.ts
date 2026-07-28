@@ -18,7 +18,7 @@ test("uses large contact text and deeper intro fade on Work", () => {
   assert.match(badgeSource, /resolvedSize === "lg" \? "text-lg"/);
   assert.match(
     badgeSource,
-    /resolvedSize === "lg" &&\s+"gap-1 py-0 pl-2 pr-3"/,
+    /resolvedSize === "lg" &&\s+"gap-1 py-0 pl-2 pr-3 md:-ml-0\.5"/,
   );
   assert.match(badgeSource, /touch\s+<\/a>!/);
   assert.doesNotMatch(badgeSource, /touch!\s+<\/a>/);
