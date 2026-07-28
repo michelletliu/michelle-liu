@@ -318,9 +318,9 @@ function ButtonRadiusToggle({
         )}
       >
         {isCircular ? (
-          <SquircleIcon size={iconSize("inline")} />
+          <SquircleIcon size={iconSize("toolbar")} />
         ) : (
-          <CircleIcon size={iconSize("inline")} />
+          <CircleIcon size={iconSize("toolbar")} />
         )}
       </button>
     </Tooltip>
