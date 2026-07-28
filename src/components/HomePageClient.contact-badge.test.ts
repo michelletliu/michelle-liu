@@ -11,6 +11,11 @@ const specimenSource = readFileSync(
 
 test("uses large contact text and deeper intro fade on Work", () => {
   assert.match(homeSource, /isContactBadgeExpanded \? "opacity-20" : "opacity-100"/);
+  assert.match(homeSource, /isContactBadgeExpanded \? "opacity-10" : "opacity-100"/);
+  assert.match(
+    homeSource,
+    /moments of delight & human connection\./,
+  );
   assert.match(
     homeSource,
     /<ContactBadge[\s\S]*?size="lg"[\s\S]*?onExpandedChange=\{setIsContactBadgeExpanded\}/,
@@ -32,6 +37,14 @@ test("fades the pulse ring out instead of snapping it off", () => {
   );
   assert.doesNotMatch(badgeSource, /green-pulse-ring-off/);
   assert.doesNotMatch(cssSource, /green-pulse-ring-off/);
+});
+
+test("keeps the hover badge open within an 8px cursor buffer", () => {
+  assert.match(
+    badgeSource,
+    /hoverMode &&\s+"[^"]*before:pointer-events-auto[^"]*before:-inset-2[^"]*"/,
+  );
+  assert.doesNotMatch(badgeSource, /before:pointer-events-none/);
 });
 
 test("shows the header badge at its large size in the design system", () => {

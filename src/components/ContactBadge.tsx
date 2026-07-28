@@ -89,7 +89,7 @@ export default function ContactBadge({
         "relative inline-flex w-fit items-center justify-center rounded-[999px] transition-all ease-in-out",
         isExpanded ? "bg-[#ecfdf5]" : "bg-transparent",
         hoverMode &&
-          "align-middle -translate-y-[2px] [cursor:inherit] before:pointer-events-none before:absolute before:-inset-[2px] before:rounded-[999px] before:content-['']",
+          "align-middle -translate-y-[2px] [cursor:inherit] before:pointer-events-auto before:absolute before:-inset-2 before:rounded-[999px] before:content-['']",
         // Expanded padding / gap by size
         isExpanded &&
           resolvedSize === "sm" &&

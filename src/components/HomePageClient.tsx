@@ -1044,11 +1044,22 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                     isContactBadgeExpanded ? "opacity-20" : "opacity-100",
                   )}
                 >
-                  <span>
-                    Designing products to spark moments of{" "}</span>
-                  <span>delight</span>
-                  <span>{` & `}</span>
-                  <span>human connection.</span>
+                  Designing products to spark{" "}
+                </span>
+                <span
+                  className={clsx(
+                    "transition-opacity duration-200 max-md:opacity-100",
+                    isContactBadgeExpanded ? "opacity-10" : "opacity-100",
+                  )}
+                >
+                  moments of delight & human connection.
+                </span>
+                <span
+                  className={clsx(
+                    "transition-opacity duration-200 max-md:opacity-100",
+                    isContactBadgeExpanded ? "opacity-20" : "opacity-100",
+                  )}
+                >
                   <span>
                     <br aria-hidden="true" />
                     {`Previously at `}
