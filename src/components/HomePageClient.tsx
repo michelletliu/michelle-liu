@@ -1041,14 +1041,38 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                 <span
                   className={clsx(
                     "transition-opacity duration-200 max-md:opacity-100",
-                    isContactBadgeExpanded ? "opacity-40" : "opacity-100",
+                    isContactBadgeExpanded ? "opacity-20" : "opacity-100",
                   )}
                 >
-                  <span>
-                    Designing products to spark moments of{" "}</span>
-                  <span>delight</span>
-                  <span>{` & `}</span>
-                  <span>human connection.</span>
+                  Designing products to spark{" "}
+                  <span
+                    className="inline-block"
+                    style={
+                      isContactBadgeExpanded
+                        ? {
+                            maskImage: "linear-gradient(to right, #000, rgba(0, 0, 0, 0.5))",
+                            WebkitMaskImage: "linear-gradient(to right, #000, rgba(0, 0, 0, 0.5))",
+                          }
+                        : undefined
+                    }
+                  >
+                    moments
+                  </span>
+                </span>
+                <span
+                  className={clsx(
+                    "transition-opacity duration-200 max-md:opacity-100",
+                    isContactBadgeExpanded ? "opacity-10" : "opacity-100",
+                  )}
+                >
+                  {" "}of delight & human connection.
+                </span>
+                <span
+                  className={clsx(
+                    "transition-opacity duration-200 max-md:opacity-100",
+                    isContactBadgeExpanded ? "opacity-20" : "opacity-100",
+                  )}
+                >
                   <span>
                     <br aria-hidden="true" />
                     {`Previously at `}
@@ -1073,6 +1097,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                 </span>
                 <ContactBadge
                   hoverMode
+                  size="lg"
                   className="max-md:hidden"
                   onExpandedChange={setIsContactBadgeExpanded}
                 />

@@ -1228,8 +1228,8 @@ export default function ComponentSection() {
               <span className="text-xs text-zinc-400">md · About</span>
             </div>
             <div className="flex flex-col items-center gap-3">
-              <ContactBadge size="sm" />
-              <span className="text-xs text-zinc-400">sm · Header</span>
+              <ContactBadge size="lg" />
+              <span className="text-xs text-zinc-400">lg · Header</span>
             </div>
           </div>
         </Specimen>
