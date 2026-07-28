@@ -35,6 +35,7 @@ import {
 import { HorizontalLine } from "../../HorizontalLine";
 import { INLINE_LINK_CLASS } from "../../inlineLink";
 import { ghostIconButtonClass } from "../../ghostIconButton";
+import { getHorizontalFadeVisibility } from "../inputMatrixScroll";
 import { Section, SubLabel, TagChip } from "../primitives";
 import type { Tag } from "../tokens";
 
@@ -1069,6 +1070,38 @@ function SpecInputSample({
 }
 
 function InputMatrixSpecimen() {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [fadeVisibility, setFadeVisibility] = useState({
+    showLeft: false,
+    showRight: true,
+  });
+
+  const updateFadeVisibility = useCallback(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    const next = getHorizontalFadeVisibility(scroller);
+    setFadeVisibility((current) =>
+      current.showLeft === next.showLeft &&
+      current.showRight === next.showRight
+        ? current
+        : next,
+    );
+  }, []);
+
+  useLayoutEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    updateFadeVisibility();
+    const observer = new ResizeObserver(updateFadeVisibility);
+    observer.observe(scroller);
+    if (scroller.firstElementChild) {
+      observer.observe(scroller.firstElementChild);
+    }
+    return () => observer.disconnect();
+  }, [updateFadeVisibility]);
+
   return (
     <div className="relative flex h-full w-full min-w-0 flex-col items-stretch">
       <div className="flex min-h-0 min-w-0 flex-1 items-stretch justify-center overflow-hidden px-0 py-6 md:items-center">
@@ -1115,7 +1148,11 @@ function InputMatrixSpecimen() {
           </div>
 
           <div className="relative min-w-0">
-            <div className="h-full min-w-0 overflow-x-auto">
+            <div
+              ref={scrollerRef}
+              onScroll={updateFadeVisibility}
+              className="h-full min-w-0 overflow-x-auto"
+            >
               <div className="grid w-max grid-cols-[repeat(5,12.5rem)] grid-rows-[1.5rem_repeat(4,3rem)] gap-x-3 gap-y-4 lg:gap-x-4">
                 {SPEC_INPUT_STATES.map((state) => (
                   <div
@@ -1143,11 +1180,17 @@ function InputMatrixSpecimen() {
 
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-zinc-50 to-transparent"
+              className={clsx(
+                "pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-zinc-50 to-transparent transition-opacity duration-150 ease-out motion-reduce:transition-none",
+                fadeVisibility.showLeft ? "opacity-100" : "opacity-0",
+              )}
             />
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-zinc-50 to-transparent"
+              className={clsx(
+                "pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-zinc-50 to-transparent transition-opacity duration-150 ease-out motion-reduce:transition-none",
+                fadeVisibility.showRight ? "opacity-100" : "opacity-0",
+              )}
             />
           </div>
         </div>
