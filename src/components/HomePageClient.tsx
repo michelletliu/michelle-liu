@@ -1041,7 +1041,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                 <span
                   className={clsx(
                     "transition-opacity duration-200 max-md:opacity-100",
-                    isContactBadgeExpanded ? "opacity-40" : "opacity-100",
+                    isContactBadgeExpanded ? "opacity-20" : "opacity-100",
                   )}
                 >
                   <span>
@@ -1073,6 +1073,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                 </span>
                 <ContactBadge
                   hoverMode
+                  size="md"
                   className="max-md:hidden"
                   onExpandedChange={setIsContactBadgeExpanded}
                 />
