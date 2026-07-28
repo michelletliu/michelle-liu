@@ -9,9 +9,10 @@ test("aligns option text to the trigger with tighter outer vertical padding", ()
   assert.match(source, /flex items-center px-2 py-1/);
 });
 
-test("matches dropdown panel width to the filter pill", () => {
+test("matches dropdown panel width to the filter pill with equal right overhang", () => {
   assert.doesNotMatch(source, /min-w-\[140px\]/);
+  assert.match(source, /const PANEL_WIDTH_EXPANSION = 4/);
   assert.match(source, /el\.style\.width = `\$\{snapRef\.current\.width\}px`/);
-  assert.match(source, /panelRef\.current\.style\.width = `\$\{rect\.width\}px`/);
-  assert.match(source, /absolute left-0 top-\[calc\(100%\+4px\)\] w-full/);
+  assert.match(source, /panelRef\.current\.style\.width = `\$\{rect\.width \+ PANEL_WIDTH_EXPANSION\}px`/);
+  assert.match(source, /absolute left-0 top-\[calc\(100%\+4px\)\] w-\[calc\(100%\+4px\)\]/);
 });
