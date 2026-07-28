@@ -485,7 +485,7 @@ export const tocSubsections: Record<string, string[]> = {
     "Navigation",
     "Pills",
   ],
-  icons: ["Size", "Filled icons", "Social", "Stroke icons"],
+  icons: ["Size", "Filled", "Stroke", "Social"],
   motion: ["Animations", "Duration scale"],
   spacing: ["Gap scale", "Layout widths"],
   typography: ["Families", "Properties"],
