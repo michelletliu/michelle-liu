@@ -21,14 +21,14 @@ export default function LiquidGlassButton({
     <button
       {...props}
       className={clsx(
-        "shadow-glass transition-transform duration-150 ease-out hover:scale-105",
-        isFull ? "rounded-full" : "rounded-xl",
+        "shadow-glass transition-[border-radius,transform] duration-200 ease-in-out motion-reduce:transition-none hover:scale-105",
+        isFull ? "rounded-[50%]" : "rounded-[25%]",
         className,
       )}
       style={{
         width: size,
         height: size,
-        borderRadius: isFull ? "50%" : "0.75rem",
+        borderRadius: isFull ? "50%" : "25%",
         border: "none",
         padding: 0,
         display: "flex",
