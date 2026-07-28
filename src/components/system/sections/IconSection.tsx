@@ -13,6 +13,7 @@ import {
   PlusIcon,
   SendIcon,
   SmileyIcon,
+  GridIcon,
 } from "../../library/icons";
 import { SocialLinksBackgroundImage } from "../../SocialLinks";
 import svgPaths from "../../../imports/svg-2tsxp86msm";
@@ -272,6 +273,10 @@ const uiIcons: IconSpecimen[] = [
     sample: <ExpandIcon />,
   },
   {
+    name: "Grid",
+    sample: <GridIcon className="size-5" />,
+  },
+  {
     name: "Send",
     sample: <SendIcon className="size-5" />,
   },
@@ -311,6 +316,10 @@ const uiIcons: IconSpecimen[] = [
 ];
 
 const filledIcons: IconSpecimen[] = [
+  {
+    name: "Grid fill",
+    sample: <GridIcon className="size-5" filled />,
+  },
   {
     name: "Heart fill",
     sample: <FilledAssetIcon src={heartFillIcon} className="h-[18px] w-5" />,
