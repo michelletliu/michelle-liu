@@ -6,6 +6,11 @@ const section = readFileSync(
   new URL("./sections/IconSection.tsx", import.meta.url),
   "utf8",
 );
+const tokens = readFileSync(new URL("./tokens.ts", import.meta.url), "utf8");
+const filmPage = readFileSync(
+  new URL("../film/FilmPage.tsx", import.meta.url),
+  "utf8",
+);
 
 test("filled icon specimens use consistent optical sizing", () => {
   assert.match(section, /function LockIcon\(\) \{[\s\S]*?<svg className="size-5"/);
@@ -36,7 +41,7 @@ test("filled icon specimens use consistent optical sizing", () => {
   );
   assert.match(
     section,
-    /name: "Grid fill",[\s\S]*?<GridIcon size=\{FILLED_COMPACT_SIZE\} filled \/>/,
+    /name: "Grid fill",[\s\S]*?<GridIcon size=\{TOOLBAR\} filled \/>/,
   );
   assert.match(
     section,
@@ -67,4 +72,22 @@ test("icon categories render as Filled → Stroke → Social", () => {
     /<SubLabel>Filled<\/SubLabel>[\s\S]*?filledIcons\.map[\s\S]*?<SubLabel>Stroke<\/SubLabel>[\s\S]*?uiIcons\.map[\s\S]*?<SubLabel>Social<\/SubLabel>[\s\S]*?socialIcons\.map/,
   );
   assert.doesNotMatch(section, /<SubLabel>(?:Filled|Stroke) icons<\/SubLabel>/);
+  assert.match(tokens, /icons: \["Size", "Filled", "Stroke", "Social"\]/);
+});
+
+test("media controls are separate, smaller specimens without an unused rewind glyph", () => {
+  assert.match(
+    section,
+    /name: "Pause",[\s\S]*?sample: <FilmPauseIcon \/>[\s\S]*?name: "Play",[\s\S]*?sample: <FilmPlayIcon \/>/,
+  );
+  assert.match(
+    section,
+    /function FilmPlayIcon\(\) \{[\s\S]*?<svg className="size-4"/,
+  );
+  assert.match(
+    section,
+    /function FilmPauseIcon\(\) \{[\s\S]*?<svg className="size-4"/,
+  );
+  assert.doesNotMatch(section, /FilmRewindIcon|Play \/ pause \/ rewind/);
+  assert.doesNotMatch(filmPage, /function FilmRewindIcon/);
 });
