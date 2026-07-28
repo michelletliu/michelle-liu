@@ -4,6 +4,10 @@ import test from "node:test";
 
 const homeSource = readFileSync(new URL("./HomePageClient.tsx", import.meta.url), "utf8");
 const badgeSource = readFileSync(new URL("./ContactBadge.tsx", import.meta.url), "utf8");
+const specimenSource = readFileSync(
+  new URL("./system/sections/ComponentSection.tsx", import.meta.url),
+  "utf8",
+);
 
 test("uses large contact text and deeper intro fade on Work", () => {
   assert.match(homeSource, /isContactBadgeExpanded \? "opacity-20" : "opacity-100"/);
@@ -18,4 +22,10 @@ test("uses large contact text and deeper intro fade on Work", () => {
   );
   assert.match(badgeSource, /touch\s+<\/a>!/);
   assert.doesNotMatch(badgeSource, /touch!\s+<\/a>/);
+});
+
+test("shows the header badge at its large size in the design system", () => {
+  assert.match(specimenSource, /<ContactBadge size="lg" \/>/);
+  assert.match(specimenSource, /lg · Header/);
+  assert.doesNotMatch(specimenSource, /sm · Header/);
 });

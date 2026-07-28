@@ -21,7 +21,7 @@ type ContactBadgeProps = {
 
 /**
  * Contact badge component with green dot and "Get in touch" CTA
- * - Work page: Collapses/expands on hover (sm)
+ * - Work page: Collapses/expands on hover (lg)
  * - About page: Auto-expands on scroll into view (md)
  */
 export default function ContactBadge({
