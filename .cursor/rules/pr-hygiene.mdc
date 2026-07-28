@@ -1,0 +1,9 @@
+---
+description: Keep generated Superpowers planning documents out of pull requests
+alwaysApply: true
+---
+
+# Pull Request Hygiene
+
+- Do not include files under `docs/superpowers/plans/` or `docs/superpowers/specs/` in pull requests.
+- Planning documents may be created locally when a workflow requires them, but remove them from the branch before committing or opening/updating a PR.

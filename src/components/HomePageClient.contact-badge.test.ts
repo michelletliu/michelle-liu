@@ -2,12 +2,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const source = readFileSync(new URL("./HomePageClient.tsx", import.meta.url), "utf8");
+const homeSource = readFileSync(new URL("./HomePageClient.tsx", import.meta.url), "utf8");
+const badgeSource = readFileSync(new URL("./ContactBadge.tsx", import.meta.url), "utf8");
 
-test("uses base-size contact badge and deeper intro fade on Work", () => {
-  assert.match(source, /isContactBadgeExpanded \? "opacity-20" : "opacity-100"/);
+test("uses large contact text and deeper intro fade on Work", () => {
+  assert.match(homeSource, /isContactBadgeExpanded \? "opacity-20" : "opacity-100"/);
   assert.match(
-    source,
-    /<ContactBadge[\s\S]*?size="md"[\s\S]*?onExpandedChange=\{setIsContactBadgeExpanded\}/,
+    homeSource,
+    /<ContactBadge[\s\S]*?size="lg"[\s\S]*?onExpandedChange=\{setIsContactBadgeExpanded\}/,
   );
+  assert.match(badgeSource, /resolvedSize === "lg" \? "text-lg"/);
 });

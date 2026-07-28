@@ -1073,7 +1073,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                 </span>
                 <ContactBadge
                   hoverMode
-                  size="md"
+                  size="lg"
                   className="max-md:hidden"
                   onExpandedChange={setIsContactBadgeExpanded}
                 />
