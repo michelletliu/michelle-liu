@@ -70,6 +70,7 @@ test("only the muted input composition uses the muted shell tone", () => {
     section,
     /const shellTone =\s*composition === "muted" \? "muted" : "surface";/,
   );
+  assert.match(section, /tone=\{shellTone\}/);
   assert.doesNotMatch(
     section,
     /composition === "leading" \|\| composition === "muted"/,
