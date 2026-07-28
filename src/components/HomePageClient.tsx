@@ -1045,6 +1045,19 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                   )}
                 >
                   Designing products to spark{" "}
+                  <span
+                    className="inline-block"
+                    style={
+                      isContactBadgeExpanded
+                        ? {
+                            maskImage: "linear-gradient(to right, #000, rgba(0, 0, 0, 0.5))",
+                            WebkitMaskImage: "linear-gradient(to right, #000, rgba(0, 0, 0, 0.5))",
+                          }
+                        : undefined
+                    }
+                  >
+                    moments
+                  </span>
                 </span>
                 <span
                   className={clsx(
@@ -1052,7 +1065,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                     isContactBadgeExpanded ? "opacity-10" : "opacity-100",
                   )}
                 >
-                  moments of delight & human connection.
+                  {" "}of delight & human connection.
                 </span>
                 <span
                   className={clsx(

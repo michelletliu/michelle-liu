@@ -14,7 +14,15 @@ test("uses large contact text and deeper intro fade on Work", () => {
   assert.match(homeSource, /isContactBadgeExpanded \? "opacity-10" : "opacity-100"/);
   assert.match(
     homeSource,
-    /moments of delight & human connection\./,
+    /maskImage: "linear-gradient\(to right, #000, rgba\(0, 0, 0, 0\.5\)\)"/,
+  );
+  assert.match(
+    homeSource,
+    /WebkitMaskImage: "linear-gradient\(to right, #000, rgba\(0, 0, 0, 0\.5\)\)"/,
+  );
+  assert.match(
+    homeSource,
+    /moments[\s\S]*?\{" "\}of delight & human connection\./,
   );
   assert.match(
     homeSource,
