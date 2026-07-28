@@ -266,7 +266,7 @@ const filledIcons: IconSpecimen[] = [
   },
   {
     name: "Coffee",
-    sample: <FilledAssetIcon src={coffeeFillIcon} className="size-6" />,
+    sample: <FilledAssetIcon src={coffeeFillIcon} className="size-5" />,
   },
   {
     name: "Favorites star",
@@ -277,7 +277,7 @@ const filledIcons: IconSpecimen[] = [
     ),
   },
   {
-    name: "Grid fill",
+    name: "Grid",
     sample: <GridIcon size={TOOLBAR} filled />,
   },
   {
@@ -293,6 +293,10 @@ const filledIcons: IconSpecimen[] = [
     sample: <FilledAssetIcon src={mapPinIcon} className="size-6" />,
   },
   {
+    name: "Moon",
+    sample: <MoonIcon />,
+  },
+  {
     name: "Pause",
     sample: <FilmPauseIcon />,
   },
@@ -305,13 +309,8 @@ const filledIcons: IconSpecimen[] = [
     sample: <SquircleIcon size={FILLED_COMPACT_SIZE} />,
   },
   {
-    name: "Sun / moon",
-    sample: (
-      <div className="flex items-center gap-4">
-        <SunIcon />
-        <MoonIcon />
-      </div>
-    ),
+    name: "Sun",
+    sample: <SunIcon />,
   },
 ];
 

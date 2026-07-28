@@ -37,11 +37,11 @@ test("filled icon specimens use consistent optical sizing", () => {
   assert.match(section, /const FILLED_COMPACT_SIZE = 24/);
   assert.match(
     section,
-    /name: "Coffee",[\s\S]*?<FilledAssetIcon src=\{coffeeFillIcon\} className="size-6" \/>/,
+    /name: "Coffee",[\s\S]*?<FilledAssetIcon src=\{coffeeFillIcon\} className="size-5" \/>/,
   );
   assert.match(
     section,
-    /name: "Grid fill",[\s\S]*?<GridIcon size=\{TOOLBAR\} filled \/>/,
+    /name: "Grid",[\s\S]*?<GridIcon size=\{TOOLBAR\} filled \/>/,
   );
   assert.match(
     section,
@@ -90,4 +90,12 @@ test("media controls are separate, smaller specimens without an unused rewind gl
   );
   assert.doesNotMatch(section, /FilmRewindIcon|Play \/ pause \/ rewind/);
   assert.doesNotMatch(filmPage, /function FilmRewindIcon/);
+});
+
+test("sun and moon use separate alphabetized specimens", () => {
+  assert.match(
+    section,
+    /name: "Moon",[\s\S]*?sample: <MoonIcon \/>[\s\S]*?name: "Pause"[\s\S]*?name: "Squircle"[\s\S]*?name: "Sun",[\s\S]*?sample: <SunIcon \/>/,
+  );
+  assert.doesNotMatch(section, /name: "Sun \/ moon"/);
 });
