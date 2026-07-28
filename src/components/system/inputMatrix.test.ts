@@ -64,3 +64,14 @@ test("horizontal fades tolerate fractional scroll positions at the edges", () =>
     { showLeft: true, showRight: false },
   );
 });
+
+test("only the muted input composition uses the muted shell tone", () => {
+  assert.match(
+    section,
+    /const shellTone =\s*composition === "muted" \? "muted" : "surface";/,
+  );
+  assert.doesNotMatch(
+    section,
+    /composition === "leading" \|\| composition === "muted"/,
+  );
+});
