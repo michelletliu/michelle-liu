@@ -1008,7 +1008,7 @@ function SpecInputSample({
   const shellTone = composition === "muted" ? "muted" : "surface";
   const shellClass =
     composition === "leading"
-      ? "max-w-[11.5rem] gap-2.5"
+      ? "max-w-[11.5rem] gap-2.5 !pl-0"
       : composition === "trailing"
         ? "max-w-[11.5rem] justify-between"
         : "max-w-[11.5rem]";
