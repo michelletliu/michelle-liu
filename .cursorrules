@@ -32,6 +32,10 @@ This script:
 
 You can also use the Sanity MCP tools to manually patch `externalCoverUrl` on shelfItem documents.
 
+## Pull Request Hygiene
+- NEVER commit or include `docs/superpowers/plans/` or `docs/superpowers/specs/` in PRs.
+- Planning/design docs may be created locally for agent workflows, but delete them before committing, pushing, or opening a PR.
+
 ## Tech Stack
 - Frontend: React + TypeScript + Vite
 - CMS: Sanity v3
