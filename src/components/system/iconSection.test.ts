@@ -34,3 +34,11 @@ test("filled icon specimens use consistent 20px canvases with optical compensati
     /name: "Squircle",[\s\S]*?<SquircleIcon size=\{FILLED_COMPACT_SIZE\} \/>/,
   );
 });
+
+test("social icons include GitHub and stay alphabetical", () => {
+  assert.match(section, /name: "GitHub"/);
+  assert.match(
+    section,
+    /const socialIcons: IconSpecimen\[] = \[[\s\S]*?name: "GitHub"[\s\S]*?name: "Instagram"/,
+  );
+});
