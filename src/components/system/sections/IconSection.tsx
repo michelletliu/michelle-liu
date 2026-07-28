@@ -228,8 +228,10 @@ type IconSpecimen = {
 };
 
 /** PascalCase component names → sentence-case labels (e.g. ArrowUpRight → Arrow up right). */
+const BRAND_ICON_LABELS = new Set(["GitHub", "LinkedIn"]);
+
 function iconDisplayName(name: string): string {
-  if (/[\s/]/.test(name)) return name;
+  if (BRAND_ICON_LABELS.has(name) || /[\s/]/.test(name)) return name;
   return name
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .split(" ")
