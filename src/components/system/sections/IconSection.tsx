@@ -474,9 +474,16 @@ export default function IconSection() {
         })}
       </div>
 
-      <SubLabel>Filled icons</SubLabel>
+      <SubLabel>Filled</SubLabel>
       <Grid min="160px">
         {filledIcons.map((icon) => (
+          <IconCard key={icon.name} {...icon} />
+        ))}
+      </Grid>
+
+      <SubLabel>Stroke</SubLabel>
+      <Grid min="160px">
+        {uiIcons.map((icon) => (
           <IconCard key={icon.name} {...icon} />
         ))}
       </Grid>
@@ -484,13 +491,6 @@ export default function IconSection() {
       <SubLabel>Social</SubLabel>
       <Grid min="160px">
         {socialIcons.map((icon) => (
-          <IconCard key={icon.name} {...icon} />
-        ))}
-      </Grid>
-
-      <SubLabel>Stroke icons</SubLabel>
-      <Grid min="160px">
-        {uiIcons.map((icon) => (
           <IconCard key={icon.name} {...icon} />
         ))}
       </Grid>

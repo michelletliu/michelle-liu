@@ -60,3 +60,11 @@ test("icon category headings do not render explanatory subtext", () => {
   assert.doesNotMatch(section, /Social marks\. Zinc-500\./);
   assert.doesNotMatch(section, /Text-zinc-500 · StrokeWidth 1\.5/);
 });
+
+test("icon categories render as Filled → Stroke → Social", () => {
+  assert.match(
+    section,
+    /<SubLabel>Filled<\/SubLabel>[\s\S]*?filledIcons\.map[\s\S]*?<SubLabel>Stroke<\/SubLabel>[\s\S]*?uiIcons\.map[\s\S]*?<SubLabel>Social<\/SubLabel>[\s\S]*?socialIcons\.map/,
+  );
+  assert.doesNotMatch(section, /<SubLabel>(?:Filled|Stroke) icons<\/SubLabel>/);
+});
