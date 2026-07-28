@@ -9,6 +9,7 @@ import {
   type ButtonHTMLAttributes,
   type ReactNode,
 } from "react";
+import clsx from "clsx";
 import { ArrowUpRight } from "../../ArrowUpRight";
 import {
   FieldInput,
@@ -26,9 +27,14 @@ import ContactBadge from "../../ContactBadge";
 import { Chevron } from "../../Chevron";
 import { iconSize } from "../../iconSizes";
 import { ArrowRightIcon } from "../../Arrow";
-import { SendIcon } from "../../library/icons";
+import {
+  CircleIcon,
+  SendIcon,
+  SquircleIcon,
+} from "../../library/icons";
 import { HorizontalLine } from "../../HorizontalLine";
 import { INLINE_LINK_CLASS } from "../../inlineLink";
+import { ghostIconButtonClass } from "../../ghostIconButton";
 import { Section, SubLabel, TagChip } from "../primitives";
 import type { Tag } from "../tokens";
 
@@ -43,6 +49,7 @@ const GHOST_SURFACE =
 /** Canonical button class patterns for DS specimens — not a site-wide API. */
 type SpecButtonVariant = "primary" | "secondary" | "tertiary" | "ghost";
 type SpecButtonSize = "sm" | "md" | "lg";
+type SpecButtonRadiusMode = "circular" | "rectangular";
 
 /** Translucent hover washes — background shows through under the control. */
 const HOVER_WASH_ZINC = "hover:bg-zinc-900/5";
@@ -57,11 +64,9 @@ const SPEC_BUTTON_VARIANT: Record<SpecButtonVariant, string> = {
   ghost: `${GHOST_SURFACE} text-zinc-700`,
 };
 
-const SPEC_BUTTON_RADIUS: Record<SpecButtonVariant, string> = {
-  primary: "rounded-full",
-  secondary: "rounded-full",
-  tertiary: "rounded-xl",
-  ghost: "rounded-full",
+const SPEC_BUTTON_RADIUS_BY_MODE: Record<SpecButtonRadiusMode, string> = {
+  circular: "rounded-full",
+  rectangular: "rounded-xl",
 };
 
 const SPEC_BUTTON_SIZE_TEXT: Record<SpecButtonSize, string> = {
@@ -80,6 +85,7 @@ function SpecButton({
   variant,
   size = "md",
   icon = false,
+  radiusMode = "circular",
   children,
   className = "",
   type = "button",
@@ -88,10 +94,11 @@ function SpecButton({
   variant: SpecButtonVariant;
   size?: SpecButtonSize;
   icon?: boolean;
+  radiusMode?: SpecButtonRadiusMode;
   children?: ReactNode;
   className?: string;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className" | "children">) {
-  const radius = SPEC_BUTTON_RADIUS[variant];
+  const radius = SPEC_BUTTON_RADIUS_BY_MODE[radiusMode];
   const tone = SPEC_BUTTON_VARIANT[variant];
   const sizing = icon ? SPEC_BUTTON_SIZE_ICON[size] : SPEC_BUTTON_SIZE_TEXT[size];
   const typeFace =
@@ -148,14 +155,22 @@ function SpecButtonSample({
   variant,
   size,
   content,
+  radiusMode = "circular",
 }: {
   variant: SpecButtonVariant;
   size: SpecButtonSize;
   content: SpecButtonContent;
+  radiusMode?: SpecButtonRadiusMode;
 }) {
   if (content === "icon") {
     return (
-      <SpecButton variant={variant} size={size} icon aria-label="Send">
+      <SpecButton
+        variant={variant}
+        size={size}
+        icon
+        radiusMode={radiusMode}
+        aria-label="Send"
+      >
         <SendIcon className="-ml-0.5 w-5 pt-0.5" />
       </SpecButton>
     );
@@ -166,6 +181,7 @@ function SpecButtonSample({
       <SpecButton
         variant={variant}
         size={size}
+        radiusMode={radiusMode}
         className={size === "sm" ? "gap-1" : "gap-1.5"}
       >
         <span>Continue</span>
@@ -179,7 +195,7 @@ function SpecButtonSample({
   }
 
   return (
-    <SpecButton variant={variant} size={size}>
+    <SpecButton variant={variant} size={size} radiusMode={radiusMode}>
       Label
     </SpecButton>
   );
@@ -217,18 +233,21 @@ function GlassButtonSample({
   variant,
   size,
   content,
+  radiusMode = "circular",
 }: {
   variant: GlassButtonVariant;
   size: SpecButtonSize;
   content: SpecButtonContent;
+  radiusMode?: SpecButtonRadiusMode;
 }) {
   const tone = GLASS_BUTTON_TONE[variant];
-  const radius = SPEC_BUTTON_RADIUS[variant];
+  const radius = SPEC_BUTTON_RADIUS_BY_MODE[radiusMode];
 
   if (content === "icon") {
     return (
       <LiquidGlassButton
         size={GLASS_ICON_SIZE[size]}
+        radius={radiusMode === "circular" ? "full" : "xl"}
         className={tone}
         aria-label="Send"
       >
@@ -265,12 +284,49 @@ function GlassButtonSample({
   );
 }
 
+function ButtonRadiusToggle({
+  mode,
+  onChange,
+}: {
+  mode: SpecButtonRadiusMode;
+  onChange: (mode: SpecButtonRadiusMode) => void;
+}) {
+  const isCircular = mode === "circular";
+  return (
+    <button
+      type="button"
+      aria-pressed={!isCircular}
+      aria-label={
+        isCircular ? "Use rectangular buttons" : "Use circular buttons"
+      }
+      onClick={() => onChange(isCircular ? "rectangular" : "circular")}
+      className={clsx(
+        ghostIconButtonClass(
+          "sm",
+          "absolute right-3 top-3 z-[3] bg-white/80 text-zinc-300 backdrop-blur-sm",
+        ),
+        "hover:bg-zinc-100 hover:text-zinc-400",
+        "active:bg-zinc-100",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
+      )}
+    >
+      {isCircular ? (
+        <SquircleIcon size={iconSize("inline")} />
+      ) : (
+        <CircleIcon size={iconSize("inline")} />
+      )}
+    </button>
+  );
+}
+
 function ButtonMatrixStage<V extends SpecButtonVariant>({
   content,
   variants,
   renderCell,
   caption,
   stageClassName,
+  radiusMode,
+  onRadiusModeChange,
 }: {
   content: SpecButtonContent;
   variants: V[];
@@ -281,11 +337,14 @@ function ButtonMatrixStage<V extends SpecButtonVariant>({
   ) => ReactNode;
   caption: string;
   stageClassName: string;
+  radiusMode: SpecButtonRadiusMode;
+  onRadiusModeChange: (mode: SpecButtonRadiusMode) => void;
 }) {
   return (
     <div
-      className={`flex min-h-0 flex-1 items-stretch justify-center rounded-xl px-6 py-6 md:items-center ${stageClassName}`}
+      className={`relative flex min-h-0 flex-1 items-stretch justify-center rounded-xl px-6 py-6 md:items-center ${stageClassName}`}
     >
+      <ButtonRadiusToggle mode={radiusMode} onChange={onRadiusModeChange} />
       <p className="sr-only">{caption}</p>
 
       {/* Mobile: stacked variants; 3 fixed columns so tab toggles don’t reflow height */}
@@ -366,6 +425,8 @@ function ButtonMatrixStage<V extends SpecButtonVariant>({
 
 function ButtonMatrixSpecimen() {
   const [content, setContent] = useState<SpecButtonContent>("label");
+  const [radiusMode, setRadiusMode] =
+    useState<SpecButtonRadiusMode>("circular");
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col items-stretch gap-5">
@@ -374,11 +435,14 @@ function ButtonMatrixSpecimen() {
         variants={SPEC_BUTTON_VARIANTS}
         caption="Solid button variants by size"
         stageClassName="bg-white"
+        radiusMode={radiusMode}
+        onRadiusModeChange={setRadiusMode}
         renderCell={(variant, size, cellContent) => (
           <SpecButtonSample
             variant={variant}
             size={size}
             content={cellContent}
+            radiusMode={radiusMode}
           />
         )}
       />
@@ -394,6 +458,8 @@ function ButtonMatrixSpecimen() {
 
 function GlassMatrixSpecimen() {
   const [content, setContent] = useState<SpecButtonContent>("label");
+  const [radiusMode, setRadiusMode] =
+    useState<SpecButtonRadiusMode>("circular");
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col items-stretch gap-5">
@@ -402,11 +468,14 @@ function GlassMatrixSpecimen() {
         variants={GLASS_BUTTON_VARIANTS}
         caption="Glass button variants by size"
         stageClassName="bg-gradient-to-br from-zinc-200 via-zinc-100 to-zinc-300"
+        radiusMode={radiusMode}
+        onRadiusModeChange={setRadiusMode}
         renderCell={(variant, size, cellContent) => (
           <GlassButtonSample
             variant={variant}
             size={size}
             content={cellContent}
+            radiusMode={radiusMode}
           />
         )}
       />
@@ -464,6 +533,8 @@ function ButtonPlaygroundSpecimen() {
   const [size, setSize] = useState<SpecButtonSize>("md");
   const [content, setContent] = useState<SpecButtonContent>("label");
   const [surface, setSurface] = useState<"solid" | "glass">("solid");
+  const [radiusMode, setRadiusMode] =
+    useState<SpecButtonRadiusMode>("circular");
 
   const isGlass = surface === "glass";
 
@@ -477,16 +548,27 @@ function ButtonPlaygroundSpecimen() {
     <div className="flex h-full w-full min-h-0 flex-col items-stretch gap-4">
       {/* Fixed stage height — lg / icon+label must not grow the card */}
       <div
-        className={`flex h-36 shrink-0 items-center justify-center rounded-xl px-6 sm:h-44 ${
+        className={`relative flex h-36 shrink-0 items-center justify-center rounded-xl px-6 sm:h-44 ${
           isGlass
             ? "bg-gradient-to-br from-zinc-200 via-zinc-100 to-zinc-300"
             : "bg-white"
         }`}
       >
+        <ButtonRadiusToggle mode={radiusMode} onChange={setRadiusMode} />
         {isGlass && variant !== "ghost" ? (
-          <GlassButtonSample variant={variant} size={size} content={content} />
+          <GlassButtonSample
+            variant={variant}
+            size={size}
+            content={content}
+            radiusMode={radiusMode}
+          />
         ) : (
-          <SpecButtonSample variant={variant} size={size} content={content} />
+          <SpecButtonSample
+            variant={variant}
+            size={size}
+            content={content}
+            radiusMode={radiusMode}
+          />
         )}
       </div>
 

@@ -114,3 +114,54 @@ export function GridIcon({
     </svg>
   );
 }
+
+/** Outline circle — radius toggle “switch to circular”. */
+export function CircleIcon({
+  className = "",
+  size = 20,
+}: IconProps & { size?: number | string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={`inline-block shrink-0 ${className}`.trim()}
+      aria-hidden
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="9.25"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+/** Outline squircle — radius toggle “switch to rectangular”. */
+export function SquircleIcon({
+  className = "",
+  size = 20,
+}: IconProps & { size?: number | string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={`inline-block shrink-0 ${className}`.trim()}
+      aria-hidden
+    >
+      <path
+        d="M4.75 8.5C4.75 5.6 5.6 4.75 8.5 4.75H15.5C18.4 4.75 19.25 5.6 19.25 8.5V15.5C19.25 18.4 18.4 19.25 15.5 19.25H8.5C5.6 19.25 4.75 18.4 4.75 15.5V8.5Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}

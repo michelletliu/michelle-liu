@@ -14,6 +14,8 @@ import {
   SendIcon,
   SmileyIcon,
   GridIcon,
+  CircleIcon,
+  SquircleIcon,
 } from "../../library/icons";
 import { SocialLinksBackgroundImage } from "../../SocialLinks";
 import svgPaths from "../../../imports/svg-2tsxp86msm";
@@ -275,6 +277,14 @@ const uiIcons: IconSpecimen[] = [
   {
     name: "Grid",
     sample: <GridIcon className="size-5" />,
+  },
+  {
+    name: "Circle",
+    sample: <CircleIcon className="size-5" />,
+  },
+  {
+    name: "Squircle",
+    sample: <SquircleIcon className="size-5" />,
   },
   {
     name: "Send",
