@@ -327,13 +327,21 @@ const filledIcons: IconSpecimen[] = [
   },
 ];
 
-/** Social marks — A–Z by display label. */
+/** Social marks — LinkedIn, X, Instagram, Luma, GitHub. */
 const socialIcons: IconSpecimen[] = [
   {
-    name: "GitHub",
+    name: "LinkedIn",
     sample: (
-      <svg className="size-5" viewBox="0 0 98 96" fill="currentColor" aria-hidden>
-        <path fillRule="evenodd" clipRule="evenodd" d={GITHUB_LOGO_PATH} />
+      <SocialLinksBackgroundImage>
+        <path d={svgPaths.p1e086000} fill="currentColor" stroke="currentColor" />
+      </SocialLinksBackgroundImage>
+    ),
+  },
+  {
+    name: "X",
+    sample: (
+      <svg className="h-4 w-[19px] fill-current" viewBox="0 0 19 18" aria-hidden>
+        <path d={X_LOGO_PATH} />
       </svg>
     ),
   },
@@ -342,14 +350,6 @@ const socialIcons: IconSpecimen[] = [
     sample: (
       <SocialLinksBackgroundImage>
         <path d={svgPaths.p2c5f2300} fill="currentColor" />
-      </SocialLinksBackgroundImage>
-    ),
-  },
-  {
-    name: "LinkedIn",
-    sample: (
-      <SocialLinksBackgroundImage>
-        <path d={svgPaths.p1e086000} fill="currentColor" stroke="currentColor" />
       </SocialLinksBackgroundImage>
     ),
   },
@@ -368,15 +368,14 @@ const socialIcons: IconSpecimen[] = [
     ),
   },
   {
-    name: "X",
+    name: "GitHub",
     sample: (
-      <svg className="h-4 w-[19px] fill-current" viewBox="0 0 19 18" aria-hidden>
-        <path d={X_LOGO_PATH} />
+      <svg className="size-5" viewBox="0 0 98 96" fill="currentColor" aria-hidden>
+        <path fillRule="evenodd" clipRule="evenodd" d={GITHUB_LOGO_PATH} />
       </svg>
     ),
   },
 ];
-
 /** Stroke icons — A–Z by display label; all specimens at toolbar size. */
 const uiIcons: IconSpecimen[] = [
   {

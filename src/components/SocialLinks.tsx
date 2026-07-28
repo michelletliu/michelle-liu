@@ -71,30 +71,15 @@ const GITHUB_LOGO_PATH =
 
 const SOCIAL_ICONS = [
   {
-    label: "GitHub",
-    href: "https://github.com/michelletliu",
-    className: "social-link",
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/in/michelletliu",
+    className: "social-link social-link-linkedin",
     icon: (
       <div className="content-stretch flex items-center justify-center relative shrink-0 size-6">
-        <svg
-          className="block size-5"
-          viewBox="0 0 98 96"
-          fill="var(--fill-0, #d4d4d8)"
-          aria-hidden
-        >
-          <path fillRule="evenodd" clipRule="evenodd" d={GITHUB_LOGO_PATH} />
-        </svg>
+        <SocialLinksBackgroundImage>
+          <path d={svgPaths.p1e086000} fill="var(--fill-0, #d4d4d8)" id="Vector" stroke="var(--stroke-0, #d4d4d8)" />
+        </SocialLinksBackgroundImage>
       </div>
-    ),
-  },
-  {
-    label: "Instagram",
-    href: "https://www.instagram.com/studio.mliu",
-    className: "social-link",
-    icon: (
-      <SocialLinksBackgroundImage>
-        <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #d4d4d8)" id="Vector" />
-      </SocialLinksBackgroundImage>
     ),
   },
   {
@@ -119,15 +104,13 @@ const SOCIAL_ICONS = [
     ),
   },
   {
-    label: "LinkedIn",
-    href: "https://www.linkedin.com/in/michelletliu",
-    className: "social-link social-link-linkedin",
+    label: "Instagram",
+    href: "https://www.instagram.com/studio.mliu",
+    className: "social-link",
     icon: (
-      <div className="content-stretch flex items-center justify-center relative shrink-0 size-6">
-        <SocialLinksBackgroundImage>
-          <path d={svgPaths.p1e086000} fill="var(--fill-0, #d4d4d8)" id="Vector" stroke="var(--stroke-0, #d4d4d8)" />
-        </SocialLinksBackgroundImage>
-      </div>
+      <SocialLinksBackgroundImage>
+        <path d={svgPaths.p2c5f2300} fill="var(--fill-0, #d4d4d8)" id="Vector" />
+      </SocialLinksBackgroundImage>
     ),
   },
   {
@@ -149,10 +132,27 @@ const SOCIAL_ICONS = [
       </div>
     ),
   },
+  {
+    label: "GitHub",
+    href: "https://github.com/michelletliu",
+    className: "social-link",
+    icon: (
+      <div className="content-stretch flex items-center justify-center relative shrink-0 size-6">
+        <svg
+          className="block size-5"
+          viewBox="0 0 98 96"
+          fill="var(--fill-0, #d4d4d8)"
+          aria-hidden
+        >
+          <path fillRule="evenodd" clipRule="evenodd" d={GITHUB_LOGO_PATH} />
+        </svg>
+      </div>
+    ),
+  },
 ] as const;
 
 /**
- * Footer social icon row with hover tooltips (GitHub, Instagram, X, LinkedIn, Luma).
+ * Footer social icon row with hover tooltips (LinkedIn, X, Instagram, Luma, GitHub).
  * Uses the site Tooltip (400ms delay / warmup) — same pattern as Expand / Polaroid.
  */
 export function SocialIconLinks() {

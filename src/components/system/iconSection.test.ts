@@ -35,10 +35,9 @@ test("filled icon specimens use consistent 20px canvases with optical compensati
   );
 });
 
-test("social icons include GitHub and stay alphabetical", () => {
-  assert.match(section, /name: "GitHub"/);
+test("social icons include GitHub in LinkedIn → X → Instagram → Luma → GitHub order", () => {
   assert.match(
     section,
-    /const socialIcons: IconSpecimen\[] = \[[\s\S]*?name: "GitHub"[\s\S]*?name: "Instagram"/,
+    /const socialIcons: IconSpecimen\[] = \[[\s\S]*?name: "LinkedIn"[\s\S]*?name: "X"[\s\S]*?name: "Instagram"[\s\S]*?name: "Luma"[\s\S]*?name: "GitHub"/,
   );
 });
