@@ -124,7 +124,7 @@ export default function ContactBadge({
       </span>
       <span
         className={clsx(
-          "overflow-hidden text-nowrap font-['Michelle:Medium',sans-serif] font-normal tracking-[0.005em] text-emerald-500 transition-all ease-out",
+          "relative z-10 overflow-hidden text-nowrap font-['Michelle:Medium',sans-serif] font-normal tracking-[0.005em] text-emerald-500 transition-all ease-out",
           resolvedSize === "lg" ? "text-lg" : resolvedSize === "md" ? "text-base" : "text-sm",
           hoverMode && "duration-300",
           scrollExpandMode && "duration-[800ms]",

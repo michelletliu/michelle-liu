@@ -47,6 +47,13 @@ test("keeps the hover badge open within an 8px cursor buffer", () => {
   assert.doesNotMatch(badgeSource, /before:pointer-events-none/);
 });
 
+test("keeps the contact link clickable above the hover buffer", () => {
+  assert.match(
+    badgeSource,
+    /"relative z-10 overflow-hidden text-nowrap font-\['Michelle:Medium',sans-serif\]/,
+  );
+});
+
 test("shows the header badge at its large size in the design system", () => {
   assert.match(specimenSource, /<ContactBadge size="lg" \/>/);
   assert.match(specimenSource, /lg · Header/);
