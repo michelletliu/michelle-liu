@@ -7,7 +7,7 @@ const section = readFileSync(
   "utf8",
 );
 
-test("filled icon specimens use a uniform 20px canvas", () => {
+test("filled icon specimens use consistent 20px canvases with optical compensation", () => {
   assert.match(section, /function LockIcon\(\) \{[\s\S]*?<svg className="size-5"/);
   assert.match(
     section,
@@ -20,5 +20,17 @@ test("filled icon specimens use a uniform 20px canvas", () => {
   assert.match(
     section,
     /name: "Heart fill",[\s\S]*?<FilledAssetIcon src=\{heartFillIcon\} \/>/,
+  );
+  assert.match(
+    section,
+    /name: "Circle",[\s\S]*?<CircleIcon size=\{FILLED_COMPACT_SIZE\} \/>/,
+  );
+  assert.match(
+    section,
+    /name: "Grid fill",[\s\S]*?<GridIcon size=\{FILLED_COMPACT_SIZE\} filled \/>/,
+  );
+  assert.match(
+    section,
+    /name: "Squircle",[\s\S]*?<SquircleIcon size=\{FILLED_COMPACT_SIZE\} \/>/,
   );
 });

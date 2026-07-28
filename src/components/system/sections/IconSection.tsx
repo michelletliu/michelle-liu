@@ -249,8 +249,9 @@ function IconCard({ name, sample }: IconSpecimen) {
   );
 }
 
-/** Icon specimens use toolbar (20px) so each category reads as one size. */
+/** Standard specimen canvas. Compact filled paths receive optical compensation below. */
 const TOOLBAR = iconSize("toolbar");
+const FILLED_COMPACT_SIZE = 28;
 
 /** Filled icons — solid glyphs, A–Z by display label. */
 const filledIcons: IconSpecimen[] = [
@@ -268,7 +269,7 @@ const filledIcons: IconSpecimen[] = [
   },
   {
     name: "Circle",
-    sample: <CircleIcon size={iconSizes.toolbar} />,
+    sample: <CircleIcon size={FILLED_COMPACT_SIZE} />,
   },
   {
     name: "Coffee",
@@ -284,7 +285,7 @@ const filledIcons: IconSpecimen[] = [
   },
   {
     name: "Grid fill",
-    sample: <GridIcon size={iconSizes.toolbar} filled />,
+    sample: <GridIcon size={FILLED_COMPACT_SIZE} filled />,
   },
   {
     name: "Heart fill",
@@ -310,7 +311,7 @@ const filledIcons: IconSpecimen[] = [
   },
   {
     name: "Squircle",
-    sample: <SquircleIcon size={iconSizes.toolbar} />,
+    sample: <SquircleIcon size={FILLED_COMPACT_SIZE} />,
   },
   {
     name: "Sun / moon",
