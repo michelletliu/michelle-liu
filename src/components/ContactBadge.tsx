@@ -134,8 +134,8 @@ export default function ContactBadge({
             }
           }}
         >
-          touch!
-        </a>
+          touch
+        </a>!
       </span>
     </span>
   );
