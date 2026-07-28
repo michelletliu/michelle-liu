@@ -191,11 +191,19 @@ const GLASS_BUTTON_STYLE = {
   WebkitBackdropFilter: "blur(16px) saturate(180%)",
 } as const;
 
-const GLASS_BUTTON_TONE: Record<SpecButtonVariant, string> = {
+/** Ghost is defined by having no surface, so it has no glass counterpart. */
+type GlassButtonVariant = Exclude<SpecButtonVariant, "ghost">;
+
+const GLASS_BUTTON_VARIANTS: GlassButtonVariant[] = [
+  "primary",
+  "secondary",
+  "tertiary",
+];
+
+const GLASS_BUTTON_TONE: Record<GlassButtonVariant, string> = {
   primary: "text-blue-500 hover:text-blue-600",
   secondary: "text-zinc-700 hover:text-zinc-900",
   tertiary: "text-zinc-600 hover:text-zinc-800",
-  ghost: "text-zinc-500 hover:text-zinc-700",
 };
 
 const GLASS_ICON_SIZE: Record<SpecButtonSize, number> = {
@@ -210,7 +218,7 @@ function GlassButtonSample({
   size,
   content,
 }: {
-  variant: SpecButtonVariant;
+  variant: GlassButtonVariant;
   size: SpecButtonSize;
   content: SpecButtonContent;
 }) {
@@ -257,15 +265,17 @@ function GlassButtonSample({
   );
 }
 
-function ButtonMatrixStage({
+function ButtonMatrixStage<V extends SpecButtonVariant>({
   content,
+  variants,
   renderCell,
   caption,
   stageClassName,
 }: {
   content: SpecButtonContent;
+  variants: V[];
   renderCell: (
-    variant: SpecButtonVariant,
+    variant: V,
     size: SpecButtonSize,
     content: SpecButtonContent,
   ) => ReactNode;
@@ -280,7 +290,7 @@ function ButtonMatrixStage({
 
       {/* Mobile: stacked variants; 3 fixed columns so tab toggles don’t reflow height */}
       <div className="flex w-full flex-col gap-5 overflow-y-auto md:hidden">
-        {SPEC_BUTTON_VARIANTS.map((variant) => (
+        {variants.map((variant) => (
           <div key={variant} className="flex flex-col gap-2">
             <span className="text-sm font-normal text-zinc-400">
               {SPEC_BUTTON_VARIANT_LABELS[variant]}
@@ -331,7 +341,7 @@ function ButtonMatrixStage({
           </tr>
         </thead>
         <tbody>
-          {SPEC_BUTTON_VARIANTS.map((variant) => (
+          {variants.map((variant) => (
             <tr key={variant}>
               <th
                 scope="row"
@@ -361,6 +371,7 @@ function ButtonMatrixSpecimen() {
     <div className="flex h-full min-h-0 w-full flex-col items-stretch gap-5">
       <ButtonMatrixStage
         content={content}
+        variants={SPEC_BUTTON_VARIANTS}
         caption="Solid button variants by size"
         stageClassName="bg-white"
         renderCell={(variant, size, cellContent) => (
@@ -388,6 +399,7 @@ function GlassMatrixSpecimen() {
     <div className="flex h-full min-h-0 w-full flex-col items-stretch gap-5">
       <ButtonMatrixStage
         content={content}
+        variants={GLASS_BUTTON_VARIANTS}
         caption="Glass button variants by size"
         stageClassName="bg-gradient-to-br from-zinc-200 via-zinc-100 to-zinc-300"
         renderCell={(variant, size, cellContent) => (
@@ -414,6 +426,10 @@ const PLAYGROUND_VARIANT_OPTIONS = [
   { value: "tertiary", label: "Tertiary" },
   { value: "ghost", label: "Ghost" },
 ];
+
+const PLAYGROUND_GLASS_VARIANT_OPTIONS = PLAYGROUND_VARIANT_OPTIONS.filter(
+  (option) => option.value !== "ghost",
+);
 
 const PLAYGROUND_SIZE_OPTIONS = [
   { value: "sm", label: "sm" },
@@ -451,6 +467,12 @@ function ButtonPlaygroundSpecimen() {
 
   const isGlass = surface === "glass";
 
+  const handleSurfaceChange = (value: string) => {
+    const next = value as "solid" | "glass";
+    setSurface(next);
+    if (next === "glass" && variant === "ghost") setVariant("tertiary");
+  };
+
   return (
     <div className="flex h-full w-full min-h-0 flex-col items-stretch gap-4">
       {/* Fixed stage height — lg / icon+label must not grow the card */}
@@ -461,7 +483,7 @@ function ButtonPlaygroundSpecimen() {
             : "bg-white"
         }`}
       >
-        {isGlass ? (
+        {isGlass && variant !== "ghost" ? (
           <GlassButtonSample variant={variant} size={size} content={content} />
         ) : (
           <SpecButtonSample variant={variant} size={size} content={content} />
@@ -477,13 +499,17 @@ function ButtonPlaygroundSpecimen() {
           <FilterPills
             options={PLAYGROUND_SURFACE_OPTIONS}
             value={surface}
-            onChange={(value) => setSurface(value as "solid" | "glass")}
+            onChange={handleSurfaceChange}
             className="flex-wrap"
           />
         </PlaygroundSettingRow>
         <PlaygroundSettingRow label="Variant">
           <FilterPills
-            options={PLAYGROUND_VARIANT_OPTIONS}
+            options={
+              isGlass
+                ? PLAYGROUND_GLASS_VARIANT_OPTIONS
+                : PLAYGROUND_VARIANT_OPTIONS
+            }
             value={variant}
             onChange={(value) => setVariant(value as SpecButtonVariant)}
             className="flex-wrap"
