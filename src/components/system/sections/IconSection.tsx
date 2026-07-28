@@ -474,25 +474,21 @@ export default function IconSection() {
         })}
       </div>
 
-      <SubLabel note="Solid glyphs. Zinc-500.">
-        Filled icons
-      </SubLabel>
+      <SubLabel>Filled icons</SubLabel>
       <Grid min="160px">
         {filledIcons.map((icon) => (
           <IconCard key={icon.name} {...icon} />
         ))}
       </Grid>
 
-      <SubLabel note="Social marks. Zinc-500.">Social</SubLabel>
+      <SubLabel>Social</SubLabel>
       <Grid min="160px">
         {socialIcons.map((icon) => (
           <IconCard key={icon.name} {...icon} />
         ))}
       </Grid>
 
-      <SubLabel note="Text-zinc-500 · StrokeWidth 1.5">
-        Stroke icons
-      </SubLabel>
+      <SubLabel>Stroke icons</SubLabel>
       <Grid min="160px">
         {uiIcons.map((icon) => (
           <IconCard key={icon.name} {...icon} />

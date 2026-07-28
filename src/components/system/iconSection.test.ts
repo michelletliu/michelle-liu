@@ -54,3 +54,9 @@ test("social icons include GitHub in LinkedIn → X → Instagram → Luma → G
     /const socialIcons: IconSpecimen\[] = \[[\s\S]*?name: "LinkedIn"[\s\S]*?name: "X"[\s\S]*?name: "Instagram"[\s\S]*?name: "Luma"[\s\S]*?name: "GitHub"/,
   );
 });
+
+test("icon category headings do not render explanatory subtext", () => {
+  assert.doesNotMatch(section, /Solid glyphs\. Zinc-500\./);
+  assert.doesNotMatch(section, /Social marks\. Zinc-500\./);
+  assert.doesNotMatch(section, /Text-zinc-500 · StrokeWidth 1\.5/);
+});
