@@ -394,13 +394,12 @@ const uiIcons: IconSpecimen[] = [
     sample: <ExpandIcon />,
   },
   {
-    name: "Eye / eye-off",
-    sample: (
-      <div className="flex items-center gap-4">
-        <EyeIcon />
-        <EyeOffIcon />
-      </div>
-    ),
+    name: "Eye",
+    sample: <EyeIcon />,
+  },
+  {
+    name: "Eye off",
+    sample: <EyeOffIcon />,
   },
   {
     name: "Grid",

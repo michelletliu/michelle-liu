@@ -99,3 +99,11 @@ test("sun and moon use separate alphabetized specimens", () => {
   );
   assert.doesNotMatch(section, /name: "Sun \/ moon"/);
 });
+
+test("eye and eye-off use separate alphabetized specimens", () => {
+  assert.match(
+    section,
+    /name: "Eye",[\s\S]*?sample: <EyeIcon \/>[\s\S]*?name: "Eye off",[\s\S]*?sample: <EyeOffIcon \/>/,
+  );
+  assert.doesNotMatch(section, /name: "Eye \/ eye-off"/);
+});
