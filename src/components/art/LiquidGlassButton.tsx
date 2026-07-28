@@ -1,5 +1,9 @@
 import clsx from "clsx";
-import { type ReactNode, type ButtonHTMLAttributes } from "react";
+import {
+  type ReactNode,
+  type ButtonHTMLAttributes,
+  type CSSProperties,
+} from "react";
 
 interface LiquidGlassButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
@@ -21,7 +25,7 @@ export default function LiquidGlassButton({
     <button
       {...props}
       className={clsx(
-        "shadow-glass transition-[border-radius,transform] duration-200 ease-in-out motion-reduce:transition-none hover:scale-105",
+        "shadow-glass transition-[border-radius,corner-shape,transform] duration-200 ease-in-out motion-reduce:transition-none hover:scale-105",
         isFull ? "rounded-[50%]" : "rounded-[25%]",
         className,
       )}
@@ -29,6 +33,7 @@ export default function LiquidGlassButton({
         width: size,
         height: size,
         borderRadius: isFull ? "50%" : "25%",
+        cornerShape: isFull ? "round" : "squircle",
         border: "none",
         padding: 0,
         display: "flex",
@@ -42,7 +47,7 @@ export default function LiquidGlassButton({
         backdropFilter: "blur(16px) saturate(180%)",
         WebkitBackdropFilter: "blur(16px) saturate(180%)",
         ...style,
-      }}
+      } as CSSProperties & { cornerShape: "round" | "squircle" }}
     >
       <span
         aria-hidden="true"

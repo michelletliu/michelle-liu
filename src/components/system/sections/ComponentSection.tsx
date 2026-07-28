@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
   type ButtonHTMLAttributes,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 import clsx from "clsx";
@@ -89,6 +90,7 @@ function SpecButton({
   radiusMode = "circular",
   children,
   className = "",
+  style,
   type = "button",
   ...props
 }: {
@@ -111,7 +113,11 @@ function SpecButton({
     <button
       {...props}
       type={type}
-      className={`inline-flex shrink-0 items-center justify-center transition-[border-radius,background-color,border-color,color] duration-200 ease-in-out motion-reduce:transition-none ${radius} ${tone} ${sizing} ${typeFace} ${className}`}
+      style={{
+        ...style,
+        cornerShape: radiusMode === "circular" ? "round" : "squircle",
+      } as CSSProperties & { cornerShape: "round" | "squircle" }}
+      className={`inline-flex shrink-0 items-center justify-center transition-[border-radius,corner-shape,background-color,border-color,color] duration-200 ease-in-out motion-reduce:transition-none ${radius} ${tone} ${sizing} ${typeFace} ${className}`}
     >
       {children}
     </button>
@@ -266,8 +272,11 @@ function GlassButtonSample({
   return (
     <button
       type="button"
-      className={`inline-flex shrink-0 items-center justify-center border border-white/50 shadow-glass transition-[border-radius,transform] duration-200 ease-in-out motion-reduce:transition-none hover:scale-105 ${radius} ${sizing} ${typeFace} ${tone}`}
-      style={GLASS_BUTTON_STYLE}
+      className={`inline-flex shrink-0 items-center justify-center border border-white/50 shadow-glass transition-[border-radius,corner-shape,transform] duration-200 ease-in-out motion-reduce:transition-none hover:scale-105 ${radius} ${sizing} ${typeFace} ${tone}`}
+      style={{
+        ...GLASS_BUTTON_STYLE,
+        cornerShape: radiusMode === "circular" ? "round" : "squircle",
+      } as CSSProperties & { cornerShape: "round" | "squircle" }}
     >
       {content === "icon-label" ? (
         <>
