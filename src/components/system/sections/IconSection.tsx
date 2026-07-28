@@ -174,7 +174,7 @@ function CheckIcon() {
 
 function LockIcon() {
   return (
-    <svg className="h-7 w-auto" viewBox="0 0 19 28" fill="none" aria-hidden>
+    <svg className="size-5" viewBox="0 0 19 28" fill="none" aria-hidden>
       <path
         d="M3.13274 27.3175C2.1117 27.3175 1.33199 27.039 0.793626 26.4821C0.264542 25.9251 0 25.099 0 24.0037V14.4106C0 13.3153 0.264542 12.4938 0.793626 11.9462C1.33199 11.3892 2.1117 11.1108 3.13274 11.1108H15.8725C16.8936 11.1108 17.6686 11.3892 18.1977 11.9462C18.7361 12.4938 19.0053 13.3153 19.0053 14.4106V24.0037C19.0053 25.099 18.7361 25.9251 18.1977 26.4821C17.6686 27.039 16.8936 27.3175 15.8725 27.3175H3.13274ZM2.43657 12.1829V7.78311C2.43657 6.03806 2.77073 4.59004 3.43905 3.43905C4.11665 2.28806 4.99381 1.42946 6.07054 0.863242C7.14728 0.287747 8.28899 0 9.49567 0C10.7116 0 11.858 0.287747 12.9347 0.863242C14.0114 1.42946 14.884 2.28806 15.5523 3.43905C16.2299 4.59004 16.5687 6.03806 16.5687 7.78311V12.1829H14.3688V7.47679C14.3688 6.30724 14.1414 5.32333 13.6866 4.52506C13.241 3.72679 12.647 3.12345 11.9044 2.71504C11.1711 2.30662 10.3682 2.10241 9.49567 2.10241C8.63243 2.10241 7.82952 2.30662 7.08694 2.71504C6.35365 3.12345 5.76423 3.72679 5.31869 4.52506C4.87314 5.32333 4.65037 6.30724 4.65037 7.47679V12.1829H2.43657Z"
         fill="currentColor"
@@ -249,7 +249,7 @@ function IconCard({ name, sample }: IconSpecimen) {
   );
 }
 
-/** Stroke specimens always use toolbar (20px) so the grid reads as one size. */
+/** Icon specimens use toolbar (20px) so each category reads as one size. */
 const TOOLBAR = iconSize("toolbar");
 
 /** Filled icons — solid glyphs, A–Z by display label. */
@@ -261,7 +261,7 @@ const filledIcons: IconSpecimen[] = [
   {
     name: "Apple",
     sample: (
-      <svg className="h-5 w-4" viewBox="0 0 814 1000" fill="currentColor" aria-hidden>
+      <svg className="size-5" viewBox="0 0 814 1000" fill="currentColor" aria-hidden>
         <path d={APPLE_LOGO_PATH} />
       </svg>
     ),
@@ -276,7 +276,11 @@ const filledIcons: IconSpecimen[] = [
   },
   {
     name: "Favorites star",
-    sample: <span className="text-2xl leading-none text-current">★</span>,
+    sample: (
+      <span className="flex size-5 items-center justify-center text-xl leading-none text-current">
+        ★
+      </span>
+    ),
   },
   {
     name: "Grid fill",
@@ -284,7 +288,7 @@ const filledIcons: IconSpecimen[] = [
   },
   {
     name: "Heart fill",
-    sample: <FilledAssetIcon src={heartFillIcon} className="h-[18px] w-5" />,
+    sample: <FilledAssetIcon src={heartFillIcon} />,
   },
   {
     name: "Lock",
