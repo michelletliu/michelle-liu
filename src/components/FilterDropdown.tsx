@@ -107,7 +107,7 @@ export function FilterDropdown({
         }
       }}
       className={clsx(
-        "bg-white rounded-xl shadow-elevated border border-zinc-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200",
+        "bg-white rounded-2xl shadow-elevated border border-zinc-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200",
         usePortal
           ? "fixed"
           : "absolute -left-[5px] top-[calc(100%+2px)] w-[calc(100%+10px)]"
