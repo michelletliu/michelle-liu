@@ -99,7 +99,7 @@ export default function ContactBadge({
           (scrollExpandMode ? "gap-1 py-0.5 pl-1.5 pr-2.5 duration-[800ms]" : "gap-1 py-0.5 pl-1.5 pr-2.5"),
         isExpanded &&
           resolvedSize === "lg" &&
-          "gap-1 py-0 pl-2 pr-2.5",
+          "gap-1 py-0 pl-2 pr-3",
         // Collapsed padding
         !isExpanded && hoverMode && "gap-0 py-0 pl-1 pr-0 md:ml-0.5 duration-300 md:gap-0 md:pr-0",
         !isExpanded && scrollExpandMode && "gap-0 p-1 duration-[800ms]",
