@@ -107,7 +107,7 @@ export function FilterDropdown({
         willChange: "transform",
       } : undefined}
     >
-      <div className="flex flex-col gap-0.5 px-0.5 py-1">
+      <div className="flex flex-col gap-1 px-0.5 py-1.5">
         {options.map((option) => {
           const isActive = activeValue === option.value;
           return (
@@ -119,7 +119,7 @@ export function FilterDropdown({
               }}
               className={clsx(
                 // 2px panel inset + 10px option padding matches the trigger's 12px inset.
-                "flex items-center px-2.5 py-0.5 rounded-[10px] supports-[corner-shape:squircle]:rounded-[1.125rem] transition-colors text-left",
+                "flex items-center px-2.5 py-1 rounded-[10px] supports-[corner-shape:squircle]:rounded-[1.125rem] transition-colors text-left",
                 isActive ? "bg-zinc-100" : "hover:bg-zinc-50"
               )}
             >
