@@ -34,13 +34,14 @@ export function FilterDropdown({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   // Snapshot of button rect captured synchronously before portal mounts
-  const snapRef = useRef({ top: 0, left: 0 });
+  const snapRef = useRef({ top: 0, left: 0, width: 0 });
 
   // Sync position update — called directly in scroll handler, no RAF lag
   const syncPanelPos = () => {
     if (buttonRef.current && panelRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       panelRef.current.style.transform = `translate(${rect.left}px, ${rect.bottom + 4}px)`;
+      panelRef.current.style.width = `${rect.width}px`;
     }
   };
 
@@ -48,7 +49,7 @@ export function FilterDropdown({
   useEffect(() => {
     if (defaultOpen && usePortal && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      snapRef.current = { top: rect.bottom + 4, left: rect.left };
+      snapRef.current = { top: rect.bottom + 4, left: rect.left, width: rect.width };
       syncPanelPos();
     }
   }, []);
@@ -94,12 +95,13 @@ export function FilterDropdown({
         if (el && usePortal) {
           // Set position synchronously on mount — before browser paints — so no jank
           el.style.transform = `translate(${snapRef.current.left}px, ${snapRef.current.top}px)`;
+          el.style.width = `${snapRef.current.width}px`;
         }
       }}
       className={clsx(
         // ring instead of border so the hairline sits outside the box and doesn't nudge text
-        "bg-white rounded-xl shadow-elevated ring-1 ring-zinc-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200",
-        usePortal ? "fixed" : "absolute left-0 top-[calc(100%+4px)]"
+        "bg-white rounded-xl shadow-elevated ring-1 ring-zinc-100 z-[9999] animate-in fade-in slide-in-from-top-1 duration-200",
+        usePortal ? "fixed" : "absolute left-0 top-[calc(100%+4px)] w-full"
       )}
       style={usePortal ? {
         top: 0,
@@ -148,7 +150,7 @@ export function FilterDropdown({
         onClick={() => {
           if (!open && buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
-            snapRef.current = { top: rect.bottom + 4, left: rect.left };
+            snapRef.current = { top: rect.bottom + 4, left: rect.left, width: rect.width };
           }
           setOpen(!open);
         }}
