@@ -287,9 +287,11 @@ function GlassButtonSample({
 function ButtonRadiusToggle({
   mode,
   onChange,
+  transparent = false,
 }: {
   mode: SpecButtonRadiusMode;
   onChange: (mode: SpecButtonRadiusMode) => void;
+  transparent?: boolean;
 }) {
   const isCircular = mode === "circular";
   return (
@@ -303,7 +305,10 @@ function ButtonRadiusToggle({
       className={clsx(
         ghostIconButtonClass(
           "sm",
-          "absolute right-3 top-3 z-[3] bg-white/80 text-zinc-300 backdrop-blur-sm",
+          clsx(
+            "absolute right-3 top-3 z-[3] text-zinc-300",
+            !transparent && "bg-white/80 backdrop-blur-sm",
+          ),
         ),
         "hover:bg-zinc-100 hover:text-zinc-400",
         "active:bg-zinc-100",
@@ -327,6 +332,7 @@ function ButtonMatrixStage<V extends SpecButtonVariant>({
   stageClassName,
   radiusMode,
   onRadiusModeChange,
+  transparentToggle = false,
 }: {
   content: SpecButtonContent;
   variants: V[];
@@ -339,12 +345,17 @@ function ButtonMatrixStage<V extends SpecButtonVariant>({
   stageClassName: string;
   radiusMode: SpecButtonRadiusMode;
   onRadiusModeChange: (mode: SpecButtonRadiusMode) => void;
+  transparentToggle?: boolean;
 }) {
   return (
     <div
       className={`relative flex min-h-0 flex-1 items-stretch justify-center rounded-xl px-6 py-6 md:items-center ${stageClassName}`}
     >
-      <ButtonRadiusToggle mode={radiusMode} onChange={onRadiusModeChange} />
+      <ButtonRadiusToggle
+        mode={radiusMode}
+        onChange={onRadiusModeChange}
+        transparent={transparentToggle}
+      />
       <p className="sr-only">{caption}</p>
 
       {/* Mobile: stacked variants; 3 fixed columns so tab toggles don’t reflow height */}
@@ -470,6 +481,7 @@ function GlassMatrixSpecimen() {
         stageClassName="bg-gradient-to-br from-zinc-200 via-zinc-100 to-zinc-300"
         radiusMode={radiusMode}
         onRadiusModeChange={setRadiusMode}
+        transparentToggle
         renderCell={(variant, size, cellContent) => (
           <GlassButtonSample
             variant={variant}
@@ -554,7 +566,11 @@ function ButtonPlaygroundSpecimen() {
             : "bg-white"
         }`}
       >
-        <ButtonRadiusToggle mode={radiusMode} onChange={setRadiusMode} />
+        <ButtonRadiusToggle
+          mode={radiusMode}
+          onChange={setRadiusMode}
+          transparent={isGlass}
+        />
         {isGlass && variant !== "ghost" ? (
           <GlassButtonSample
             variant={variant}
