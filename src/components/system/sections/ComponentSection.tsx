@@ -298,32 +298,34 @@ function ButtonRadiusToggle({
   const label = isCircular ? "View Squircle" : "View Rounded";
 
   return (
-    <Tooltip label={label} position="top" className="absolute right-3 top-3 z-[3]">
-      <button
-        type="button"
-        aria-pressed={!isCircular}
-        aria-label={label}
-        onClick={() => onChange(isCircular ? "rectangular" : "circular")}
-        className={clsx(
-          ghostIconButtonClass(
-            "sm",
-            clsx(
-              "text-zinc-300",
-              !transparent && "bg-white/80 backdrop-blur-sm",
+    <div className="absolute right-3 top-3 z-[3]">
+      <Tooltip label={label} position="bottom">
+        <button
+          type="button"
+          aria-pressed={!isCircular}
+          aria-label={label}
+          onClick={() => onChange(isCircular ? "rectangular" : "circular")}
+          className={clsx(
+            ghostIconButtonClass(
+              "sm",
+              clsx(
+                "text-zinc-300",
+                !transparent && "bg-white/80 backdrop-blur-sm",
+              ),
             ),
-          ),
-          "hover:bg-zinc-100 hover:text-zinc-400",
-          "active:bg-zinc-100",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
-        )}
-      >
-        {isCircular ? (
-          <SquircleIcon size={iconSize("toolbar")} />
-        ) : (
-          <CircleIcon size={iconSize("toolbar")} />
-        )}
-      </button>
-    </Tooltip>
+            "hover:bg-zinc-100 hover:text-zinc-400",
+            "active:bg-zinc-100",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
+          )}
+        >
+          {isCircular ? (
+            <SquircleIcon size={iconSize("toolbar")} />
+          ) : (
+            <CircleIcon size={iconSize("toolbar")} />
+          )}
+        </button>
+      </Tooltip>
+    </div>
   );
 }
 
