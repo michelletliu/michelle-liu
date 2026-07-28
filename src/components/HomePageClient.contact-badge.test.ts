@@ -24,6 +24,16 @@ test("uses large contact text and deeper intro fade on Work", () => {
   assert.doesNotMatch(badgeSource, /touch!\s+<\/a>/);
 });
 
+test("fades the pulse ring out instead of snapping it off", () => {
+  const cssSource = readFileSync(new URL("../styles/globals.css", import.meta.url), "utf8");
+  assert.match(
+    badgeSource,
+    /transition-opacity duration-300 ease-out",\s+isExpanded \? "opacity-0" : "opacity-100"/,
+  );
+  assert.doesNotMatch(badgeSource, /green-pulse-ring-off/);
+  assert.doesNotMatch(cssSource, /green-pulse-ring-off/);
+});
+
 test("shows the header badge at its large size in the design system", () => {
   assert.match(specimenSource, /<ContactBadge size="lg" \/>/);
   assert.match(specimenSource, /lg · Header/);

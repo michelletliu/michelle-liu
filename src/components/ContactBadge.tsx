@@ -110,7 +110,14 @@ export default function ContactBadge({
       onMouseLeave={handleMouseLeave}
     >
       <span className="relative size-4 shrink-0 overflow-visible">
-        <span className={isExpanded ? "green-pulse-ring-off" : "green-pulse-ring"} />
+        <span
+          className={clsx(
+            "pointer-events-none absolute inset-0 transition-opacity duration-300 ease-out",
+            isExpanded ? "opacity-0" : "opacity-100"
+          )}
+        >
+          <span className="green-pulse-ring" />
+        </span>
         <svg className="relative z-10 block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
           <circle cx="8" cy="8" fill="#10B981" r="4" />
         </svg>
