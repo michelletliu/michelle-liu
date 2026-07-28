@@ -77,9 +77,9 @@ test("only the muted input composition uses the muted shell tone", () => {
   );
 });
 
-test("leading icon specimens remove the surface shell left padding", () => {
+test("leading icon specimens use a 4px shell left inset", () => {
   assert.match(
     section,
-    /composition === "leading"\s*\?\s*"max-w-\[11\.5rem\] gap-2\.5 !pl-0"/,
+    /composition === "leading"\s*\?\s*"max-w-\[11\.5rem\] gap-2\.5 !pl-1"/,
   );
 });
