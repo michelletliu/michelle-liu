@@ -7,6 +7,15 @@ import { iconSize } from "./iconSizes";
 const PANEL_LEFT_OFFSET = 5;
 const PANEL_GAP = 2;
 const PANEL_WIDTH_EXPANSION = PANEL_LEFT_OFFSET * 2;
+const PANEL_MIN_WIDTH = 180;
+
+function getPanelHorizontalMetrics(rect: Pick<DOMRect, "left" | "width">) {
+  const width = Math.max(rect.width + PANEL_WIDTH_EXPANSION, PANEL_MIN_WIDTH);
+  return {
+    left: rect.left - (width - rect.width) / 2,
+    width,
+  };
+}
 
 export type FilterDropdownOption = {
   value: string;
@@ -44,8 +53,9 @@ export function FilterDropdown({
   const syncPanelPos = () => {
     if (buttonRef.current && panelRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      panelRef.current.style.transform = `translate(${rect.left - PANEL_LEFT_OFFSET}px, ${rect.bottom + PANEL_GAP}px)`;
-      panelRef.current.style.width = `${rect.width + PANEL_WIDTH_EXPANSION}px`;
+      const { left, width } = getPanelHorizontalMetrics(rect);
+      panelRef.current.style.transform = `translate(${left}px, ${rect.bottom + PANEL_GAP}px)`;
+      panelRef.current.style.width = `${width}px`;
     }
   };
 
@@ -53,10 +63,10 @@ export function FilterDropdown({
   useEffect(() => {
     if (defaultOpen && usePortal && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
+      const horizontalMetrics = getPanelHorizontalMetrics(rect);
       snapRef.current = {
         top: rect.bottom + PANEL_GAP,
-        left: rect.left - PANEL_LEFT_OFFSET,
-        width: rect.width + PANEL_WIDTH_EXPANSION,
+        ...horizontalMetrics,
       };
       syncPanelPos();
     }
@@ -107,10 +117,10 @@ export function FilterDropdown({
         }
       }}
       className={clsx(
-        "bg-white rounded-2xl shadow-elevated border border-zinc-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200",
+        "bg-white rounded-2xl shadow-elevated border border-zinc-100 z-[9999] min-w-[180px] animate-in fade-in slide-in-from-top-1 duration-200",
         usePortal
           ? "fixed"
-          : "absolute -left-[5px] top-[calc(100%+2px)] w-[calc(100%+10px)]"
+          : "absolute left-1/2 top-[calc(100%+2px)] w-[calc(100%+10px)] -translate-x-1/2"
       )}
       style={usePortal ? {
         top: 0,
@@ -158,10 +168,10 @@ export function FilterDropdown({
         onClick={() => {
           if (!open && buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
+            const horizontalMetrics = getPanelHorizontalMetrics(rect);
             snapRef.current = {
               top: rect.bottom + PANEL_GAP,
-              left: rect.left - PANEL_LEFT_OFFSET,
-              width: rect.width + PANEL_WIDTH_EXPANSION,
+              ...horizontalMetrics,
             };
           }
           setOpen(!open);
