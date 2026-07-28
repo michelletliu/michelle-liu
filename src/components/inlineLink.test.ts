@@ -9,6 +9,6 @@ test("inline editorial links inherit color and use the blue interaction accent",
   assert.match(INLINE_LINK_CLASS, /\btransition-colors\b/);
   assert.match(INLINE_LINK_CLASS, /\bduration-200\b/);
   assert.match(INLINE_LINK_CLASS, /\bease-out\b/);
-  assert.match(INLINE_LINK_CLASS, /\bunderline\b/);
-  assert.match(INLINE_LINK_CLASS, /\bunderline-offset-2\b/);
+  assert.doesNotMatch(INLINE_LINK_CLASS, /\bunderline\b/);
+  assert.doesNotMatch(INLINE_LINK_CLASS, /\bunderline-offset-/);
 });
