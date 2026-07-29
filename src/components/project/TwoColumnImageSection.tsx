@@ -150,7 +150,7 @@ export function TwoColumnImageSectionComponent({
             {(section.label || section.heading) && (
               <div className="flex flex-col gap-3">
                 {section.label && (
-                  <p className="leading-5 uppercase text-[#a1a1aa] text-base">
+                  <p className="leading-normal uppercase text-[#a1a1aa] text-base">
                     {section.label}
                   </p>
                 )}
@@ -205,7 +205,7 @@ export function TwoColumnImageSectionComponent({
             {(section.label || section.heading) && (
               <div className="flex flex-col gap-3">
                 {section.label && (
-                  <p className="leading-5 uppercase text-[#a1a1aa] text-base">
+                  <p className="leading-normal uppercase text-[#a1a1aa] text-base">
                     {section.label}
                   </p>
                 )}

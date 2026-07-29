@@ -13,3 +13,5 @@ next-env.d.ts
 .gstack/
 
 .tmp-shots/
+
+scripts/reading-dates-preview.json

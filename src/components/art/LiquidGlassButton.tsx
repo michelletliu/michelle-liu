@@ -4,26 +4,32 @@ import { type ReactNode, type ButtonHTMLAttributes } from "react";
 interface LiquidGlassButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   size?: number;
+  /** Specimen override — art galleries keep the default full circle. */
+  radius?: "full" | "xl";
 }
 
 export default function LiquidGlassButton({
   children,
   size = 36,
+  radius = "full",
   style,
   className,
   ...props
 }: LiquidGlassButtonProps) {
+  const isFull = radius === "full";
   return (
     <button
       {...props}
       className={clsx(
-        "shadow-glass !rounded-full transition-transform duration-150 ease-out hover:scale-105",
+        "shadow-glass transition-[border-radius,transform] duration-200 ease-in-out motion-reduce:transition-none hover:scale-105",
+        isFull ? "!rounded-full" : "rounded-xl",
         className,
       )}
       style={{
         width: size,
         height: size,
-        borderRadius: "50%",
+        // Squircle compensation lives in index.css, so only pin the circle.
+        ...(isFull ? { borderRadius: "50%" } : null),
         border: "none",
         padding: 0,
         display: "flex",

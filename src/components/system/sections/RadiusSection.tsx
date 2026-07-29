@@ -6,35 +6,7 @@ import { radii, uniformTag } from "../tokens";
 import { SubLabel, Grid, TokenCard } from "../primitives";
 import { ghostIconButtonClass } from "../../ghostIconButton";
 import { iconSize } from "../../iconSizes";
-
-/** 2×2 grid glyph — matches Code / Chevron stroke style. */
-function GridIcon({
-  size = iconSize("inline"),
-  filled = false,
-}: {
-  size?: string;
-  filled?: boolean;
-}) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      className="inline-block shrink-0"
-      aria-hidden
-    >
-      <path
-        d="M4 4h6v6H4V4ZM14 4h6v6h-6V4ZM4 14h6v6H4v-6ZM14 14h6v6h-6v-6Z"
-        fill={filled ? "currentColor" : "none"}
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
-  );
-}
+import { GridIcon } from "../../library/icons";
 
 /** Radius 40 so round vs squircle reads clearly. viewBox 137.55. */
 const ROUND_PATH =
@@ -82,10 +54,9 @@ export default function RadiusBlock() {
               "hover:bg-zinc-100 hover:text-zinc-400",
               "active:bg-zinc-100",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
-              showGrid && "bg-zinc-100 text-zinc-500 hover:bg-zinc-100",
             )}
           >
-            <GridIcon filled={showGrid} />
+            <GridIcon size={iconSize("sm")} filled={showGrid} />
           </button>
 
           <div className="relative flex justify-center gap-8 sm:gap-16">

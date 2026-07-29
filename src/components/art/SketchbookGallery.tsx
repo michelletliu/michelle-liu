@@ -177,7 +177,7 @@ export default function SketchbookGallery({
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Caption: Title and Date */}
-      <div className="flex flex-col font-medium items-start leading-[1.4] text-base">
+      <div className="flex flex-col font-medium items-start leading-snug text-base">
         <p className="text-zinc-900 text-lg">
           {data.title}
         </p>

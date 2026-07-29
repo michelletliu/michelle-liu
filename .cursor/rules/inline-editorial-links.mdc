@@ -1,0 +1,12 @@
+---
+description: Use the shared editorial text-link treatment
+globs: "src/**/*.{ts,tsx,css}"
+alwaysApply: false
+---
+
+# Inline editorial links
+
+- Use `INLINE_LINK_CLASS` from `src/components/inlineLink.ts` for inline or editorial text links.
+- Let links inherit their surrounding text color; hover and keyboard focus turn `blue-500`.
+- Keep the shared underline, 200ms color transition, and visible focus treatment.
+- Do not apply this class to navigation, card links, icon controls, button-like anchors, error actions, or intentionally branded one-offs.

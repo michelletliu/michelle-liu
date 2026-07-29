@@ -60,12 +60,14 @@
     "tailwind-merge": "*",
     "tailwindcss": "^4.1.18",
     "tesseract.js": "^7.0.0",
+    "three": "^0.185.1",
     "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.185.1",
     "@vercel/node": "^5.5.22",
     "agentation": "^3.0.2",
     "react-doctor": "^0.2.8",
@@ -78,7 +80,7 @@
     "prebuild": "node scripts/generate-changelog-json.js",
     "build": "next build --webpack",
     "start": "next start",
-    "test": "node --test --experimental-strip-types src/lib/protected-project-access.test.ts scripts/sync-goodreads-rss.test.js",
+    "test": "node --test --experimental-strip-types src/lib/protected-project-access.test.ts src/lib/shallowPath.test.ts src/components/library/sortBooks.test.ts src/components/system/inputMatrix.test.ts src/components/system/MotionSection.test.ts src/components/FieldInput.test.ts src/components/iconSizes.test.ts src/components/system/iconSection.test.ts src/components/system/canvasDust.test.ts src/components/system/colorSection.test.ts src/components/SocialLinks.test.ts",
     "repair-spotify-links": "node scripts/repair-spotify-urls.js",
     "doctor": "npx react-doctor@latest"
   }

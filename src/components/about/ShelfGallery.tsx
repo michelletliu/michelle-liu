@@ -141,7 +141,7 @@ export default function ShelfGallery({
               rel="noopener noreferrer"
               className="flex shrink-0 cursor-pointer items-center justify-center rounded-full px-0.5 transition-colors hover:text-zinc-600"
             >
-              <span className="inline-flex items-center gap-1 text-base font-medium leading-5 tracking-wide text-zinc-400">
+              <span className="inline-flex items-center gap-1 text-base font-medium leading-normal tracking-wide text-zinc-400">
                 {externalLink.label}<ArrowUpRight />
               </span>
             </a>

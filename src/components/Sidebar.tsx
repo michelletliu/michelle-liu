@@ -41,7 +41,7 @@ export type SidebarProps = {
 };
 
 const LEAF_TEXT =
-  "text-base font-medium tracking-wide leading-5 text-left transition-colors";
+  "text-base font-medium tracking-wide leading-normal text-left transition-colors";
 
 function Leaf({
   leaf,
@@ -106,7 +106,7 @@ export default function Sidebar({
             >
               <span
                 className={clsx(
-                  "text-base font-medium tracking-wide leading-5 transition-colors",
+                  "text-base font-medium tracking-wide leading-normal transition-colors",
                   node.active ? "text-zinc-500" : "text-zinc-400 hover:text-zinc-500"
                 )}
               >

@@ -1,0 +1,11 @@
+---
+description: Keep Superpowers planning docs out of pull requests — never commit them
+alwaysApply: true
+---
+
+# Pull Request Hygiene
+
+- NEVER include files under `docs/superpowers/plans/` or `docs/superpowers/specs/` in commits or pull requests.
+- Planning / design / implementation-plan documents may be created locally when a workflow requires them, but delete them from the branch before committing, pushing, or opening/updating a PR.
+- If a PR already contains these files, remove them in a follow-up commit immediately.
+- Prefer shipping product code only; leave agent planning artifacts out of git history on feature branches when possible.

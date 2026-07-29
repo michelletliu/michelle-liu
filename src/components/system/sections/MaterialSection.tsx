@@ -1,6 +1,11 @@
 import type { CSSProperties, ReactNode } from "react";
 import { materials } from "../tokens";
 import { Section, TokenCard, Grid, GLASS_SPECIMEN_GRADIENT } from "../primitives";
+import {
+  CANVAS_DUST_PARTICLES,
+  canvasDustAnimationName,
+  canvasDustKeyframesCss,
+} from "../canvasDust";
 
 const GRAIN_SVG =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E\")";
@@ -160,27 +165,19 @@ function MaterialSpecimen({ name }: { name: string }) {
     case "Canvas particles":
       return (
         <Fill className="overflow-hidden bg-zinc-50">
-          {[
-            { t: "18%", l: "22%", s: 3, o: 0.9 },
-            { t: "32%", l: "58%", s: 2, o: 0.7 },
-            { t: "48%", l: "38%", s: 4, o: 0.85 },
-            { t: "62%", l: "72%", s: 2, o: 0.6 },
-            { t: "28%", l: "78%", s: 3, o: 0.75 },
-            { t: "70%", l: "28%", s: 2, o: 0.55 },
-            { t: "55%", l: "52%", s: 3, o: 0.8 },
-            { t: "40%", l: "18%", s: 2, o: 0.65 },
-          ].map((p, i) => (
+          <style dangerouslySetInnerHTML={{ __html: canvasDustKeyframesCss() }} />
+          {CANVAS_DUST_PARTICLES.map((p, i) => (
             <span
               key={i}
-              className="absolute rounded-full"
+              className="canvas-dust-particle absolute rounded-full"
               style={{
-                top: p.t,
-                left: p.l,
-                width: p.s,
-                height: p.s,
-                opacity: p.o,
-                backgroundColor:
-                  i % 3 === 0 ? "#fbcfe8" : i % 3 === 1 ? "#bfdbfe" : "#a1a1aa",
+                top: p.top,
+                left: p.left,
+                width: p.size,
+                height: p.size,
+                opacity: p.opacity,
+                backgroundColor: p.color,
+                animation: `${canvasDustAnimationName(i)} ${p.durationMs}ms ease-in-out ${p.delayMs}ms infinite`,
               }}
             />
           ))}

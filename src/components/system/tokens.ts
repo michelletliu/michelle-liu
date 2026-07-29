@@ -66,7 +66,7 @@ export type MotionToken = {
   name: string;
   duration: string;
   easing: string;
-  keyframe: "fade" | "slideUp" | "slideDown" | "scale" | "shimmer" | "pulse" | "blink" | "spin";
+  keyframe: "fade" | "slideUp" | "slideDown" | "scale" | "shimmer" | "pulse" | "film-dot-pulse" | "blink" | "spin";
   usage: string;
   tag: Tag;
 };
@@ -222,10 +222,9 @@ export const fontWeights: ScaleToken[] = [
 ];
 
 export const tracking: ScaleToken[] = [
-  { name: "tracking-[0.005em]", value: "0.005em", usage: "Core micro-tracking (nav, cards, about)", tag: "canonical" },
-  { name: "tracking-[0.01em]", value: "0.01em", usage: "Media cards, library filter, social link labels", tag: "canonical" },
-  { name: "tracking-[0.0125em]", value: "0.0125em", usage: "Display name (home hero name, Design System title)", tag: "canonical" },
-  { name: "tracking-[-0.31px]", value: "-0.31px", usage: "Tool grid values", tag: "canonical" },
+  { name: "tracking-micro", value: "0.005em", usage: "Core micro-tracking (nav, cards, about, tool grid values)", tag: "canonical" },
+  { name: "tracking-fine", value: "0.01em", usage: "Media cards, library filter, social link labels", tag: "canonical" },
+  { name: "tracking-display", value: "0.0125em", usage: "Display name (home hero name, Design System title)", tag: "canonical" },
   { name: "tracking-wide", value: "0.025em", usage: "Section subtitles, sidebar nav", tag: "canonical" },
   { name: "tracking-wider", value: "0.05em", usage: "Footer clock", tag: "one-off" },
   { name: "tracking-[0.15em]", value: "0.15em", usage: "Polaroid stamp text", tag: "experiment" },
@@ -233,15 +232,11 @@ export const tracking: ScaleToken[] = [
 ];
 
 export const lineHeights: ScaleToken[] = [
-  { name: "leading-none", value: "1", usage: "404 display", tag: "canonical" },
-  { name: "leading-tight", value: "1.25", usage: "Card descriptions, lore dates", tag: "canonical" },
-  { name: "leading-5", value: "calc(var(--spacing) * 5)", usage: "Metadata, nav, captions", tag: "canonical" },
-  { name: "leading-snug", value: "1.375", usage: "Film captions, stats", tag: "canonical" },
-  { name: "leading-[1.4]", value: "1.4", usage: "Project card text", tag: "canonical" },
-  { name: "leading-normal", value: "1.5", usage: "Default headings / buttons", tag: "canonical" },
-  { name: "leading-6", value: "calc(var(--spacing) * 6)", usage: "Subtitles, footer CTA", tag: "canonical" },
-  { name: "leading-relaxed", value: "1.625", usage: "About prose, book review", tag: "canonical" },
-  { name: "leading-7", value: "calc(var(--spacing) * 7)", usage: "Quotes, display lines", tag: "canonical" },
+  { name: "leading-none", value: "1", usage: "Single-line UI, icon-adjacent text", tag: "canonical" },
+  { name: "leading-tight", value: "1.25", usage: "Dense card copy, compact metadata", tag: "canonical" },
+  { name: "leading-snug", value: "1.375", usage: "Short multi-line captions and labels", tag: "canonical" },
+  { name: "leading-normal", value: "1.5", usage: "Default headings, buttons, body chrome", tag: "canonical" },
+  { name: "leading-relaxed", value: "1.625", usage: "Longer prose (About, reviews, explanatory copy)", tag: "canonical" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -326,12 +321,11 @@ export const spacingScale: ScaleToken[] = [
 ];
 
 export const gutters: ScaleToken[] = [
-  { name: "px-16 / max-md:px-6", value: "64px → 24px", usage: "★ Primary page gutter", tag: "canonical" },
+  { name: "px-16 / max-md:px-6", value: "64px / 24px", usage: "★ Primary page gutter", tag: "canonical" },
   { name: "px-8", value: "32px", usage: "Secondary mobile gutter", tag: "canonical" },
   { name: "px-[175px] / md:px-[8%]", value: "175px / 8%", usage: "Wide project gallery gutters", tag: "one-off" },
   { name: "w-[calc(100%*10/12)]", value: "10 of 12 cols", usage: "Project modal width", tag: "canonical" },
   { name: "w-[calc(100%*6/12)]", value: "6 of 12 cols", usage: "Info modal width", tag: "one-off" },
-  { name: "w-[337px] / [402px]", value: "337 / 402px", usage: "Screentime phone widths", tag: "experiment" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -396,7 +390,7 @@ export const motion: MotionToken[] = [
   { name: "gradient-bg", duration: "8s", easing: "ease ∞", keyframe: "shimmer", usage: "Header gradient drift", tag: "canonical" },
   { name: "blink", duration: "1.2s", easing: "ease-in-out ∞", keyframe: "blink", usage: "Footer clock colon", tag: "one-off" },
   { name: "animate-spin", duration: "1s", easing: "linear ∞", keyframe: "spin", usage: "Loading spinners", tag: "canonical" },
-  { name: "film-dot-pulse", duration: "1.4s", easing: "ease-in-out ∞", keyframe: "pulse", usage: "Film loading ellipsis", tag: "experiment" },
+  { name: "film-dot-pulse", duration: "1.4s", easing: "ease-in-out ∞", keyframe: "film-dot-pulse", usage: "Film loading ellipsis", tag: "experiment" },
 ];
 
 export const durationScale: ScaleToken[] = [
@@ -485,7 +479,7 @@ export const tocSubsections: Record<string, string[]> = {
     "Navigation",
     "Pills",
   ],
-  icons: ["Filled icons", "Size", "Social", "Stroke icons"],
+  icons: ["Size", "Filled", "Stroke", "Social"],
   motion: ["Animations", "Duration scale"],
   spacing: ["Gap scale", "Layout widths"],
   typography: ["Families", "Properties"],

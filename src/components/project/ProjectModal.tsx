@@ -52,6 +52,7 @@ import { FieldInput, FieldShell, fieldIconSlotClassName } from "../FieldInput";
 import { Chevron } from "../Chevron";
 import { Close } from "../Close";
 import { ArrowRightIcon } from "../Arrow";
+import { iconSize } from "../iconSizes";
 import { HorizontalLine } from "../HorizontalLine";
 import { ghostIconButtonClass } from "../ghostIconButton";
 import ProjectCaseStudySidebar from "./ProjectCaseStudySidebar";
@@ -152,7 +153,7 @@ function createPortableTextComponents(highlightedText?: string, highlightColor?:
       h4: ({ children }) => {
         // If this h4 contains the highlight text, apply color to the whole element and remove text color class
         if (shouldHighlight(children)) {
-          return <h4 className="font-normal mb-2 mt-4 first:mt-0 text-zinc-900" style={{ fontSize: '1.125rem', lineHeight: '1.75rem', color }}>{children}</h4>;
+          return <h4 className="font-normal mb-2 mt-4 first:mt-0 text-lg leading-relaxed text-zinc-900" style={{ color }}>{children}</h4>;
         }
         return <h4 className="text-lg font-normal mb-2 mt-4 first:mt-0 text-zinc-900">{children}</h4>;
       },
@@ -694,7 +695,7 @@ function PasswordInput({
             {isLoading ? (
               <div className="size-3.5 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-500" />
             ) : (
-              <ArrowRightIcon size="14px" />
+              <ArrowRightIcon size={iconSize("md")} />
             )}
           </button>
         </div>
@@ -706,7 +707,7 @@ function PasswordInput({
           error ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
         )}
       >
-        <p className="text-[#f87171] text-sm leading-5 px-2 bg-transparent">
+        <p className="text-[#f87171] text-sm leading-normal px-2 bg-transparent">
           Please try again!
         </p>
       </div>
@@ -1327,7 +1328,7 @@ export default function ProjectModal({
               {isUnlocked && isMobile && projectId !== 'nasa' && (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center">
                   <LaptopIcon />
-                  <p className="text-[#71717a] text-base leading-6 px-12 mt-4">
+                  <p className="text-[#71717a] text-base leading-normal px-12 mt-4">
                     This page isn't available on mobile yet. You can view it on desktop instead! {";)"}
                   </p>
                 </div>
@@ -1364,7 +1365,7 @@ export default function ProjectModal({
                 <div className="content-stretch flex flex-col gap-10 items-start relative shrink-0 w-full">
                   {/* Title */}
                   <ScrollReveal variant="fade" delay={80} rootMargin="0px">
-                    <p className="font-normal leading-5 relative shrink-0 text-4xl text-zinc-900">
+                    <p className="font-normal leading-normal relative shrink-0 text-4xl text-zinc-900">
                       {project.title}
                     </p>
                   </ScrollReveal>
@@ -1374,7 +1375,7 @@ export default function ProjectModal({
                     <div className="content-stretch flex gap-5 items-start relative shrink-0 w-full max-md:grid max-md:grid-cols-2 max-md:gap-4">
                       {project.metadata.map((item) => (
                         <ScrollReveal key={item._key} variant="fade" delay={160} rootMargin="0px" className="flex-[1_0_0] min-h-px min-w-px">
-                          <div className="content-stretch flex flex-col gap-3 items-start leading-5 relative shrink-0 text-base whitespace-pre-wrap">
+                          <div className="content-stretch flex flex-col gap-3 items-start leading-normal relative shrink-0 text-base whitespace-pre-wrap">
                             <p className="font-medium relative shrink-0 text-[#a1a1aa]">
                               {item.label}
                             </p>
@@ -1651,10 +1652,10 @@ function TestimonialBlock({
       <div className="content-stretch flex flex-col gap-[100px] max-md:gap-16 items-start relative shrink-0 w-full">
         {/* Header Section */}
         <div className="content-stretch flex flex-col gap-5 items-start relative shrink-0 w-full">
-          <p className="leading-5 relative shrink-0 text-[#a1a1aa] uppercase text-base">
+          <p className="leading-normal relative shrink-0 text-[#a1a1aa] uppercase text-base">
             {sectionLabel}
           </p>
-          <p className="leading-7 min-w-full relative shrink-0 text-2xl text-zinc-900 whitespace-pre-wrap">
+          <p className="leading-relaxed min-w-full relative shrink-0 text-2xl text-zinc-900 whitespace-pre-wrap">
             {sectionTitle && renderHighlightedText(sectionTitle, highlightedText, highlightColor)}
           </p>
         </div>
@@ -1694,7 +1695,7 @@ function TestimonialBlock({
             </div>
 
             {/* Name and Title */}
-            <div className="content-stretch flex flex-col gap-1 items-start leading-5 relative shrink-0 text-base max-md:flex-1">
+            <div className="content-stretch flex flex-col gap-1 items-start leading-normal relative shrink-0 text-base max-md:flex-1">
               <p className="relative shrink-0 text-zinc-900">{authorName}</p>
               <p className="relative shrink-0 text-[#a1a1aa]">{authorSubtitle}</p>
             </div>
@@ -1758,7 +1759,7 @@ function TestimonialBlock({
                 "relative shrink-0 cursor-pointer transition-colors duration-300 ease-out",
                 isExpanded
                   ? "size-6 text-zinc-500 hover:opacity-70"
-                  : "leading-5 text-[#a1a1aa] text-base hover:text-[#71717a] text-left"
+                  : "leading-normal text-[#a1a1aa] text-base hover:text-[#71717a] text-left"
               )}
             >
               {!isExpanded ? (
@@ -1814,10 +1815,10 @@ function ContentBlock({
           <div ref={missionRef} className="flex flex-col items-center px-8 md:px-[8%] xl:px-[175px] py-10 relative shrink-0 w-full">
             {/* Label + Title */}
             <div className="flex flex-col gap-5 items-center text-center w-[410px] max-md:w-full">
-              <p className="leading-5 text-[#a1a1aa] uppercase text-base">
+              <p className="leading-normal text-[#a1a1aa] uppercase text-base">
                 {section.sectionLabel || "The Mission"}
               </p>
-              <p className="leading-7 text-2xl text-zinc-900 whitespace-pre-wrap text-pretty">
+              <p className="leading-relaxed text-2xl text-zinc-900 whitespace-pre-wrap text-pretty">
                 {renderHighlightedText(section.missionTitle, section.highlightedText, section.highlightColor)}
               </p>
             </div>
@@ -1840,7 +1841,7 @@ function ContentBlock({
 
                 {/* Italic Note */}
                 {section.missionNote && (
-                  <p className="text-[#a1a1aa] text-base italic leading-5">
+                  <p className="text-[#a1a1aa] text-base italic leading-normal">
                     {section.missionNote}
                   </p>
                 )}
@@ -1849,7 +1850,7 @@ function ContentBlock({
 
             {/* Italic Note (when no description) */}
             {!hasDescription && section.missionNote && (
-              <p className="text-[#a1a1aa] text-base italic leading-5 mt-8 w-[410px] max-md:w-full px-8 max-md:px-0">
+              <p className="text-[#a1a1aa] text-base italic leading-normal mt-8 w-[410px] max-md:w-full px-8 max-md:px-0">
                 {section.missionNote}
               </p>
             )}
@@ -1873,7 +1874,7 @@ function ContentBlock({
             !hasDescription && "max-w-[646px] w-full",
             hasDescription && "col-start-1"
           )}>
-            <p className="leading-5 relative shrink-0 text-[#a1a1aa] uppercase text-base">
+            <p className="leading-normal relative shrink-0 text-[#a1a1aa] uppercase text-base">
               {section.sectionLabel || "The Mission"}
             </p>
             <p className="leading-normal w-full relative shrink-0 text-xl text-zinc-900 whitespace-pre-wrap text-pretty">
@@ -1918,10 +1919,10 @@ function ContentBlock({
 
                 {/* Text Content */}
                 <div className="content-stretch flex flex-col gap-2 items-start relative shrink-0 w-full">
-                  <p className="leading-7 relative shrink-0 text-2xl text-zinc-900">
+                  <p className="leading-relaxed relative shrink-0 text-2xl text-zinc-900">
                     {(section.title || (projectId === "apple" ? "This work is confidential." : hasPassword ? "This case study is password-protected." : "Confidential")).replace(/\n/g, ' ')}
                   </p>
-                  <p className="leading-6 relative shrink-0 text-[#a1a1aa] text-lg">
+                  <p className="leading-normal relative shrink-0 text-[#a1a1aa] text-lg">
                     {projectId === "apple" ? "Please " : hasPassword ? "Curious? Feel free to " : (section.message || "Interested? Please ")}
                     {section.contactEmail ? (
                       <>
@@ -2000,12 +2001,12 @@ function ContentBlock({
                       {(section.sectionNumber || section.sectionLabel) && (
                         <div className="flex items-center gap-2">
                           {section.sectionNumber && (
-                            <p className="leading-5 relative shrink-0 text-[#3b82f6] uppercase text-base font-medium">
+                            <p className="leading-normal relative shrink-0 text-[#3b82f6] uppercase text-base font-medium">
                               {section.sectionNumber}
                             </p>
                           )}
                           {section.sectionLabel && (
-                            <p className="leading-5 relative shrink-0 uppercase text-base">
+                            <p className="leading-normal relative shrink-0 uppercase text-base">
                               {section.sectionLabel}
                             </p>
                           )}
@@ -2014,7 +2015,7 @@ function ContentBlock({
 
                       {/* Problem Label */}
                       {section.problemLabel && (
-                        <p className="leading-5 relative shrink-0 uppercase text-[#a1a1aa] text-base">
+                        <p className="leading-normal relative shrink-0 uppercase text-[#a1a1aa] text-base">
                           {section.problemLabel}
                         </p>
                       )}
@@ -2096,12 +2097,12 @@ function ContentBlock({
               {(section.sectionNumber || section.sectionLabel) && (
                 <div className="flex items-center gap-2">
                   {section.sectionNumber && (
-                    <p className="leading-5 relative shrink-0 text-[#3b82f6] text-base font-medium">
+                    <p className="leading-normal relative shrink-0 text-[#3b82f6] text-base font-medium">
                       {section.sectionNumber}
                     </p>
                   )}
                   {section.sectionLabel && (
-                    <p className="leading-5 relative shrink-0 uppercase text-base">
+                    <p className="leading-normal relative shrink-0 uppercase text-base">
                       {section.sectionLabel}
                     </p>
                   )}
@@ -2110,7 +2111,7 @@ function ContentBlock({
               
               {/* Problem Label */}
               {section.problemLabel && (
-                <p className="leading-5 relative shrink-0 uppercase text-[#a1a1aa] text-base">
+                <p className="leading-normal relative shrink-0 uppercase text-[#a1a1aa] text-base">
                   {section.problemLabel}
                 </p>
               )}
@@ -2132,7 +2133,7 @@ function ContentBlock({
             )}
 
             {/* Right: Image/Video and Description */}
-            <div className="leading-5 flex-1 relative text-[#52525b] text-base whitespace-pre-wrap items-center justify-center flex flex-col gap-8">
+            <div className="leading-normal flex-1 relative text-[#52525b] text-base whitespace-pre-wrap items-center justify-center flex flex-col gap-8">
               {/* Video */}
               {hasVideo && (
                 <div className={clsx("overflow-hidden rounded-[26px] mx-auto inline-flex", mediaWidthClass)}>
@@ -2201,7 +2202,7 @@ function ContentBlock({
 
             {/* Caption/Title below gallery */}
             {section.title && (
-              <p className="font-normal pt-2 leading-5 relative shrink-0 text-zinc-400 text-base text-center w-full">
+              <p className="font-normal pt-2 leading-normal relative shrink-0 text-zinc-400 text-base text-center w-full">
                 {section.title}
               </p>
             )}
@@ -2243,7 +2244,7 @@ function ContentBlock({
           
           {/* Caption/Title below gallery */}
           {section.title && (
-            <p className="font-normal pt-4 leading-5 relative shrink-0 text-zinc-400 text-base text-center w-full">
+            <p className="font-normal pt-4 leading-normal relative shrink-0 text-zinc-400 text-base text-center w-full">
               {section.title}
             </p>
           )}
@@ -2264,12 +2265,12 @@ function ContentBlock({
           )}>
             <div className="w-[49%] shrink-0 content-stretch flex flex-col gap-3 items-start relative max-md:w-full">
               {section.label && (
-                <p className="leading-5 relative uppercase shrink-0 text-[#a1a1aa] text-base">
+                <p className="leading-normal relative uppercase shrink-0 text-[#a1a1aa] text-base">
                   {section.label}
                 </p>
               )}
               {section.heading && (
-                <p className={clsx("leading-7 relative shrink-0 text-2xl text-zinc-900 max-md:max-w-[85%] max-md:text-left", isFullscreen && "whitespace-pre-wrap max-md:whitespace-normal")}>
+                <p className={clsx("leading-relaxed relative shrink-0 text-2xl text-zinc-900 max-md:max-w-[85%] max-md:text-left", isFullscreen && "whitespace-pre-wrap max-md:whitespace-normal")}>
                   {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                 </p>
               )}
@@ -2290,12 +2291,12 @@ function ContentBlock({
             isTextSectionEmpty ? "py-5 max-md:py-3" : "py-10 max-md:py-6"
           )}>
             {section.label && (
-              <p className="leading-5 relative shrink-0 uppercase text-[#a1a1aa] text-base text-center">
+              <p className="leading-normal relative shrink-0 uppercase text-[#a1a1aa] text-base text-center">
                 {section.label}
               </p>
             )}
             {section.heading && (
-              <p className={clsx("leading-7 relative shrink-0 text-2xl text-zinc-900 text-center max-md:text-left max-md:max-w-[85%] max-md:self-start", isFullscreen && "whitespace-pre-line max-md:whitespace-normal")}>
+              <p className={clsx("leading-relaxed relative shrink-0 text-2xl text-zinc-900 text-center max-md:text-left max-md:max-w-[85%] max-md:self-start", isFullscreen && "whitespace-pre-line max-md:whitespace-normal")}>
                 {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
               </p>
             )}
@@ -2315,12 +2316,12 @@ function ContentBlock({
           )}>
             <div className="content-stretch flex flex-col gap-3 items-start relative col-start-1">
               {section.label && (
-                <p className="leading-5 relative shrink-0 uppercase text-[#a1a1aa] text-base">
+                <p className="leading-normal relative shrink-0 uppercase text-[#a1a1aa] text-base">
                   {section.label}
                 </p>
               )}
               {section.heading && (
-                <p className={clsx("leading-7 min-w-full max-md:min-w-0 max-md:max-w-[85%] relative shrink-0 text-2xl text-zinc-900", isFullscreen && "whitespace-pre-wrap max-md:whitespace-normal")}>
+                <p className={clsx("leading-relaxed min-w-full max-md:min-w-0 max-md:max-w-[85%] relative shrink-0 text-2xl text-zinc-900", isFullscreen && "whitespace-pre-wrap max-md:whitespace-normal")}>
                   {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
                 </p>
               )}
@@ -2339,12 +2340,12 @@ function ContentBlock({
           isTextSectionEmpty ? "py-5 max-md:py-3" : "py-10 max-md:py-6"
         )}>
           {section.label && (
-            <p className="leading-5 relative shrink-0 uppercase text-[#a1a1aa] text-base">
+            <p className="leading-normal relative shrink-0 uppercase text-[#a1a1aa] text-base">
               {section.label}
             </p>
           )}
           {section.heading && (
-            <p className={clsx("leading-7 relative shrink-0 text-2xl text-zinc-900 max-md:max-w-[85%]", isFullscreen && "whitespace-pre-line max-md:whitespace-normal")}>
+            <p className={clsx("leading-relaxed relative shrink-0 text-2xl text-zinc-900 max-md:max-w-[85%]", isFullscreen && "whitespace-pre-line max-md:whitespace-normal")}>
               {renderHighlightedText(section.heading, section.highlightedText, section.highlightColor)}
             </p>
           )}
@@ -2768,7 +2769,7 @@ function ContentBlock({
             className="content-stretch flex flex-col gap-5 items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full"
           >
             {/* Number + Title */}
-            <div className="content-stretch flex font-normal gap-5 items-start leading-7 relative shrink-0 text-2xl w-full">
+            <div className="content-stretch flex font-normal gap-5 items-start leading-relaxed relative shrink-0 text-2xl w-full">
               {section.number && (
                 <p className="relative shrink-0" style={{ color: section.numberColor || '#60a5fa' }}>
                   {section.number}

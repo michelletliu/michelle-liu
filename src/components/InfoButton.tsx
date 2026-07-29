@@ -42,18 +42,18 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   if (!categories || categories.length === 0) return null;
   
   return (
-    <div className="flex w-full flex-col gap-4">
-      <HorizontalLine bleed />
+    <div className="flex w-full flex-col gap-4 max-md:mt-1">
+      <HorizontalLine />
       <div className="font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 text-base w-full hidden md:grid">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
-            <p className="leading-5 text-sm relative shrink-0 text-[#a1a1aa]">
+            <p className="leading-normal text-sm relative shrink-0 text-[#a1a1aa]">
               {category.label}
             </p>
-            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#71717a]">
+            <div className="content-stretch flex flex-col items-start relative shrink-0 text-[#71717a]">
               {category.tools.map((tool, toolIdx) => (
                 <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
-                  <p className="leading-[21px] whitespace-nowrap">{tool}</p>
+                  <p className="leading-normal whitespace-nowrap">{tool}</p>
                 </div>
               ))}
             </div>
@@ -63,10 +63,10 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
       <div className="font-['Michelle',sans-serif] font-normal flex flex-col gap-1.5 relative shrink-0 text-sm w-full md:hidden">
         {categories.map((category, idx) => (
           <div key={idx} className="flex items-baseline gap-6">
-            <p className="leading-5 shrink-0 text-[#a1a1aa] w-[72px]">
+            <p className="leading-normal shrink-0 text-[#a1a1aa] w-[72px]">
               {category.label}
             </p>
-            <p className="leading-5 text-[#71717a] tracking-[-0.31px]">
+            <p className="leading-normal text-[#71717a] tracking-[0.005em]">
               {category.tools.join(', ')}
             </p>
           </div>
@@ -196,7 +196,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
           >
             {/* Content area with padding */}
             {/* Content area with padding */}
-            <div className="content-stretch flex flex-col max-md:gap-3 gap-4 items-start px-8 max-md:px-6 pt-6 pb-8 max-md:py-6 relative shrink-0 w-full">
+            <div className="content-stretch flex flex-col max-md:gap-3 gap-4 items-start px-8 max-md:px-6 pt-6 pb-8 max-md:py-5 relative shrink-0 w-full">
               {/* Header: title+description grouped in one div on the left,
                   View on X button (desktop only) as a sibling div top-aligned to the right */}
               <div className="w-full flex items-start justify-between gap-3">
@@ -207,7 +207,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                     <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-zinc-900">
                       {project.title}
                     </p>
-                    <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base">
+                    <p className="font-['Michelle',sans-serif] font-medium leading-snug relative shrink-0 text-[#a1a1aa] text-base">
                       •
                     </p>
                     <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#a1a1aa] text-base">
@@ -216,7 +216,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   </div>
 
                   {/* Description */}
-                  <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#71717a] max-md:text-sm md:text-base">
+                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative text-[#71717a] max-md:text-sm md:text-base">
                     {project.description}
                   </p>
                 </div>
@@ -244,29 +244,6 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   </a>
                 )}
               </div>
-
-              {/* View on X button - under description (mobile only), right-aligned */}
-              {project.xLink && (
-                <a
-                  href={project.xLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="md:hidden self-end mb-2 bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 mt-1.5 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
-                >
-                  <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
-                    View on
-                  </span>
-                  <svg 
-                    className="block w-[12px] h-[12px] fill-white" 
-                    viewBox="0 0 19 18"
-                  >
-                    <path d={xLogoPath} />
-                  </svg>
-                  <span className="text-white inline-flex items-center">
-                    <ArrowUpRight size="12px" />
-                  </span>
-                </a>
-              )}
 
               {/* Tools Section */}
               {project.toolCategories && project.toolCategories.length > 0 && (
@@ -299,6 +276,30 @@ export default function InfoButton({ project }: InfoButtonProps) {
                 )}
               </div>
               )}
+
+              {/* View on X button - below media (mobile only), right-aligned */}
+              {project.xLink && (
+                <a
+                  href={project.xLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="md:hidden self-end mt-2 bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+                >
+                  <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
+                    View on
+                  </span>
+                  <svg 
+                    className="block w-[12px] h-[12px] fill-white" 
+                    viewBox="0 0 19 18"
+                  >
+                    <path d={xLogoPath} />
+                  </svg>
+                  <span className="text-white inline-flex items-center">
+                    <ArrowUpRight size="12px" />
+                  </span>
+                </a>
+              )}
+
             </div>
           </div>
         </div>,
