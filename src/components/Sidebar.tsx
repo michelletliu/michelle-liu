@@ -84,7 +84,7 @@ export default function Sidebar({
   "aria-label": ariaLabel = "Sections",
 }: SidebarProps) {
   return (
-    <nav aria-label={ariaLabel} className={clsx("flex flex-col gap-3 items-start", className)}>
+    <nav aria-label={ariaLabel} className={clsx("flex flex-col gap-2 items-start", className)}>
       {nodes.map((node) => {
         if (node.kind === "item") {
           return (
@@ -128,7 +128,7 @@ export default function Sidebar({
               aria-hidden={!node.expanded}
             >
               <div className="min-h-0 overflow-hidden">
-                <div className="flex flex-col items-start gap-3 pt-3">
+                <div className="flex flex-col items-start gap-2 pt-2">
                   {node.children.map((child) => (
                     <Leaf
                       key={child.id}
