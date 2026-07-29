@@ -2,19 +2,17 @@ import type { ReactNode } from "react";
 import { spacingScale, gutters, uniformTag } from "../tokens";
 import { Section, SubLabel, RowList, Grid, TokenCard, TagChip } from "../primitives";
 
-/** Mini browser chrome: titlebar + screen (total height matches PhoneFrame). */
+/** Mini browser chrome: titlebar + 16:10 laptop/browser screen. */
 function BrowserFrame({
   children,
   className = "",
-  heightClass = "h-[72px]",
 }: {
   children: ReactNode;
   className?: string;
-  heightClass?: string;
 }) {
   return (
     <div
-      className={`flex flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] ${heightClass} ${className}`}
+      className={`flex aspect-[16/10] flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] ${className}`}
     >
       <div className="flex h-3.5 shrink-0 items-center gap-1 border-b border-zinc-100 bg-zinc-100 px-1">
         <span className="size-1.5 rounded-full bg-zinc-300" />
@@ -29,13 +27,13 @@ function BrowserFrame({
 /**
  * Mini phone chrome: bezel + screen.
  * Aspect matches iPhone 16 Pro viewport (402×874 ≈ 19.5:9).
- * Corner radius ~15% of width (≈62pt / 402pt) via % so it scales with height.
+ * Corner radius ~18% of width via % so it scales with size.
  * Rim is zinc-400 (one step lighter than the previous zinc-500).
  */
 function PhoneFrame({
   children,
   className = "",
-  heightClass = "h-[72px]",
+  heightClass = "h-[64px]",
 }: {
   children?: ReactNode;
   className?: string;
@@ -43,9 +41,9 @@ function PhoneFrame({
 }) {
   return (
     <div
-      className={`relative aspect-[402/874] shrink-0 overflow-hidden rounded-[15%/7.5%] bg-zinc-400 p-[1.5px] shadow-[0_2px_8px_rgba(0,0,0,0.1)] ${heightClass} ${className}`}
+      className={`relative aspect-[402/874] shrink-0 overflow-hidden rounded-[18%/9%] bg-zinc-400 p-[1.5px] shadow-[0_2px_8px_rgba(0,0,0,0.1)] ${heightClass} ${className}`}
     >
-      <div className="h-full w-full overflow-hidden rounded-[13%/6.5%] bg-white">
+      <div className="h-full w-full overflow-hidden rounded-[16%/8%] bg-white">
         {children}
       </div>
     </div>
@@ -89,7 +87,7 @@ function LayoutWidthSample({ name }: { name: string }) {
     case "px-16 / max-md:px-6":
       return (
         <div className="flex w-full items-center justify-center gap-3 px-4">
-          <BrowserFrame className="min-w-0 flex-1 max-w-[160px]">
+          <BrowserFrame className="w-full max-w-[112px]">
             <GutterScreen gutterPct={28} />
           </BrowserFrame>
           <PhoneFrame>
@@ -99,17 +97,17 @@ function LayoutWidthSample({ name }: { name: string }) {
       );
     case "px-8":
       return (
-        <PhoneFrame heightClass="h-[88px]">
+        <PhoneFrame heightClass="h-[76px]">
           <GutterScreen gutterPct={22} />
         </PhoneFrame>
       );
     case "px-[175px] / md:px-[8%]":
       return (
         <div className="flex w-full items-center justify-center gap-2.5 px-4">
-          <BrowserFrame className="min-w-0 flex-1">
+          <BrowserFrame className="w-full max-w-[96px]">
             <GutterScreen gutterPct={38} />
           </BrowserFrame>
-          <BrowserFrame className="min-w-0 flex-1">
+          <BrowserFrame className="w-full max-w-[96px]">
             <GutterScreen gutterPct={30} />
           </BrowserFrame>
         </div>
@@ -117,7 +115,7 @@ function LayoutWidthSample({ name }: { name: string }) {
     case "w-[calc(100%*10/12)]":
       return (
         <div className="w-full max-w-[200px] px-4">
-          <BrowserFrame>
+          <BrowserFrame className="w-full">
             <ModalScreen cols={10} />
           </BrowserFrame>
         </div>
@@ -125,7 +123,7 @@ function LayoutWidthSample({ name }: { name: string }) {
     case "w-[calc(100%*6/12)]":
       return (
         <div className="w-full max-w-[200px] px-4">
-          <BrowserFrame>
+          <BrowserFrame className="w-full">
             <ModalScreen cols={6} />
           </BrowserFrame>
         </div>
@@ -133,10 +131,10 @@ function LayoutWidthSample({ name }: { name: string }) {
     case "w-[337px] / [402px]":
       return (
         <div className="flex items-center justify-center gap-2.5">
-          <PhoneFrame heightClass="h-[70px]">
+          <PhoneFrame heightClass="h-[62px]">
             <div className="h-full w-full bg-zinc-100" />
           </PhoneFrame>
-          <PhoneFrame heightClass="h-[84px]">
+          <PhoneFrame heightClass="h-[74px]">
             <div className="h-full w-full bg-zinc-100" />
           </PhoneFrame>
         </div>
