@@ -42,7 +42,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   if (!categories || categories.length === 0) return null;
   
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="flex w-full flex-col gap-4 max-md:mt-1">
       <HorizontalLine />
       <div className="font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 text-base w-full hidden md:grid">
         {categories.map((category, idx) => (
