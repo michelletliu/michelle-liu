@@ -41,7 +41,8 @@ export function FilterDropdown({
     if (buttonRef.current && panelRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       panelRef.current.style.transform = `translate(${rect.left}px, ${rect.bottom + 4}px)`;
-      panelRef.current.style.width = `${rect.width}px`;
+      panelRef.current.style.minWidth = `${rect.width}px`;
+      panelRef.current.style.width = "auto";
     }
   };
 
@@ -95,13 +96,14 @@ export function FilterDropdown({
         if (el && usePortal) {
           // Set position synchronously on mount — before browser paints — so no jank
           el.style.transform = `translate(${snapRef.current.left}px, ${snapRef.current.top}px)`;
-          el.style.width = `${snapRef.current.width}px`;
+          el.style.minWidth = `${snapRef.current.width}px`;
+          el.style.width = "auto";
         }
       }}
       className={clsx(
         // ring instead of border so the hairline sits outside the box and doesn't nudge text
         "bg-white rounded-xl shadow-elevated ring-1 ring-zinc-100 z-[9999] animate-in fade-in slide-in-from-top-1 duration-200",
-        usePortal ? "fixed" : "absolute left-0 top-[calc(100%+4px)] w-full"
+        usePortal ? "fixed w-max" : "absolute left-0 top-[calc(100%+4px)] min-w-full w-max"
       )}
       style={usePortal ? {
         top: 0,
@@ -126,7 +128,7 @@ export function FilterDropdown({
               )}
             >
               <span className={clsx(
-                "font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em]",
+                "font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap",
                 isActive ? "text-zinc-600" : "text-zinc-400"
               )}>
                 {option.label}
