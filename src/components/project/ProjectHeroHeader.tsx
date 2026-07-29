@@ -56,7 +56,7 @@ export default function ProjectHeroHeader({
         )}
       >
         {/* Title */}
-        <p className="font-normal leading-5 relative shrink-0 text-4xl text-zinc-900">
+        <p className="font-normal leading-normal relative shrink-0 text-4xl text-zinc-900">
           {title}
         </p>
 

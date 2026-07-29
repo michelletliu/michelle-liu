@@ -232,15 +232,11 @@ export const tracking: ScaleToken[] = [
 ];
 
 export const lineHeights: ScaleToken[] = [
-  { name: "leading-none", value: "1", usage: "404 display", tag: "canonical" },
-  { name: "leading-tight", value: "1.25", usage: "Card descriptions, lore dates", tag: "canonical" },
-  { name: "leading-5", value: "calc(var(--spacing) * 5)", usage: "Metadata, nav, captions", tag: "canonical" },
-  { name: "leading-snug", value: "1.375", usage: "Film captions, stats", tag: "canonical" },
-  { name: "leading-[1.4]", value: "1.4", usage: "Project card text", tag: "canonical" },
-  { name: "leading-normal", value: "1.5", usage: "Default headings / buttons", tag: "canonical" },
-  { name: "leading-6", value: "calc(var(--spacing) * 6)", usage: "Subtitles, footer CTA", tag: "canonical" },
-  { name: "leading-relaxed", value: "1.625", usage: "About prose, book review", tag: "canonical" },
-  { name: "leading-7", value: "calc(var(--spacing) * 7)", usage: "Quotes, display lines", tag: "canonical" },
+  { name: "leading-none", value: "1", usage: "Single-line UI, icon-adjacent text", tag: "canonical" },
+  { name: "leading-tight", value: "1.25", usage: "Dense card copy, compact metadata", tag: "canonical" },
+  { name: "leading-snug", value: "1.375", usage: "Short multi-line captions and labels", tag: "canonical" },
+  { name: "leading-normal", value: "1.5", usage: "Default headings, buttons, body chrome", tag: "canonical" },
+  { name: "leading-relaxed", value: "1.625", usage: "Longer prose (About, reviews, explanatory copy)", tag: "canonical" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -325,12 +321,11 @@ export const spacingScale: ScaleToken[] = [
 ];
 
 export const gutters: ScaleToken[] = [
-  { name: "px-16 / max-md:px-6", value: "64px → 24px", usage: "★ Primary page gutter", tag: "canonical" },
+  { name: "px-16 / max-md:px-6", value: "64px / 24px", usage: "★ Primary page gutter", tag: "canonical" },
   { name: "px-8", value: "32px", usage: "Secondary mobile gutter", tag: "canonical" },
   { name: "px-[175px] / md:px-[8%]", value: "175px / 8%", usage: "Wide project gallery gutters", tag: "one-off" },
   { name: "w-[calc(100%*10/12)]", value: "10 of 12 cols", usage: "Project modal width", tag: "canonical" },
   { name: "w-[calc(100%*6/12)]", value: "6 of 12 cols", usage: "Info modal width", tag: "one-off" },
-  { name: "w-[337px] / [402px]", value: "337 / 402px", usage: "Screentime phone widths", tag: "experiment" },
 ];
 
 // ---------------------------------------------------------------------------

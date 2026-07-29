@@ -152,7 +152,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
               />
             </div>
           )}
-          <h3 className="text-2xl font-medium leading-[1.4] text-zinc-600">{data.title}</h3>
+          <h3 className="text-2xl font-medium leading-snug text-zinc-600">{data.title}</h3>
           {data.instagramUrl && (
             <Tooltip label="Instagram" position="top">
               <a
@@ -189,7 +189,7 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
         
         {/* Description on the right */}
         {data.description && (
-          <p className="max-w-xs xl:max-w-sm shrink-0 whitespace-pre-wrap text-base tracking-[0.005em] font-normal leading-[1.4] text-zinc-400">
+          <p className="max-w-xs xl:max-w-sm shrink-0 whitespace-pre-wrap text-base tracking-[0.005em] font-normal leading-snug text-zinc-400">
             {data.description}
           </p>
         )}

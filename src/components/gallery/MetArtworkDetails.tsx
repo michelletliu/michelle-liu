@@ -114,11 +114,11 @@ export default function MetArtworkDetails({
             <div className="flex w-full flex-col gap-4">
               <p
                 id={titleId}
-                className="text-base font-medium leading-6 text-zinc-900"
+                className="text-base font-medium leading-normal text-zinc-900"
               >
                 {artwork.title}
               </p>
-              <dl className="grid grid-cols-[110px_minmax(0,1fr)] gap-x-4 gap-y-2.5 pt-2 text-base leading-6">
+              <dl className="grid grid-cols-[110px_minmax(0,1fr)] gap-x-4 gap-y-2.5 pt-2 text-base leading-normal">
                 <DetailRow label="Artist" value={artwork.artistDisplayName} />
                 <DetailRow label="Date" value={artwork.objectDate} />
                 <DetailRow label="Medium" value={artwork.medium} />
