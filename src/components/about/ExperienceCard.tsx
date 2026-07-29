@@ -44,10 +44,10 @@ export default function ExperienceCard({ className, data }: ExperienceCardProps)
 
       {/* Text content */}
       <div className="flex flex-1 flex-col items-start">
-        <p className="whitespace-pre-wrap tracking-[0.005em] text-base md:text-lg font-medium leading-[1.4] text-zinc-700">
+        <p className="whitespace-pre-wrap tracking-[0.005em] text-base md:text-lg font-medium leading-snug text-zinc-700">
           {data.company}
         </p>
-        <div className="flex flex-wrap items-baseline gap-1 text-base tracking-[0.005em] font-normal leading-[1.4]">
+        <div className="flex flex-wrap items-baseline gap-1 text-base tracking-[0.005em] font-normal leading-snug">
           <span className="text-zinc-500">
             {data.role}
             {data.period && <span className="text-zinc-400">,</span>}

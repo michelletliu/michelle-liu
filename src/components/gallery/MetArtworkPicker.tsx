@@ -253,13 +253,13 @@ export default function MetArtworkPicker({
           className="flex items-center gap-5 pl-1 pr-3"
         >
           <div className="min-w-0 flex-1">
-            <p className="truncate text-base font-medium leading-6 text-zinc-900">
+            <p className="truncate text-base font-medium leading-normal text-zinc-900">
               {selected.title}
             </p>
             {/* Same size as the title now, so the difference has to be carried
                 by weight and colour alone — medium zinc-900 over normal
                 zinc-400 — rather than by shrinking the secondary line. */}
-            <p className="truncate text-base leading-6 text-zinc-400">
+            <p className="truncate text-base leading-normal text-zinc-400">
               {[selected.artistDisplayName, selected.objectDate]
                 .filter(Boolean)
                 .join(" · ") || "The Met Open Access"}

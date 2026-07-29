@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { colorGroups, uniformTag, type ColorGroup, type ColorToken, type Tag } from "../tokens";
 import { Section, SubLabel, RowList, TagChip } from "../primitives";
+import { FilterDropdown } from "../../FilterDropdown";
 import { FilterPills } from "../../FilterPills";
 import Tooltip from "../../Tooltip";
 
@@ -166,6 +167,13 @@ export default function ColorSection() {
     activeGroupId === ALL_FILTER_ID
       ? null
       : (colorGroups.find((group) => group.id === activeGroupId) ?? null);
+  const groupOptions = [
+    { value: ALL_FILTER_ID, label: "All" },
+    ...colorGroups.map((group) => ({
+      value: group.id,
+      label: group.label,
+    })),
+  ];
 
   const toggleFilter = (groupId: string) => {
     setActiveGroupId((current) => {
@@ -176,23 +184,25 @@ export default function ColorSection() {
 
   return (
     <Section id="color" title="Color">
-      <FilterPills
-        className="mb-4 -ml-3"
-        options={[
-          { value: ALL_FILTER_ID, label: "All" },
-          ...colorGroups.map((group) => ({
-            value: group.id,
-            label: group.label,
-          })),
-        ]}
-        value={activeGroupId}
-        pressedValue={activeGroupId}
+      <FilterDropdown
+        className="mb-4 mid:hidden"
+        options={groupOptions}
+        activeValue={activeGroupId}
         onChange={toggleFilter}
+        usePortal
       />
+      <div className="mb-4 hidden mid:block">
+        <FilterPills
+          className="-ml-3"
+          options={groupOptions}
+          value={activeGroupId}
+          pressedValue={activeGroupId}
+          onChange={toggleFilter}
+        />
+      </div>
 
       <div
-        className="mb-16 grid gap-2"
-        style={{ gridTemplateColumns: "repeat(auto-fill, minmax(44px, 1fr))" }}
+        className="mb-16 grid grid-cols-[repeat(auto-fill,32px)] gap-2 mid:grid-cols-[repeat(auto-fill,minmax(44px,1fr))]"
       >
         {overviewColors.map((c) => {
           const dimmed =

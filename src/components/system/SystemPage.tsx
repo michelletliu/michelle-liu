@@ -394,7 +394,7 @@ function MobileSectionMenu({
                             <span className={LEADING_ICON_SLOT} aria-hidden />
                             <span
                               className={clsx(
-                                "text-base font-medium tracking-wide leading-5 transition-colors duration-200",
+                                "text-base font-medium tracking-wide leading-normal transition-colors duration-200",
                                 active
                                   ? "text-blue-500"
                                   : "text-zinc-500 hover:text-zinc-600",
@@ -429,7 +429,7 @@ function MobileSectionMenu({
                           />
                           <span
                             className={clsx(
-                              "text-base font-medium tracking-wide leading-5 transition-colors duration-200",
+                              "text-base font-medium tracking-wide leading-normal transition-colors duration-200",
                               // Open/active group one step darker than resting toggles.
                               groupActive || expanded
                                 ? "text-zinc-600"
@@ -465,7 +465,7 @@ function MobileSectionMenu({
                                       <span className={LEADING_ICON_SLOT} aria-hidden />
                                       <span
                                         className={clsx(
-                                          "text-base font-medium tracking-wide leading-5 transition-colors duration-200",
+                                          "text-base font-medium tracking-wide leading-normal transition-colors duration-200",
                                           active
                                             ? "text-blue-500"
                                             : "text-zinc-400 hover:text-zinc-500",
@@ -939,7 +939,7 @@ export default function SystemPage() {
           (top-28 clears fixed logo; top-0 when logo hides) and docks to the
           zone bottom when the footer would collide.
         */}
-        <div className="relative px-6 pt-24 pb-16 mid:pl-32 mid:pr-16 lg:px-16 lg:pt-28">
+        <div className="relative px-6 pt-12 pb-16 mid:pt-24 mid:pl-32 mid:pr-16 lg:px-16 lg:pt-28">
           {/*
             Absolute left gutter: height comes from main (in-flow). Sticky
             chrome needs a tall containing block — inset-y-0 matches main.
@@ -968,12 +968,14 @@ export default function SystemPage() {
             {[
               /* Intro */
               <section key="intro" id="intro" className="scroll-mt-24 pb-8">
-                <h1 className="max-w-3xl font-['Michelle',sans-serif] text-4xl font-normal leading-normal tracking-[0.0125em] text-[#3f3f46] text-balance">
-                  Design System
-                </h1>
-                <p className="-mt-3 font-['Michelle',sans-serif] text-4xl font-normal leading-normal tracking-[0.0125em] text-zinc-400">
-                  liumichelle.com
-                </p>
+                <div className="flex flex-col gap-1">
+                  <h1 className="max-w-3xl font-['Michelle',sans-serif] text-2xl font-normal leading-none tracking-[0.0125em] text-[#3f3f46] text-balance mid:text-4xl mid:leading-normal">
+                    Design System
+                  </h1>
+                  <p className="font-['Michelle',sans-serif] text-2xl font-normal leading-none tracking-[0.0125em] text-zinc-400 mid:-mt-3 mid:text-4xl mid:leading-normal">
+                    liumichelle.com
+                  </p>
+                </div>
                 <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400 text-pretty">
                   The colors, type, space, motion, and components behind
                   liumichelle.com. Specimens are built in React with Tailwind

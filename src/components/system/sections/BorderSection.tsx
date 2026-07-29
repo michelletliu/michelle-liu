@@ -40,7 +40,7 @@ const specimens: Record<string, ReactNode> = {
     </div>
   ),
   "border-transparent": (
-    <div className="h-9 rounded-full border border-transparent bg-white px-5 text-sm leading-9 text-zinc-500">
+    <div className="flex h-9 items-center rounded-full border border-transparent bg-white px-5 text-sm text-zinc-500">
       Inactive
     </div>
   ),

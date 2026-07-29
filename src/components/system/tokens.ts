@@ -66,7 +66,7 @@ export type MotionToken = {
   name: string;
   duration: string;
   easing: string;
-  keyframe: "fade" | "slideUp" | "slideDown" | "scale" | "shimmer" | "pulse" | "blink" | "spin";
+  keyframe: "fade" | "slideUp" | "slideDown" | "scale" | "shimmer" | "pulse" | "film-dot-pulse" | "blink" | "spin";
   usage: string;
   tag: Tag;
 };
@@ -232,15 +232,11 @@ export const tracking: ScaleToken[] = [
 ];
 
 export const lineHeights: ScaleToken[] = [
-  { name: "leading-none", value: "1", usage: "404 display", tag: "canonical" },
-  { name: "leading-tight", value: "1.25", usage: "Card descriptions, lore dates", tag: "canonical" },
-  { name: "leading-5", value: "calc(var(--spacing) * 5)", usage: "Metadata, nav, captions", tag: "canonical" },
-  { name: "leading-snug", value: "1.375", usage: "Film captions, stats", tag: "canonical" },
-  { name: "leading-[1.4]", value: "1.4", usage: "Project card text", tag: "canonical" },
-  { name: "leading-normal", value: "1.5", usage: "Default headings / buttons", tag: "canonical" },
-  { name: "leading-6", value: "calc(var(--spacing) * 6)", usage: "Subtitles, footer CTA", tag: "canonical" },
-  { name: "leading-relaxed", value: "1.625", usage: "About prose, book review", tag: "canonical" },
-  { name: "leading-7", value: "calc(var(--spacing) * 7)", usage: "Quotes, display lines", tag: "canonical" },
+  { name: "leading-none", value: "1", usage: "Single-line UI, icon-adjacent text", tag: "canonical" },
+  { name: "leading-tight", value: "1.25", usage: "Dense card copy, compact metadata", tag: "canonical" },
+  { name: "leading-snug", value: "1.375", usage: "Short multi-line captions and labels", tag: "canonical" },
+  { name: "leading-normal", value: "1.5", usage: "Default headings, buttons, body chrome", tag: "canonical" },
+  { name: "leading-relaxed", value: "1.625", usage: "Longer prose (About, reviews, explanatory copy)", tag: "canonical" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -394,7 +390,7 @@ export const motion: MotionToken[] = [
   { name: "gradient-bg", duration: "8s", easing: "ease ∞", keyframe: "shimmer", usage: "Header gradient drift", tag: "canonical" },
   { name: "blink", duration: "1.2s", easing: "ease-in-out ∞", keyframe: "blink", usage: "Footer clock colon", tag: "one-off" },
   { name: "animate-spin", duration: "1s", easing: "linear ∞", keyframe: "spin", usage: "Loading spinners", tag: "canonical" },
-  { name: "film-dot-pulse", duration: "1.4s", easing: "ease-in-out ∞", keyframe: "pulse", usage: "Film loading ellipsis", tag: "experiment" },
+  { name: "film-dot-pulse", duration: "1.4s", easing: "ease-in-out ∞", keyframe: "film-dot-pulse", usage: "Film loading ellipsis", tag: "experiment" },
 ];
 
 export const durationScale: ScaleToken[] = [
