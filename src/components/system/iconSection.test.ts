@@ -107,3 +107,14 @@ test("eye and eye-off use separate alphabetized specimens", () => {
   );
   assert.doesNotMatch(section, /name: "Eye \/ eye-off"/);
 });
+
+test("stroke icons include Search in alphabetical order", () => {
+  assert.match(
+    section,
+    /name: "Plus"[\s\S]*?name: "Search",[\s\S]*?sample: <SearchIcon \/>[\s\S]*?name: "Send"/,
+  );
+  assert.match(
+    section,
+    /function SearchIcon\(\) \{[\s\S]*?<svg className="size-5"[\s\S]*?strokeWidth="1\.5"/,
+  );
+});
