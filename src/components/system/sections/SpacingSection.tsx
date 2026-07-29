@@ -27,7 +27,7 @@ function BrowserFrame({
 /**
  * Mini phone chrome: bezel + screen.
  * Aspect matches iPhone 16 Pro viewport (402×874 ≈ 19.5:9).
- * Corner radius ~18% of width via % so it scales with size.
+ * Corner radius ~22% of width via % so it scales with size.
  * Rim is zinc-400 (one step lighter than the previous zinc-500).
  */
 function PhoneFrame({
@@ -41,9 +41,9 @@ function PhoneFrame({
 }) {
   return (
     <div
-      className={`relative aspect-[402/874] shrink-0 overflow-hidden rounded-[18%/9%] bg-zinc-400 p-[1.5px] shadow-[0_2px_8px_rgba(0,0,0,0.1)] ${heightClass} ${className}`}
+      className={`relative aspect-[402/874] shrink-0 overflow-hidden rounded-[22%/11%] bg-zinc-400 p-[1.5px] shadow-[0_2px_8px_rgba(0,0,0,0.1)] ${heightClass} ${className}`}
     >
-      <div className="h-full w-full overflow-hidden rounded-[16%/8%] bg-white">
+      <div className="h-full w-full overflow-hidden rounded-[20%/10%] bg-white">
         {children}
       </div>
     </div>

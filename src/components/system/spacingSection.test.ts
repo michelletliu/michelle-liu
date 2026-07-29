@@ -9,12 +9,14 @@ const section = readFileSync(
 
 test("PhoneFrame keeps iPhone 16 Pro ratio with rounder corners and shorter default height", () => {
   assert.match(section, /aspect-\[402\/874\]/);
-  assert.match(section, /rounded-\[18%\/9%\]/);
-  assert.match(section, /rounded-\[16%\/8%\]/);
+  assert.match(section, /rounded-\[22%\/11%\]/);
+  assert.match(section, /rounded-\[20%\/10%\]/);
   assert.match(
     section,
     /function PhoneFrame\([\s\S]*?heightClass = "h-\[64px\]"/,
   );
+  assert.doesNotMatch(section, /rounded-\[18%\/9%\]/);
+  assert.doesNotMatch(section, /rounded-\[16%\/8%\]/);
   assert.doesNotMatch(section, /rounded-\[15%\/7\.5%\]/);
   assert.doesNotMatch(section, /rounded-\[13%\/6\.5%\]/);
 });
