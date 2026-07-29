@@ -52,6 +52,7 @@ import { FieldInput, FieldShell, fieldIconSlotClassName } from "../FieldInput";
 import { Chevron } from "../Chevron";
 import { Close } from "../Close";
 import { ArrowRightIcon } from "../Arrow";
+import { iconSize } from "../iconSizes";
 import { HorizontalLine } from "../HorizontalLine";
 import { ghostIconButtonClass } from "../ghostIconButton";
 import ProjectCaseStudySidebar from "./ProjectCaseStudySidebar";
@@ -694,7 +695,7 @@ function PasswordInput({
             {isLoading ? (
               <div className="size-3.5 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-500" />
             ) : (
-              <ArrowRightIcon size="14px" />
+              <ArrowRightIcon size={iconSize("md")} />
             )}
           </button>
         </div>

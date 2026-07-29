@@ -292,7 +292,7 @@ export default function MetArtworkPicker({
             aria-label="Artwork details"
             className={`shrink-0 rounded-full text-zinc-400 transition-colors hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
           >
-            <Info size={iconSize("inline")} />
+            <Info size={iconSize("sm")} />
           </button>
         </div>
       )}

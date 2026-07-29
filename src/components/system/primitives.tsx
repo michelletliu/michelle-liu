@@ -36,7 +36,7 @@ export function CodeToggleButton({
         className,
       )}
     >
-      <Code size={iconSize("inline")} />
+      <Code size={iconSize("sm")} />
     </button>
   );
 }

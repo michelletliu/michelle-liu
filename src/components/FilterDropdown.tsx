@@ -164,7 +164,7 @@ export function FilterDropdown({
         </span>
         <Chevron
           direction="down"
-          size={iconSize("toolbar")}
+          size={iconSize("md")}
           className={clsx(
             "text-zinc-400 transition-transform duration-200",
             open && "rotate-180"

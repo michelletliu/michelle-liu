@@ -75,10 +75,10 @@ const ComponentSection = dynamic(() => import("./sections/ComponentSection"), {
  */
 const MORPH_CONTROL_BOX = "size-10";
 /**
- * One glyph size for both morph states — touch (24). Close/Chevron share
+ * One glyph size for both morph states — lg (24). Close/Chevron share
  * comparable path bounds in the 24 viewBox so glyphs match optically.
  */
-const MORPH_ICON = iconSize("touch");
+const MORPH_ICON = iconSize("lg");
 /** Spacer for the floating chevron↔X control (size-10 hit target). */
 const MORPH_SLOT = `${MORPH_CONTROL_BOX} shrink-0`;
 
@@ -113,7 +113,7 @@ function ChevronCloseMorph({ open }: { open: boolean }) {
   );
 }
 
-/** Matches Chevron toolbar width so flat rows align with expandable ones. */
+/** Matches Chevron md width so flat rows align with expandable ones. */
 const LEADING_ICON_SLOT = "w-5 shrink-0";
 /**
  * Sheet TOC row. With list `px-2`, `pl-5.5` puts the chevron column at the same
@@ -365,7 +365,7 @@ function MobileSectionMenu({
                   autoCorrect="off"
                   spellCheck={false}
                   aria-label="Filter sections"
-                  className="pr-3 font-medium tracking-[0.01em] text-zinc-800 placeholder:text-zinc-500"
+                  className="pr-3 tracking-[0.01em] text-zinc-800 placeholder:text-zinc-500"
                 />
               </FieldShell>
             </div>
@@ -421,7 +421,7 @@ function MobileSectionMenu({
                         >
                           <Chevron
                             direction="right"
-                            size={iconSize("toolbar")}
+                            size={iconSize("md")}
                             className={clsx(
                               "shrink-0 transition-transform duration-200 ease-out",
                               expanded ? "rotate-90 text-zinc-500" : "text-zinc-400",
