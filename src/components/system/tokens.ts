@@ -331,7 +331,6 @@ export const gutters: ScaleToken[] = [
   { name: "px-[175px] / md:px-[8%]", value: "175px / 8%", usage: "Wide project gallery gutters", tag: "one-off" },
   { name: "w-[calc(100%*10/12)]", value: "10 of 12 cols", usage: "Project modal width", tag: "canonical" },
   { name: "w-[calc(100%*6/12)]", value: "6 of 12 cols", usage: "Info modal width", tag: "one-off" },
-  { name: "w-[337px] / [402px]", value: "337 / 402px", usage: "Screentime phone widths", tag: "experiment" },
 ];
 
 // ---------------------------------------------------------------------------

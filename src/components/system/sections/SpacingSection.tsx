@@ -134,17 +134,6 @@ function LayoutWidthSample({ name }: { name: string }) {
           </BrowserFrame>
         </div>
       );
-    case "w-[337px] / [402px]":
-      return (
-        <div className="flex items-center justify-center gap-2.5">
-          <PhoneFrame heightClass="h-[62px]">
-            <div className="h-full w-full bg-zinc-100" />
-          </PhoneFrame>
-          <PhoneFrame heightClass="h-[74px]">
-            <div className="h-full w-full bg-zinc-100" />
-          </PhoneFrame>
-        </div>
-      );
     default:
       return null;
   }
@@ -182,7 +171,7 @@ export default function SpacingSection() {
 
       <SubLabel tag={gutterTag}>Layout widths</SubLabel>
       <Grid min="220px">
-        {gutters.map((g) => (
+        {gutters.slice(0, 3).map((g) => (
           <TokenCard
             key={g.name}
             name={g.usage.replace(/^\★\s*/, "")}
@@ -193,6 +182,20 @@ export default function SpacingSection() {
           />
         ))}
       </Grid>
+      <div className="mt-9">
+        <Grid min="220px">
+          {gutters.slice(3).map((g) => (
+            <TokenCard
+              key={g.name}
+              name={g.usage.replace(/^\★\s*/, "")}
+              tag={gutterTag ? undefined : g.tag}
+              value={g.name}
+              usage={g.value}
+              sample={<LayoutWidthSample name={g.name} />}
+            />
+          ))}
+        </Grid>
+      </div>
     </Section>
   );
 }

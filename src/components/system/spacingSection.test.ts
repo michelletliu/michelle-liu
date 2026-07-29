@@ -13,6 +13,11 @@ test("primary page gutter uses a slash between desktop and mobile values", () =>
   assert.doesNotMatch(tokens, /value: "64px → 24px"/);
 });
 
+test("layout widths omit the misleading Screentime phone frame token", () => {
+  assert.doesNotMatch(tokens, /Screentime phone widths/);
+  assert.doesNotMatch(section, /case "w-\[337px\] \/ \[402px\]"/);
+});
+
 test("PhoneFrame keeps iPhone 16 Pro ratio with rounder corners and shorter default height", () => {
   assert.match(section, /aspect-\[402\/874\]/);
   assert.match(section, /rounded-\[30%\/15%\]/);
@@ -42,8 +47,6 @@ test("BrowserFrame uses 16:10 laptop aspect instead of a fixed height", () => {
 
 test("Layout width samples use shorter phones and constrained 16:10 browsers", () => {
   assert.match(section, /PhoneFrame heightClass="h-\[76px\]"/);
-  assert.match(section, /PhoneFrame heightClass="h-\[62px\]"/);
-  assert.match(section, /PhoneFrame heightClass="h-\[74px\]"/);
   assert.match(
     section,
     /BrowserFrame className="[^"]*max-w-\[112px\]/,
@@ -71,4 +74,11 @@ test("Layout width samples use shorter phones and constrained 16:10 browsers", (
   assert.doesNotMatch(section, /heightClass="h-\[88px\]"/);
   assert.doesNotMatch(section, /heightClass="h-\[70px\]"/);
   assert.doesNotMatch(section, /heightClass="h-\[84px\]"/);
+});
+
+test("modal width cards fill a separate two-column row", () => {
+  assert.match(
+    section,
+    /gutters\.slice\(0, 3\)\.map[\s\S]*?mt-9[\s\S]*?gutters\.slice\(3\)\.map/,
+  );
 });
