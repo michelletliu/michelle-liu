@@ -83,3 +83,20 @@ test("leading icon specimens use a 4px shell left inset", () => {
     /composition === "leading"\s*\?\s*"max-w-\[11\.5rem\] gap-2\.5 !pl-1"/,
   );
 });
+
+test("filled input matrix specimens stay editable", () => {
+  assert.match(section, /readOnly=\{isFocus \|\| isError\}/);
+  assert.doesNotMatch(section, /readOnly=\{showValue \|\| isFocus\}/);
+});
+
+test("input matrix specimens do not force medium weight", () => {
+  assert.doesNotMatch(
+    section,
+    /composition === "leading"\s*\?\s*"[^"]*\bfont-medium\b/,
+  );
+});
+
+test("input matrix icons use the md icon size", () => {
+  assert.match(section, /<ArrowRightIcon size=\{iconSize\("md"\)\}/);
+  assert.doesNotMatch(section, /<ArrowRightIcon size="14px"/);
+});

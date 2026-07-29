@@ -97,7 +97,7 @@ export default function GalleryInfoButton() {
           `fixed top-8 right-6 z-50 text-zinc-400 md:right-16 ${GALLERY_FOCUS_RING}`,
         )}
       >
-        <Info size={iconSize("toolbar")} />
+        <Info size={iconSize("md")} />
       </button>
 
       {open &&

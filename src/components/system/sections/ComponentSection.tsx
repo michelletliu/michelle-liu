@@ -188,7 +188,7 @@ function SpecButtonSample({
       >
         <span>Continue</span>
         {variant === "secondary" ? (
-          <Chevron direction="right" size={iconSize("inline")} />
+          <Chevron direction="right" size={iconSize("sm")} />
         ) : (
           <ArrowUpRight size="12px" />
         )}
@@ -274,7 +274,7 @@ function GlassButtonSample({
         <>
           <span>Continue</span>
           {variant === "secondary" ? (
-            <Chevron direction="right" size={iconSize("inline")} />
+            <Chevron direction="right" size={iconSize("sm")} />
           ) : (
             <ArrowUpRight size="12px" />
           )}
@@ -320,9 +320,9 @@ function ButtonRadiusToggle({
           )}
         >
           {isCircular ? (
-            <SquircleIcon size={iconSize("toolbar")} />
+            <SquircleIcon size={iconSize("md")} />
           ) : (
-            <CircleIcon size={iconSize("toolbar")} />
+            <CircleIcon size={iconSize("md")} />
           )}
         </button>
       </Tooltip>
@@ -672,7 +672,7 @@ function Specimen({
   span = "col-span-1 lg:col-span-4",
   labelPosition = "bottom",
 }: {
-  label: string;
+  label?: string;
   children: ReactNode;
   className?: string;
   /** Tailwind col-span utilities for the parent 12-col bento grid */
@@ -680,9 +680,9 @@ function Specimen({
   /** Buttons section puts labels above the zinc-50 card */
   labelPosition?: "top" | "bottom";
 }) {
-  const labelEl = (
+  const labelEl = label ? (
     <div className="pl-1 text-base leading-snug text-zinc-400 text-pretty">{label}</div>
-  );
+  ) : null;
   return (
     <div className={`flex h-full w-full min-w-0 flex-col gap-1.5 self-stretch ${span}`}>
       {labelPosition === "top" ? labelEl : null}
@@ -1047,14 +1047,14 @@ function SpecInputSample({
         placeholder={placeholder}
         defaultValue={showValue ? filledValue : ""}
         disabled={isDisabled}
-        readOnly={showValue || isFocus}
+        readOnly={isFocus || isError}
         autoComplete="off"
         autoCorrect="off"
         spellCheck={false}
         aria-label={`${SPEC_INPUT_COMPOSITION_LABELS[composition]} · ${SPEC_INPUT_STATE_LABELS[state]}`}
         className={
           composition === "leading"
-            ? "pr-3 font-medium tracking-[0.01em] text-zinc-700"
+            ? "pr-3 tracking-[0.01em] text-zinc-700"
             : composition === "muted"
               ? "px-3.5"
               : undefined
@@ -1062,7 +1062,7 @@ function SpecInputSample({
       />
       {composition === "trailing" ? (
         <FieldTrailingIcon className="text-zinc-400">
-          <ArrowRightIcon size="14px" />
+          <ArrowRightIcon size={iconSize("md")} />
         </FieldTrailingIcon>
       ) : null}
     </FieldShell>
@@ -1205,7 +1205,6 @@ function InputSpecimensSection() {
       <SubLabel>Inputs</SubLabel>
       <div className={SPECIMEN_GRID}>
         <Specimen
-          label="Field"
           span={SPAN_FULL}
           className={INPUT_MATRIX_CARD_CLASS}
           labelPosition="top"
@@ -1400,9 +1399,12 @@ export default function ComponentSection() {
         <Specimen label="Social / meta link" span="col-span-1 lg:col-span-4">
           <Link
             href="/about"
-            className={`inline-flex items-center gap-1 text-sm font-medium text-zinc-600 ${INLINE_LINK_CLASS}`}
+            className={`group/meta inline-flex items-center text-sm font-medium text-zinc-600 ${INLINE_LINK_CLASS}`}
           >
-            Read more <ArrowUpRight />
+            Read more
+            <span className="ml-1 inline-flex items-center opacity-0 transition-opacity duration-150 ease-out group-hover/meta:opacity-100">
+              <ArrowUpRight size="1em" />
+            </span>
           </Link>
         </Specimen>
       </div>

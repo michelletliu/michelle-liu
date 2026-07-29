@@ -117,10 +117,6 @@ export default function TypographySection() {
 
       {filter === "scale" && (
         <>
-          <p className="mb-6 max-w-2xl text-base leading-relaxed text-zinc-400 text-pretty">
-            Named Tailwind steps, grouped by role. text-lg is the boundary —
-            used for subtitles, so it reads as supporting body text.
-          </p>
           {(["body", "heading"] as const).map((role) => (
             <div key={role} className="mb-8 last:mb-0">
               <p className="mb-1 text-sm font-medium text-zinc-400">

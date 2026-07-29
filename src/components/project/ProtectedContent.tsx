@@ -3,6 +3,7 @@ import clsx from "clsx";
 import lockIcon from "../../assets/lock.svg";
 import { FieldInput, FieldShell, fieldIconSlotClassName } from "../FieldInput";
 import { ArrowRightIcon } from "../Arrow";
+import { iconSize } from "../iconSizes";
 import { INLINE_LINK_CLASS } from "../inlineLink";
 
 // Lock icon with circular background and shadow (matches Figma exactly)
@@ -137,7 +138,7 @@ export default function ProtectedContent({
                   )}
                   aria-label="Submit password"
                 >
-                  <ArrowRightIcon size="14px" />
+                  <ArrowRightIcon size={iconSize("md")} />
                 </button>
               </FieldShell>
               {/* Error Message with smooth animation */}

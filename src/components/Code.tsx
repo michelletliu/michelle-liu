@@ -6,7 +6,7 @@ export type CodeProps = {
 
 /**
  * Code slash (`</>`) — stroke icon matching Chevron / Close / Arrow.
- * Prefer `size={iconSize("toolbar")}` (see `iconSizes`) over CSS `size-*`.
+ * Prefer `size={iconSize("md")}` (see `iconSizes`) over CSS `size-*`.
  */
 export function Code({ className = "", size, strokeWidth }: CodeProps) {
   return (
