@@ -939,7 +939,7 @@ export default function SystemPage() {
           (top-28 clears fixed logo; top-0 when logo hides) and docks to the
           zone bottom when the footer would collide.
         */}
-        <div className="relative px-6 pt-24 pb-16 mid:pl-32 mid:pr-16 lg:px-16 lg:pt-28">
+        <div className="relative px-6 pt-12 pb-16 mid:pt-24 mid:pl-32 mid:pr-16 lg:px-16 lg:pt-28">
           {/*
             Absolute left gutter: height comes from main (in-flow). Sticky
             chrome needs a tall containing block — inset-y-0 matches main.
