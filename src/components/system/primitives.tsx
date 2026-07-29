@@ -188,8 +188,8 @@ export function TokenCard({
           </code>
         ) : null}
       </div>
-      <div className={clsx("flex flex-col pl-2", usage ? "gap-0.5" : "gap-0")}>
-        <span className="font-['Michelle',sans-serif] text-base font-medium text-zinc-700">
+      <div className="flex flex-col gap-0 pl-2">
+        <span className="font-['Michelle',sans-serif] text-base font-normal text-zinc-700">
           {name}
         </span>
         {usage ? (
