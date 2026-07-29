@@ -27,7 +27,7 @@ function BrowserFrame({
 /**
  * Mini phone chrome: bezel + screen.
  * Aspect matches iPhone 16 Pro viewport (402×874 ≈ 19.5:9).
- * Corner radius ~22% of width via % so it scales with size.
+ * Circular corner arcs scale with the phone while preserving its aspect.
  * Rim is zinc-400 (one step lighter than the previous zinc-500).
  */
 function PhoneFrame({
@@ -41,9 +41,9 @@ function PhoneFrame({
 }) {
   return (
     <div
-      className={`relative aspect-[402/874] shrink-0 overflow-hidden rounded-[22%/11%] bg-zinc-400 p-[1.5px] shadow-[0_2px_8px_rgba(0,0,0,0.1)] ${heightClass} ${className}`}
+      className={`relative aspect-[402/874] shrink-0 overflow-hidden rounded-[30%/15%] bg-zinc-400 p-[1.5px] shadow-[0_2px_8px_rgba(0,0,0,0.1)] ${heightClass} ${className}`}
     >
-      <div className="h-full w-full overflow-hidden rounded-[20%/10%] bg-white">
+      <div className="h-full w-full overflow-hidden rounded-[28%/14%] bg-white">
         {children}
       </div>
     </div>
@@ -103,13 +103,19 @@ function LayoutWidthSample({ name }: { name: string }) {
       );
     case "px-[175px] / md:px-[8%]":
       return (
-        <div className="flex w-full items-center justify-center gap-2.5 px-4">
-          <BrowserFrame className="w-full max-w-[96px]">
-            <GutterScreen gutterPct={38} />
-          </BrowserFrame>
-          <BrowserFrame className="w-full max-w-[96px]">
-            <GutterScreen gutterPct={30} />
-          </BrowserFrame>
+        <div className="flex w-full items-start justify-center gap-2.5 px-4">
+          <div className="flex w-full max-w-[96px] flex-col items-center gap-1.5">
+            <BrowserFrame className="w-full">
+              <GutterScreen gutterPct={38} />
+            </BrowserFrame>
+            <span className="text-xs tabular-nums text-zinc-400">175px</span>
+          </div>
+          <div className="flex w-full max-w-[96px] flex-col items-center gap-1.5">
+            <BrowserFrame className="w-full">
+              <GutterScreen gutterPct={30} />
+            </BrowserFrame>
+            <span className="text-xs tabular-nums text-zinc-400">8%</span>
+          </div>
         </div>
       );
     case "w-[calc(100%*10/12)]":
