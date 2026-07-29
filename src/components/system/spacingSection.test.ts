@@ -54,6 +54,14 @@ test("Layout width samples use shorter phones and constrained 16:10 browsers", (
   );
   assert.match(
     section,
+    /case "px-\[175px\] \/ md:px-\[8%\]":[\s\S]*?items-center justify-center/,
+  );
+  assert.doesNotMatch(
+    section,
+    /case "px-\[175px\] \/ md:px-\[8%\]":[\s\S]*?items-start justify-center/,
+  );
+  assert.match(
+    section,
     /case "px-\[175px\] \/ md:px-\[8%\]":[\s\S]*?>xl · 175px<[\s\S]*?>md · 8%</,
   );
   assert.match(
