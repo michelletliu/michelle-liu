@@ -448,7 +448,7 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
   }, []);
 
   return (
-    <div className="sundays-mobile-embed content-stretch flex flex-col gap-4 px-6 pt-2 pb-6 relative shrink-0 w-full">
+    <div className="sundays-mobile-embed content-stretch flex flex-col gap-4 px-6 py-6 relative shrink-0 w-full">
       {/* Title row */}
       <div className="flex flex-col min-w-0 gap-0.5">
         <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
@@ -467,7 +467,39 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
         </p>
       </div>
 
-      {/* Buttons: sundays.rsvp then View on X, right-aligned */}
+      {/* Tools Section — no divider on mobile */}
+      {project.toolCategories && project.toolCategories.length > 0 && (
+        <ToolsSection categories={project.toolCategories} noLine />
+      )}
+
+      {/* Video/Image content area */}
+      {project.imageSrc && (
+        <div className="relative rounded-2xl border border-zinc-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0">
+          <ShimmerImage
+            alt=""
+            className="absolute object-cover size-full"
+            wrapperClassName="absolute inset-0"
+            rounded="rounded-2xl"
+            src={project.imageSrc}
+          />
+          {project.videoSrc && videoReady && (
+            <ShimmerVideo
+              key={project.id}
+              src={project.videoSrc}
+              className="absolute object-cover size-full rounded-2xl"
+              wrapperClassName="absolute inset-0"
+              rounded="rounded-2xl"
+              autoPlay
+              muted
+              loop
+              controls={false}
+              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+            />
+          )}
+        </div>
+      )}
+
+      {/* Buttons: sundays.rsvp then View on X, below media */}
       <div className="flex flex-wrap gap-0.5 items-center justify-end py-1">
         <a
           href="https://sundays.rsvp"
@@ -501,44 +533,10 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
           </a>
         )}
       </div>
-
-      {/* Tools Section */}
-      {project.toolCategories && project.toolCategories.length > 0 && (
-        <div className="flex w-full flex-col gap-4">
-          <HorizontalLine bleed />
-          <ToolsSection categories={project.toolCategories} noLine />
-        </div>
-      )}
-
-      {/* Video/Image content area */}
-      {project.imageSrc && (
-        <div className="relative rounded-2xl border border-zinc-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0">
-          <ShimmerImage
-            alt=""
-            className="absolute object-cover size-full"
-            wrapperClassName="absolute inset-0"
-            rounded="rounded-2xl"
-            src={project.imageSrc}
-          />
-          {project.videoSrc && videoReady && (
-            <ShimmerVideo
-              key={project.id}
-              src={project.videoSrc}
-              className="absolute object-cover size-full rounded-2xl"
-              wrapperClassName="absolute inset-0"
-              rounded="rounded-2xl"
-              autoPlay
-              muted
-              loop
-              controls={false}
-              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
-            />
-          )}
-        </div>
-      )}
     </div>
   );
 }
+
 
 export default function ExperimentModal({ projectId, project, onClose, onExpandToFullscreen, onCollapseFromFullscreen, onBookSlugChange, bookSlug, initialFullscreen = false }: ExperimentModalProps) {
   const navigate = useNavigate();

@@ -43,7 +43,9 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   
   return (
     <div className="flex w-full flex-col gap-4">
-      <HorizontalLine bleed />
+      <div className="hidden md:block">
+        <HorizontalLine bleed />
+      </div>
       <div className="font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 text-base w-full hidden md:grid">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
@@ -245,29 +247,6 @@ export default function InfoButton({ project }: InfoButtonProps) {
                 )}
               </div>
 
-              {/* View on X button - under description (mobile only), right-aligned */}
-              {project.xLink && (
-                <a
-                  href={project.xLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="md:hidden self-end mb-2 bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 mt-1.5 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
-                >
-                  <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
-                    View on
-                  </span>
-                  <svg 
-                    className="block w-[12px] h-[12px] fill-white" 
-                    viewBox="0 0 19 18"
-                  >
-                    <path d={xLogoPath} />
-                  </svg>
-                  <span className="text-white inline-flex items-center">
-                    <ArrowUpRight size="12px" />
-                  </span>
-                </a>
-              )}
-
               {/* Tools Section */}
               {project.toolCategories && project.toolCategories.length > 0 && (
                 <ToolsSection categories={project.toolCategories} />
@@ -299,6 +278,30 @@ export default function InfoButton({ project }: InfoButtonProps) {
                 )}
               </div>
               )}
+
+              {/* View on X button - below media (mobile only), right-aligned */}
+              {project.xLink && (
+                <a
+                  href={project.xLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="md:hidden self-end bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+                >
+                  <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
+                    View on
+                  </span>
+                  <svg 
+                    className="block w-[12px] h-[12px] fill-white" 
+                    viewBox="0 0 19 18"
+                  >
+                    <path d={xLogoPath} />
+                  </svg>
+                  <span className="text-white inline-flex items-center">
+                    <ArrowUpRight size="12px" />
+                  </span>
+                </a>
+              )}
+
             </div>
           </div>
         </div>,
