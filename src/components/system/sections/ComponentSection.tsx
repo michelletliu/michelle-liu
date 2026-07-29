@@ -834,7 +834,7 @@ function ProjectTitlePill({
 }) {
   return (
     <div className="flex items-center justify-center rounded-full border border-zinc-100 bg-white px-3 pb-[4.8px] pt-[5px]">
-      <p className="font-['Michelle',sans-serif] text-base font-medium leading-[1.4] tracking-[0.005em] text-zinc-900">
+      <p className="font-['Michelle',sans-serif] text-base font-medium leading-snug tracking-[0.005em] text-zinc-900">
         Polaroid <span className={suffixClassName}>• {suffix}</span>
       </p>
     </div>

@@ -232,15 +232,11 @@ export const tracking: ScaleToken[] = [
 ];
 
 export const lineHeights: ScaleToken[] = [
-  { name: "leading-none", value: "1", usage: "404 display", tag: "canonical" },
-  { name: "leading-tight", value: "1.25", usage: "Card descriptions, lore dates", tag: "canonical" },
-  { name: "leading-5", value: "calc(var(--spacing) * 5)", usage: "Metadata, nav, captions", tag: "canonical" },
-  { name: "leading-snug", value: "1.375", usage: "Film captions, stats", tag: "canonical" },
-  { name: "leading-[1.4]", value: "1.4", usage: "Project card text", tag: "canonical" },
-  { name: "leading-normal", value: "1.5", usage: "Default headings / buttons", tag: "canonical" },
-  { name: "leading-6", value: "calc(var(--spacing) * 6)", usage: "Subtitles, footer CTA", tag: "canonical" },
-  { name: "leading-relaxed", value: "1.625", usage: "About prose, book review", tag: "canonical" },
-  { name: "leading-7", value: "calc(var(--spacing) * 7)", usage: "Quotes, display lines", tag: "canonical" },
+  { name: "leading-none", value: "1", usage: "Single-line UI, icon-adjacent text", tag: "canonical" },
+  { name: "leading-tight", value: "1.25", usage: "Dense card copy, compact metadata", tag: "canonical" },
+  { name: "leading-snug", value: "1.375", usage: "Short multi-line captions and labels", tag: "canonical" },
+  { name: "leading-normal", value: "1.5", usage: "Default headings, buttons, body chrome", tag: "canonical" },
+  { name: "leading-relaxed", value: "1.625", usage: "Longer prose (About, reviews, explanatory copy)", tag: "canonical" },
 ];
 
 // ---------------------------------------------------------------------------

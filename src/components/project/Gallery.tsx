@@ -70,7 +70,7 @@ export default function Gallery({
       
       {/* Caption/Title below gallery */}
       {title && (
-        <p className="font-normal !pt-8 leading-5 relative shrink-0 text-[#a1a1aa] text-base text-center w-full">
+        <p className="font-normal !pt-8 leading-normal relative shrink-0 text-[#a1a1aa] text-base text-center w-full">
           {title}
         </p>
       )}

@@ -54,7 +54,7 @@ function PropertyRow({
           <code className="break-all font-mono text-sm text-zinc-700">{name}</code>
           {tag ? <TagChip tag={tag} /> : null}
         </div>
-        <p className="mt-0.5 text-sm leading-5 text-zinc-400 text-pretty sm:truncate">
+        <p className="mt-0.5 text-sm leading-normal text-zinc-400 text-pretty sm:truncate">
           {usage}
         </p>
       </div>
@@ -154,7 +154,7 @@ export default function TypographySection() {
               key={w.name}
               sample={
                 <span
-                  className="text-base leading-5 text-zinc-700"
+                  className="text-base leading-normal text-zinc-700"
                   style={{ fontWeight: Number(w.value) }}
                 >
                   Text
@@ -176,7 +176,7 @@ export default function TypographySection() {
               key={t.name}
               sample={
                 <span
-                  className="text-base leading-5 text-zinc-700"
+                  className="text-base leading-normal text-zinc-700"
                   style={{ letterSpacing: t.value }}
                 >
                   Text

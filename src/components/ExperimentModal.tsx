@@ -103,21 +103,21 @@ function ToolsSection({ categories, large = false, noLine = false }: { categorie
         {categories.map((category, idx) => (
           <div key={idx} className={clsx(
             "content-stretch flex flex-col items-start justify-start relative shrink-0",
-            large ? "flex-[1_0_0] min-h-px min-w-px gap-3 leading-5" : "gap-2"
+            large ? "flex-[1_0_0] min-h-px min-w-px gap-3 leading-normal" : "gap-2"
           )}>
             <p className={clsx(
               "relative shrink-0 text-[#a1a1aa] font-normal",
-              large ? "text-base" : "leading-5 text-sm"
+              large ? "text-base" : "leading-normal text-sm"
             )}>
               {category.label}
             </p>
             <div className={clsx(
               "content-stretch flex flex-col items-start relative shrink-0",
-              large ? "text-zinc-700 leading-5" : "leading-[0] text-[#71717a]"
+              large ? "text-zinc-700 leading-normal" : "text-[#71717a]"
             )}>
               {category.tools.map((tool, toolIdx) => (
                 <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
-                  <p className={clsx("whitespace-nowrap", large ? "leading-5" : "leading-[21px]")}>{tool}</p>
+                  <p className={clsx("whitespace-nowrap", "leading-normal")}>{tool}</p>
                 </div>
               ))}
             </div>
@@ -127,10 +127,10 @@ function ToolsSection({ categories, large = false, noLine = false }: { categorie
       <div className="font-['Michelle',sans-serif] font-normal flex flex-col gap-1.5 relative shrink-0 text-sm w-full md:hidden">
         {categories.map((category, idx) => (
           <div key={idx} className="flex items-baseline gap-6">
-            <p className="leading-5 shrink-0 text-[#a1a1aa] w-[72px]">
+            <p className="leading-normal shrink-0 text-[#a1a1aa] w-[72px]">
               {category.label}
             </p>
-            <p className="leading-5 text-[#71717a] tracking-[0.005em]">
+            <p className="leading-normal text-[#71717a] tracking-[0.005em]">
               {category.tools.join(', ')}
             </p>
           </div>
@@ -331,7 +331,7 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
                 <span className={clsx("text-[#a1a1aa] font-normal", isFullscreen ? "text-xl" : "text-xl md:text-2xl")}>•</span>
                 <span className={clsx("text-[#a1a1aa] font-normal", isFullscreen ? "text-xl" : "text-xl md:text-2xl")}>{project.year}</span>
               </div>
-              <p className="text-base leading-5 text-[#71717a] md:text-zinc-700">
+              <p className="text-base leading-normal text-[#71717a] md:text-zinc-700">
                 {project.description}
               </p>
             </div>
@@ -455,14 +455,14 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
           <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-zinc-900">
             {project.title}
           </p>
-          <p className="font-['Michelle',sans-serif] font-normal leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base">
+          <p className="font-['Michelle',sans-serif] font-normal leading-snug relative shrink-0 text-[#a1a1aa] text-base">
             •
           </p>
           <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#a1a1aa] text-base">
             {project.year}
           </p>
         </div>
-        <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#71717a] text-sm">
+        <p className="font-['Michelle',sans-serif] font-normal leading-normal relative text-[#71717a] text-sm">
           {project.description}
         </p>
       </div>
@@ -941,7 +941,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
               <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-zinc-900">
                 {project.title}
               </p>
-              <p className="font-['Michelle',sans-serif] font-normal leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base">
+              <p className="font-['Michelle',sans-serif] font-normal leading-snug relative shrink-0 text-[#a1a1aa] text-base">
                 •
               </p>
               <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#a1a1aa] text-base">
@@ -951,7 +951,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
 
             {/* Description - hidden in popup mode, shown in fullscreen */}
             {isFullscreen && (
-              <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#71717a] text-base">
+              <p className="font-['Michelle',sans-serif] font-normal leading-normal relative text-[#71717a] text-base">
                 {project.description}
               </p>
             )}
@@ -1031,16 +1031,16 @@ function ToolsSectionCompact({ categories, isFullscreen = false }: { categories:
       )}>
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-1 items-start justify-start relative shrink-0">
-            <p className={clsx("relative shrink-0 text-[#a1a1aa]", isFullscreen ? "leading-5 text-sm" : "leading-4 text-sm")}>
+            <p className={clsx("relative shrink-0 text-[#a1a1aa]", isFullscreen ? "leading-normal text-sm" : "leading-tight text-sm")}>
               {category.label}
             </p>
             <div className={clsx(
-              "content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#71717a]",
+              "content-stretch flex flex-col items-start relative shrink-0 text-[#71717a]",
               isFullscreen ? "gap-1" : "gap-0.5"
             )}>
               {category.tools.map((tool, toolIdx) => (
                 <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
-                  <p className={clsx("whitespace-nowrap", isFullscreen ? "leading-[21px]" : "leading-[18px]")}>{tool}</p>
+                  <p className={clsx("whitespace-nowrap", "leading-normal")}>{tool}</p>
                 </div>
               ))}
             </div>
