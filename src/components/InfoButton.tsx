@@ -198,7 +198,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
           >
             {/* Content area with padding */}
             {/* Content area with padding */}
-            <div className="content-stretch flex flex-col max-md:gap-3 gap-4 items-start px-8 max-md:px-6 pt-6 pb-8 max-md:py-6 relative shrink-0 w-full">
+            <div className="content-stretch flex flex-col max-md:gap-3 gap-4 items-start px-8 max-md:px-6 pt-6 pb-8 max-md:py-5 relative shrink-0 w-full">
               {/* Header: title+description grouped in one div on the left,
                   View on X button (desktop only) as a sibling div top-aligned to the right */}
               <div className="w-full flex items-start justify-between gap-3">
@@ -285,7 +285,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   href={project.xLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="md:hidden self-end mt-3 bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+                  className="md:hidden self-end mt-2 bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
                 >
                   <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
                     View on
