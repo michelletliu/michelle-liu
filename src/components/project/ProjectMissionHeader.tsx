@@ -61,10 +61,10 @@ export default function ProjectMissionHeader({
             isMobile && "w-full"
           )}
         >
-          <p className="leading-5 text-[#a1a1aa] text-base">
+          <p className="leading-normal text-[#a1a1aa] text-base">
             {label}
           </p>
-          <p className="leading-7 text-2xl text-zinc-900 whitespace-pre-wrap text-pretty">
+          <p className="leading-relaxed text-2xl text-zinc-900 whitespace-pre-wrap text-pretty">
             {title}
           </p>
         </div>
@@ -164,7 +164,7 @@ export default function ProjectMissionHeader({
       {isOverview && hasDescription && (
         <div
           className={clsx(
-            "leading-5 relative text-[#52525b] text-base whitespace-pre-wrap",
+            "leading-normal relative text-[#52525b] text-base whitespace-pre-wrap",
             isDesktop && "col-start-3",
             isMobile && "w-full"
           )}

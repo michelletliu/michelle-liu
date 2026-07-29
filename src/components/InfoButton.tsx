@@ -43,7 +43,9 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
   
   return (
     <div className="flex w-full flex-col gap-4">
-      <HorizontalLine bleed />
+      <div className="hidden md:block">
+        <HorizontalLine bleed />
+      </div>
       <div className="font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 text-base w-full hidden md:grid">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
