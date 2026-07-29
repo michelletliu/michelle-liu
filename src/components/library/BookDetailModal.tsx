@@ -2,8 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import type { Book } from "./types";
 import ShimmerImage from "../ShimmerImage";
-import { ArrowRightIcon } from "./icons";
-import { iconSize } from "../iconSizes";
 
 // Format a YYYY-MM-DD date string. Force UTC so the stored calendar date isn't
 // shifted a day earlier when rendered in a negative-offset timezone.
@@ -219,13 +217,13 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
             {/* Title & Author - left aligned */}
             <div className="flex flex-col gap-0.5">
               <h2 
-                className="font-['SF_Pro:Regular',sans-serif] font-medium text-xl text-zinc-900"
+                className="font-['SF_Pro:Regular',sans-serif] font-medium text-lg text-zinc-900"
                 style={{ fontVariationSettings: "'wdth' 100" }}
               >
                 {formatText(book.title)}
               </h2>
               <p 
-                className="font-['SF_Pro:Regular',sans-serif] text-lg text-zinc-500"
+                className="font-['SF_Pro:Regular',sans-serif] text-base text-zinc-500"
                 style={{ fontVariationSettings: "'wdth' 100" }}
               >
                 {book.author}
@@ -243,7 +241,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                 >
                   Rating
                 </span>
-                <span className="font-['Michelle',sans-serif] text-lg">
+                <span className="font-['Michelle',sans-serif] text-base">
                   <span className="text-zinc-600">{"★".repeat(book.rating)}</span>
                   <span className="text-zinc-200">{"★".repeat(5 - book.rating)}</span>
                 </span>
@@ -292,9 +290,9 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                     style={{ fontVariationSettings: "'wdth' 100" }}
                   >
                     {hasRange ? (
-                      <span className="inline-flex items-center">
+                      <span className="whitespace-nowrap">
                         {formatBookDate(book.dateStarted!)}
-                        <ArrowRightIcon size={iconSize("sm")} className="mx-1.5 text-zinc-300" />
+                        {" → "}
                         {formatBookDate(finished!)}
                       </span>
                     ) : (
@@ -409,9 +407,9 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                       style={{ fontVariationSettings: "'wdth' 100" }}
                     >
                       {hasRange ? (
-                        <span className="inline-flex items-center">
+                        <span className="whitespace-nowrap">
                           {formatBookDate(book.dateStarted!)}
-                          <ArrowRightIcon size={iconSize("sm")} className="mx-1.5 text-zinc-300" />
+                          {" → "}
                           {formatBookDate(finished!)}
                         </span>
                       ) : (
@@ -441,7 +439,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
               Review
             </span>
             <div 
-              className="font-['SF_Pro:Regular',sans-serif] text-lg text-zinc-900 leading-relaxed whitespace-pre-wrap"
+              className="font-['SF_Pro:Regular',sans-serif] text-base sm:text-lg text-zinc-900 leading-relaxed whitespace-pre-wrap"
               style={{ fontVariationSettings: "'wdth' 100" }}
             >
               {formatReview(book.review)}
