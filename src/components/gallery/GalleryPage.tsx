@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import LogoBackButton from "@/components/LogoBackButton";
 import { useNavigate } from "@/lib/navigation";
-import GalleryActionBar from "./GalleryActionBar";
+import GalleryActionBar, {
+  type GalleryActionBarHandle,
+} from "./GalleryActionBar";
 import GalleryInfoButton from "./GalleryInfoButton";
 import GalleryRoom from "./GalleryRoom";
 import GalleryThumbstick from "./GalleryThumbstick";
@@ -24,6 +26,7 @@ export default function GalleryPage() {
   const { focusedId, pose, zoom, selectPainting, zoomBy, bindProps } =
     useGalleryCamera({ bottomOcclusionPx: bottomStack.height });
   const { ref, ...pointerBindProps } = bindProps;
+  const actionBarRef = useRef<GalleryActionBarHandle>(null);
 
   const [imageById, setImageById] = useState<Record<string, string>>({});
   /** Artwork that inspired each canvas, kept for the download filename. */
@@ -69,7 +72,8 @@ export default function GalleryPage() {
       setShimmerHues(null);
       if (inspiration) {
         void resolveShimmerHues(inspiration.objectID).then((hues) => {
-          if (shimmerRequestRef.current === shimmerRequest) setShimmerHues(hues);
+          if (shimmerRequestRef.current === shimmerRequest)
+            setShimmerHues(hues);
         });
       }
       try {
@@ -143,6 +147,7 @@ export default function GalleryPage() {
         generatingId={generatingId}
         shimmerHues={shimmerHues}
         onSelectPainting={selectPainting}
+        onOpenComposer={() => actionBarRef.current?.expand()}
         onDownload={onDownload}
       />
       {/* Ignores pointer events itself so the room stays draggable through the
@@ -152,6 +157,7 @@ export default function GalleryPage() {
         className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex flex-col items-center px-4 pb-6 md:pb-8"
       >
         <GalleryActionBar
+          ref={actionBarRef}
           generating={generatingId !== null}
           onGenerate={onGenerate}
         />
@@ -160,6 +166,7 @@ export default function GalleryPage() {
         focusedId={focusedId}
         onSelect={selectPainting}
         onZoomBy={zoomBy}
+        mobileComposerHeight={bottomStack.height}
       />
     </div>
   );

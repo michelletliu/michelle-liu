@@ -39,12 +39,20 @@ type GallerySceneProps = {
    */
   shimmerHues?: ShimmerHues | null;
   onSelectPainting: (id: string) => void;
+  /**
+   * Double-click / double-tap on a painting. Opens the composer the same way
+   * the pen button does; single-click only selects.
+   */
+  onOpenComposer?: () => void;
   /** Fires when the download control under the focused frame is pressed. */
   onDownload?: () => void;
 };
 
 /** Gap between a frame's bottom edge and the download control, in world units. */
 const DOWNLOAD_ANCHOR_DROP = 0.16;
+
+/** Second click on the same painting within this window opens the composer. */
+const DOUBLE_CLICK_MS = 350;
 
 type FrameEntry = {
   id: string;
@@ -697,6 +705,7 @@ export default function GalleryScene({
   generatingId = null,
   shimmerHues = null,
   onSelectPainting,
+  onOpenComposer,
   onDownload,
 }: GallerySceneProps) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -707,6 +716,7 @@ export default function GalleryScene({
   const shimmerHuesRef = useRef(shimmerHues);
   const paintingsRef = useRef(paintings);
   const onSelectRef = useRef(onSelectPainting);
+  const onOpenComposerRef = useRef(onOpenComposer);
   const framesRef = useRef<Map<string, FrameEntry> | null>(null);
 
   const downloadRef = useRef<HTMLButtonElement>(null);
@@ -722,6 +732,7 @@ export default function GalleryScene({
   shimmerHuesRef.current = shimmerHues;
   paintingsRef.current = paintings;
   onSelectRef.current = onSelectPainting;
+  onOpenComposerRef.current = onOpenComposer;
 
   /**
    * Whether the control should exist at all is the only part React decides.
@@ -830,6 +841,10 @@ export default function GalleryScene({
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
+    let lastPaintingClick: { id: string | null; time: number } = {
+      id: null,
+      time: 0,
+    };
 
     const resize = () => {
       const { clientWidth: cw, clientHeight: ch } = mount;
@@ -1004,7 +1019,23 @@ export default function GalleryScene({
         false,
       );
       const id = hits[0]?.object.userData.paintingId as string | undefined;
-      if (id) onSelectRef.current(id);
+      if (!id) return;
+      onSelectRef.current(id);
+      /*
+       * One path for desktop double-click and mobile double-tap: both surface
+       * as successive click events on the canvas. A native `dblclick` listener
+       * would miss many touch devices.
+       */
+      const now = performance.now();
+      if (
+        lastPaintingClick.id === id &&
+        now - lastPaintingClick.time < DOUBLE_CLICK_MS
+      ) {
+        lastPaintingClick = { id: null, time: 0 };
+        onOpenComposerRef.current?.();
+      } else {
+        lastPaintingClick = { id, time: now };
+      }
     };
     renderer.domElement.addEventListener("click", onClick);
 

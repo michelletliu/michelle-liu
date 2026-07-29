@@ -18,6 +18,8 @@ import {
 type GalleryThumbstickProps = {
   focusedId: string;
   onSelect: (id: string) => void;
+  /** Height of the mobile composer stack, including its bottom padding. */
+  mobileComposerHeight: number;
   /**
    * The camera's clamped zoom path, called with a signed delta many times a
    * second. Clamping stays on the camera's side so the stick cannot dolly
@@ -33,30 +35,39 @@ type GalleryThumbstickProps = {
 };
 
 /** Base and knob radii in px. Knob travel is their difference, less a margin. */
-const BASE_RADIUS = 46;
-const KNOB_RADIUS = 19;
+const BASE_RADIUS = 56;
+const KNOB_RADIUS = 22;
 const MAX_TRAVEL = BASE_RADIUS - KNOB_RADIUS - 5;
+const BASE_BORDER = 1;
 /**
  * Axis hint size.
  *
- * Sized against the 27px band between the knob and the rim rather than against
+ * Sized against the band between the knob and the rim rather than against
  * the base as a whole, so the glyphs read as labels on the ring they sit in and
  * the knob stays the largest thing on the control.
  */
 const ICON_SIZE = 15;
+const GLYPH_WASH_SIZE = 26;
+/**
+ * Centres each glyph in the visible ring, measured from the knob's outer edge
+ * to the base border's inner edge.
+ *
+ * The visible radial band is 33px: 55px inner base radius minus the 22px knob.
+ * A 15px glyph leaves 18px, or exactly 9px of visible air on either side. The
+ * 26px hover wash therefore begins 3.5px beyond each target's inner edge.
+ */
+const VISIBLE_RING_RADIUS = BASE_RADIUS - BASE_BORDER;
+const GLYPH_RADIAL_CENTER = (KNOB_RADIUS + VISIBLE_RING_RADIUS) / 2;
+const GLYPH_WASH_OFFSET =
+  GLYPH_RADIAL_CENTER - KNOB_RADIUS - GLYPH_WASH_SIZE / 2;
 
 /**
  * Where each axis button sits, and how much of the base it may claim.
  *
- * The numbers are forced by the geometry rather than chosen. The base is 92px
- * across with a 38px knob in the middle, which leaves a 27px band per side —
- * so a 44×44 target centred on a glyph would cover a third of the knob and
- * collide with its neighbours at the diagonals. Instead each target stops dead
- * at the knob's edge (27px from the base's own edge) and makes up the area
- * outwards, past the rim into empty room. That yields ~41×38 of pressable area
- * against the glyph's 15×15, no overlap between the four, and a knob whose
- * drag region is untouched — the one thing that must not be traded away, since
- * dragging is still the only way to zoom and step continuously.
+ * The base is 112px across with a 44px knob in the middle, which leaves a 34px
+ * band per side. Each target stops at the knob's edge (AXIS_INSET from the
+ * base's own edge) and reaches outward past the rim (AXIS_OUTSET) so the
+ * pressable area is at least 44×44 without overlapping neighbours or the knob.
  *
  * Each arm is pinned on both ends of its short side rather than given a length,
  * which is the difference between four targets that meet at the corners and
@@ -67,8 +78,8 @@ const ICON_SIZE = 15;
  * painted last took the press. Anchoring both ends to the same box removes the
  * discrepancy by construction instead of paying it off with a magic number.
  */
-const AXIS_INSET = 27;
-const AXIS_OUTSET = 14;
+const AXIS_INSET = 34;
+const AXIS_OUTSET = 10;
 
 const AXIS_BOX: Record<AxisName, React.CSSProperties> = {
   left: {
@@ -97,12 +108,19 @@ const AXIS_BOX: Record<AxisName, React.CSSProperties> = {
   },
 };
 
-/** Pins the glyph to the target's inner edge, where it has always been drawn. */
+/** Moves only the glyph wash; the larger axis target geometry stays unchanged. */
 const AXIS_GLYPH: Record<AxisName, string> = {
-  left: "right-0 top-1/2 -translate-y-1/2",
-  right: "left-0 top-1/2 -translate-y-1/2",
-  top: "bottom-0 left-1/2 -translate-x-1/2",
-  bottom: "top-0 left-1/2 -translate-x-1/2",
+  left: "top-1/2 -translate-y-1/2",
+  right: "top-1/2 -translate-y-1/2",
+  top: "left-1/2 -translate-x-1/2",
+  bottom: "left-1/2 -translate-x-1/2",
+};
+
+const AXIS_GLYPH_STYLE: Record<AxisName, React.CSSProperties> = {
+  left: { right: GLYPH_WASH_OFFSET },
+  right: { left: GLYPH_WASH_OFFSET },
+  top: { bottom: GLYPH_WASH_OFFSET },
+  bottom: { top: GLYPH_WASH_OFFSET },
 };
 
 type AxisName = "left" | "right" | "top" | "bottom";
@@ -138,6 +156,7 @@ function AxisButton({
     >
       <span
         aria-hidden
+        style={AXIS_GLYPH_STYLE[axis]}
         className={`absolute grid size-[26px] place-items-center rounded-full text-zinc-500 transition-colors duration-150 group-hover:bg-zinc-900/[0.06] group-hover:text-zinc-700 group-active:bg-zinc-900/[0.12] motion-reduce:transition-none ${AXIS_GLYPH[axis]}`}
       >
         {children}
@@ -161,6 +180,7 @@ export default function GalleryThumbstick({
   focusedId,
   onSelect,
   onZoomBy,
+  mobileComposerHeight,
 }: GalleryThumbstickProps) {
   const baseRef = useRef<HTMLDivElement>(null);
   const knobRef = useRef<HTMLDivElement>(null);
@@ -302,13 +322,15 @@ export default function GalleryThumbstick({
        * them, so the stick drops below the canvases rather than sitting
        * concentric with the right-hand one, where it read as a sticker stuck to
        * the painting. It is out of the bar's way there for a reason that does
-       * not depend on the bar's height: the bar is centred and capped at
-       * `max-w-xl`, so at this width it never reaches this column at all.
+       * not depend on the bar's height: from `lg` onward the centred
+       * `max-w-lg` bar never reaches this column at all.
        *
-       * Narrow, the room fills the viewport and there is no clear floor left to
-       * drop into, so the stick stays centred — the one band the bar cannot
-       * reach even fully expanded. Some overlap with the room is unavoidable at
-       * that width, which is what the translucent base and blur are for.
+       * Narrow, the room fills the viewport and there is no fixed clear floor:
+       * the composer changes height as its picker opens. Its measured height
+       * therefore drives the stick's bottom edge. The 24px addition leaves
+       * 14px between the panel and the axis targets, which extend 10px beyond
+       * the base. Moving the stick to the left also keeps it out of the fanned
+       * cards that peek over the prompt bar's right shoulder by default.
        *
        * Wide, the right and bottom insets agree so the stick sits in its corner
        * squarely — a corner only looks deliberate when both of its gaps match.
@@ -319,21 +341,24 @@ export default function GalleryThumbstick({
        * column. 4rem is the inset the info button and the logo already use, so
        * matching it settles both at once.
        *
-       * Coming in also buys back room rather than costing it. The bar is
-       * centred and capped at `max-w-xl`, so the further from centre the stick
-       * sits the sooner it clears: at 10rem it was clear only above ~1080px and
-       * sat squarely on top of the bar at 768–1024, which the previous version
-       * of this note wrongly claimed could not happen. At 4rem it clears from
-       * ~890px. Below that the two genuinely do not fit — 576px of bar leaves
-       * 96px a side, and the stick needs 156 — and it still overlaps until the
-       * narrow treatment takes over.
+       * The corner treatment starts at `lg`, not `md`. A 512px centred panel
+       * leaves 256px per side at 1024px, enough for the base, its 10px target
+       * overhang and the 64px edge inset with 70px still separating the two.
+       * Below that breakpoint the measured-height narrow treatment keeps the
+       * controls apart vertically instead of assuming they fit side by side.
        *
-       * Narrow keeps its own smaller inset, matched to the info button's 1.5rem
-       * for the same reason: there is no bottom gap to agree with when the
-       * stick is vertically centred, and 4rem of a 390px viewport would push it
-       * over the middle of the room.
+       * The narrow 0.75rem left inset keeps even the targets' 10px overhang
+       * inside a 390px viewport while reclaiming as much clear room as possible.
        */
-      className="pointer-events-none absolute top-1/2 right-6 z-40 -translate-y-1/2 md:top-auto md:right-16 md:bottom-16 md:translate-y-0"
+      style={
+        {
+          "--gallery-stick-bottom": `${Math.max(
+            mobileComposerHeight + 24,
+            112,
+          )}px`,
+        } as React.CSSProperties
+      }
+      className="pointer-events-none absolute bottom-[var(--gallery-stick-bottom)] left-3 z-40 lg:top-auto lg:right-16 lg:bottom-16 lg:left-auto"
     >
       <div
         ref={baseRef}

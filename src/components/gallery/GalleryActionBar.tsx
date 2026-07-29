@@ -1,9 +1,11 @@
 "use client";
 
 import {
+  forwardRef,
   useCallback,
   useEffect,
   useId,
+  useImperativeHandle,
   useRef,
   useState,
   type FormEvent,
@@ -59,19 +61,25 @@ type GalleryActionBarProps = {
   ) => Promise<void>;
 };
 
-export default function GalleryActionBar({
-  generating,
-  onGenerate,
-}: GalleryActionBarProps) {
+/** Opens the composer from outside — double-clicking a painting uses this. */
+export type GalleryActionBarHandle = {
+  expand: () => void;
+};
+
+const GalleryActionBar = forwardRef<
+  GalleryActionBarHandle,
+  GalleryActionBarProps
+>(function GalleryActionBar({ generating, onGenerate }, ref) {
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [inspiration, setInspiration] = useState<MetArtwork | null>(null);
   const [expanded, setExpanded] = useState(true);
   /*
-   * Open from the start, so the strip's curated works are the first thing a
-   * visitor sees rather than something they have to go looking for.
+   * Start with the compact fan peeking over the prompt. The full strip remains
+   * one press away through `RestingStack`, without making the first view carry
+   * the search row and artwork carousel.
    */
-  const [pickerOpen, setPickerOpen] = useState(true);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   /*
    * The search lives here, above the collapse, and not inside the picker.
@@ -85,6 +93,7 @@ export default function GalleryActionBar({
   const barId = useId();
   const pickerId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
+  const promptRef = useRef<HTMLInputElement>(null);
   const pendingFocus = useRef<"bar" | "pen" | null>(null);
   const reduceMotion = useReducedMotion();
 
@@ -96,14 +105,16 @@ export default function GalleryActionBar({
    * users are never dropped back onto `<body>`.
    *
    * Applied from the ref callback rather than an effect keyed on `expanded`.
-   * `AnimatePresence mode="wait"` holds the incoming control back until the
-   * outgoing one has finished leaving, so by the time an effect could run
-   * there is nothing mounted to focus yet — focus stayed on `<body>`, and the
-   * next Escape went past the bar to the room's own handler and walked the
-   * visitor out of the gallery.
+   * Enter/exit shells crossfade, so by the time an effect keyed on `expanded`
+   * could run the incoming control may not be mounted yet — focus stayed on
+   * `<body>`, and the next Escape went past the bar to the room's own handler
+   * and walked the visitor out of the gallery.
    */
   const focusOnMount = useCallback(
-    (target: "bar" | "pen") => (node: HTMLButtonElement | null) => {
+    (target: "bar" | "pen") => (node: HTMLElement | null) => {
+      if (target === "bar") {
+        promptRef.current = node instanceof HTMLInputElement ? node : null;
+      }
       if (node && pendingFocus.current === target) {
         pendingFocus.current = null;
         node.focus();
@@ -126,10 +137,16 @@ export default function GalleryActionBar({
     setExpanded(false);
   }, []);
 
-  const expandBar = () => {
+  const expandBar = useCallback(() => {
+    if (expanded) {
+      promptRef.current?.focus();
+      return;
+    }
     pendingFocus.current = "bar";
     setExpanded(true);
-  };
+  }, [expanded]);
+
+  useImperativeHandle(ref, () => ({ expand: expandBar }), [expandBar]);
 
   /**
    * A pointer landing anywhere else in the room folds the bar away.
@@ -199,54 +216,63 @@ export default function GalleryActionBar({
   };
 
   /**
-   * The shell's own movement, and the only thing that describes the change of
-   * size. Everything else in the bar borrows this duration and curve so the
-   * panel, the strip and the fanned cards read as one gesture rather than
-   * three animations that happen to start together.
+   * Shared timing for the pen↔panel shell crossfade and the resting stack.
+   * Scale is uniform from center — never width/height layout morph — so the
+   * fields keep their shape instead of stretching through intermediate sizes.
    */
   const shellTransition = reduceMotion
     ? { duration: 0 }
-    : { duration: 0.32, ease: [0.4, 0, 0.2, 1] as const };
+    : { duration: 0.28, ease: [0.4, 0, 0.2, 1] as const };
+
+  const shellMotion = reduceMotion
+    ? {
+        initial: false as const,
+        animate: { opacity: 1, scale: 1 },
+        exit: { opacity: 0 },
+        transition: shellTransition,
+      }
+    : {
+        initial: { opacity: 0, scale: 0.9 },
+        animate: { opacity: 1, scale: 1 },
+        exit: { opacity: 0, scale: 0.9 },
+        transition: shellTransition,
+      };
 
   /**
-   * Contents only fade. They used to arrive on their own `y` and `scale`,
-   * which is what made the pen and the panel look like two separate things
-   * changing places: the shell was going one way while its contents went
-   * another. With the shell carrying all the movement, anything the contents
-   * add is a second animation competing with it.
+   * Panel contents blur in/out once. Kept ≤6px and limited to the small
+   * surface so it stays a short reveal, not a continuous paint cost.
    */
-  const contentFade = {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 },
-    transition: { duration: reduceMotion ? 0 : 0.12 },
-  };
+  const contentReveal = reduceMotion
+    ? {
+        initial: false as const,
+        animate: { opacity: 1, filter: "blur(0px)" },
+        exit: { opacity: 0 },
+        transition: { duration: 0 },
+      }
+    : {
+        initial: { opacity: 0, filter: "blur(6px)" },
+        animate: { opacity: 1, filter: "blur(0px)" },
+        exit: { opacity: 0, filter: "blur(6px)" },
+        transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] as const },
+      };
 
   /**
-   * The collapse chevron, which steps down one level at a time: it puts the
-   * inspiration strip away first, and folds the whole bar to the pen from
-   * there. Two presses reach the pen, and the pointer and Escape paths above
-   * go straight there for anyone who does not want the intermediate stop.
+   * Puts the inspiration strip away. The bar itself folds to the pen via
+   * click-outside or Escape — no chevron on the prompt row.
    */
-  const collapseButton = (
+  const hideInspirationButton = (
     <button
-      ref={focusOnMount("bar")}
       type="button"
       onClick={() => {
-        if (!pickerOpen) {
-          collapseBar(true);
-          return;
-        }
-        // Hiding the strip moves this same button from the search row down
-        // into the prompt row, which unmounts and remounts it. Without
-        // reclaiming focus a keyboard press drops the visitor back to the
-        // document body, one press away from the bar they were just in.
-        pendingFocus.current = "bar";
         setPickerOpen(false);
+        // The prompt stays mounted under the strip, so focus it before this
+        // button unmounts with the search row — otherwise the press leaves
+        // the visitor on `<body>`.
+        promptRef.current?.focus();
       }}
       aria-expanded
-      aria-controls={pickerOpen ? pickerId : barId}
-      aria-label={pickerOpen ? "Hide inspiration" : "Collapse prompt bar"}
+      aria-controls={pickerId}
+      aria-label="Hide inspiration"
       // A small rounded rectangle rather than the ghost button's medium
       // circle, which at `size-10` was the largest and roundest thing in a row
       // of 38px rounded-xl controls and read as a different family of object.
@@ -268,9 +294,10 @@ export default function GalleryActionBar({
       id={barId}
       data-gallery-no-drag
       // Positioning belongs to the bottom stack in `GalleryPage`; this only
-      // caps its own width so the bar stays a panel rather than a full-width
-      // band, and anchors the resting stack below.
-      className="pointer-events-auto relative flex w-full max-w-xl justify-center"
+      // caps its own width so the bar stays a compact panel rather than a
+      // full-width tray. `mx-auto` makes the viewport centring explicit while
+      // `w-full` still fills the page wrapper's 16px mobile insets.
+      className="pointer-events-auto relative mx-auto flex w-full max-w-lg justify-center"
     >
       {/* A sibling of the panel rather than a child of it, because a child
           cannot be painted behind its own parent's background. */}
@@ -286,91 +313,79 @@ export default function GalleryActionBar({
         )}
       </AnimatePresence>
       {/*
-       * One shell for both states, rather than a circle that leaves and a
-       * panel that arrives. `layout` interpolates the box — position, size and
-       * the corner radius with it — so the pen grows into the panel instead of
-       * the two crossfading past each other. The contents inside only fade,
-       * which is the other half of the same fix: whatever they animate is an
-       * animation running against the shell's.
+       * Separate shells stacked on one grid cell, crossfading with uniform
+       * scale from center. Layout morph stretched the fields through every
+       * intermediate width; this keeps each shell at its final size.
        */}
-      <motion.div
-        layout
-        transition={shellTransition}
-        className={
-          expanded
-            ? "relative flex w-full flex-col gap-2 rounded-2xl border border-black/10 bg-white/90 p-3 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-md"
-            : "relative size-10 rounded-full border border-black/10 bg-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-md"
-        }
-      >
-        <AnimatePresence mode="wait" initial={false}>
+      <div className="relative grid w-full place-items-center">
+        <AnimatePresence initial={false}>
           {expanded ? (
             <motion.div
               key="panel"
-              // `layout="position"` moves this without stretching it, so the
-              // fields inside keep their shape while the shell resizes around
-              // them — the skew that otherwise gives a layout morph away.
-              layout="position"
-              {...contentFade}
-              className="flex w-full flex-col gap-2"
+              {...shellMotion}
+              style={{ transformOrigin: "center center" }}
+              className="col-start-1 row-start-1 flex w-full flex-col gap-2 rounded-2xl border border-black/10 bg-white/90 p-3 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-md"
             >
-              {pickerOpen && (
-                <div id={pickerId}>
-                  <MetArtworkPicker
-                    search={search}
-                    selected={inspiration}
-                    onSelect={setInspiration}
-                    disabled={generating}
-                    searchRowTrailing={collapseButton}
-                  />
-                </div>
-              )}
-
-              <form onSubmit={submit} className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    onKeyDown={stopGalleryKeys}
-                    // No painting id here: `back-2` is internal plumbing and
-                    // reads as leaked debug output. Phrased to pair with the
-                    // picker's "Search The Met for inspiration…" above it.
-                    placeholder={
-                      inspiration
-                        ? "Describe your subject…"
-                        : "Describe the art you want…"
-                    }
-                    disabled={generating}
-                    // No resting border. On a white card that would leave the
-                    // field with no edge at all, so the definition moves to a
-                    // faint zinc wash — enough to read as a well you can type
-                    // into, without drawing a second rectangle inside the panel.
-                    // The focus ring is untouched and is now the only boundary
-                    // that ever appears, which is what it was competing with.
-                    className={`min-w-0 flex-1 rounded-xl border-0 bg-zinc-100/70 px-3 py-2.5 text-base text-zinc-900 placeholder:text-zinc-400 disabled:opacity-60 ${GALLERY_FOCUS_RING}`}
-                    aria-label="Artwork prompt"
-                  />
-                  <button
-                    type="submit"
-                    disabled={generating || !prompt.trim() || blocked}
-                    className={`shrink-0 rounded-xl bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
-                  >
-                    {generating ? "Generating…" : "Generate"}
-                  </button>
-                  {/* With the strip put away the chevron has nowhere else to
-                    live, and it is the only way back to the pen by pointer
-                    short of clicking off the bar entirely. */}
-                  {!pickerOpen && collapseButton}
-                </div>
-                <p aria-live="polite" className="sr-only">
-                  {generating ? "Generating your image…" : ""}
-                </p>
-                {error && (
-                  <p className="px-1 text-base text-red-600" role="alert">
-                    {error}
-                  </p>
+              <motion.div
+                {...contentReveal}
+                className="flex w-full flex-col gap-2"
+              >
+                {pickerOpen && (
+                  <div id={pickerId}>
+                    <MetArtworkPicker
+                      search={search}
+                      selected={inspiration}
+                      onSelect={setInspiration}
+                      disabled={generating}
+                      searchRowTrailing={hideInspirationButton}
+                    />
+                  </div>
                 )}
-              </form>
+
+                <form onSubmit={submit} className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      ref={focusOnMount("bar")}
+                      type="text"
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      onKeyDown={stopGalleryKeys}
+                      // No painting id here: `back-2` is internal plumbing and
+                      // reads as leaked debug output. Phrased to pair with the
+                      // picker's "Search The Met for inspiration…" above it.
+                      placeholder={
+                        inspiration
+                          ? "Describe your subject…"
+                          : "Describe the art you want…"
+                      }
+                      disabled={generating}
+                      // No resting border. On a white card that would leave the
+                      // field with no edge at all, so the definition moves to a
+                      // faint zinc wash — enough to read as a well you can type
+                      // into, without drawing a second rectangle inside the panel.
+                      // The focus ring is untouched and is now the only boundary
+                      // that ever appears, which is what it was competing with.
+                      className={`min-w-0 flex-1 rounded-xl border-0 bg-zinc-100/70 px-3 py-2.5 text-base text-zinc-900 placeholder:text-zinc-400 disabled:opacity-60 ${GALLERY_FOCUS_RING}`}
+                      aria-label="Artwork prompt"
+                    />
+                    <button
+                      type="submit"
+                      disabled={generating || !prompt.trim() || blocked}
+                      className={`shrink-0 rounded-xl bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
+                    >
+                      {generating ? "Generating…" : "Generate"}
+                    </button>
+                  </div>
+                  <p aria-live="polite" className="sr-only">
+                    {generating ? "Generating your image…" : ""}
+                  </p>
+                  {error && (
+                    <p className="px-1 text-base text-red-600" role="alert">
+                      {error}
+                    </p>
+                  )}
+                </form>
+              </motion.div>
             </motion.div>
           ) : (
             <motion.button
@@ -381,21 +396,20 @@ export default function GalleryActionBar({
               aria-expanded={false}
               aria-controls={barId}
               aria-label="Open prompt bar"
-              layout="position"
-              {...contentFade}
-              // Fills the shell rather than being one: the shell already draws
-              // the circle, the border and the shadow, and it has to keep
-              // drawing them while it grows into a panel.
-              className={`absolute inset-0 grid cursor-pointer place-items-center rounded-full text-zinc-500 ${GALLERY_FOCUS_RING}`}
+              {...shellMotion}
+              style={{ transformOrigin: "center center" }}
+              className={`col-start-1 row-start-1 grid size-10 cursor-pointer place-items-center rounded-full border border-black/10 bg-white/90 text-zinc-500 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-md ${GALLERY_FOCUS_RING}`}
             >
               <SquarePen size={18} aria-hidden />
             </motion.button>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
     </div>
   );
-}
+});
+
+export default GalleryActionBar;
 
 /**
  * The inspiration strip, put away.

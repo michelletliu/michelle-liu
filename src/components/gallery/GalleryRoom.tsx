@@ -12,6 +12,7 @@ type GalleryRoomProps = {
   generatingId?: string | null;
   shimmerHues?: ShimmerHues | null;
   onSelectPainting: (id: string) => void;
+  onOpenComposer?: () => void;
   onDownload?: () => void;
 };
 
