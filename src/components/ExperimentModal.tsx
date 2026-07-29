@@ -143,7 +143,7 @@ function ToolsSection({ categories, large = false, noLine = false }: { categorie
 
   return (
     <div className={clsx("flex w-full flex-col gap-2", large && "md:gap-7")}>
-      <HorizontalLine bleed />
+      <HorizontalLine />
       {grids}
     </div>
   );
@@ -448,7 +448,7 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
   }, []);
 
   return (
-    <div className="sundays-mobile-embed content-stretch flex flex-col gap-4 px-6 pt-2 pb-6 relative shrink-0 w-full">
+    <div className="sundays-mobile-embed content-stretch flex flex-col gap-4 px-6 py-5 relative shrink-0 w-full">
       {/* Title row */}
       <div className="flex flex-col min-w-0 gap-0.5">
         <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
@@ -467,8 +467,43 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
         </p>
       </div>
 
-      {/* Buttons: sundays.rsvp then View on X, right-aligned */}
-      <div className="flex flex-wrap gap-0.5 items-center justify-end py-1">
+      {/* Tools Section */}
+      {project.toolCategories && project.toolCategories.length > 0 && (
+        <div className="flex w-full flex-col gap-4">
+          <HorizontalLine />
+          <ToolsSection categories={project.toolCategories} noLine />
+        </div>
+      )}
+
+      {/* Video/Image content area */}
+      {project.imageSrc && (
+        <div className="relative rounded-2xl border border-zinc-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0">
+          <ShimmerImage
+            alt=""
+            className="absolute object-cover size-full"
+            wrapperClassName="absolute inset-0"
+            rounded="rounded-2xl"
+            src={project.imageSrc}
+          />
+          {project.videoSrc && videoReady && (
+            <ShimmerVideo
+              key={project.id}
+              src={project.videoSrc}
+              className="absolute object-cover size-full rounded-2xl"
+              wrapperClassName="absolute inset-0"
+              rounded="rounded-2xl"
+              autoPlay
+              muted
+              loop
+              controls={false}
+              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+            />
+          )}
+        </div>
+      )}
+
+      {/* Buttons: sundays.rsvp then View on X, below media */}
+      <div className="flex flex-wrap gap-2 items-center justify-end py-1">
         <a
           href="https://sundays.rsvp"
           target="_blank"
@@ -501,44 +536,10 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
           </a>
         )}
       </div>
-
-      {/* Tools Section */}
-      {project.toolCategories && project.toolCategories.length > 0 && (
-        <div className="flex w-full flex-col gap-4">
-          <HorizontalLine bleed />
-          <ToolsSection categories={project.toolCategories} noLine />
-        </div>
-      )}
-
-      {/* Video/Image content area */}
-      {project.imageSrc && (
-        <div className="relative rounded-2xl border border-zinc-100 border-solid w-full aspect-[1097/616] overflow-hidden bg-zinc-100 shrink-0">
-          <ShimmerImage
-            alt=""
-            className="absolute object-cover size-full"
-            wrapperClassName="absolute inset-0"
-            rounded="rounded-2xl"
-            src={project.imageSrc}
-          />
-          {project.videoSrc && videoReady && (
-            <ShimmerVideo
-              key={project.id}
-              src={project.videoSrc}
-              className="absolute object-cover size-full rounded-2xl"
-              wrapperClassName="absolute inset-0"
-              rounded="rounded-2xl"
-              autoPlay
-              muted
-              loop
-              controls={false}
-              muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
-            />
-          )}
-        </div>
-      )}
     </div>
   );
 }
+
 
 export default function ExperimentModal({ projectId, project, onClose, onExpandToFullscreen, onCollapseFromFullscreen, onBookSlugChange, bookSlug, initialFullscreen = false }: ExperimentModalProps) {
   const navigate = useNavigate();
@@ -1024,7 +1025,7 @@ function ToolsSectionCompact({ categories, isFullscreen = false }: { categories:
   
   return (
     <div className={clsx("flex w-full flex-col", isFullscreen ? "gap-2" : "gap-3")}>
-      <HorizontalLine bleed />
+      <HorizontalLine />
       <div className={clsx(
         "font-['Michelle',sans-serif] font-normal grid grid-cols-4 relative shrink-0 w-full",
         isFullscreen ? "gap-3 text-base" : "gap-2 text-sm"
