@@ -8,6 +8,8 @@ const demoStyles = `
 @keyframes sys-scale { 0%,15% { opacity: 0; transform: scale(0.85) } 60%,100% { opacity: 1; transform: scale(1) } }
 @keyframes sys-blink { 0%,45%,100% { opacity: 1 } 55%,80% { opacity: 0.15 } }
 @keyframes sys-pulse { 0% { transform: scale(0.85); opacity: 0.6 } 70%,100% { transform: scale(1.35); opacity: 0 } }
+@keyframes sys-film-dot-pulse { 0%,80%,100% { opacity: 0.15 } 40% { opacity: 1 } }
+.sys-film-dot { animation: sys-film-dot-pulse 1.4s ease-in-out infinite; opacity: 0.15 }
 `;
 
 function Demo({ kind }: { kind: string }) {
@@ -25,6 +27,14 @@ function Demo({ kind }: { kind: string }) {
             style={{ animation: "sys-pulse 2s ease-out infinite" }}
           />
           <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-500" />
+        </span>
+      );
+    case "film-dot-pulse":
+      return (
+        <span className="text-sm text-zinc-600">
+          <span className="sys-film-dot" style={{ animationDelay: "0s" }}>.</span>
+          <span className="sys-film-dot" style={{ animationDelay: "0.2s" }}>.</span>
+          <span className="sys-film-dot" style={{ animationDelay: "0.4s" }}>.</span>
         </span>
       );
     case "blink":

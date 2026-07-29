@@ -78,10 +78,10 @@ export default function ProtectedContent({
 
             {/* Text Content */}
             <div className="content-stretch flex flex-col gap-2 items-start opacity-60 relative shrink-0 w-full">
-              <p className="leading-7 relative shrink-0 text-2xl text-zinc-900">
+              <p className="leading-relaxed relative shrink-0 text-2xl text-zinc-900">
                 {isPassword ? "This case study is password-protected." : "Confidential"}
               </p>
-              <p className="leading-6 relative shrink-0 text-[#71717a] text-lg">
+              <p className="leading-normal relative shrink-0 text-[#71717a] text-lg">
                 {projectSlug === "apple" ? (
                   <>
                     Please{" "}
@@ -148,7 +148,7 @@ export default function ProtectedContent({
                   error ? "max-h-6 opacity-100" : "max-h-0 opacity-0"
                 )}
               >
-                <p className="text-[#f87171] text-sm leading-5 px-2">
+                <p className="text-[#f87171] text-sm leading-normal px-2">
                   Please try again!
                 </p>
               </div>

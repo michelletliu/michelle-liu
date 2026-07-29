@@ -394,7 +394,7 @@ function MobileSectionMenu({
                             <span className={LEADING_ICON_SLOT} aria-hidden />
                             <span
                               className={clsx(
-                                "text-base font-medium tracking-wide leading-5 transition-colors duration-200",
+                                "text-base font-medium tracking-wide leading-normal transition-colors duration-200",
                                 active
                                   ? "text-blue-500"
                                   : "text-zinc-500 hover:text-zinc-600",
@@ -429,7 +429,7 @@ function MobileSectionMenu({
                           />
                           <span
                             className={clsx(
-                              "text-base font-medium tracking-wide leading-5 transition-colors duration-200",
+                              "text-base font-medium tracking-wide leading-normal transition-colors duration-200",
                               // Open/active group one step darker than resting toggles.
                               groupActive || expanded
                                 ? "text-zinc-600"
@@ -465,7 +465,7 @@ function MobileSectionMenu({
                                       <span className={LEADING_ICON_SLOT} aria-hidden />
                                       <span
                                         className={clsx(
-                                          "text-base font-medium tracking-wide leading-5 transition-colors duration-200",
+                                          "text-base font-medium tracking-wide leading-normal transition-colors duration-200",
                                           active
                                             ? "text-blue-500"
                                             : "text-zinc-400 hover:text-zinc-500",

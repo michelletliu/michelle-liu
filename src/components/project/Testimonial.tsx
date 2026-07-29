@@ -132,10 +132,10 @@ export default function Testimonial({
       >
         {/* Header Section */}
         <div className="content-stretch flex flex-col gap-5 items-start relative shrink-0 w-full">
-          <p className="leading-5 relative shrink-0 text-[#a1a1aa] uppercase text-base">
+          <p className="leading-normal relative shrink-0 text-[#a1a1aa] uppercase text-base">
             {label}
           </p>
-          <p className="leading-7 min-w-full relative shrink-0 text-2xl text-zinc-900 whitespace-pre-wrap">
+          <p className="leading-relaxed min-w-full relative shrink-0 text-2xl text-zinc-900 whitespace-pre-wrap">
             {title}
           </p>
         </div>
@@ -170,7 +170,7 @@ export default function Testimonial({
             {/* Name and Title */}
             <div
               className={clsx(
-                "content-stretch flex flex-col gap-1 items-start leading-5 relative shrink-0 text-base",
+                "content-stretch flex flex-col gap-1 items-start leading-normal relative shrink-0 text-base",
                 isMobile && "flex-[1_0_0] min-h-px min-w-px"
               )}
             >
@@ -205,7 +205,7 @@ export default function Testimonial({
                     : "opacity-100 max-h-[500px] scale-100"
                 )}
               >
-                <p className="leading-[26px] text-[#27272a] text-xl whitespace-pre-wrap">
+                <p className="leading-relaxed text-[#27272a] text-xl whitespace-pre-wrap">
                   {shortQuote}
                 </p>
               </div>
@@ -219,7 +219,7 @@ export default function Testimonial({
                     : "opacity-0 max-h-0 pointer-events-none absolute top-0 left-0 scale-95"
                 )}
               >
-                <div className="leading-[26px] text-[#27272a] text-xl whitespace-pre-wrap">
+                <div className="leading-relaxed text-[#27272a] text-xl whitespace-pre-wrap">
                   {fullQuote.map((paragraph, index) => (
                     <p key={index} className={index < fullQuote.length - 1 ? "mb-6" : ""}>
                       {paragraph}
@@ -236,7 +236,7 @@ export default function Testimonial({
                 "relative shrink-0 cursor-pointer transition-all duration-300 ease-out",
                 isExpanded
                   ? "size-6 text-zinc-500 hover:opacity-70"
-                  : "leading-5 text-[#a1a1aa] text-base hover:text-[#71717a] text-left",
+                  : "leading-normal text-[#a1a1aa] text-base hover:text-[#71717a] text-left",
                 isDesktop && !isExpanded && "w-full md:max-w-[424px]"
               )}
             >
