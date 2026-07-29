@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import type { Book } from "./types";
 import ShimmerImage from "../ShimmerImage";
+import { ArrowRightIcon } from "./icons";
+import { iconSize } from "../iconSizes";
 
 // Format a YYYY-MM-DD date string. Force UTC so the stored calendar date isn't
 // shifted a day earlier when rendered in a negative-offset timezone.
@@ -290,10 +292,10 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                     style={{ fontVariationSettings: "'wdth' 100" }}
                   >
                     {hasRange ? (
-                      <span className="whitespace-nowrap">
-                        {formatBookDate(book.dateStarted!)}
-                        {" → "}
-                        {formatBookDate(finished!)}
+                      <span className="inline-flex flex-wrap items-center">
+                        <span className="whitespace-nowrap">{formatBookDate(book.dateStarted!)}</span>
+                        <ArrowRightIcon size={iconSize("sm")} className="mx-1.5 shrink-0 text-zinc-300" />
+                        <span className="whitespace-nowrap">{formatBookDate(finished!)}</span>
                       </span>
                     ) : (
                       formatBookDate((finished || book.dateStarted)!)
@@ -407,10 +409,10 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                       style={{ fontVariationSettings: "'wdth' 100" }}
                     >
                       {hasRange ? (
-                        <span className="whitespace-nowrap">
-                          {formatBookDate(book.dateStarted!)}
-                          {" → "}
-                          {formatBookDate(finished!)}
+                        <span className="inline-flex flex-wrap items-center">
+                          <span className="whitespace-nowrap">{formatBookDate(book.dateStarted!)}</span>
+                          <ArrowRightIcon size={iconSize("sm")} className="mx-1.5 shrink-0 text-zinc-300" />
+                          <span className="whitespace-nowrap">{formatBookDate(finished!)}</span>
                         </span>
                       ) : (
                         formatBookDate((finished || book.dateStarted)!)
