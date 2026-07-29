@@ -176,23 +176,34 @@ export default function ColorSection() {
 
   return (
     <Section id="color" title="Color">
-      <FilterPills
-        className="mb-4 -ml-3"
-        options={[
-          { value: ALL_FILTER_ID, label: "All" },
-          ...colorGroups.map((group) => ({
-            value: group.id,
-            label: group.label,
-          })),
-        ]}
-        value={activeGroupId}
-        pressedValue={activeGroupId}
-        onChange={toggleFilter}
-      />
+      <div className="relative mb-4 -mr-6 mid:mr-0">
+        <div
+          className="scrollbar-hide overflow-x-auto pr-12 mid:overflow-visible mid:pr-0"
+          role="region"
+          aria-label="Color categories"
+        >
+          <FilterPills
+            className="-ml-3 w-max min-w-full"
+            options={[
+              { value: ALL_FILTER_ID, label: "All" },
+              ...colorGroups.map((group) => ({
+                value: group.id,
+                label: group.label,
+              })),
+            ]}
+            value={activeGroupId}
+            pressedValue={activeGroupId}
+            onChange={toggleFilter}
+          />
+        </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 z-20 w-12 bg-white/50 backdrop-blur-sm [mask-image:linear-gradient(to_right,transparent,black)] mid:hidden"
+        />
+      </div>
 
       <div
-        className="mb-16 grid gap-2"
-        style={{ gridTemplateColumns: "repeat(auto-fill, minmax(44px, 1fr))" }}
+        className="mb-16 grid grid-cols-[repeat(auto-fill,32px)] gap-2 mid:grid-cols-[repeat(auto-fill,minmax(44px,1fr))]"
       >
         {overviewColors.map((c) => {
           const dimmed =
