@@ -69,7 +69,7 @@ export default function PageHeader({
               {children && (
                 <div
                   key={variant}
-                  className="font-['Michelle',sans-serif] font-normal tracking-wide leading-6 max-md:leading-5.5 text-[#a1a1aa] text-lg max-md:text-base w-full max-md:max-w-86 whitespace-pre-wrap mt-1 max-md:mt-1"
+                  className="font-['Michelle',sans-serif] font-normal tracking-wide leading-normal text-[#a1a1aa] text-lg max-md:text-base w-full max-md:max-w-86 whitespace-pre-wrap mt-1 max-md:mt-1"
                   style={{
                     animation:
                       "projectCardEnter 360ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",

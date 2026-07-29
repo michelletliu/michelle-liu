@@ -47,13 +47,13 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
       <div className="font-['Michelle',sans-serif] font-normal gap-3 grid-cols-4 relative shrink-0 text-base w-full hidden md:grid">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
-            <p className="leading-5 text-sm relative shrink-0 text-[#a1a1aa]">
+            <p className="leading-normal text-sm relative shrink-0 text-[#a1a1aa]">
               {category.label}
             </p>
-            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#71717a]">
+            <div className="content-stretch flex flex-col items-start relative shrink-0 text-[#71717a]">
               {category.tools.map((tool, toolIdx) => (
                 <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
-                  <p className="leading-[21px] whitespace-nowrap">{tool}</p>
+                  <p className="leading-normal whitespace-nowrap">{tool}</p>
                 </div>
               ))}
             </div>
@@ -63,10 +63,10 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
       <div className="font-['Michelle',sans-serif] font-normal flex flex-col gap-1.5 relative shrink-0 text-sm w-full md:hidden">
         {categories.map((category, idx) => (
           <div key={idx} className="flex items-baseline gap-6">
-            <p className="leading-5 shrink-0 text-[#a1a1aa] w-[72px]">
+            <p className="leading-normal shrink-0 text-[#a1a1aa] w-[72px]">
               {category.label}
             </p>
-            <p className="leading-5 text-[#71717a] tracking-[0.005em]">
+            <p className="leading-normal text-[#71717a] tracking-[0.005em]">
               {category.tools.join(', ')}
             </p>
           </div>
@@ -207,7 +207,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                     <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-base text-zinc-900">
                       {project.title}
                     </p>
-                    <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base">
+                    <p className="font-['Michelle',sans-serif] font-medium leading-snug relative shrink-0 text-[#a1a1aa] text-base">
                       •
                     </p>
                     <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#a1a1aa] text-base">
@@ -216,7 +216,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   </div>
 
                   {/* Description */}
-                  <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#71717a] max-md:text-sm md:text-base">
+                  <p className="font-['Michelle',sans-serif] font-normal leading-normal relative text-[#71717a] max-md:text-sm md:text-base">
                     {project.description}
                   </p>
                 </div>
