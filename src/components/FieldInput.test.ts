@@ -17,3 +17,9 @@ test("FieldInput text uses normal weight site-wide", () => {
     /export const fieldInputClassName =\s*"[^"]*\bfont-medium\b[^"]*"/,
   );
 });
+
+test("FieldInput leading icons default to the md icon size", () => {
+  assert.match(fieldInput, /size = iconSize\("md"\)/);
+  assert.doesNotMatch(fieldInput, /size = iconSize\("inline"\)/);
+  assert.doesNotMatch(fieldInput, /size = iconSize\("sm"\)/);
+});

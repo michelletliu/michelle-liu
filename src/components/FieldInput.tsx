@@ -106,7 +106,7 @@ export function FieldTrailingIcon({
 
 /** Magnifier for search/filter FieldShell — stroke matches Chevron / Close. */
 export function SearchMagnifierIcon({
-  size = iconSize("inline"),
+  size = iconSize("md"),
 }: {
   size?: string;
 }) {

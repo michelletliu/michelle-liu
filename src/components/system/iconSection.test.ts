@@ -12,6 +12,14 @@ const filmPage = readFileSync(
   "utf8",
 );
 
+test("icon size ramp uses semantic xs/sm/md/lg/xl names", () => {
+  assert.match(
+    section,
+    /const ICON_SIZE_RAMP: IconSizeName\[] = \[\s*"xs",\s*"sm",\s*"md",\s*"lg",\s*"xl",\s*\]/,
+  );
+  assert.doesNotMatch(section, /"meta"|"inline"|"toolbar"|"touch"|"hero"/);
+});
+
 test("filled icon specimens use consistent optical sizing", () => {
   assert.match(section, /function LockIcon\(\) \{[\s\S]*?<svg className="size-5"/);
   assert.match(
@@ -41,7 +49,7 @@ test("filled icon specimens use consistent optical sizing", () => {
   );
   assert.match(
     section,
-    /name: "Grid",[\s\S]*?<GridIcon size=\{TOOLBAR\} filled \/>/,
+    /name: "Grid",[\s\S]*?<GridIcon size=\{MD\} filled \/>/,
   );
   assert.match(
     section,

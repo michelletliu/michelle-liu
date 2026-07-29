@@ -95,3 +95,8 @@ test("input matrix specimens do not force medium weight", () => {
     /composition === "leading"\s*\?\s*"[^"]*\bfont-medium\b/,
   );
 });
+
+test("input matrix icons use the md icon size", () => {
+  assert.match(section, /<ArrowRightIcon size=\{iconSize\("md"\)\}/);
+  assert.doesNotMatch(section, /<ArrowRightIcon size="14px"/);
+});

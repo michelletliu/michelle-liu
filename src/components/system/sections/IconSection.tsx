@@ -27,11 +27,11 @@ import coffeeFillIcon from "../../../assets/coffee-fill.svg";
 import { Section, SubLabel, Grid } from "../primitives";
 
 const ICON_SIZE_RAMP: IconSizeName[] = [
-  "meta",
-  "inline",
-  "toolbar",
-  "touch",
-  "hero",
+  "xs",
+  "sm",
+  "md",
+  "lg",
+  "xl",
 ];
 
 const X_LOGO_PATH =
@@ -243,7 +243,7 @@ function IconCard({ name, sample }: IconSpecimen) {
 }
 
 /** Standard specimen canvas. Compact filled paths receive optical compensation below. */
-const TOOLBAR = iconSize("toolbar");
+const MD = iconSize("md");
 const FILLED_COMPACT_SIZE = 24;
 
 /** Filled icons — solid glyphs, A–Z by display label. */
@@ -278,7 +278,7 @@ const filledIcons: IconSpecimen[] = [
   },
   {
     name: "Grid",
-    sample: <GridIcon size={TOOLBAR} filled />,
+    sample: <GridIcon size={MD} filled />,
   },
   {
     name: "Heart fill",
@@ -363,15 +363,15 @@ const socialIcons: IconSpecimen[] = [
     ),
   },
 ];
-/** Stroke icons — A–Z by display label; all specimens at toolbar size. */
+/** Stroke icons — A–Z by display label; all specimens at md size. */
 const uiIcons: IconSpecimen[] = [
   {
     name: "Arrow",
-    sample: <Arrow size={TOOLBAR} />,
+    sample: <Arrow size={MD} />,
   },
   {
     name: "ArrowUpRight",
-    sample: <ArrowUpRight size={TOOLBAR} />,
+    sample: <ArrowUpRight size={MD} />,
   },
   {
     name: "Check",
@@ -379,15 +379,15 @@ const uiIcons: IconSpecimen[] = [
   },
   {
     name: "Chevron",
-    sample: <Chevron size={TOOLBAR} />,
+    sample: <Chevron size={MD} />,
   },
   {
     name: "Close",
-    sample: <Close size={TOOLBAR} />,
+    sample: <Close size={MD} />,
   },
   {
     name: "Code",
-    sample: <Code size={TOOLBAR} />,
+    sample: <Code size={MD} />,
   },
   {
     name: "Expand",
@@ -403,7 +403,7 @@ const uiIcons: IconSpecimen[] = [
   },
   {
     name: "Grid",
-    sample: <GridIcon size={iconSizes.toolbar} />,
+    sample: <GridIcon size={iconSizes.md} />,
   },
   {
     name: "Info",
@@ -411,7 +411,7 @@ const uiIcons: IconSpecimen[] = [
   },
   {
     name: "Link",
-    sample: <LinkIcon size={TOOLBAR} />,
+    sample: <LinkIcon size={MD} />,
   },
   {
     name: "Plus",
@@ -427,7 +427,7 @@ const uiIcons: IconSpecimen[] = [
   },
   {
     name: "Touch",
-    sample: <TouchIcon size={TOOLBAR} />,
+    sample: <TouchIcon size={MD} />,
   },
 ];
 

@@ -188,7 +188,7 @@ function SpecButtonSample({
       >
         <span>Continue</span>
         {variant === "secondary" ? (
-          <Chevron direction="right" size={iconSize("inline")} />
+          <Chevron direction="right" size={iconSize("sm")} />
         ) : (
           <ArrowUpRight size="12px" />
         )}
@@ -274,7 +274,7 @@ function GlassButtonSample({
         <>
           <span>Continue</span>
           {variant === "secondary" ? (
-            <Chevron direction="right" size={iconSize("inline")} />
+            <Chevron direction="right" size={iconSize("sm")} />
           ) : (
             <ArrowUpRight size="12px" />
           )}
@@ -320,9 +320,9 @@ function ButtonRadiusToggle({
           )}
         >
           {isCircular ? (
-            <SquircleIcon size={iconSize("toolbar")} />
+            <SquircleIcon size={iconSize("md")} />
           ) : (
-            <CircleIcon size={iconSize("toolbar")} />
+            <CircleIcon size={iconSize("md")} />
           )}
         </button>
       </Tooltip>
@@ -1062,7 +1062,7 @@ function SpecInputSample({
       />
       {composition === "trailing" ? (
         <FieldTrailingIcon className="text-zinc-400">
-          <ArrowRightIcon size="14px" />
+          <ArrowRightIcon size={iconSize("md")} />
         </FieldTrailingIcon>
       ) : null}
     </FieldShell>

@@ -7,7 +7,7 @@ export type CloseProps = {
 /**
  * Shared close (X) — one path, optically sized like Chevron / Arrow.
  * Path spans a 12×12 band (M6…18) to match Chevron’s compact viewBox
- * footprint (M9…15 × M6…18); prefer `size={iconSize("touch")}` for sheet dismiss.
+ * footprint (M9…15 × M6…18); prefer `size={iconSize("lg")}` for sheet dismiss.
  */
 export function Close({ className = "", size, strokeWidth }: CloseProps) {
   return (
