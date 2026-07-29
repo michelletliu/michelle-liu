@@ -143,7 +143,7 @@ function ToolsSection({ categories, large = false, noLine = false }: { categorie
 
   return (
     <div className={clsx("flex w-full flex-col gap-2", large && "md:gap-7")}>
-      <HorizontalLine bleed />
+      <HorizontalLine />
       {grids}
     </div>
   );
@@ -470,7 +470,7 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
       {/* Tools Section */}
       {project.toolCategories && project.toolCategories.length > 0 && (
         <div className="flex w-full flex-col gap-4">
-          <HorizontalLine bleed />
+          <HorizontalLine />
           <ToolsSection categories={project.toolCategories} noLine />
         </div>
       )}
@@ -1025,7 +1025,7 @@ function ToolsSectionCompact({ categories, isFullscreen = false }: { categories:
   
   return (
     <div className={clsx("flex w-full flex-col", isFullscreen ? "gap-2" : "gap-3")}>
-      <HorizontalLine bleed />
+      <HorizontalLine />
       <div className={clsx(
         "font-['Michelle',sans-serif] font-normal grid grid-cols-4 relative shrink-0 w-full",
         isFullscreen ? "gap-3 text-base" : "gap-2 text-sm"

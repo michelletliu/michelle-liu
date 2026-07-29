@@ -1279,16 +1279,6 @@ export default function ComponentSection() {
             <p className="text-sm text-zinc-500">Below</p>
           </div>
         </Specimen>
-
-        <Specimen label="HorizontalLine · Bleed (mobile)" span={SPAN_WIDE}>
-          <div className="w-full max-w-sm overflow-hidden rounded-xl bg-white px-6 py-4">
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-zinc-500">Panel content</p>
-              <HorizontalLine bleed />
-              <p className="text-sm text-zinc-500">Reaches panel edge on mobile</p>
-            </div>
-          </div>
-        </Specimen>
       </div>
 
       <InputSpecimensSection />
