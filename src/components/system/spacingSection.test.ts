@@ -6,6 +6,12 @@ const section = readFileSync(
   new URL("./sections/SpacingSection.tsx", import.meta.url),
   "utf8",
 );
+const tokens = readFileSync(new URL("./tokens.ts", import.meta.url), "utf8");
+
+test("primary page gutter uses a slash between desktop and mobile values", () => {
+  assert.match(tokens, /value: "64px \/ 24px", usage: "★ Primary page gutter"/);
+  assert.doesNotMatch(tokens, /value: "64px → 24px"/);
+});
 
 test("PhoneFrame keeps iPhone 16 Pro ratio with rounder corners and shorter default height", () => {
   assert.match(section, /aspect-\[402\/874\]/);
@@ -44,7 +50,7 @@ test("Layout width samples use shorter phones and constrained 16:10 browsers", (
   );
   assert.match(
     section,
-    /case "px-\[175px\] \/ md:px-\[8%\]":[\s\S]*?max-w-\[96px\][\s\S]*?max-w-\[96px\]/,
+    /case "px-\[175px\] \/ md:px-\[8%\]":[\s\S]*?w-\[96px\][\s\S]*?w-\[72px\]/,
   );
   assert.match(
     section,

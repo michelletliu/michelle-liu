@@ -326,7 +326,7 @@ export const spacingScale: ScaleToken[] = [
 ];
 
 export const gutters: ScaleToken[] = [
-  { name: "px-16 / max-md:px-6", value: "64px → 24px", usage: "★ Primary page gutter", tag: "canonical" },
+  { name: "px-16 / max-md:px-6", value: "64px / 24px", usage: "★ Primary page gutter", tag: "canonical" },
   { name: "px-8", value: "32px", usage: "Secondary mobile gutter", tag: "canonical" },
   { name: "px-[175px] / md:px-[8%]", value: "175px / 8%", usage: "Wide project gallery gutters", tag: "one-off" },
   { name: "w-[calc(100%*10/12)]", value: "10 of 12 cols", usage: "Project modal width", tag: "canonical" },

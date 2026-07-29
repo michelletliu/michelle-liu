@@ -104,13 +104,13 @@ function LayoutWidthSample({ name }: { name: string }) {
     case "px-[175px] / md:px-[8%]":
       return (
         <div className="flex w-full items-start justify-center gap-2.5 px-4">
-          <div className="flex w-full max-w-[96px] flex-col items-center gap-1.5">
+          <div className="flex w-[96px] shrink-0 flex-col items-center gap-1.5">
             <BrowserFrame className="w-full">
               <GutterScreen gutterPct={38} />
             </BrowserFrame>
             <span className="text-xs tabular-nums text-zinc-400">xl · 175px</span>
           </div>
-          <div className="flex w-full max-w-[96px] flex-col items-center gap-1.5">
+          <div className="flex w-[72px] shrink-0 flex-col items-center gap-1.5">
             <BrowserFrame className="w-full">
               <GutterScreen gutterPct={30} />
             </BrowserFrame>
