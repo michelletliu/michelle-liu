@@ -182,19 +182,17 @@ export default function SpacingSection() {
           />
         ))}
       </Grid>
-      <div className="mt-9">
-        <Grid min="220px">
-          {gutters.slice(3).map((g) => (
-            <TokenCard
-              key={g.name}
-              name={g.usage.replace(/^\★\s*/, "")}
-              tag={gutterTag ? undefined : g.tag}
-              value={g.name}
-              usage={g.value}
-              sample={<LayoutWidthSample name={g.name} />}
-            />
-          ))}
-        </Grid>
+      <div className="mt-9 grid grid-cols-1 gap-x-6 gap-y-9 md:grid-cols-2">
+        {gutters.slice(3).map((g) => (
+          <TokenCard
+            key={g.name}
+            name={g.usage.replace(/^\★\s*/, "")}
+            tag={gutterTag ? undefined : g.tag}
+            value={g.name}
+            usage={g.value}
+            sample={<LayoutWidthSample name={g.name} />}
+          />
+        ))}
       </div>
     </Section>
   );

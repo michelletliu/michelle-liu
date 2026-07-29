@@ -79,6 +79,6 @@ test("Layout width samples use shorter phones and constrained 16:10 browsers", (
 test("modal width cards fill a separate two-column row", () => {
   assert.match(
     section,
-    /gutters\.slice\(0, 3\)\.map[\s\S]*?mt-9[\s\S]*?gutters\.slice\(3\)\.map/,
+    /gutters\.slice\(0, 3\)\.map[\s\S]*?mt-9 grid grid-cols-1 gap-x-6 gap-y-9 md:grid-cols-2[\s\S]*?gutters\.slice\(3\)\.map/,
   );
 });
