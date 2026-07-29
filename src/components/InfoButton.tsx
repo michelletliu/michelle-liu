@@ -66,7 +66,7 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
             <p className="leading-5 shrink-0 text-[#a1a1aa] w-[72px]">
               {category.label}
             </p>
-            <p className="leading-5 text-[#71717a] tracking-[-0.31px]">
+            <p className="leading-5 text-[#71717a] tracking-[0.005em]">
               {category.tools.join(', ')}
             </p>
           </div>
