@@ -66,7 +66,7 @@ export type MotionToken = {
   name: string;
   duration: string;
   easing: string;
-  keyframe: "fade" | "slideUp" | "slideDown" | "scale" | "shimmer" | "pulse" | "blink" | "spin";
+  keyframe: "fade" | "slideUp" | "slideDown" | "scale" | "shimmer" | "pulse" | "film-dot-pulse" | "blink" | "spin";
   usage: string;
   tag: Tag;
 };
@@ -390,7 +390,7 @@ export const motion: MotionToken[] = [
   { name: "gradient-bg", duration: "8s", easing: "ease ∞", keyframe: "shimmer", usage: "Header gradient drift", tag: "canonical" },
   { name: "blink", duration: "1.2s", easing: "ease-in-out ∞", keyframe: "blink", usage: "Footer clock colon", tag: "one-off" },
   { name: "animate-spin", duration: "1s", easing: "linear ∞", keyframe: "spin", usage: "Loading spinners", tag: "canonical" },
-  { name: "film-dot-pulse", duration: "1.4s", easing: "ease-in-out ∞", keyframe: "pulse", usage: "Film loading ellipsis", tag: "experiment" },
+  { name: "film-dot-pulse", duration: "1.4s", easing: "ease-in-out ∞", keyframe: "film-dot-pulse", usage: "Film loading ellipsis", tag: "experiment" },
 ];
 
 export const durationScale: ScaleToken[] = [
