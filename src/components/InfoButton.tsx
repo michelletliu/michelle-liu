@@ -285,7 +285,7 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   href={project.xLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="md:hidden self-end bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+                  className="md:hidden self-end mt-3 bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
                 >
                   <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
                     View on
