@@ -467,9 +467,12 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
         </p>
       </div>
 
-      {/* Tools Section — no divider on mobile */}
+      {/* Tools Section */}
       {project.toolCategories && project.toolCategories.length > 0 && (
-        <ToolsSection categories={project.toolCategories} noLine />
+        <div className="flex w-full flex-col gap-4">
+          <HorizontalLine bleed />
+          <ToolsSection categories={project.toolCategories} noLine />
+        </div>
       )}
 
       {/* Video/Image content area */}
