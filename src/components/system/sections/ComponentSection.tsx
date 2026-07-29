@@ -672,7 +672,7 @@ function Specimen({
   span = "col-span-1 lg:col-span-4",
   labelPosition = "bottom",
 }: {
-  label: string;
+  label?: string;
   children: ReactNode;
   className?: string;
   /** Tailwind col-span utilities for the parent 12-col bento grid */
@@ -680,9 +680,9 @@ function Specimen({
   /** Buttons section puts labels above the zinc-50 card */
   labelPosition?: "top" | "bottom";
 }) {
-  const labelEl = (
+  const labelEl = label ? (
     <div className="pl-1 text-base leading-snug text-zinc-400 text-pretty">{label}</div>
-  );
+  ) : null;
   return (
     <div className={`flex h-full w-full min-w-0 flex-col gap-1.5 self-stretch ${span}`}>
       {labelPosition === "top" ? labelEl : null}
@@ -1205,7 +1205,6 @@ function InputSpecimensSection() {
       <SubLabel>Inputs</SubLabel>
       <div className={SPECIMEN_GRID}>
         <Specimen
-          label="Field"
           span={SPAN_FULL}
           className={INPUT_MATRIX_CARD_CLASS}
           labelPosition="top"
