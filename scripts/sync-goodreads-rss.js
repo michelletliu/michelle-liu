@@ -54,11 +54,102 @@ function decodeEntities(str) {
     .replace(/&nbsp;/g, ' ');
 }
 
+// The library renderer understands a small subset of inline tags. Anything
+// outside this set has to be flattened to text or it shows up literally.
+const RENDERABLE_TAGS = new Set(['b', 'i']);
+
+/** Drop tags the renderer can't handle; normalize the ones it can to lowercase. */
+function stripUnrenderableTags(html) {
+  return html
+    .replace(/<(\/?)\s*strong\b[^>]*>/gi, '<$1b>')
+    .replace(/<(\/?)\s*em\b[^>]*>/gi, '<$1i>')
+    .replace(/<(\/?)([a-z][a-z0-9]*)\b[^>]*>/gi, (_match, slash, name) => {
+      const tag = name.toLowerCase();
+      return RENDERABLE_TAGS.has(tag) ? `<${slash}${tag}>` : '';
+    });
+}
+
+/**
+ * Remove tags with no partner. Goodreads happily saves a review with a stray
+ * `<i>` or `</b>`, and the renderer prints an unmatched tag as literal text.
+ */
+function dropUnbalancedTags(text) {
+  const tags = [];
+  const re = /<(\/?)(b|i)>/g;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    tags.push({ start: m.index, end: re.lastIndex, isClosing: m[1] === '/', name: m[2] });
+  }
+
+  const openByName = new Map();
+  const unmatched = new Set();
+  tags.forEach((t, index) => {
+    const open = openByName.get(t.name) || [];
+    if (!t.isClosing) open.push(index);
+    else if (open.length > 0) open.pop();
+    else unmatched.add(index);
+    openByName.set(t.name, open);
+  });
+  for (const open of openByName.values()) for (const index of open) unmatched.add(index);
+  if (unmatched.size === 0) return text;
+
+  let out = '';
+  let cursor = 0;
+  for (const index of [...unmatched].sort((a, b) => a - b)) {
+    out += text.slice(cursor, tags[index].start);
+    cursor = tags[index].end;
+  }
+  return out + text.slice(cursor);
+}
+
+/**
+ * The renderer splits a review into sections on divider lines before it parses
+ * tags, so a pair that straddles a divider lands unbalanced in two sections and
+ * prints literally. Close the open tags before each divider and reopen after.
+ */
+function balanceAcrossDividers(text) {
+  const parts = text.split(/(\n*-{3,}\n*)/g);
+  if (parts.length < 3) return text;
+
+  let carried = [];
+  return parts
+    .map((part, index) => {
+      if (index % 2 === 1 || !part) return part;
+
+      const stack = [...carried];
+      const re = /<(\/?)(b|i)>/g;
+      let m;
+      while ((m = re.exec(part)) !== null) {
+        if (!m[1]) stack.push(m[2]);
+        else {
+          const at = stack.lastIndexOf(m[2]);
+          if (at !== -1) stack.splice(at, 1);
+        }
+      }
+      const reopened = carried.map((name) => `<${name}>`).join('');
+      const closed = [...stack].reverse().map((name) => `</${name}>`).join('');
+      carried = stack;
+      return reopened + part + closed;
+    })
+    .join('');
+}
+
 function cleanReview(html) {
   if (!html) return null;
-  const text = html.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
-  const decoded = decodeEntities(text).replace(/\n{3,}/g, '\n\n').trim();
-  return decoded || null;
+  const text = dropUnbalancedTags(
+    stripUnrenderableTags(html.replace(/<br\s*\/?>/gi, '\n'))
+  );
+  const decoded = decodeEntities(text)
+    // Indentation left behind by removed block tags turns runs of blank lines
+    // into whitespace-only lines, which survive the blank-line collapse below.
+    .replace(/[ \t]+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    // Goodreads writes quote blocks as `<i><br />…<br /></i>`; pull that padding
+    // outside the tag so the emphasis starts on the text itself.
+    .replace(/<(b|i)>\s+/g, '<$1>')
+    .replace(/\s+<\/(b|i)>/g, '</$1>')
+    .trim();
+  return balanceAcrossDividers(decoded) || null;
 }
 
 // Goodreads titles carry series/edition suffixes, e.g.
@@ -420,5 +511,6 @@ module.exports = {
   collapseMatches,
   publishedId,
   cleanTitle,
+  cleanReview,
   parseFeed,
 };
