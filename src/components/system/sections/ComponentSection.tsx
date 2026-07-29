@@ -1047,14 +1047,14 @@ function SpecInputSample({
         placeholder={placeholder}
         defaultValue={showValue ? filledValue : ""}
         disabled={isDisabled}
-        readOnly={showValue || isFocus}
+        readOnly={isFocus || isError}
         autoComplete="off"
         autoCorrect="off"
         spellCheck={false}
         aria-label={`${SPEC_INPUT_COMPOSITION_LABELS[composition]} · ${SPEC_INPUT_STATE_LABELS[state]}`}
         className={
           composition === "leading"
-            ? "pr-3 font-medium tracking-[0.01em] text-zinc-700"
+            ? "pr-3 tracking-[0.01em] text-zinc-700"
             : composition === "muted"
               ? "px-3.5"
               : undefined

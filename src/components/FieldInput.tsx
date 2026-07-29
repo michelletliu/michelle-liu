@@ -12,7 +12,7 @@ import { iconSize } from "./iconSizes";
  * share one optical midline with placeholder/value under flex `items-center`.
  */
 export const fieldInputClassName =
-  "min-w-0 flex-1 appearance-none bg-transparent border-none outline-none p-0 h-5 text-base leading-5 text-zinc-900 placeholder:text-zinc-400 disabled:cursor-not-allowed disabled:opacity-50";
+  "min-w-0 flex-1 appearance-none bg-transparent border-none outline-none p-0 h-5 text-base font-normal leading-5 text-zinc-900 placeholder:text-zinc-400 disabled:cursor-not-allowed disabled:opacity-50";
 
 export type FieldShellTone = "surface" | "muted";
 

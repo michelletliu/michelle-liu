@@ -365,7 +365,7 @@ function MobileSectionMenu({
                   autoCorrect="off"
                   spellCheck={false}
                   aria-label="Filter sections"
-                  className="pr-3 font-medium tracking-[0.01em] text-zinc-800 placeholder:text-zinc-500"
+                  className="pr-3 tracking-[0.01em] text-zinc-800 placeholder:text-zinc-500"
                 />
               </FieldShell>
             </div>
