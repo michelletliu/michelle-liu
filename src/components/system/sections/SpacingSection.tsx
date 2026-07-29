@@ -108,13 +108,13 @@ function LayoutWidthSample({ name }: { name: string }) {
             <BrowserFrame className="w-full">
               <GutterScreen gutterPct={38} />
             </BrowserFrame>
-            <span className="text-xs tabular-nums text-zinc-400">175px</span>
+            <span className="text-xs tabular-nums text-zinc-400">xl · 175px</span>
           </div>
           <div className="flex w-full max-w-[96px] flex-col items-center gap-1.5">
             <BrowserFrame className="w-full">
               <GutterScreen gutterPct={30} />
             </BrowserFrame>
-            <span className="text-xs tabular-nums text-zinc-400">8%</span>
+            <span className="text-xs tabular-nums text-zinc-400">md · 8%</span>
           </div>
         </div>
       );
