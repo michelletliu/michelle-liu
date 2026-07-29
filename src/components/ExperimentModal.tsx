@@ -503,7 +503,7 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
       )}
 
       {/* Buttons: sundays.rsvp then View on X, below media */}
-      <div className="flex flex-wrap gap-0.5 items-center justify-end py-1">
+      <div className="flex flex-wrap gap-2 items-center justify-end py-1">
         <a
           href="https://sundays.rsvp"
           target="_blank"
