@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { colorGroups, uniformTag, type ColorGroup, type ColorToken, type Tag } from "../tokens";
 import { Section, SubLabel, RowList, TagChip } from "../primitives";
+import { FilterDropdown } from "../../FilterDropdown";
 import { FilterPills } from "../../FilterPills";
 import Tooltip from "../../Tooltip";
 
@@ -166,6 +167,13 @@ export default function ColorSection() {
     activeGroupId === ALL_FILTER_ID
       ? null
       : (colorGroups.find((group) => group.id === activeGroupId) ?? null);
+  const groupOptions = [
+    { value: ALL_FILTER_ID, label: "All" },
+    ...colorGroups.map((group) => ({
+      value: group.id,
+      label: group.label,
+    })),
+  ];
 
   const toggleFilter = (groupId: string) => {
     setActiveGroupId((current) => {
@@ -176,29 +184,20 @@ export default function ColorSection() {
 
   return (
     <Section id="color" title="Color">
-      <div className="relative mb-4 -mr-6 mid:mr-0">
-        <div
-          className="scrollbar-hide overflow-x-auto pr-12 mid:overflow-visible mid:pr-0"
-          role="region"
-          aria-label="Color categories"
-        >
-          <FilterPills
-            className="-ml-3 w-max min-w-full"
-            options={[
-              { value: ALL_FILTER_ID, label: "All" },
-              ...colorGroups.map((group) => ({
-                value: group.id,
-                label: group.label,
-              })),
-            ]}
-            value={activeGroupId}
-            pressedValue={activeGroupId}
-            onChange={toggleFilter}
-          />
-        </div>
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 right-0 z-20 w-12 bg-white/50 backdrop-blur-sm [mask-image:linear-gradient(to_right,transparent,black)] mid:hidden"
+      <FilterDropdown
+        className="mb-4 mid:hidden"
+        options={groupOptions}
+        activeValue={activeGroupId}
+        onChange={toggleFilter}
+        usePortal
+      />
+      <div className="mb-4 hidden mid:block">
+        <FilterPills
+          className="-ml-3"
+          options={groupOptions}
+          value={activeGroupId}
+          pressedValue={activeGroupId}
+          onChange={toggleFilter}
         />
       </div>
 
