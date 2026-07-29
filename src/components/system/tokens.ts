@@ -222,10 +222,10 @@ export const fontWeights: ScaleToken[] = [
 ];
 
 export const tracking: ScaleToken[] = [
-  { name: "tracking-[0.005em]", value: "0.005em", usage: "Core micro-tracking (nav, cards, about, tool grid values)", tag: "canonical" },
-  { name: "tracking-[0.01em]", value: "0.01em", usage: "Media cards, library filter, social link labels", tag: "canonical" },
-  { name: "tracking-[0.0125em]", value: "0.0125em", usage: "Display name (home hero name, Design System title)", tag: "canonical" },
-  { name: "tracking-wide", value: "0.025em", usage: "Section subtitles, sidebar nav", tag: "canonical" },
+  { name: "Micro", value: "0.005em", usage: "Core micro-tracking (nav, cards, about, tool grid values)", tag: "canonical" },
+  { name: "Fine", value: "0.01em", usage: "Media cards, library filter, social link labels", tag: "canonical" },
+  { name: "Display", value: "0.0125em", usage: "Display name (home hero name, Design System title)", tag: "canonical" },
+  { name: "Wide", value: "0.025em", usage: "Section subtitles, sidebar nav", tag: "canonical" },
   { name: "tracking-wider", value: "0.05em", usage: "Footer clock", tag: "one-off" },
   { name: "tracking-[0.15em]", value: "0.15em", usage: "Polaroid stamp text", tag: "experiment" },
   { name: "tracking-[0.75px]", value: "0.75px", usage: "Screentime GENERATE / UPLOAD CTAs", tag: "experiment" },
