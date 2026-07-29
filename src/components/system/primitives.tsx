@@ -189,7 +189,7 @@ export function TokenCard({
         ) : null}
       </div>
       <div className="flex flex-col gap-0 pl-2">
-        <span className="font-['Michelle',sans-serif] text-base font-normal text-zinc-700">
+        <span className="font-['Michelle',sans-serif] text-base font-medium text-zinc-700">
           {name}
         </span>
         {usage ? (
