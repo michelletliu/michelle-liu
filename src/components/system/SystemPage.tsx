@@ -968,12 +968,14 @@ export default function SystemPage() {
             {[
               /* Intro */
               <section key="intro" id="intro" className="scroll-mt-24 pb-8">
-                <h1 className="max-w-3xl font-['Michelle',sans-serif] text-xl font-normal leading-normal tracking-[0.0125em] text-[#3f3f46] text-balance mid:text-4xl">
-                  Design System
-                </h1>
-                <p className="-mt-3 font-['Michelle',sans-serif] text-xl font-normal leading-normal tracking-[0.0125em] text-zinc-400 mid:text-4xl">
-                  liumichelle.com
-                </p>
+                <div className="flex flex-col gap-0">
+                  <h1 className="max-w-3xl font-['Michelle',sans-serif] text-xl font-normal leading-none tracking-[0.0125em] text-[#3f3f46] text-balance mid:text-4xl mid:leading-normal">
+                    Design System
+                  </h1>
+                  <p className="font-['Michelle',sans-serif] text-xl font-normal leading-none tracking-[0.0125em] text-zinc-400 mid:-mt-3 mid:text-4xl mid:leading-normal">
+                    liumichelle.com
+                  </p>
+                </div>
                 <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400 text-pretty">
                   The colors, type, space, motion, and components behind
                   liumichelle.com. Specimens are built in React with Tailwind
