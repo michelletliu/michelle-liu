@@ -142,6 +142,28 @@ function EyeOffIcon() {
   );
 }
 
+function SearchIcon() {
+  return (
+    <svg className="size-5" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle
+        cx="11"
+        cy="11"
+        r="7"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        vectorEffect="non-scaling-stroke"
+      />
+      <path
+        d="M20 20L16.5 16.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
 function SunIcon() {
   return (
     <svg className="size-5" viewBox="0 0 16 16" fill="none" aria-hidden>
@@ -416,6 +438,10 @@ const uiIcons: IconSpecimen[] = [
   {
     name: "Plus",
     sample: <PlusIcon className="size-5" />,
+  },
+  {
+    name: "Search",
+    sample: <SearchIcon />,
   },
   {
     name: "Send",
