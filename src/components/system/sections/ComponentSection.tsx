@@ -1400,9 +1400,12 @@ export default function ComponentSection() {
         <Specimen label="Social / meta link" span="col-span-1 lg:col-span-4">
           <Link
             href="/about"
-            className={`inline-flex items-center gap-1 text-sm font-medium text-zinc-600 ${INLINE_LINK_CLASS}`}
+            className={`group/meta inline-flex items-center text-sm font-medium text-zinc-600 ${INLINE_LINK_CLASS}`}
           >
-            Read more <ArrowUpRight />
+            Read more
+            <span className="ml-1 inline-flex items-center opacity-0 transition-opacity duration-150 ease-out group-hover/meta:opacity-100">
+              <ArrowUpRight size="1em" />
+            </span>
           </Link>
         </Specimen>
       </div>
