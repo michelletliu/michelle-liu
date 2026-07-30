@@ -39,6 +39,17 @@ export const metadata: Metadata = {
   },
 };
 
+const devtoolsComment = String.raw`<!--
+  __  __ _      _          _ _        _     _
+ |  \/  (_) ___| |__   ___| | | ___  | |   (_)_   _
+ | |\/| | |/ __| '_ \ / _ \ | |/ _ \ | |   | | | | |
+ | |  | | | (__| | | |  __/ | |  __/ | |___| | |_| |
+ |_|  |_|_|\___|_| |_|\___|_|_|\___| |_____|_|\__,_|
+
+  hi, curious human.
+  no secrets here, just pixels made with care.
+-->`;
+
 export default function RootLayout({
   children,
 }: {
@@ -46,9 +57,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preload" as="image" href="/logo.png" fetchPriority="high" />
-      </head>
+      <head
+        dangerouslySetInnerHTML={{
+          __html: `${devtoolsComment}
+<link rel="preload" as="image" href="/logo.png" fetchpriority="high" />`,
+        }}
+      />
       <body suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
