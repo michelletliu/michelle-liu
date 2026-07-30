@@ -2,21 +2,19 @@
 
 # michelle liu
 
-Personal portfolio and digital archive for Michelle Liu. Designed in Figma and built with Next.js, TypeScript, React, Sanity, Notion, and a few agentic coding friends.
+My personal portfolio and digital archive. Designed in Figma and built with Next.js, TypeScript, React, Sanity, Notion, and a few agentic coding friends.
 
 ## What's inside
 
-- 🔐 Portfolio case studies with protected sections for sensitive project details
-- 🧩 Design system and visual explorations
+- 🔐 Portfolio case studies 
+- 🧩 Design system 
 - 📚 Library: a personal bookshelf with Goodreads-powered reading data
 - 🎞️ Film: movie notes and photo memories from a Notion-backed film log
 - 🖼️ Gallery: an image-generation playground for visual experiments
 - ✏️ Sketchbook: loose drawings, fragments, and in-progress ideas
 - 🎨 Art: a small archive of visual work and studies
-- ⏳ Screen Time: a receipt-style interaction for reflecting on attention
-- 🌫️ Fading: an atmospheric reading/listening experiment
-- 📸 Polaroid: a nostalgic little photo surface
-- 🗄️ Sanity-backed project/content data
+- ⏳ Screen Time Receipt: a receipt-style interaction for reflecting on attention
+- 📸 Polaroid Studio: a nostalgic photo customizer
 - 🪄 Utility scripts for syncing Goodreads, Letterboxd, covers, posters, and metadata
 
 ## Tech stack
