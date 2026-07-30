@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import ArtCard, { ArtCardData } from "./ArtCard";
-import { ScrollReveal } from "../ScrollReveal";
+import { ScrollReveal } from "../shared/ScrollReveal";
 
 type ArtGalleryProps = {
   className?: string;

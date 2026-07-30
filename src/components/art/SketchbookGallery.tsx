@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
-import { ChevronLeftIcon, ChevronRightIcon } from "../Chevron";
+import { ChevronLeftIcon, ChevronRightIcon } from "../icons/Chevron";
 import EdgeGradients from "./EdgeGradients";
 import LiquidGlassButton from "./LiquidGlassButton";
 

@@ -3,13 +3,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "@/lib/navigation";
 import clsx from "clsx";
-import { ScrollReveal } from "../ScrollReveal";
-import PageHeader from "../PageHeader";
-import NavigationTabs from "../NavigationTabs";
+import { ScrollReveal } from "../shared/ScrollReveal";
+import PageHeader from "../layout/PageHeader";
+import NavigationTabs from "../layout/NavigationTabs";
 import { useHeroAnimation } from "../../hooks/useHeroAnimation";
 import { fadeUpStyles } from "../../styles/animations";
-import LoadingSpinner from "../LoadingSpinner";
-import Footer from "../Footer";
+import LoadingSpinner from "../shared/LoadingSpinner";
+import Footer from "../layout/Footer";
 import HeaderBreakpoint from "./HeaderBreakpoint";
 import ArtGallery from "./ArtGallery";
 import ArtSidebar, { ArtCategory } from "./ArtSidebar";

@@ -3,9 +3,9 @@
 import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { CloseIcon } from "@/components/Close";
-import { ghostIconButtonClass } from "@/components/ghostIconButton";
-import { INLINE_LINK_CLASS } from "@/components/inlineLink";
+import { CloseIcon } from "@/components/icons/Close";
+import { ghostIconButtonClass } from "@/components/shared/ghostIconButton";
+import { INLINE_LINK_CLASS } from "@/components/shared/inlineLink";
 import { GALLERY_DIALOG_ATTR, useGalleryDialogKeys } from "./galleryDialog";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { openAccessImageUrl, type MetArtwork } from "./metArtworks";

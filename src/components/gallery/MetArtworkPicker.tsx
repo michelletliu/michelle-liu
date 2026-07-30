@@ -3,9 +3,9 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import { CloseIcon } from "@/components/Close";
-import { Info } from "@/components/Info";
-import { iconSize } from "@/components/iconSizes";
+import { CloseIcon } from "@/components/icons/Close";
+import { Info } from "@/components/icons/Info";
+import { iconSize } from "@/components/shared/iconSizes";
 import MetArtworkDetails from "./MetArtworkDetails";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { stopGalleryKeys, useScrollEdges } from "./galleryInputGuards";

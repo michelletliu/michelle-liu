@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import LogoBackButton from "@/components/LogoBackButton";
+import LogoBackButton from "@/components/layout/LogoBackButton";
 import { useNavigate } from "@/lib/navigation";
 import GalleryActionBar from "./GalleryActionBar";
 import GalleryInfoButton from "./GalleryInfoButton";

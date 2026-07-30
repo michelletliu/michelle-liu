@@ -17,7 +17,7 @@ import {
   TagChip,
   TokenCard,
 } from "../primitives";
-import { FilterPills } from "../../FilterPills";
+import { FilterPills } from "../../shared/FilterPills";
 
 const TYPE_FILTERS = [
   { value: "scale", label: "Scale" },

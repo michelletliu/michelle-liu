@@ -15,10 +15,10 @@ import { PlusIcon } from "./icons";
 import type { Book, ShelfBookData } from "./types";
 import { booksForShelf } from "./sortBooks";
 import imgLogo from '../../assets/logo.png';
-import InfoButton from '../InfoButton';
+import InfoButton from '../shared/InfoButton';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
-import { FilterDropdown } from '../FilterDropdown';
-import type { FilterDropdownOption } from '../FilterDropdown';
+import { FilterDropdown } from '../shared/FilterDropdown';
+import type { FilterDropdownOption } from '../shared/FilterDropdown';
 import { posthog, posthogEnabled } from '../../lib/posthog';
 
 // Default project info (fallback if Sanity fetch fails)

@@ -4,9 +4,9 @@ import { useState, type ReactNode } from "react";
 import clsx from "clsx";
 import type { Tag } from "./tokens";
 import { subSlug } from "./tokens";
-import { iconSize } from "../iconSizes";
-import { ghostIconButtonClass } from "../ghostIconButton";
-import { Code } from "../Code";
+import { iconSize } from "../shared/iconSizes";
+import { ghostIconButtonClass } from "../shared/ghostIconButton";
+import { Code } from "../icons/Code";
 
 /**
  * Ghost icon button — sm hit target (between size-6 and md), inline glyph.

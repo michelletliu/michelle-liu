@@ -34,27 +34,27 @@ function getBreadcrumbProjectName(projectId: string, project: Project | null): s
   // Last resort: uppercase so acronyms like NASA don't flash "Nasa" → "NASA".
   return projectId.toUpperCase();
 }
-import Footer from "../Footer";
-import ShimmerImage from "../ShimmerImage";
-import ShimmerVideo from "../ShimmerVideo";
-import Tooltip from "../Tooltip";
+import Footer from "../layout/Footer";
+import ShimmerImage from "../shared/ShimmerImage";
+import ShimmerVideo from "../shared/ShimmerVideo";
+import Tooltip from "../shared/Tooltip";
 import ViewAllProjectsButton from "./ViewAllProjectsButton";
 import AlsoCheckOut from "./AlsoCheckOut";
 import ProjectCardSection from "./ProjectCardSection";
 import SideQuestSection from "./SideQuestSection";
 import { TwoColumnImageSectionComponent } from "./TwoColumnImageSection";
-import { ScrollReveal } from "../ScrollReveal";
+import { ScrollReveal } from "../shared/ScrollReveal";
 import { useScrollLock } from "../../utils/useScrollLock";
 import lockIcon from "../../assets/lock.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
 import { posthog, posthogEnabled } from "../../lib/posthog";
-import { FieldInput, FieldShell, fieldIconSlotClassName } from "../FieldInput";
-import { Chevron } from "../Chevron";
-import { Close } from "../Close";
-import { ArrowRightIcon } from "../Arrow";
-import { iconSize } from "../iconSizes";
-import { HorizontalLine } from "../HorizontalLine";
-import { ghostIconButtonClass } from "../ghostIconButton";
+import { FieldInput, FieldShell, fieldIconSlotClassName } from "../shared/FieldInput";
+import { Chevron } from "../icons/Chevron";
+import { Close } from "../icons/Close";
+import { ArrowRightIcon } from "../icons/Arrow";
+import { iconSize } from "../shared/iconSizes";
+import { HorizontalLine } from "../shared/HorizontalLine";
+import { ghostIconButtonClass } from "../shared/ghostIconButton";
 import ProjectCaseStudySidebar from "./ProjectCaseStudySidebar";
 import { getCaseStudyNavItems } from "./caseStudyNavItems";
 

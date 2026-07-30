@@ -1,6 +1,6 @@
 import clsx from "clsx";
-import { ArrowUpRight } from "../ArrowUpRight";
-import ShimmerImage from "../ShimmerImage";
+import { ArrowUpRight } from "../icons/ArrowUpRight";
+import ShimmerImage from "../shared/ShimmerImage";
 
 export type LoreCardData = {
   id: string;

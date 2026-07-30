@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { PortableText } from "@portabletext/react";
-import ShimmerImage from "../ShimmerImage";
+import ShimmerImage from "../shared/ShimmerImage";
 import { urlFor } from "../../sanity/client";
 import { useScrollLock } from "../../utils/useScrollLock";
 import type { SanityImage } from "../../sanity/types";
-import { Close } from "../Close";
-import { ghostIconButtonClass } from "../ghostIconButton";
+import { Close } from "../icons/Close";
+import { ghostIconButtonClass } from "../shared/ghostIconButton";
 
 interface TeamMember {
   _key: string;

@@ -4,8 +4,8 @@ import { useState } from "react";
 import clsx from "clsx";
 import { radii, uniformTag } from "../tokens";
 import { SubLabel, Grid, TokenCard } from "../primitives";
-import { ghostIconButtonClass } from "../../ghostIconButton";
-import { iconSize } from "../../iconSizes";
+import { ghostIconButtonClass } from "../../shared/ghostIconButton";
+import { iconSize } from "../../shared/iconSizes";
 import { GridIcon } from "../../library/icons";
 
 /** Radius 40 so round vs squircle reads clearly. viewBox 137.55. */

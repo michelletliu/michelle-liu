@@ -4,7 +4,10 @@ import test from "node:test";
 import { getHorizontalFadeVisibility } from "./inputMatrixScroll.ts";
 
 const section = readFileSync(
-  new URL("./sections/ComponentSection.tsx", import.meta.url),
+  new URL(
+    "./sections/component-section/InputSpecimens.tsx",
+    import.meta.url,
+  ),
   "utf8",
 );
 
@@ -71,6 +74,7 @@ test("only the muted input composition uses the muted shell tone", () => {
     /const shellTone =\s*composition === "muted" \? "muted" : "surface";/,
   );
   assert.match(section, /tone=\{shellTone\}/);
+  assert.match(section, /className=\{clsx\("input-sample", shellClass\)\}/);
   assert.doesNotMatch(
     section,
     /composition === "leading" \|\| composition === "muted"/,

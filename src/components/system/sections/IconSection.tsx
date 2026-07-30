@@ -1,14 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { ArrowUpRight } from "../../ArrowUpRight";
-import { LinkIcon } from "../../LinkIcon";
-import { TouchIcon } from "../../TouchIcon";
-import { Chevron } from "../../Chevron";
-import { Close } from "../../Close";
-import { Code } from "../../Code";
-import { Arrow } from "../../Arrow";
-import { iconSize, iconSizes, type IconSizeName } from "../../iconSizes";
+import { ArrowUpRight } from "../../icons/ArrowUpRight";
+import { LinkIcon } from "../../icons/LinkIcon";
+import { TouchIcon } from "../../icons/TouchIcon";
+import { Chevron } from "../../icons/Chevron";
+import { Close } from "../../icons/Close";
+import { Code } from "../../icons/Code";
+import { Arrow } from "../../icons/Arrow";
+import { iconSize, iconSizes, type IconSizeName } from "../../shared/iconSizes";
 import {
   PlusIcon,
   SendIcon,
@@ -18,7 +18,7 @@ import {
   SquircleIcon,
 } from "../../library/icons";
 import { SocialLinksBackgroundImage } from "../../SocialLinks";
-import svgPaths from "../../../imports/svg-2tsxp86msm";
+import svgPaths from "../../icons/figma/svg-2tsxp86msm";
 import LumaLogo from "../../../assets/LumaLogo.svg";
 import heartFillIcon from "../../../assets/HeartFill.svg";
 import academicCapIcon from "../../../assets/academic-cap.svg";

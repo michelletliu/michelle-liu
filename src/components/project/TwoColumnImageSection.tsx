@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { PortableText } from '@portabletext/react';
-import ShimmerImage from '../ShimmerImage';
+import ShimmerImage from '../shared/ShimmerImage';
 import { urlFor } from '../../sanity/client';
 import type { TwoColumnImageSection } from '../../sanity/types';
 

@@ -1,8 +1,8 @@
 import React from "react";
-import svgPaths from "../imports/svg-2tsxp86msm";
+import svgPaths from "./icons/figma/svg-2tsxp86msm";
 import LumaLogo from "../assets/LumaLogo.svg";
-import { imgGroup } from "../imports/svg-poktt";
-import Tooltip from "./Tooltip";
+import { imgGroup } from "./icons/figma/svg-poktt";
+import Tooltip from "./shared/Tooltip";
 
 /**
  * SVG wrapper for social link icons (Instagram, X, LinkedIn, Luma, GitHub).

@@ -1,6 +1,6 @@
 import React from "react";
 import clsx from "clsx";
-import ShimmerImage from "../ShimmerImage";
+import ShimmerImage from "../shared/ShimmerImage";
 
 type ProjectMissionHeaderProps = {
   type?: "Mission" | "Overview" | "Overview Centered";

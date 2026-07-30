@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import clsx from "clsx";
-import ShimmerImage from "../ShimmerImage";
+import ShimmerImage from "../shared/ShimmerImage";
 import quoteGraphic from "../../assets/quote gray 200.png";
 
 // Quote mark graphic

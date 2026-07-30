@@ -2,10 +2,10 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { CloseIcon } from "@/components/Close";
-import { ghostIconButtonClass } from "@/components/ghostIconButton";
-import { Info } from "@/components/Info";
-import { iconSize } from "@/components/iconSizes";
+import { CloseIcon } from "@/components/icons/Close";
+import { ghostIconButtonClass } from "@/components/shared/ghostIconButton";
+import { Info } from "@/components/icons/Info";
+import { iconSize } from "@/components/shared/iconSizes";
 import { useScrollLock } from "@/utils/useScrollLock";
 import { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import { GALLERY_DIALOG_ATTR, useGalleryDialogKeys } from "./galleryDialog";

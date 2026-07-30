@@ -1,6 +1,6 @@
 import type { Book } from "./types";
 import { formatText } from "./BookDetailModal";
-import ShimmerImage from "../ShimmerImage";
+import ShimmerImage from "../shared/ShimmerImage";
 
 interface BookCardProps {
   book: Book;

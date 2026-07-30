@@ -1,4 +1,4 @@
-import Sidebar, { type SidebarNode } from "../Sidebar";
+import Sidebar, { type SidebarNode } from "../layout/Sidebar";
 import type { CaseStudyNavItem } from "./caseStudyNavItems";
 
 type ProjectCaseStudySidebarProps = {

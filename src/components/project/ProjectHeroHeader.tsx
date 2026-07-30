@@ -1,7 +1,7 @@
 import React from "react";
 import clsx from "clsx";
-import ShimmerImage from "../ShimmerImage";
-import { HorizontalLine } from "../HorizontalLine";
+import ShimmerImage from "../shared/ShimmerImage";
+import { HorizontalLine } from "../shared/HorizontalLine";
 
 type MetadataItem = {
   label: string;

@@ -1,6 +1,6 @@
 import React from "react";
 import clsx from "clsx";
-import ShimmerImage from "../ShimmerImage";
+import ShimmerImage from "../shared/ShimmerImage";
 import ViewAllProjectsButton from "./ViewAllProjectsButton";
 
 type Project = {

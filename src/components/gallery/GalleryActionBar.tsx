@@ -15,7 +15,7 @@ import {
   type Transition,
 } from "framer-motion";
 import { ChevronDown, Images, SquarePen } from "lucide-react";
-import Tooltip from "@/components/Tooltip";
+import Tooltip from "@/components/shared/Tooltip";
 import MetArtworkPicker from "./MetArtworkPicker";
 import { isGalleryDialogOpen } from "./galleryDialog";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";

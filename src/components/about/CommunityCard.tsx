@@ -2,10 +2,10 @@ import clsx from "clsx";
 import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../utils/useScrollLock";
-import ShimmerImage from "../ShimmerImage";
-import Tooltip from "../Tooltip";
-import { Close } from "../Close";
-import { ghostIconButtonClass } from "../ghostIconButton";
+import ShimmerImage from "../shared/ShimmerImage";
+import Tooltip from "../shared/Tooltip";
+import { Close } from "../icons/Close";
+import { ghostIconButtonClass } from "../shared/ghostIconButton";
 
 export type CommunityPhoto = {
   id: string;

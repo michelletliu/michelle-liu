@@ -1,4 +1,4 @@
-import Sidebar, { type SidebarNode } from "../Sidebar";
+import Sidebar, { type SidebarNode } from "../layout/Sidebar";
 
 export type ArtCategory = "painting" | "conceptual" | "graphite" | "sketchbook" | "murals";
 

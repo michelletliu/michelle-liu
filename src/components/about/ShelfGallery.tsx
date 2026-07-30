@@ -1,7 +1,7 @@
 import { useState } from "react";
 import clsx from "clsx";
 import MediaCard, { type MediaCardData } from "./MediaCard";
-import { ArrowUpRight } from "../ArrowUpRight";
+import { ArrowUpRight } from "../icons/ArrowUpRight";
 
 export type ShelfCategory = {
   id: string;

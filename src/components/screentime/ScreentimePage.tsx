@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from '@/lib/navigation';
 const loadDomToPng = () => import('modern-screenshot').then(m => m.domToPng);
 import imgLogo from '../../assets/logo.png';
-import InfoButton from '../InfoButton';
+import InfoButton from '../shared/InfoButton';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
 
 
@@ -48,7 +48,7 @@ import imgNotionIcon from '../../assets/receipt/icons-optimized/IMG_6925.png';
 import imgYoutubeIcon from '../../assets/receipt/icons-optimized/IMG_6932.png';
 import imgNetflixIcon from '../../assets/receipt/icons-optimized/IMG_6933 1.png';
 import imgSpotifyIcon from '../../assets/receipt/icons-optimized/IMG_6931.png';
-import { Close } from '../Close';
+import { Close } from '../icons/Close';
 
 const APP_ICONS = {
   instagram: imgInstagramIcon,

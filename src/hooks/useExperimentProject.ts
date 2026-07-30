@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { client, urlFor } from '../sanity/client';
 import { EXPERIMENT_PROJECT_BY_ID_QUERY } from '../sanity/queries';
-import type { ToolCategory } from '../components/InfoButton';
+import type { ToolCategory } from '../components/shared/InfoButton';
 import type { SanityImage } from '../sanity/types';
 
 // Type for the Sanity experiment project data

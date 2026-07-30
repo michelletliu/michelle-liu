@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Download } from "lucide-react";
 import * as THREE from "three";
-import { ghostIconButtonClass } from "@/components/ghostIconButton";
+import { ghostIconButtonClass } from "@/components/shared/ghostIconButton";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { createWoodgrainTexture, scaleBoxUvsToWorld } from "./frameWoodgrain";
 import {

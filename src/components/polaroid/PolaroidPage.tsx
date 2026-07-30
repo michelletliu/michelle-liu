@@ -12,10 +12,10 @@ import imgLinkedInIcon from '../../assets/polaroid/f81f194aee98efdd62a97e659006e
 import imgMailIcon from '../../assets/polaroid/7d8c54338d14a1f9afdfff1bec90c42375e5050e.png';
 import imgXIcon from '../../assets/receipt/icons-optimized/IMG_6929.png';
 import imgLogo from '../../assets/logo.png';
-import InfoButton from '../InfoButton';
-import Tooltip from '../Tooltip';
+import InfoButton from '../shared/InfoButton';
+import Tooltip from '../shared/Tooltip';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
-import { Close } from '../Close';
+import { Close } from '../icons/Close';
 
 
 // Default project info (fallback if Sanity fetch fails)
