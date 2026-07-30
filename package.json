@@ -80,7 +80,7 @@
     "prebuild": "node scripts/generate-changelog-json.js",
     "build": "next build --webpack",
     "start": "next start",
-    "test": "node --test --experimental-strip-types src/lib/protected-project-access.test.ts src/lib/shallowPath.test.ts src/components/library/sortBooks.test.ts src/components/system/inputMatrix.test.ts src/components/system/MotionSection.test.ts src/components/FieldInput.test.ts src/components/iconSizes.test.ts src/components/system/iconSection.test.ts src/components/system/canvasDust.test.ts src/components/system/colorSection.test.ts src/components/SocialLinks.test.ts src/components/screentime/ScreentimePage.test.ts app/layout.test.ts",
+    "test": "node --test --experimental-strip-types src/lib/protected-project-access.test.ts src/lib/shallowPath.test.ts src/components/library/BookDetailModal.test.ts src/components/library/sortBooks.test.ts src/components/system/inputMatrix.test.ts src/components/system/MotionSection.test.ts src/components/FieldInput.test.ts src/components/iconSizes.test.ts src/components/system/iconSection.test.ts src/components/system/canvasDust.test.ts src/components/system/colorSection.test.ts src/components/SocialLinks.test.ts src/components/screentime/ScreentimePage.test.ts app/layout.test.ts",
     "repair-spotify-links": "node scripts/repair-spotify-urls.js",
     "doctor": "npx react-doctor@latest"
   }
