@@ -592,7 +592,7 @@ function StatusBar() {
 // Home Indicator Component
 function HomeIndicator({ additionalClassNames = "" }: { additionalClassNames?: string }) {
   return (
-    <div className={`md:hidden absolute h-[34px] left-1/2 -translate-x-1/2 w-[400px] max-w-full ${additionalClassNames}`}>
+    <div className={`hidden md:block absolute h-[34px] left-1/2 -translate-x-1/2 w-[400px] max-w-full ${additionalClassNames}`}>
       <div className="absolute bottom-[8px] flex h-[5px] items-center justify-center left-1/2 -translate-x-1/2 w-[144px]">
         <div className="flex-none rotate-180 scale-y-[-1]">
           <div className="bg-zinc-900 h-[5px] rounded-full w-[144px]" />
@@ -857,7 +857,7 @@ function ReceiptScreen({
   const recommendation = getRecommendation(grandTotal);
 
   return (
-    <div className="receipt-screen-container flex flex-col gap-6 items-center w-[337px] max-w-[90%] pt-16 pb-24 animate-slide-in transition-transform duration-400 mx-auto">
+    <div className="receipt-screen-container flex flex-col gap-6 items-center w-[337px] max-w-[90%] pt-20 pb-24 md:pt-16 animate-slide-in transition-transform duration-400 mx-auto">
       <div ref={receiptRef} className="bg-white relative shadow-soft shrink-0 w-full border border-zinc-100">
         <div className="flex flex-col items-center size-full">
           <div className="flex flex-col gap-[32px] items-center px-[24px] py-[32px] relative w-full">

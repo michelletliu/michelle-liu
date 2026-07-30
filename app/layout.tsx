@@ -40,14 +40,17 @@ export const metadata: Metadata = {
 };
 
 const devtoolsComment = String.raw`<!--
-  __  __ _      _          _ _        _     _
- |  \/  (_) ___| |__   ___| | | ___  | |   (_)_   _
- | |\/| | |/ __| '_ \ / _ \ | |/ _ \ | |   | | | | |
- | |  | | | (__| | | |  __/ | |  __/ | |___| | |_| |
- |_|  |_|_|\___|_| |_|\___|_|_|\___| |_____|_|\__,_|
+  .------------.
+  | |||   oo   |
+  | |||  ----  |
+  | |||   ||   |
+  |            |
+  | |||| +--+  |
+  | |||| |  |  |
+  | |||| +--+  |
+  '------------'
 
-  hi, curious human.
-  no secrets here, just pixels made with care.
+  hi, curious stranger :)
 -->`;
 
 export default function RootLayout({
