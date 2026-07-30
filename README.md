@@ -22,3 +22,8 @@ Protected project-section passwords are verified server-side by `app/api/passwor
 
 Important: app-level filtering is not enough if confidential content remains in a publicly readable Sanity dataset. For NDA-grade protection, move protected content behind private Sanity access, such as a private dataset or private document model that anonymous GROQ requests cannot query.
 
+## License
+
+The source code in this repository is licensed under the MIT License.
+
+All portfolio content, case studies, images, screenshots, logos, personal branding, and written materials are © Michelle Liu. All rights reserved. They may not be copied, reused, redistributed, or modified without permission.
