@@ -56,13 +56,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head
-        dangerouslySetInnerHTML={{
-          __html: `${devtoolsComment}
-<link rel="preload" as="image" href="/logo.png" fetchpriority="high" />`,
-        }}
-      />
+      <head>
+        <link rel="preload" as="image" href="/logo.png" fetchPriority="high" />
+      </head>
       <body suppressHydrationWarning>
+        <div hidden dangerouslySetInnerHTML={{ __html: devtoolsComment }} />
         <Providers>{children}</Providers>
       </body>
     </html>
