@@ -17,3 +17,8 @@ test("date arrows stay inline with the first date when ranges wrap", () => {
     "mobile and desktop ranges should keep the arrow attached to the first date",
   );
 });
+
+test("mobile content offsets its right padding by the scrollbar width", () => {
+  assert.match(modal, /pl-12 pr-9 py-12 sm:p-10/);
+  assert.doesNotMatch(modal, /px-12 py-12 sm:p-10/);
+});
