@@ -589,19 +589,6 @@ function StatusBar() {
   );
 }
 
-// Home Indicator Component
-function HomeIndicator({ additionalClassNames = "" }: { additionalClassNames?: string }) {
-  return (
-    <div className={`hidden md:block absolute h-[34px] left-1/2 -translate-x-1/2 w-[400px] max-w-full ${additionalClassNames}`}>
-      <div className="absolute bottom-[8px] flex h-[5px] items-center justify-center left-1/2 -translate-x-1/2 w-[144px]">
-        <div className="flex-none rotate-180 scale-y-[-1]">
-          <div className="bg-zinc-900 h-[5px] rounded-full w-[144px]" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // Generate Screen Component
 function GenerateScreen({ 
   period, 
@@ -1544,7 +1531,6 @@ export default function ScreentimePage() {
           <div className="hidden md:block">
             <StatusBar />
           </div>
-          <HomeIndicator additionalClassNames="bottom-0" />
           
           {screen === 'generate' && (
             <GenerateScreen 

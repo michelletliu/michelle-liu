@@ -14,9 +14,6 @@ test("receipt clears the fixed logo on mobile", () => {
   );
 });
 
-test("simulated home indicator is hidden on mobile and shown on desktop", () => {
-  assert.match(
-    screentimeSource,
-    /function HomeIndicator[\s\S]*?className=\{`hidden md:block absolute/,
-  );
+test("simulated home indicator is not rendered", () => {
+  assert.doesNotMatch(screentimeSource, /HomeIndicator/);
 });
