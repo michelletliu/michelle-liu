@@ -39,6 +39,16 @@ export const metadata: Metadata = {
   },
 };
 
+const devtoolsComment = String.raw`<!--
+                   ▄▄          ▄▄ ▄▄         ▄▄
+         ▀▀        ██          ██ ██         ██ ▀▀
+███▄███▄ ██  ▄████ ████▄ ▄█▀█▄ ██ ██ ▄█▀█▄   ██ ██  ██ ██
+██ ██ ██ ██  ██    ██ ██ ██▄█▀ ██ ██ ██▄█▀   ██ ██  ██ ██
+██ ██ ██ ██▄ ▀████ ██ ██ ▀█▄▄▄ ██ ██ ▀█▄▄▄   ██ ██▄ ▀██▀█
+
+  hi, curious stranger :)
+-->`;
+
 export default function RootLayout({
   children,
 }: {
@@ -50,6 +60,7 @@ export default function RootLayout({
         <link rel="preload" as="image" href="/logo.png" fetchPriority="high" />
       </head>
       <body suppressHydrationWarning>
+        <div hidden dangerouslySetInnerHTML={{ __html: devtoolsComment }} />
         <Providers>{children}</Providers>
       </body>
     </html>
