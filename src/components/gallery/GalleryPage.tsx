@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import LogoBackButton from "@/components/LogoBackButton";
-import { useNavigate } from "@/lib/navigation";
+import { warmWorkPage } from "@/components/doorwayWarm";
 import GalleryActionBar, {
   type PaintingGenerationContext,
 } from "./GalleryActionBar";
@@ -16,7 +16,11 @@ import { resolveShimmerHues, type ShimmerHues } from "./shimmerPalette";
 import { useGalleryCamera, useMeasuredHeight } from "./useGalleryCamera";
 
 export default function GalleryPage() {
-  const navigate = useNavigate();
+  /** Hard-assign home — soft push waits on WebGL dispose and feels broken. */
+  const goHome = useCallback(() => {
+    warmWorkPage();
+    window.location.assign("/");
+  }, []);
   /*
    * The bottom stack covers the foot of the room, and the action bar inside it
    * changes height as it opens, so how much of the focused frame is hidden is
@@ -126,12 +130,12 @@ export default function GalleryPage() {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" || e.code === "Escape") {
         e.preventDefault();
-        navigate("/");
+        goHome();
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [navigate]);
+  }, [goHome]);
 
   return (
     <div
@@ -140,7 +144,7 @@ export default function GalleryPage() {
       {...pointerBindProps}
     >
       <div data-gallery-no-drag className="relative z-40">
-        <LogoBackButton onClick={() => navigate("/")} />
+        <LogoBackButton />
         <GalleryInfoButton />
       </div>
       <GalleryRoom
