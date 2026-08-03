@@ -32,6 +32,12 @@ import {
 import { metImageTrimScale, metImageTrimStyle } from "./metImageMat";
 import { useMetSearch } from "./useMetSearch";
 
+/** Last successful generate for a canvas — restores the composer on edit. */
+export type PaintingGenerationContext = {
+  prompt: string;
+  inspiration: MetArtwork | null;
+};
+
 function GalleryDownloadIcon({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -86,18 +92,18 @@ const STACK_CARDS = [
 type GalleryActionBarProps = {
   generating: boolean;
   focusedId: string;
+  /** Last successful generate for the focused canvas, if any. */
+  generationContext?: PaintingGenerationContext;
   canDownload?: boolean;
   openSignal?: number;
   onDownload?: () => void;
-  onGenerate: (
-    prompt: string,
-    inspiration?: { objectID: number; title: string },
-  ) => Promise<void>;
+  onGenerate: (prompt: string, inspiration?: MetArtwork) => Promise<void>;
 };
 
 export default function GalleryActionBar({
   generating,
   focusedId,
+  generationContext,
   canDownload = false,
   openSignal = 0,
   onDownload,
@@ -129,11 +135,15 @@ export default function GalleryActionBar({
   const pickerToggleRef = useRef<HTMLButtonElement>(null);
   const pendingFocus = useRef<"bar" | "pen" | null>(null);
   const focusedIdRef = useRef(focusedId);
+  const generationContextRef = useRef(generationContext);
+  generationContextRef.current = generationContext;
   const reduceMotion = useReducedMotion();
 
   const blocked =
     inspiration !== null && !artworkEligibility(inspiration).eligible;
   const isGenerating = generating || submitPending;
+  const isGeneratingRef = useRef(isGenerating);
+  isGeneratingRef.current = isGenerating;
   const addDisabled = isGenerating || inspiration !== null;
   const addTooltip = isGenerating
     ? "Generating artwork"
@@ -207,8 +217,39 @@ export default function GalleryActionBar({
     [pickerOpen, inspiration, collapseBar],
   );
 
+  const selectInspiration = (artwork: MetArtwork | null) => {
+    setInspiration(artwork);
+    setInspirationCanMinimize(false);
+    if (artwork) setPickerOpen(false);
+  };
+
+  /**
+   * Apply the last successful generate for a canvas (or blank if none).
+   * Used when switching hangs and when opening the composer to edit.
+   */
+  const applyGenerationContext = useCallback(
+    (context: PaintingGenerationContext | undefined) => {
+      if (context) {
+        setPrompt(context.prompt);
+        setInspiration(context.inspiration);
+        setInspirationCanMinimize(Boolean(context.inspiration));
+      } else {
+        setPrompt("");
+        setInspiration(null);
+        setInspirationCanMinimize(false);
+      }
+      setPickerOpen(false);
+    },
+    [],
+  );
+
   const expandBar = () => {
     pendingFocus.current = "bar";
+    // Skip while a run is in flight — local draft is the prompt being
+    // generated; stored context is still the previous success (or empty).
+    if (!isGeneratingRef.current) {
+      applyGenerationContext(generationContextRef.current);
+    }
     setExpanded(true);
   };
 
@@ -220,25 +261,23 @@ export default function GalleryActionBar({
   }
   wasGeneratingRef.current = isGenerating;
 
-  const selectInspiration = (artwork: MetArtwork | null) => {
-    setInspiration(artwork);
-    setInspirationCanMinimize(false);
-    if (artwork) setPickerOpen(false);
-  };
-
   useEffect(() => {
     if (openSignal === 0) return;
     pendingFocus.current = null;
+    // Only keyed on openSignal — generationContext updates after a successful
+    // generate must not re-expand the bar we just folded to the Generating pill.
+    if (!isGeneratingRef.current) {
+      applyGenerationContext(generationContextRef.current);
+    }
     setExpanded(true);
-  }, [openSignal]);
+  }, [openSignal, applyGenerationContext]);
 
   useEffect(() => {
     if (focusedIdRef.current === focusedId) return;
     focusedIdRef.current = focusedId;
-    setInspiration(null);
-    setInspirationCanMinimize(false);
-    setPickerOpen(false);
-  }, [focusedId]);
+    // Drop the previous hang's draft; load this hang's stored generate if any.
+    applyGenerationContext(generationContextRef.current);
+  }, [focusedId, applyGenerationContext]);
 
   /**
    * A pointer landing anywhere else in the room dismisses one level.
@@ -309,13 +348,9 @@ export default function GalleryActionBar({
       document.activeElement.blur();
     }
     try {
-      await onGenerate(
-        next,
-        inspiration
-          ? { objectID: inspiration.objectID, title: inspiration.title }
-          : undefined,
-      );
-      setPrompt("");
+      await onGenerate(next, inspiration ?? undefined);
+      // Keep prompt + inspiration so re-expanding to edit shows the same
+      // context; parent also stores them keyed by painting id.
     } catch (err) {
       setError(err instanceof Error ? err.message : "Generation failed");
       // Surface the alert — the collapsed pill has nowhere to show it.

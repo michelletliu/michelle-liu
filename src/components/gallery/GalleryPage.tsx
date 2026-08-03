@@ -3,12 +3,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import LogoBackButton from "@/components/LogoBackButton";
 import { useNavigate } from "@/lib/navigation";
-import GalleryActionBar from "./GalleryActionBar";
+import GalleryActionBar, {
+  type PaintingGenerationContext,
+} from "./GalleryActionBar";
 import GalleryInfoButton from "./GalleryInfoButton";
 import GalleryRoom from "./GalleryRoom";
 import GalleryThumbstick from "./GalleryThumbstick";
 import { downloadImage, generatedImageFilename } from "./downloadImage";
 import { GALLERY_PAINTINGS } from "./galleryPaintings";
+import type { MetArtwork } from "./metArtworks";
 import { resolveShimmerHues, type ShimmerHues } from "./shimmerPalette";
 import { useGalleryCamera, useMeasuredHeight } from "./useGalleryCamera";
 
@@ -26,9 +29,12 @@ export default function GalleryPage() {
   const { ref, ...pointerBindProps } = bindProps;
 
   const [imageById, setImageById] = useState<Record<string, string>>({});
-  /** Artwork that inspired each canvas, kept for the download filename. */
-  const [inspirationById, setInspirationById] = useState<
-    Record<string, string>
+  /**
+   * Prompt + Met inspiration per canvas. Download filenames read the title;
+   * the action bar hydrates from the full record when editing a hang.
+   */
+  const [generationById, setGenerationById] = useState<
+    Record<string, PaintingGenerationContext>
   >({});
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [composerOpenSignal, setComposerOpenSignal] = useState(0);
@@ -56,10 +62,7 @@ export default function GalleryPage() {
   );
 
   const onGenerate = useCallback(
-    async (
-      prompt: string,
-      inspiration?: { objectID: number; title: string },
-    ) => {
+    async (prompt: string, inspiration?: MetArtwork) => {
       const paintingId = focusedId;
       setGeneratingId(paintingId);
       // Deliberately not awaited. The shimmer opens on its default hues and
@@ -91,9 +94,12 @@ export default function GalleryPage() {
           throw new Error(data.error || "Generation failed");
         }
         setImageById((prev) => ({ ...prev, [paintingId]: data.imageUrl! }));
-        setInspirationById((prev) => ({
+        setGenerationById((prev) => ({
           ...prev,
-          [paintingId]: inspiration?.title ?? "",
+          [paintingId]: {
+            prompt,
+            inspiration: inspiration ?? null,
+          },
         }));
       } finally {
         // Runs on failure too, so a canvas never keeps shimmering after an error.
@@ -109,11 +115,12 @@ export default function GalleryPage() {
     void downloadImage(
       imageUrl,
       generatedImageFilename({
-        inspirationTitle: inspirationById[focusedId] || null,
+        inspirationTitle:
+          generationById[focusedId]?.inspiration?.title ?? null,
         imageUrl,
       }),
     );
-  }, [focusedId, imageById, inspirationById]);
+  }, [focusedId, imageById, generationById]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -155,6 +162,7 @@ export default function GalleryPage() {
         <GalleryActionBar
           generating={generatingId !== null}
           focusedId={focusedId}
+          generationContext={generationById[focusedId]}
           canDownload={Boolean(imageById[focusedId])}
           onDownload={onDownload}
           openSignal={composerOpenSignal}
