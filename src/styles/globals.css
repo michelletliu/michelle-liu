@@ -446,10 +446,6 @@ p a:hover {
   }
 }
 
-.green-pulse-ring-off {
-  display: none !important;
-}
-
 /* Custom transition duration for testimonial animations */
 .duration-400 {
   transition-duration: 400ms;

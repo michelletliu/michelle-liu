@@ -1,22 +1,22 @@
 /**
  * Shared stroke-icon size ramp (px).
- * Prefer `iconSize("toolbar")` over ad-hoc rem/`size-*` classes so
+ * Prefer `iconSize("md")` over ad-hoc rem/`size-*` classes so
  * `strokeWidth={1.5}` + `vectorEffect="non-scaling-stroke"` stay consistent.
  *
- * Sticky morph (chevron↔Close) uses `touch` (24) for both states. Close’s
+ * Sticky morph (chevron↔Close) uses `lg` (24) for both states. Close’s
  * 12×12 path band matches Chevron’s vertical span so glyphs read the same size.
  */
 export const iconSizes = {
-  /** Dense / meta */
-  meta: 12,
-  /** Inline with text / dense leading marks */
-  inline: 16,
-  /** Toolbar / filter disclosure / sheet list chevrons */
-  toolbar: 20,
-  /** Default touch affordance / primary sheet Close */
-  touch: 24,
+  /** Dense / meta marks */
+  xs: 12,
+  /** Inline with text */
+  sm: 16,
+  /** Default control / field / toolbar icons */
+  md: 20,
+  /** Primary touch affordance / sheet dismiss */
+  lg: 24,
   /** Hero / specimen */
-  hero: 32,
+  xl: 32,
 } as const;
 
 export type IconSizeName = keyof typeof iconSizes;

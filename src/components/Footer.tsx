@@ -206,7 +206,7 @@ export default function Footer({
                   gapClassName="gap-3"
                   logoHref={logoHref}
                 />
-                <p className="font-['Michelle',sans-serif] font-normal leading-5 text-zinc-400 text-base">
+                <p className="font-['Michelle',sans-serif] font-normal leading-normal text-zinc-400 text-base">
                   <BlinkingTime time={localTime} h24={localH24} city={city} />
                 </p>
               </div>
@@ -221,8 +221,8 @@ export default function Footer({
               {/* Column 4: Contact + Social */}
               <div className="[grid-area:1_/_4] content-stretch flex flex-col gap-4 items-start relative shrink-0">
                 <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start relative shrink-0 text-zinc-400 w-full">
-                  <p className="leading-6 min-w-full relative shrink-0 text-base w-[min-content]">Let's work together!</p>
-                  <p className="leading-6 relative shrink-0 text-base break-all">
+                  <p className="leading-normal min-w-full relative shrink-0 text-base w-[min-content]">Let's work together!</p>
+                  <p className="leading-normal relative shrink-0 text-base break-all">
                     <a href="mailto:studio@liumichelle.com" className="group/email inline-flex items-center hover:text-blue-500 text-zinc-600 font-medium transition-colors duration-200">
                       <span>{`studio@liumichelle.com`}</span>
                       <span className="ml-1 inline-flex items-center opacity-0 group-hover/email:opacity-100 transition-opacity duration-150 ease-out"><ArrowUpRight size="1em" /></span>
@@ -244,7 +244,7 @@ export default function Footer({
                   gapClassName="gap-2"
                   logoHref={logoHref}
                 />
-                <p className="font-['Michelle',sans-serif] font-normal leading-5 text-zinc-400 text-base">
+                <p className="font-['Michelle',sans-serif] font-normal leading-normal text-zinc-400 text-base">
                   <BlinkingTime time={localTime} h24={localH24} city={city} />
                 </p>
               </div>
@@ -253,8 +253,8 @@ export default function Footer({
               <div className="content-stretch flex flex-col gap-10 items-start relative shrink-0">
                 <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0">
                   <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start relative shrink-0 text-zinc-400 w-[326px]">
-                    <p className="leading-6 relative shrink-0 text-base w-full">Let's work together!</p>
-                    <p className="leading-6 relative shrink-0 text-base w-full break-all">
+                    <p className="leading-normal relative shrink-0 text-base w-full">Let's work together!</p>
+                    <p className="leading-normal relative shrink-0 text-base w-full break-all">
                       <a href="mailto:studio@liumichelle.com" className="group/email inline-flex items-center hover:text-blue-500 text-zinc-600 font-medium transition-colors duration-200">
                         <span>{`studio@liumichelle.com`}</span>
                         <span className="ml-0 group-hover/email:ml-1.5 inline-flex items-center opacity-0 group-hover/email:opacity-100 transition-all duration-150 ease-out"><ArrowUpRight size="1em" /></span>
@@ -274,7 +274,7 @@ export default function Footer({
             </div>
           </ScrollReveal>
           <ScrollReveal variant="fade" delay={200} className="content-stretch flex flex-col gap-0.5 items-center relative shrink-0">
-            <p className="font-['Michelle',sans-serif] font-normal leading-7 relative shrink-0 text-zinc-400 text-sm">
+            <p className="font-['Michelle',sans-serif] font-normal leading-relaxed relative shrink-0 text-zinc-400 text-sm">
               <span>{`Built with Next.js & `}</span>
               <span className="group">
                 <a
@@ -300,7 +300,7 @@ export default function Footer({
             >
               <TextScramble 
                 text={changelogText}
-                className="font-['Michelle',sans-serif] font-normal leading-5 tracking-wider relative shrink-0 text-[#a1a1aa] text-xs text-nowrap"
+                className="font-['Michelle',sans-serif] font-normal leading-normal tracking-wider relative shrink-0 text-[#a1a1aa] text-xs text-nowrap"
               />
             </a>
           </ScrollReveal>

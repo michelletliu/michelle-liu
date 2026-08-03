@@ -34,13 +34,15 @@ export function FilterDropdown({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   // Snapshot of button rect captured synchronously before portal mounts
-  const snapRef = useRef({ top: 0, left: 0 });
+  const snapRef = useRef({ top: 0, left: 0, width: 0 });
 
   // Sync position update — called directly in scroll handler, no RAF lag
   const syncPanelPos = () => {
     if (buttonRef.current && panelRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       panelRef.current.style.transform = `translate(${rect.left}px, ${rect.bottom + 4}px)`;
+      panelRef.current.style.minWidth = `${rect.width}px`;
+      panelRef.current.style.width = "auto";
     }
   };
 
@@ -48,7 +50,7 @@ export function FilterDropdown({
   useEffect(() => {
     if (defaultOpen && usePortal && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      snapRef.current = { top: rect.bottom + 4, left: rect.left };
+      snapRef.current = { top: rect.bottom + 4, left: rect.left, width: rect.width };
       syncPanelPos();
     }
   }, []);
@@ -94,11 +96,14 @@ export function FilterDropdown({
         if (el && usePortal) {
           // Set position synchronously on mount — before browser paints — so no jank
           el.style.transform = `translate(${snapRef.current.left}px, ${snapRef.current.top}px)`;
+          el.style.minWidth = `${snapRef.current.width}px`;
+          el.style.width = "auto";
         }
       }}
       className={clsx(
-        "bg-white rounded-xl shadow-elevated border border-zinc-100 z-[9999] min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-200",
-        usePortal ? "fixed" : "absolute left-0 top-[calc(100%+4px)]"
+        // ring instead of border so the hairline sits outside the box and doesn't nudge text
+        "bg-white rounded-xl shadow-elevated ring-1 ring-zinc-100 z-[9999] animate-in fade-in slide-in-from-top-1 duration-200",
+        usePortal ? "fixed w-max" : "absolute left-0 top-[calc(100%+4px)] min-w-full w-max"
       )}
       style={usePortal ? {
         top: 0,
@@ -106,7 +111,7 @@ export function FilterDropdown({
         willChange: "transform",
       } : undefined}
     >
-      <div className="flex flex-col gap-1 py-1.5 px-1.5">
+      <div className="flex flex-col gap-1 px-1 py-1">
         {options.map((option) => {
           const isActive = activeValue === option.value;
           return (
@@ -117,12 +122,13 @@ export function FilterDropdown({
                 setOpen(false);
               }}
               className={clsx(
-                "flex items-center px-3 py-1 rounded-[10px] transition-colors text-left",
+                // 4px panel inset + 8px option padding matches the trigger's 12px inset.
+                "flex items-center px-2 py-1 rounded-[10px] supports-[corner-shape:squircle]:rounded-[1.125rem] transition-colors text-left",
                 isActive ? "bg-zinc-100" : "hover:bg-zinc-50"
               )}
             >
               <span className={clsx(
-                "font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em]",
+                "font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap",
                 isActive ? "text-zinc-600" : "text-zinc-400"
               )}>
                 {option.label}
@@ -146,7 +152,7 @@ export function FilterDropdown({
         onClick={() => {
           if (!open && buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
-            snapRef.current = { top: rect.bottom + 4, left: rect.left };
+            snapRef.current = { top: rect.bottom + 4, left: rect.left, width: rect.width };
           }
           setOpen(!open);
         }}
@@ -160,7 +166,7 @@ export function FilterDropdown({
         </span>
         <Chevron
           direction="down"
-          size={iconSize("toolbar")}
+          size={iconSize("md")}
           className={clsx(
             "text-zinc-400 transition-transform duration-200",
             open && "rotate-180"

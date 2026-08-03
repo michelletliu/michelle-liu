@@ -8,11 +8,11 @@ import { iconSize } from "./iconSizes";
  * Shell: rounded-full + `border` (1px) — transparent idle, zinc-300 on focus,
  * red-400 on error. No one-off border widths.
  * Input: text-base / zinc-900 / placeholder zinc-400.
- * Height locked to `h-5` + `leading-5` (and `p-0`) so leading/trailing icons
+ * Height locked to `h-5` + `leading-none` (and `p-0`) so leading/trailing icons
  * share one optical midline with placeholder/value under flex `items-center`.
  */
 export const fieldInputClassName =
-  "min-w-0 flex-1 appearance-none bg-transparent border-none outline-none p-0 h-5 text-base leading-5 text-zinc-900 placeholder:text-zinc-400 disabled:cursor-not-allowed disabled:opacity-50";
+  "min-w-0 flex-1 appearance-none bg-transparent border-none outline-none p-0 h-5 text-base font-normal leading-none text-zinc-900 placeholder:text-zinc-400 disabled:cursor-not-allowed disabled:opacity-50";
 
 export type FieldShellTone = "surface" | "muted";
 
@@ -53,7 +53,7 @@ export function FieldShell({
 }
 
 /**
- * Icon slot box — `size-5` matches FieldInput `h-5` / `leading-5` so the
+ * Icon slot box — `size-5` matches FieldInput `h-5` / `leading-none` so the
  * icon and text line share one midline inside FieldShell `items-center`.
  * `[&_svg]:block` overrides Arrow’s `inline-block` + verticalAlign so glyphs
  * don’t sit optically low.
@@ -106,7 +106,7 @@ export function FieldTrailingIcon({
 
 /** Magnifier for search/filter FieldShell — stroke matches Chevron / Close. */
 export function SearchMagnifierIcon({
-  size = iconSize("inline"),
+  size = iconSize("md"),
 }: {
   size?: string;
 }) {

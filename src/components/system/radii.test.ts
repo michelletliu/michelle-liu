@@ -64,11 +64,23 @@ test("round and squircle specimens overlay each other's corner segments", () => 
   assert.match(section, /filled=\{showGrid\}/);
 });
 
-test("token card title and usage use gap-0.5 when both are present", () => {
+test("token card title and usage use gap-0 with a medium-weight title", () => {
   const primitives = readFileSync(
     new URL("./primitives.tsx", import.meta.url),
     "utf8",
   );
 
-  assert.match(primitives, /usage \? "gap-0\.5" : "gap-0"/);
+  assert.match(primitives, /className="flex flex-col gap-0 pl-2"/);
+  assert.match(
+    primitives,
+    /text-base font-medium text-zinc-700/,
+  );
+  assert.doesNotMatch(
+    primitives,
+    /usage \? "gap-0\.5" : "gap-0"/,
+  );
+  assert.doesNotMatch(
+    primitives,
+    /text-base font-normal text-zinc-700/,
+  );
 });

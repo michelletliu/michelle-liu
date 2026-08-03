@@ -189,7 +189,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
         className={`fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] flex flex-col rounded-2xl overflow-y-auto overscroll-contain modal-scroll-container bg-white border border-[rgba(0,0,0,0.1)] shadow-elevated ${
           isPopupMode 
             ? 'gap-4 sm:gap-5 p-12 sm:p-16 w-[min(700px,85vw)] max-h-[70vh]' 
-            : 'gap-6 sm:gap-8 md:gap-10 px-12 py-12 sm:p-10 md:p-16 lg:p-20 w-[calc(100vw-32px)] sm:w-[calc(100vw-80px)] md:w-[min(1137px,90vw)] max-h-[80vh] sm:max-h-[90vh]'
+            : 'gap-6 sm:gap-8 md:gap-10 pl-12 pr-9 py-12 sm:p-10 md:p-16 lg:p-20 w-[calc(100vw-32px)] sm:w-[calc(100vw-80px)] md:w-[min(1137px,90vw)] max-h-[80vh] sm:max-h-[90vh]'
         } ${isClosing ? 'animate-modal-scale-out' : 'animate-modal-scale-in'}`}
       >
         {/* Mobile layout */}
@@ -219,13 +219,13 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
             {/* Title & Author - left aligned */}
             <div className="flex flex-col gap-0.5">
               <h2 
-                className="font-['SF_Pro:Regular',sans-serif] font-medium text-xl text-zinc-900"
+                className="font-['SF_Pro:Regular',sans-serif] font-medium text-lg text-zinc-900"
                 style={{ fontVariationSettings: "'wdth' 100" }}
               >
                 {formatText(book.title)}
               </h2>
               <p 
-                className="font-['SF_Pro:Regular',sans-serif] text-lg text-zinc-500"
+                className="font-['SF_Pro:Regular',sans-serif] text-base text-zinc-500"
                 style={{ fontVariationSettings: "'wdth' 100" }}
               >
                 {book.author}
@@ -243,7 +243,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                 >
                   Rating
                 </span>
-                <span className="font-['Michelle',sans-serif] text-lg">
+                <span className="font-['Michelle',sans-serif] text-base">
                   <span className="text-zinc-600">{"★".repeat(book.rating)}</span>
                   <span className="text-zinc-200">{"★".repeat(5 - book.rating)}</span>
                 </span>
@@ -292,10 +292,12 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                     style={{ fontVariationSettings: "'wdth' 100" }}
                   >
                     {hasRange ? (
-                      <span className="inline-flex items-center">
-                        {formatBookDate(book.dateStarted!)}
-                        <ArrowRightIcon size={iconSize("inline")} className="mx-1.5 text-zinc-300" />
-                        {formatBookDate(finished!)}
+                      <span className="inline-flex flex-wrap items-center">
+                        <span className="inline-flex items-center whitespace-nowrap">
+                          {formatBookDate(book.dateStarted!)}
+                          <ArrowRightIcon size={iconSize("sm")} className="mx-1.5 shrink-0 text-zinc-300" />
+                        </span>
+                        <span className="whitespace-nowrap">{formatBookDate(finished!)}</span>
                       </span>
                     ) : (
                       formatBookDate((finished || book.dateStarted)!)
@@ -409,10 +411,12 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                       style={{ fontVariationSettings: "'wdth' 100" }}
                     >
                       {hasRange ? (
-                        <span className="inline-flex items-center">
-                          {formatBookDate(book.dateStarted!)}
-                          <ArrowRightIcon size={iconSize("inline")} className="mx-1.5 text-zinc-300" />
-                          {formatBookDate(finished!)}
+                        <span className="inline-flex flex-wrap items-center">
+                          <span className="inline-flex items-center whitespace-nowrap">
+                            {formatBookDate(book.dateStarted!)}
+                            <ArrowRightIcon size={iconSize("sm")} className="mx-1.5 shrink-0 text-zinc-300" />
+                          </span>
+                          <span className="whitespace-nowrap">{formatBookDate(finished!)}</span>
                         </span>
                       ) : (
                         formatBookDate((finished || book.dateStarted)!)
@@ -441,7 +445,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
               Review
             </span>
             <div 
-              className="font-['SF_Pro:Regular',sans-serif] text-lg text-zinc-900 leading-relaxed whitespace-pre-wrap"
+              className="font-['SF_Pro:Regular',sans-serif] text-base sm:text-lg text-zinc-900 leading-relaxed whitespace-pre-wrap"
               style={{ fontVariationSettings: "'wdth' 100" }}
             >
               {formatReview(book.review)}

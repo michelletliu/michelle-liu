@@ -16,7 +16,7 @@ export type ChevronProps = {
 
 /**
  * Shared chevron — one path, sized like ArrowUpRight / Close.
- * Prefer `size={iconSize("toolbar")}` (see `iconSizes`) over CSS `size-*`.
+ * Prefer `size={iconSize("md")}` (see `iconSizes`) over CSS `size-*`.
  * Direction is applied via SVG transform so Tailwind rotate-*
  * on the element (e.g. open/close) still composes correctly.
  */

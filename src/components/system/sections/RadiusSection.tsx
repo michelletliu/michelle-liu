@@ -56,7 +56,7 @@ export default function RadiusBlock() {
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
             )}
           >
-            <GridIcon size={iconSize("inline")} filled={showGrid} />
+            <GridIcon size={iconSize("sm")} filled={showGrid} />
           </button>
 
           <div className="relative flex justify-center gap-8 sm:gap-16">

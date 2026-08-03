@@ -54,7 +54,7 @@ function PropertyRow({
           <code className="break-all font-mono text-sm text-zinc-700">{name}</code>
           {tag ? <TagChip tag={tag} /> : null}
         </div>
-        <p className="mt-0.5 text-sm leading-5 text-zinc-400 text-pretty sm:truncate">
+        <p className="mt-0.5 text-sm leading-normal text-zinc-400 text-pretty sm:truncate">
           {usage}
         </p>
       </div>
@@ -117,10 +117,6 @@ export default function TypographySection() {
 
       {filter === "scale" && (
         <>
-          <p className="mb-6 max-w-2xl text-base leading-relaxed text-zinc-400 text-pretty">
-            Named Tailwind steps, grouped by role. text-lg is the boundary —
-            used for subtitles, so it reads as supporting body text.
-          </p>
           {(["body", "heading"] as const).map((role) => (
             <div key={role} className="mb-8 last:mb-0">
               <p className="mb-1 text-sm font-medium text-zinc-400">
@@ -158,7 +154,7 @@ export default function TypographySection() {
               key={w.name}
               sample={
                 <span
-                  className="text-base leading-5 text-zinc-700"
+                  className="text-base leading-normal text-zinc-700"
                   style={{ fontWeight: Number(w.value) }}
                 >
                   Text
@@ -180,7 +176,7 @@ export default function TypographySection() {
               key={t.name}
               sample={
                 <span
-                  className="text-base leading-5 text-zinc-700"
+                  className="text-base leading-normal text-zinc-700"
                   style={{ letterSpacing: t.value }}
                 >
                   Text

@@ -410,7 +410,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
           <div aria-hidden="true" className="absolute border border-zinc-100 inset-0 pointer-events-none rounded-[26px]" />
           <div className="absolute bottom-0 left-0 p-3 hidden md:block">
             <div className="bg-white border border-[#f4f4f5] border-solid flex items-center justify-center px-3 pt-[5px] pb-[4.8px] rounded-full">
-              <p className="font-['Michelle',sans-serif] font-medium tracking-[0.005em] leading-[1.4] text-[#18181b] text-base">
+              <p className="font-['Michelle',sans-serif] font-medium tracking-[0.005em] leading-snug text-[#18181b] text-base">
                 <span>{project.title}</span>
                 {!hasTryItOut && (
                   <span className="text-[#a1a1aa]"> • {project.year}</span>
@@ -433,9 +433,9 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
           </div>
         </div>
         <div className="hidden md:flex content-stretch items-start px-[13px] py-0 -mt-1.5 -mb-0.5 relative shrink-0 w-full">
-          <p className="font-['Michelle',sans-serif] font-normal leading-[1.4] text-[#a1a1aa] text-base tracking-[0.005em] text-left project-hover-text">{project.description}</p>
+          <p className="font-['Michelle',sans-serif] font-normal leading-snug text-[#a1a1aa] text-base tracking-[0.005em] text-left project-hover-text">{project.description}</p>
         </div>
-        <div className="md:hidden content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.01em] gap-1">
+        <div className="md:hidden content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start leading-snug px-[13px] py-0 relative shrink-0 text-base tracking-[0.01em] gap-1">
           <div className="flex items-center w-full">
             <p className="relative shrink-0 text-[#18181b] text-left project-hover-text">
               <span>{project.title}</span>
@@ -455,7 +455,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
               </a>
             )}
           </div>
-          <p className="relative shrink-0 text-[#a1a1aa] w-full text-left font-normal leading-[1.3]">{project.description}</p>
+          <p className="relative shrink-0 text-[#a1a1aa] w-full text-left font-normal leading-tight">{project.description}</p>
         </div>
       </button>
     );
@@ -476,7 +476,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
         <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
         <div aria-hidden="true" className="absolute border border-zinc-100 inset-0 pointer-events-none rounded-[26px]" />
       </div>
-      <div className="content-stretch flex font-['Michelle',sans-serif] -mt-1 font-normal items-baseline leading-[1.4] px-[13px] py-0 relative shrink-0 text-base tracking-[0.005em] w-full">
+      <div className="content-stretch flex font-['Michelle',sans-serif] -mt-1 font-normal items-baseline leading-snug px-[13px] py-0 relative shrink-0 text-base tracking-[0.005em] w-full">
         <p className="relative text-[#18181b] text-left project-hover-text">
           <span>{project.title}</span>
           {!hasTryItOut && (
@@ -531,13 +531,13 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
       <div className="font-['Michelle',sans-serif] font-normal gap-4 grid-cols-4 relative shrink-0 text-base w-full hidden md:grid">
         {categories.map((category, idx) => (
           <div key={idx} className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0">
-            <p className="leading-5 relative shrink-0 text-[#a1a1aa]">
+            <p className="leading-normal relative shrink-0 text-[#a1a1aa]">
               {category.label}
             </p>
-            <div className="content-stretch flex flex-col items-start leading-[0] relative shrink-0 text-[#52525b] tracking-[-0.31px]">
+            <div className="content-stretch flex flex-col items-start relative shrink-0 text-[#52525b] tracking-[0.005em]">
               {category.tools.map((tool, toolIdx) => (
                 <div key={toolIdx} className="flex flex-col justify-center relative shrink-0">
-                  <p className="leading-[21px] whitespace-nowrap">{tool}</p>
+                  <p className="leading-normal whitespace-nowrap">{tool}</p>
                 </div>
               ))}
             </div>
@@ -547,10 +547,10 @@ function ToolsSection({ categories }: { categories: ToolCategory[] }) {
       <div className="font-['Michelle',sans-serif] font-normal flex flex-col gap-1.5 relative shrink-0 text-sm w-full md:hidden">
         {categories.map((category, idx) => (
           <div key={idx} className="flex items-baseline gap-6">
-            <p className="leading-5 shrink-0 text-[#a1a1aa] w-[72px]">
+            <p className="leading-normal shrink-0 text-[#a1a1aa] w-[72px]">
               {category.label}
             </p>
-            <p className="leading-5 text-[#52525b] tracking-[-0.31px]">
+            <p className="leading-normal text-[#52525b] tracking-[0.005em]">
               {category.tools.join(', ')}
             </p>
           </div>
@@ -628,7 +628,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
                   <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-zinc-900">
                     {project.title}
                   </p>
-                  <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base tracking-[0.005em]">
+                  <p className="font-['Michelle',sans-serif] font-medium leading-snug relative shrink-0 text-[#a1a1aa] text-base tracking-[0.005em]">
                     •
                   </p>
                   <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#a1a1aa] text-xl">
@@ -638,7 +638,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
               </div>
               
               <div className="content-stretch flex gap-2 items-start relative w-full">
-                <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#71717a] text-base tracking-[0.005em]">
+                <p className="font-['Michelle',sans-serif] font-normal leading-normal relative text-[#71717a] text-base tracking-[0.005em]">
                   {project.description}
                 </p>
               </div>
@@ -656,7 +656,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
                   <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-xl text-zinc-900">
                     {project.title}
                   </p>
-                  <p className="font-['Michelle',sans-serif] font-medium leading-[1.4] relative shrink-0 text-[#a1a1aa] text-base tracking-[0.005em]">
+                  <p className="font-['Michelle',sans-serif] font-medium leading-snug relative shrink-0 text-[#a1a1aa] text-base tracking-[0.005em]">
                     •
                   </p>
                   <p className="font-['Michelle',sans-serif] font-normal leading-normal relative shrink-0 text-[#a1a1aa] text-xl">
@@ -666,7 +666,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
               </div>
               
               <div className="content-stretch flex gap-2 items-start relative w-full">
-                <p className="font-['Michelle',sans-serif] font-normal leading-5 relative text-[#71717a] text-base tracking-[0.005em]">
+                <p className="font-['Michelle',sans-serif] font-normal leading-normal relative text-[#71717a] text-base tracking-[0.005em]">
                   {project.description}
                 </p>
               </div>
@@ -1041,14 +1041,38 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                 <span
                   className={clsx(
                     "transition-opacity duration-200 max-md:opacity-100",
-                    isContactBadgeExpanded ? "opacity-40" : "opacity-100",
+                    isContactBadgeExpanded ? "opacity-20" : "opacity-100",
                   )}
                 >
-                  <span>
-                    Designing products to spark moments of{" "}</span>
-                  <span>delight</span>
-                  <span>{` & `}</span>
-                  <span>human connection.</span>
+                  Designing products to spark{" "}
+                  <span
+                    className="inline-block"
+                    style={
+                      isContactBadgeExpanded
+                        ? {
+                            maskImage: "linear-gradient(to right, #000, rgba(0, 0, 0, 0.5))",
+                            WebkitMaskImage: "linear-gradient(to right, #000, rgba(0, 0, 0, 0.5))",
+                          }
+                        : undefined
+                    }
+                  >
+                    moments
+                  </span>
+                </span>
+                <span
+                  className={clsx(
+                    "transition-opacity duration-200 max-md:opacity-100",
+                    isContactBadgeExpanded ? "opacity-10" : "opacity-100",
+                  )}
+                >
+                  {" "}of delight & human connection.
+                </span>
+                <span
+                  className={clsx(
+                    "transition-opacity duration-200 max-md:opacity-100",
+                    isContactBadgeExpanded ? "opacity-20" : "opacity-100",
+                  )}
+                >
                   <span>
                     <br aria-hidden="true" />
                     {`Previously at `}
@@ -1073,6 +1097,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                 </span>
                 <ContactBadge
                   hoverMode
+                  size="lg"
                   className="max-md:hidden"
                   onExpandedChange={setIsContactBadgeExpanded}
                 />
