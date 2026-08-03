@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Download } from "lucide-react";
 import * as THREE from "three";
-import { ghostIconButtonClass } from "@/components/ghostIconButton";
-import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { createWoodgrainTexture, scaleBoxUvsToWorld } from "./frameWoodgrain";
 import {
   createShimmerMaterial,
@@ -36,23 +33,11 @@ type GallerySceneProps = {
    * Hues for the generation shimmer, from the artwork that inspired it. Null
    * for a text-only generation, or before extraction has finished, in which
    * case the shimmer's own default set is used.
-   */
+  */
   shimmerHues?: ShimmerHues | null;
   onSelectPainting: (id: string) => void;
-  /**
-   * Double-click / double-tap on a painting. Opens the composer the same way
-   * the pen button does; single-click only selects.
-   */
   onOpenComposer?: () => void;
-  /** Fires when the download control under the focused frame is pressed. */
-  onDownload?: () => void;
 };
-
-/** Gap between a frame's bottom edge and the download control, in world units. */
-const DOWNLOAD_ANCHOR_DROP = 0.16;
-
-/** Second click on the same painting within this window opens the composer. */
-const DOUBLE_CLICK_MS = 350;
 
 type FrameEntry = {
   id: string;
@@ -84,28 +69,16 @@ function textureAspect(texture: THREE.Texture | null): number | null {
 }
 
 /**
- * How much of the room's irradiance an unfocused painting keeps.
+ * How the room lights touch paintings that are not focused.
  *
- * The room deliberately over-lights — ambient 1.5 plus hemisphere 1.3 — because
- * that is what makes matte white walls read as white rather than grey. Feeding
- * a texture through that irradiance at full albedo blows it out, which is the
- * "light film" the artwork was originally decoupled from the lighting to
- * escape. Scaling the albedo down by this much lands an unfocused painting a
- * little below its true value, so it shades with the room and recedes while
- * staying legible instead of turning into a white rectangle.
- *
- * The ceiling on this is clipping, not taste. Scaling the albedo does not touch
- * how the surface responds to the room — irradiance still varies with angle and
- * position, so the painting still shades — but push it high enough and the
- * bright end saturates against that over-lighting, the variation flattens out,
- * and the "light film" comes straight back.
- *
- * Measured on the same hung image, focused against unfocused: mean luma 138 vs
- * 111 and chroma 64 vs 53, with nothing clipped. Was 0.42, which measured 90
- * luma — legible, but murky enough against the white room that an unfocused
- * painting read as switched off rather than as one waiting to be walked over to.
+ * A real gallery does not leave side works to ambient bounce alone: there is
+ * usually a broad wall wash that keeps pigment readable, with softer contrast
+ * than the piece directly in front of you. The albedo term lets the artwork
+ * still shade with the room; the source wash keeps color and value from falling
+ * into the "switched off" darkness that side canvases had before.
  */
-const ART_UNFOCUSED_ALBEDO = 0.66;
+const ART_ROOM_LIT_ALBEDO = 0.78;
+const ART_UNFOCUSED_SOURCE_WASH = 0.16;
 /** Exponential-ease time constant for the focus lighting, ~95% in 260ms. */
 const ART_LIGHT_TAU = 0.088;
 
@@ -120,8 +93,10 @@ const ART_LIGHT_TAU = 0.088;
  * value of `lit` double-exposes the texture.
  */
 function setArtLighting(material: THREE.MeshStandardMaterial, lit: number) {
-  material.emissiveIntensity = lit;
-  const albedo = ART_UNFOCUSED_ALBEDO * (1 - lit);
+  material.emissiveIntensity =
+    ART_UNFOCUSED_SOURCE_WASH +
+    (1 - ART_UNFOCUSED_SOURCE_WASH) * lit;
+  const albedo = ART_ROOM_LIT_ALBEDO * (1 - lit);
   material.color.setScalar(albedo);
 }
 
@@ -674,6 +649,8 @@ function buildFrames(
       blankMaterial,
     );
     mesh.position.z = 0.055;
+    frame.userData.paintingId = painting.id;
+    matte.userData.paintingId = painting.id;
     mesh.userData.paintingId = painting.id;
     group.userData.paintingId = painting.id;
     group.add(mesh);
@@ -706,7 +683,6 @@ export default function GalleryScene({
   shimmerHues = null,
   onSelectPainting,
   onOpenComposer,
-  onDownload,
 }: GallerySceneProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const poseRef = useRef(pose);
@@ -718,8 +694,6 @@ export default function GalleryScene({
   const onSelectRef = useRef(onSelectPainting);
   const onOpenComposerRef = useRef(onOpenComposer);
   const framesRef = useRef<Map<string, FrameEntry> | null>(null);
-
-  const downloadRef = useRef<HTMLButtonElement>(null);
   // Scene is imported with ssr: false, so reading matchMedia here is safe.
   const [reduceMotion] = useState(
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -733,17 +707,6 @@ export default function GalleryScene({
   paintingsRef.current = paintings;
   onSelectRef.current = onSelectPainting;
   onOpenComposerRef.current = onOpenComposer;
-
-  /**
-   * Whether the control should exist at all is the only part React decides.
-   * Where it sits is written straight to the element in the render loop: the
-   * camera eases for ~780ms, and a state update per frame would re-render the
-   * page 60 times a second.
-   */
-  const showDownload =
-    Boolean(onDownload) &&
-    generatingId !== focusedId &&
-    paintings.some((p) => p.id === focusedId && Boolean(p.imageUrl));
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -841,10 +804,6 @@ export default function GalleryScene({
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
-    let lastPaintingClick: { id: string | null; time: number } = {
-      id: null,
-      time: 0,
-    };
 
     const resize = () => {
       const { clientWidth: cw, clientHeight: ch } = mount;
@@ -861,61 +820,6 @@ export default function GalleryScene({
     /** Wall-clock start of the current generation, or `null` when idle. */
     let shimmerStartedAt: number | null = null;
     const clock = new THREE.Clock();
-    const anchor = new THREE.Vector3();
-    const camForward = new THREE.Vector3();
-    const toAnchor = new THREE.Vector3();
-
-    /**
-     * Pin the download control under the focused frame. Called after each
-     * render so it tracks the camera ease and any zoom change, and written
-     * directly to the element rather than through React.
-     */
-    const positionDownloadControl = (focused: string) => {
-      const el = downloadRef.current;
-      if (!el) return;
-
-      const hide = () => {
-        el.style.visibility = "hidden";
-        el.style.opacity = "0";
-      };
-
-      const painting = paintingsRef.current.find((p) => p.id === focused);
-      if (!painting) {
-        hide();
-        return;
-      }
-
-      const layout = paintingLayout(painting);
-      anchor.set(
-        layout.position.x + layout.normal.x * 0.06,
-        layout.position.y - layout.height / 2 - DOWNLOAD_ANCHOR_DROP,
-        layout.position.z + layout.normal.z * 0.06,
-      );
-
-      // project() happily returns coordinates for points behind the camera, so
-      // the hemisphere test has to come first or the button ghosts over the room.
-      camera.getWorldDirection(camForward);
-      toAnchor.copy(anchor).sub(camera.position);
-      if (toAnchor.dot(camForward) <= 0) {
-        hide();
-        return;
-      }
-
-      anchor.project(camera);
-      const offScreen =
-        anchor.z > 1 || Math.abs(anchor.x) > 1 || Math.abs(anchor.y) > 1;
-      if (offScreen) {
-        hide();
-        return;
-      }
-
-      const { clientWidth: cw, clientHeight: ch } = renderer.domElement;
-      const x = (anchor.x * 0.5 + 0.5) * cw;
-      const y = (-anchor.y * 0.5 + 0.5) * ch;
-      el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) translate(-50%, 0)`;
-      el.style.visibility = "visible";
-      el.style.opacity = "1";
-    };
 
     let raf = 0;
     const tick = () => {
@@ -1004,7 +908,6 @@ export default function GalleryScene({
       }
 
       renderer.render(scene, camera);
-      positionDownloadControl(focused);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -1019,31 +922,31 @@ export default function GalleryScene({
         false,
       );
       const id = hits[0]?.object.userData.paintingId as string | undefined;
+      if (id) onSelectRef.current(id);
+    };
+    const onDoubleClick = (e: MouseEvent) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(
+        [...frames.values()].map((f) => f.mesh),
+        false,
+      );
+      const id = hits[0]?.object.userData.paintingId as string | undefined;
       if (!id) return;
       onSelectRef.current(id);
-      /*
-       * One path for desktop double-click and mobile double-tap: both surface
-       * as successive click events on the canvas. A native `dblclick` listener
-       * would miss many touch devices.
-       */
-      const now = performance.now();
-      if (
-        lastPaintingClick.id === id &&
-        now - lastPaintingClick.time < DOUBLE_CLICK_MS
-      ) {
-        lastPaintingClick = { id: null, time: 0 };
-        onOpenComposerRef.current?.();
-      } else {
-        lastPaintingClick = { id, time: now };
-      }
+      onOpenComposerRef.current?.();
     };
     renderer.domElement.addEventListener("click", onClick);
+    renderer.domElement.addEventListener("dblclick", onDoubleClick);
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
       ro.disconnect();
       renderer.domElement.removeEventListener("click", onClick);
+      renderer.domElement.removeEventListener("dblclick", onDoubleClick);
       shimmer.dispose();
       // Materials do not own their maps, so disposing the frame materials
       // leaves this behind. It is shared by all twelve, hence disposed here.
@@ -1127,28 +1030,6 @@ export default function GalleryScene({
         className="absolute inset-0 h-full w-full"
         aria-label="3D gallery room"
       />
-      {showDownload && (
-        <button
-          ref={downloadRef}
-          type="button"
-          data-gallery-no-drag
-          onClick={onDownload}
-          aria-label="Download the generated image on this canvas"
-          style={{
-            visibility: "hidden",
-            opacity: 0,
-            // Only opacity transitions: the transform is rewritten every frame
-            // to track the camera, so easing it would smear the anchor.
-            transition: reduceMotion ? "none" : "opacity 180ms ease-out",
-          }}
-          className={ghostIconButtonClass(
-            "sm",
-            `absolute left-0 top-0 z-20 border border-black/10 bg-white/90 text-zinc-500 shadow-[0_4px_16px_rgba(0,0,0,0.10)] backdrop-blur-sm hover:bg-white hover:text-zinc-700 ${GALLERY_FOCUS_RING}`,
-          )}
-        >
-          <Download size={15} aria-hidden />
-        </button>
-      )}
     </div>
   );
 }

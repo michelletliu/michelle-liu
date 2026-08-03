@@ -14,14 +14,11 @@ export const MET_ATTRIBUTION =
 export const MET_SAFETY_NOTE =
   "Generated images are AI-created and are not affiliated with or endorsed by The Met.";
 
-export const MET_USE_DISCLAIMER =
-  "You are responsible for the lawful use of anything you generate here.";
-
 /**
- * The one place the gallery states attribution, AI provenance, and lawful use.
+ * The one place the gallery states attribution and AI provenance.
  * Rendered only behind the top-right info button, never inline in the room.
  */
-export const GALLERY_INFO_TEXT = `${MET_ATTRIBUTION} ${MET_SAFETY_NOTE} ${MET_USE_DISCLAIMER}`;
+export const GALLERY_INFO_TEXT = `${MET_ATTRIBUTION} ${MET_SAFETY_NOTE}`;
 
 /** Normalized record handed to the client. Absent metadata is `null`, never `""`. */
 export type MetArtwork = {
