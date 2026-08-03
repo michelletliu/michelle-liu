@@ -104,7 +104,12 @@ export function FieldTrailingIcon({
   );
 }
 
-/** Magnifier for search/filter FieldShell — stroke matches Chevron / Close. */
+/**
+ * Magnifier for search/filter FieldShell — stroke matches Chevron / Close.
+ *
+ * viewBox is tighter than 24×24 so the glyph optically matches filled marks
+ * like Info at the same CSS size; the path coords still sit in the old 24 grid.
+ */
 export function SearchMagnifierIcon({
   size = iconSize("md"),
 }: {
@@ -114,7 +119,7 @@ export function SearchMagnifierIcon({
     <svg
       width={size}
       height={size}
-      viewBox="0 0 24 24"
+      viewBox="3.25 3.25 17.5 17.5"
       fill="none"
       className="block shrink-0"
       aria-hidden

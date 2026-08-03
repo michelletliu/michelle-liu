@@ -29,6 +29,7 @@ import {
   openAccessImageUrl,
   type MetArtwork,
 } from "./metArtworks";
+import { metImageTrimScale, metImageTrimStyle } from "./metImageMat";
 import { useMetSearch } from "./useMetSearch";
 
 function GalleryDownloadIcon({ className = "" }: { className?: string }) {
@@ -380,7 +381,9 @@ export default function GalleryActionBar({
           <>
             <motion.div
               key="picker-overlay"
-              className="fixed inset-0 z-10 bg-zinc-950/25"
+              // Above the composer shell (z-10): same-layer z-10 let the
+              // generate bar paint over the dimmer and punch through the modal.
+              className="fixed inset-0 z-30 bg-zinc-950/25"
               onClick={() => setPickerOpen(false)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -403,7 +406,7 @@ export default function GalleryActionBar({
                 scale: reduceMotion ? 1 : 0.98,
               }}
               transition={shellTransition}
-              className="absolute bottom-[calc(100%+104px)] left-1/2 z-20 w-[min(90vw,690px)] -translate-x-1/2"
+              className="absolute bottom-[calc(100%+104px)] left-1/2 z-40 w-[min(90vw,690px)] -translate-x-1/2"
             >
               <MetArtworkPicker
                 search={search}
@@ -617,6 +620,29 @@ function SelectedInspirationCard({
   const meta = [artwork.artistDisplayName, artwork.objectDate]
     .filter(Boolean)
     .join(" · ");
+  const titleRef = useRef<HTMLParagraphElement>(null);
+  // Short titles center against the thumb; wrapping titles top-align so
+  // multi-line Hokusai-length names don't float oddly mid-card.
+  const [titleWraps, setTitleWraps] = useState(false);
+
+  useEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      const lineHeight = parseFloat(getComputedStyle(el).lineHeight);
+      setTitleWraps(
+        Number.isFinite(lineHeight) && lineHeight > 0
+          ? el.scrollHeight > lineHeight + 1
+          : el.scrollHeight > el.clientHeight,
+      );
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [artwork.objectID, artwork.title]);
 
   return (
     <motion.div
@@ -624,26 +650,34 @@ function SelectedInspirationCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 6, scale: 0.985 }}
       transition={transition}
-      className="absolute bottom-[calc(100%-14px)] left-1/2 z-0 flex w-[calc(100%-38px)] -translate-x-1/2 items-start gap-4 rounded-[22px] border border-black/10 bg-white/95 px-4 pt-4 pb-6 pr-12 text-left shadow-[0_12px_28px_rgba(0,0,0,0.10)] backdrop-blur-md"
+      className={`absolute bottom-[calc(100%-14px)] left-1/2 z-0 flex w-[calc(100%-38px)] -translate-x-1/2 gap-4 rounded-[34px] border border-black/10 bg-white/95 px-4 pt-4 pb-6 pr-12 text-left shadow-[0_12px_28px_rgba(0,0,0,0.10)] backdrop-blur-md ${
+        titleWraps ? "items-start" : "items-center"
+      }`}
     >
       {src && (
-        <motion.img
-          layoutId={tileLayoutId(artwork.objectID)}
-          src={src}
-          alt=""
-          aria-hidden
-          decoding="async"
-          transition={transition}
-          className="size-24 shrink-0 rounded-[18px] bg-white object-cover shadow-md"
-        />
+        <span className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-white shadow-md">
+          <motion.img
+            layoutId={tileLayoutId(artwork.objectID)}
+            src={src}
+            alt=""
+            aria-hidden
+            decoding="async"
+            transition={transition}
+            style={metImageTrimStyle(artwork.objectID)}
+            className="size-full object-cover"
+          />
+        </span>
       )}
-      <div className="flex min-w-0 flex-1 flex-col gap-1 pt-0.5">
+      <div className="flex min-w-0 flex-1 flex-col">
         <p className="text-sm leading-tight text-zinc-400">Inspired by</p>
-        <p className="line-clamp-3 text-base font-medium leading-snug text-zinc-900">
+        <p
+          ref={titleRef}
+          className="mt-1.5 line-clamp-3 text-base font-medium leading-snug text-zinc-900"
+        >
           {artwork.title}
         </p>
         {meta && (
-          <p className="truncate text-base leading-snug text-zinc-500">
+          <p className="mt-0.5 truncate text-base leading-snug text-zinc-500">
             {meta}
           </p>
         )}
@@ -687,15 +721,18 @@ function MinimizedInspirationPeek({
       transition={transition}
       className={`absolute bottom-[calc(100%-34px)] left-10 z-0 rounded-[18px] ${GALLERY_FOCUS_RING}`}
     >
-      <motion.img
-        layoutId={tileLayoutId(artwork.objectID)}
-        src={src}
-        alt=""
-        aria-hidden
-        decoding="async"
-        transition={transition}
-        className="size-24 rounded-[18px] border-2 border-white/20 bg-white object-cover shadow-lg"
-      />
+      <span className="block size-24 overflow-hidden rounded-[18px] border-2 border-white/20 shadow-lg">
+        <motion.img
+          layoutId={tileLayoutId(artwork.objectID)}
+          src={src}
+          alt=""
+          aria-hidden
+          decoding="async"
+          transition={transition}
+          style={metImageTrimStyle(artwork.objectID)}
+          className="size-full object-cover"
+        />
+      </span>
     </motion.button>
   );
 }
@@ -795,6 +832,15 @@ function RestingStack({
               recognisable one — is the square card on top of the pile. */}
             {[...cards].reverse().map(({ artwork, src }, i) => {
               const { rotate, x, y, hoverY, hoverRotate } = fan[i]!;
+              const trimScale = metImageTrimScale(artwork.objectID);
+              const restTransform =
+                trimScale > 1
+                  ? `scale(${trimScale}) rotate(var(--rest-rotate))`
+                  : "rotate(var(--rest-rotate))";
+              const hoverTransform =
+                trimScale > 1
+                  ? `translateY(var(--hover-y)) scale(${trimScale}) rotate(var(--hover-rotate))`
+                  : "translateY(var(--hover-y)) rotate(var(--hover-rotate))";
               return (
                 <motion.span
                   // The same id the strip tile carries, so this card and that
@@ -804,7 +850,7 @@ function RestingStack({
                   key={artwork.objectID}
                   transition={transition}
                   style={{ x, y }}
-                  className="absolute bottom-0 left-0 block"
+                  className="absolute bottom-0 left-0 block overflow-hidden"
                 >
                   <img
                     src={src}
@@ -816,13 +862,15 @@ function RestingStack({
                         "--rest-rotate": `${rotate}deg`,
                         "--hover-rotate": `${hoverRotate}deg`,
                         "--hover-y": `${hoverY}px`,
+                        "--rest-transform": restTransform,
+                        "--hover-transform": hoverTransform,
                       } as React.CSSProperties
                     }
                     className={`border-2 border-white/20 bg-white object-cover shadow-lg transition-transform duration-200 ease-out ${
                       lifted
-                        ? "[transform:translateY(var(--hover-y))_rotate(var(--hover-rotate))]"
-                        : "[transform:rotate(var(--rest-rotate))]"
-                    } group-hover:[transform:translateY(var(--hover-y))_rotate(var(--hover-rotate))] group-focus-visible:[transform:translateY(var(--hover-y))_rotate(var(--hover-rotate))] motion-reduce:transition-none motion-reduce:[transform:rotate(var(--rest-rotate))] ${TILE_SHAPE}`}
+                        ? "[transform:var(--hover-transform)]"
+                        : "[transform:var(--rest-transform)]"
+                    } group-hover:[transform:var(--hover-transform)] group-focus-visible:[transform:var(--hover-transform)] motion-reduce:transition-none motion-reduce:[transform:var(--rest-transform)] ${TILE_SHAPE}`}
                   />
                 </motion.span>
               );

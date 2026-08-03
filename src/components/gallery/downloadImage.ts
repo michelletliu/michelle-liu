@@ -17,6 +17,9 @@ const MIME_EXTENSIONS: Record<string, string> = {
   "image/avif": "avif",
 };
 
+/** Characters Windows (and most filesystems) reject in a filename. */
+const ILLEGAL_FILENAME_CHARS = /[\\/:*?"<>|]/g;
+
 export function extensionForMimeType(mimeType: string | null): string {
   if (!mimeType) return DEFAULT_EXTENSION;
   return MIME_EXTENSIONS[mimeType.trim().toLowerCase()] ?? DEFAULT_EXTENSION;
@@ -29,8 +32,26 @@ export function mimeTypeFromUrl(url: string): string | null {
 }
 
 /**
- * Reduce arbitrary text (an artwork title, say) to something safe on every
- * filesystem: ASCII-ish, no separators, no leading/trailing punctuation.
+ * Keep a human-readable label filesystem-safe: strip illegal characters and
+ * control chars, collapse whitespace, preserve case and spaces.
+ */
+export function sanitizeFilenameLabel(text: string, maxLength = 80): string {
+  const cleaned = text
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(ILLEGAL_FILENAME_CHARS, "")
+    .replace(/[\u0000-\u001f\u007f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (cleaned.length <= maxLength) return cleaned;
+  return cleaned.slice(0, maxLength).trim();
+}
+
+/**
+ * Reduce arbitrary text to a compact slug (ASCII-ish, hyphen-separated).
+ * Kept for callers that still want a slug; download names use
+ * {@link sanitizeFilenameLabel} instead.
  */
 export function slugifyForFilename(text: string, maxLength = 40): string {
   const slug = text
@@ -45,37 +66,27 @@ export function slugifyForFilename(text: string, maxLength = 40): string {
   return slug.slice(0, maxLength).replace(/-+$/g, "");
 }
 
-/** `2026-07-24T17-05-31` — sortable, and legal on Windows (no colons). */
-export function filenameTimestamp(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return (
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
-    `T${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}`
-  );
-}
-
 export type GeneratedFilenameParts = {
   /** Title of the Met artwork used as inspiration, when there was one. */
   inspirationTitle?: string | null;
   imageUrl: string;
-  date?: Date;
 };
 
 /**
- * Names the file after what the image is, never after the canvas it hangs on:
- * `back-2` is an internal identifier and means nothing in a downloads folder.
- * The timestamp is what keeps successive downloads distinct.
+ * Names the file after the inspiration when present, otherwise a plain
+ * "Artwork" label. Browser overwrite-on-redownload is fine — no timestamp.
+ *
+ * Examples: `Inspired by The Lake of Zug.png`, `Artwork.png`
  */
 export function generatedImageFilename({
   inspirationTitle,
   imageUrl,
-  date = new Date(),
 }: GeneratedFilenameParts): string {
   const extension = extensionForMimeType(mimeTypeFromUrl(imageUrl));
-  const titleSlug = inspirationTitle ? slugifyForFilename(inspirationTitle) : "";
-  const parts = ["gallery", titleSlug, filenameTimestamp(date)];
+  const title = inspirationTitle ? sanitizeFilenameLabel(inspirationTitle) : "";
+  const base = title ? `Inspired by ${title}` : "Artwork";
 
-  return `${parts.filter(Boolean).join("-")}.${extension}`;
+  return `${base}.${extension}`;
 }
 
 function triggerAnchorDownload(href: string, filename: string): void {

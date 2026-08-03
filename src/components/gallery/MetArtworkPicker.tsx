@@ -35,6 +35,7 @@ import {
   openAccessImageUrl,
   type MetArtwork,
 } from "./metArtworks";
+import { metImageTrimStyle } from "./metImageMat";
 import type { MetSearchController } from "./useMetSearch";
 
 /**
@@ -61,6 +62,10 @@ const STRIP_PADDING = "px-4 py-2";
  */
 const STRIP_SHADOW_CLIP = "h-[132px] -mb-4";
 const STRIP_BLEED = "-mx-4";
+/** Loaded carousel and its loading skeleton share this footprint. */
+const PANEL_CAROUSEL_HEIGHT = "h-[220px]";
+/** Title/artist caption under the panel carousel — reserved while loading too. */
+const PANEL_CAPTION_HEIGHT = "h-[74px]";
 const PANEL_OFFSETS = [-2, -1, 0, 1, 2] as const;
 const PANEL_TILE: Record<
   (typeof PANEL_OFFSETS)[number],
@@ -283,11 +288,16 @@ export default function MetArtworkPicker({
       <div
         aria-live="polite"
         className={`flex flex-col empty:hidden ${
-          panel ? "min-h-[208px] justify-center gap-5" : "gap-3"
+          // Carousel + gap-5 + caption (220+20+74) — same footprint while
+          // skeletons stand in for the loaded strip so the panel doesn't jump.
+          panel ? "min-h-[314px] justify-center gap-5" : "gap-3"
         }`}
       >
         {showSkeletons &&
           (panel ? <PanelCarouselSkeleton /> : <ThumbnailSkeletons />)}
+        {showSkeletons && panel && (
+          <div aria-hidden className={`shrink-0 ${PANEL_CAPTION_HEIGHT}`} />
+        )}
 
         {status === "error" && (
           <p className="px-1 text-base text-red-600">
@@ -379,33 +389,57 @@ export default function MetArtworkPicker({
             <StripFade edge="right" hidden={atEnd} panel={panel} />
           </div>
         )}
+
+        {panel && displayedArtwork && (
+          // Named for a screen reader, which gets only the title otherwise and
+          // no hint that this row is the chosen inspiration rather than a
+          // caption. Lives with the carousel (same column + gap-5) so the
+          // loading skeleton can reserve an identical caption slot.
+          <div
+            role="group"
+            aria-label={`Selected inspiration: ${displayedArtwork.title}`}
+            className={`flex shrink-0 items-start gap-3 px-6 text-center ${PANEL_CAPTION_HEIGHT}`}
+          >
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <p className="line-clamp-2 text-base font-medium leading-normal text-zinc-900">
+                {displayedArtwork.title}
+              </p>
+              {/* Same size as the title now, so the difference has to be carried
+                  by weight and colour alone — medium zinc-900 over normal
+                  zinc-400 — rather than by shrinking the secondary line. */}
+              <p className="truncate text-base leading-normal text-zinc-400">
+                {[
+                  displayedArtwork.artistDisplayName,
+                  displayedArtwork.objectDate,
+                ]
+                  .filter(Boolean)
+                  .join(" · ") || "The Met Open Access"}
+              </p>
+              {eligibility && !eligibility.eligible && (
+                <p
+                  role="alert"
+                  className="mt-1.5 rounded-lg bg-amber-50 px-2 py-1.5 text-base leading-snug text-amber-900"
+                >
+                  Generation is disabled for this artwork.{" "}
+                  {eligibility.message}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
-      {displayedArtwork && (
+      {displayedArtwork && !panel && (
         // Named for a screen reader, which gets only the title otherwise and
         // no hint that this row is the chosen inspiration rather than a
         // caption. Sighted readers have the strip and the ✕ above to say so.
         <div
           role="group"
           aria-label={`Selected inspiration: ${displayedArtwork.title}`}
-          className={
-            panel
-              ? // Fixed slot height keeps the panel from jumping; items-start +
-                // natural title height keep title→artist gap identical for 1-
-                // and 2-line titles (min-h on the title was centering short
-                // titles in a 2-line box and opening a fake gap).
-                "flex h-[74px] items-start gap-3 px-6 text-center"
-              : "flex items-center gap-5 pl-1 pr-3"
-          }
+          className="flex items-center gap-5 pl-1 pr-3"
         >
-          <div
-            className={`min-w-0 flex-1 ${panel ? "flex flex-col gap-0.5" : ""}`}
-          >
-            <p
-              className={`text-base font-medium leading-normal text-zinc-900 ${
-                panel ? "line-clamp-2" : "truncate"
-              }`}
-            >
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-base font-medium leading-normal text-zinc-900">
               {displayedArtwork.title}
             </p>
             {/* Same size as the title now, so the difference has to be carried
@@ -425,7 +459,7 @@ export default function MetArtworkPicker({
               </p>
             )}
           </div>
-          {!panel && !selectedIsVisible && (
+          {!selectedIsVisible && (
             <button
               type="button"
               onClick={() => onSelect(null)}
@@ -436,18 +470,16 @@ export default function MetArtworkPicker({
               <CloseIcon size={iconSize("inline")} />
             </button>
           )}
-          {!panel && (
-            <button
-              type="button"
-              onClick={() => setDetailsOpen(true)}
-              aria-haspopup="dialog"
-              aria-expanded={detailsOpen}
-              aria-label="Artwork details"
-              className={`shrink-0 rounded-full text-zinc-400 transition-colors hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
-            >
-              <Info size={iconSize("inline")} />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setDetailsOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={detailsOpen}
+            aria-label="Artwork details"
+            className={`shrink-0 rounded-full text-zinc-400 transition-colors hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
+          >
+            <Info size={iconSize("inline")} />
+          </button>
         </div>
       )}
 
@@ -530,7 +562,9 @@ function PanelCarouselSkeleton() {
   };
 
   return (
-    <div className="relative flex h-[220px] items-center justify-center overflow-hidden">
+    <div
+      className={`relative flex ${PANEL_CAROUSEL_HEIGHT} items-center justify-center overflow-hidden`}
+    >
       <span className="sr-only">Searching The Met…</span>
       {PANEL_OFFSETS.map((distance) => {
         const slot = PANEL_TILE[distance];
@@ -690,7 +724,7 @@ function PanelArtworkCarousel({
 
   return (
     <div
-      className="relative flex h-[220px] items-center justify-center overflow-x-hidden overflow-y-visible"
+      className={`relative flex ${PANEL_CAROUSEL_HEIGHT} items-center justify-center overflow-x-hidden overflow-y-visible`}
       onWheel={onWheel}
     >
       <div
@@ -795,6 +829,8 @@ function PanelArtworkCarousel({
                           },
                     );
                   }}
+                  // Scale past baked-in Met black mats; parent clips overflow.
+                  style={metImageTrimStyle(artwork.objectID)}
                   className="h-full w-full object-fill"
                 />
               </motion.button>
@@ -855,6 +891,7 @@ function ArtworkThumbnail({
         alt={artworkLabel(artwork)}
         loading="lazy"
         decoding="async"
+        style={metImageTrimStyle(artwork.objectID)}
         className="h-full w-full object-cover"
       />
       {selected && (
