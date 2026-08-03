@@ -192,8 +192,9 @@ export default function GalleryActionBar({
    * into the minimized peek rather than folding the composer away — that is
    * the "minimized mode" the fan and peek were built for. Full collapse only
    * happens once the card is already tucked (or there is no inspiration).
-   * Generation still blocks folding the bar, so the Generating label stays
-   * visible, but it does not block minimizing the inspiration card.
+   * Generation no longer holds the bar open — submit auto-collapses to the
+   * Generating pill, and outside click / Escape can fold an expanded bar
+   * while a run is in flight.
    */
   const dismissComposer = useCallback(
     (moveFocus: boolean) => {
@@ -207,22 +208,23 @@ export default function GalleryActionBar({
         setInspirationMinimized(true);
         return;
       }
-      if (isGenerating) return;
       collapseBar(moveFocus);
     },
-    [
-      pickerOpen,
-      inspiration,
-      inspirationMinimized,
-      isGenerating,
-      collapseBar,
-    ],
+    [pickerOpen, inspiration, inspirationMinimized, collapseBar],
   );
 
   const expandBar = () => {
     pendingFocus.current = "bar";
     setExpanded(true);
   };
+
+  // Generation ending on the collapsed pill unmounts that control — hand focus
+  // to the pen in the same render so keyboard users are not dropped on <body>.
+  const wasGeneratingRef = useRef(false);
+  if (wasGeneratingRef.current && !isGenerating && !expanded) {
+    pendingFocus.current = "pen";
+  }
+  wasGeneratingRef.current = isGenerating;
 
   const selectInspiration = (artwork: MetArtwork | null) => {
     setInspiration(artwork);
@@ -303,7 +305,11 @@ export default function GalleryActionBar({
     if (!next || isGenerating || blocked) return;
     setError(null);
     setSubmitPending(true);
+    setPickerOpen(false);
     if (inspiration) setInspirationCanMinimize(true);
+    // Fold to the Generating pill immediately — same collapsed shell as an
+    // outside click, so the room stays clear while the canvas shimmers.
+    collapseBar(true);
     try {
       await onGenerate(
         next,
@@ -314,6 +320,9 @@ export default function GalleryActionBar({
       setPrompt("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Generation failed");
+      // Surface the alert — the collapsed pill has nowhere to show it.
+      pendingFocus.current = "bar";
+      setExpanded(true);
     } finally {
       setSubmitPending(false);
     }
@@ -383,6 +392,7 @@ export default function GalleryActionBar({
         inspiration ? "max-w-[720px]" : "max-w-[590px]"
       }`}
     >
+      <style>{FILM_DOT_STYLE}</style>
       {/* A sibling of the panel rather than a child of it, because a child
           cannot be painted behind its own parent's background. */}
       <AnimatePresence initial={false}>
@@ -570,6 +580,25 @@ export default function GalleryActionBar({
                 )}
               </form>
             </motion.div>
+          ) : isGenerating ? (
+            <motion.div
+              key="collapsed-generating"
+              {...shellMotion}
+              style={{ transformOrigin: "center center" }}
+              className="col-start-1 row-start-1 inline-flex items-center rounded-full border border-black/10 bg-white p-1 text-zinc-700 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+            >
+              <button
+                ref={focusOnMount("pen")}
+                type="button"
+                onClick={expandBar}
+                aria-expanded={false}
+                aria-controls={barId}
+                aria-label="Generating artwork. Open prompt bar"
+                className={`cursor-pointer rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-zinc-50 ${GALLERY_FOCUS_RING}`}
+              >
+                <GeneratingLabel reduceMotion={Boolean(reduceMotion)} />
+              </button>
+            </motion.div>
           ) : (
             <motion.div
               key="collapsed-actions"
@@ -610,23 +639,34 @@ export default function GalleryActionBar({
   );
 }
 
-/** Cycles the trailing dots on the submit label while a generation runs. */
+/** Same keyframes / class as Film + the design-system Loading dots specimen. */
+const FILM_DOT_STYLE = `@keyframes film-dot-pulse{0%,80%,100%{opacity:.15}40%{opacity:1}}.film-dot{animation:film-dot-pulse 1.4s ease-in-out infinite;opacity:.15}`;
+
+function FilmLoadingDots({ reduceMotion }: { reduceMotion: boolean }) {
+  if (reduceMotion) {
+    return <span aria-hidden>…</span>;
+  }
+  return (
+    <span aria-hidden>
+      <span className="film-dot" style={{ animationDelay: "0s" }}>
+        .
+      </span>
+      <span className="film-dot" style={{ animationDelay: "0.2s" }}>
+        .
+      </span>
+      <span className="film-dot" style={{ animationDelay: "0.4s" }}>
+        .
+      </span>
+    </span>
+  );
+}
+
+/** Trailing ellipsis on the Generating label — DS film-dot-pulse, not a custom cycle. */
 function GeneratingLabel({ reduceMotion }: { reduceMotion: boolean }) {
-  const [dots, setDots] = useState(3);
-
-  useEffect(() => {
-    if (reduceMotion) return;
-    const id = window.setInterval(() => {
-      setDots((count) => (count % 3) + 1);
-    }, 420);
-    return () => window.clearInterval(id);
-  }, [reduceMotion]);
-
-  const ellipsis = reduceMotion ? "…" : ".".repeat(dots);
   return (
     <span aria-label="Generating">
       Generating
-      <span className="inline-block w-[1.25em] text-left">{ellipsis}</span>
+      <FilmLoadingDots reduceMotion={reduceMotion} />
     </span>
   );
 }
@@ -717,7 +757,7 @@ function SelectedInspirationCard({
         className={`absolute right-3 top-3 grid size-7 place-items-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 active:bg-zinc-200/70 ${GALLERY_FOCUS_RING}`}
       >
         {canMinimize ? (
-          <ChevronDownIcon size={iconSize("inline")} />
+          <ChevronDownIcon size={15} />
         ) : (
           <CloseIcon size="14px" />
         )}
@@ -835,11 +875,11 @@ function RestingStack({
       <Tooltip
         label="Get inspired by The Met"
         position="top"
-        // Anchor matches the tile box (`h-25` = `size-25` cards). A taller
-        // hit target left empty air above the fan, so offset alone could not
-        // close the gap without going negative. Overflow stays visible so
-        // rotate / hover lift still paint above the box.
-        offset={10}
+        // Anchor matches the tile box (`h-25` = `size-25` cards). The tooltip
+        // only appears while hovering, and `group-hover` lifts the front card
+        // by up to 12px (`STACK_CARDS` hoverY), so the gap has to clear that
+        // raised pose — not the resting one — with a little air above.
+        offset={28}
         forceOpen={focused}
       >
         <button

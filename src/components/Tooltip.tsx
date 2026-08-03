@@ -166,7 +166,7 @@ export default function Tooltip({
       {children}
       {showTooltip && (
         <div
-          className="tooltip absolute left-1/2 -translate-x-1/2 px-2.5 py-0.5 leading-none bg-zinc-800 text-white text-sm font-medium rounded-lg whitespace-nowrap pointer-events-none z-[9999]"
+          className="tooltip absolute left-1/2 -translate-x-1/2 px-2 py-1 bg-zinc-800 text-white text-sm font-medium rounded-lg whitespace-nowrap pointer-events-none z-[9999]"
           data-ending-style={!forceOpen && isEnding ? "" : undefined}
           data-instant={forceOpen || isInstant ? "" : undefined}
           style={positionStyles}

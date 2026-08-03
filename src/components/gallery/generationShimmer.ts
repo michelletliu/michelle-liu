@@ -268,10 +268,12 @@ void main() {
   // Stronger while abstract; quieter as the soft painting resolves.
   col += boil * mix(0.055, 0.028, settle);
 
-  // Soft animated canvas tooth — drifts slowly so it never reads as a decal.
-  float weave = 0.5
-    + 0.5 * sin(uv.x * 190.0 + t * 0.55) * sin(uv.y * 175.0 - t * 0.40);
-  col += (weave - 0.5) * mix(0.022, 0.012, settle);
+  // Fine paper / film grain — stochastic, not a sin×sin diamond weave.
+  // Two hash scales keep it dense without locking to a periodic lattice.
+  float grain =
+      (hash(floor(uv * 560.0 + vec2(t * 11.0, -t * 8.0))) - 0.5) * 0.62
+    + (hash(floor(uv * 940.0 + vec2(-t * 17.0, t * 13.0))) - 0.5) * 0.38;
+  col += grain * mix(0.028, 0.014, settle);
 
   // The vignette back to paper relaxes as the canvas fills, so the colour
   // reaches the edges instead of stopping at a pale border.
