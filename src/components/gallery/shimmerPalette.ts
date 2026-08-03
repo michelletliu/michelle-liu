@@ -16,9 +16,11 @@ export type ShimmerHues = [number, number, number, number];
 
 /**
  * Used for text-only generations, and whenever extraction cannot produce
- * something better. Four hues spaced around the wheel.
+ * something better. Warm earth angles first (terracotta, ochre), then a soft
+ * slate and muted violet for depth — aged-painting territory rather than a
+ * neon rainbow around the wheel.
  */
-export const FALLBACK_HUES: ShimmerHues = [12, 74, 148, 268];
+export const FALLBACK_HUES: ShimmerHues = [32, 68, 198, 262];
 
 /**
  * Smallest angle allowed between two hues in the returned set.

@@ -4,12 +4,13 @@ import { FALLBACK_HUES } from "./shimmerPalette";
 /**
  * The wet-paint shimmer shown on a canvas while its image generates.
  *
- * Curl-advected, domain-warped fbm drives a few soft pigment washes over a
- * paper base, so the surface is stirred like paint on a palette rather than
- * sweeping like a loading gradient. Colors are deliberately desaturated to sit
- * inside a white room, and the whole thing stays unlit and un-tone-mapped so it
- * renders at the values authored here — the same reason hung artwork uses a
- * basic material.
+ * Curl-advected, domain-warped fbm drives soft pigment washes over a light
+ * paper base. Progress settles the swirl so soft colour masses coalesce into
+ * a painting-like soft-focus composition (Midjourney-style progressive
+ * resolve), while multi-scale boiling noise keeps the surface alive. Chroma
+ * stays muted — ochre and umber, not neon marble. Unlit and un-tone-mapped so
+ * it renders at the values authored here — the same reason hung artwork uses
+ * a basic material.
  */
 const VERTEX_SHADER = /* glsl */ `
 varying vec2 vUv;
@@ -150,6 +151,9 @@ mat2 rot(float a) {
 void main() {
   vec2 uv = vUv;
   float t = uTime;
+  float p = clamp(uProgress, 0.0, 1.0);
+  // Settle: early = soft abstract field; late = painting-like soft focus.
+  float settle = p * p * (3.0 - 2.0 * p);
 
   // Stir the sampling domain before any colour is read out of it.
   //
@@ -174,70 +178,107 @@ void main() {
   // across the canvas. Displacing by a few hundredths of a UV does nothing
   // visible; it takes something near a fifth of the canvas to actually carry a
   // lobe somewhere, and that is where the folding and marbling come from.
+  //
+  // Settle pulls advection down so the swirl resolves into stable soft masses
+  // rather than keeping the whole canvas liquid forever.
   float twist = (fbm3(uv * 1.15 + vec2(t * 0.05, -t * 0.04)) - 0.5) * 3.0;
-  vec2 eddyA = rot(twist + t * 0.60) *
+  vec2 eddyA = rot(twist + t * 0.52) *
     curl(uv * 1.7 + vec2(t * 0.09, -t * 0.06));
-  vec2 eddyB = rot(twist * 0.6 - t * 0.36) *
+  vec2 eddyB = rot(twist * 0.6 - t * 0.30) *
     curl(uv * 3.2 + vec2(2.6 - t * 0.05, 7.4 + t * 0.04));
-  vec2 sp = uv + eddyA * 0.30 + eddyB * 0.15;
+  float stir = mix(1.0, 0.28, settle);
+  vec2 sp = uv + (eddyA * 0.22 + eddyB * 0.11) * stir;
 
   // Two rounds of warping: the first bends the field, the second smears those
   // bends into the soft lobes that read as pigment spreading through water.
+  // Warp strength also settles, so late frames read as soft focus rather than
+  // wet marble.
+  float warp = mix(1.0, 0.42, settle);
   vec2 q = vec2(
     fbm(sp * 2.3 + vec2(0.0, t * 0.11)),
     fbm(sp * 2.3 + vec2(3.7, -t * 0.09))
   );
   vec2 r = vec2(
-    fbm(sp * 3.0 + 2.1 * q + vec2(1.7 + t * 0.085, 9.2)),
-    fbm(sp * 3.0 + 2.1 * q + vec2(8.3, 2.8 - t * 0.070))
+    fbm(sp * 3.0 + 2.1 * q * warp + vec2(1.7 + t * 0.085, 9.2)),
+    fbm(sp * 3.0 + 2.1 * q * warp + vec2(8.3, 2.8 - t * 0.070))
   );
-  float f = fbm(sp * 1.9 + 2.6 * r);
+  float f = fbm(sp * 1.9 + 2.6 * r * warp);
+
+  // Coarse, slightly anisotropic noise for brush dabs — breaks the continuous
+  // marble into loaded strokes without becoming a brush-simulation.
+  float dab = noise(sp * vec2(14.0, 9.5) + vec2(t * 0.04, -t * 0.03));
+  float dabEdge = smoothstep(0.28, 0.72, dab);
+  f = mix(f, f * (0.78 + 0.44 * dabEdge), mix(0.22, 0.48, settle));
 
   /*
-   * Progress is carried by chroma and coverage, never by value. Dropping
-   * lightness is what turned the earlier version to olive and taupe: a dark,
-   * low-chroma mix is mud by definition. Holding lightness roughly level and
-   * driving chroma up instead reads as pigment being loaded onto the canvas,
-   * which is the thing being communicated, and it stays vivid throughout.
+   * Progress is carried by chroma, coverage, and settle — not by darkening.
+   * The mute pass dropped lightness too far; keep the wash bright like the
+   * Midjourney progressive tiles (cream ground, soft colour masses). Chroma
+   * still ramps so pigment loads onto the canvas without going neon.
    *
    * No backticks in this comment: the shader is a JS template literal, and one
    * here ends the string early.
    */
-  float p = clamp(uProgress, 0.0, 1.0);
-  float chroma = mix(0.055, 0.185, p);
-  float lightness = mix(0.90, 0.80, p);
-  float coverage = mix(0.42, 1.0, p);
+  float chroma = mix(0.032, 0.108, p);
+  float lightness = mix(0.94, 0.86, p);
+  float coverage = mix(0.22, 0.90, p);
 
   // Layering happens on the hue angle, so overlaps land on an intermediate hue
-  // at full chroma rather than on the average of two RGB triples.
+  // at full chroma rather than on the average of two RGB triples. Settle
+  // tightens the blend windows so soft blobs resolve into clearer passages.
   float h = uHues.x;
-  h = mixHue(h, uHues.y, smoothstep(0.32, 0.86, r.x));
-  h = mixHue(h, uHues.z, smoothstep(0.36, 0.90, q.y));
-  h = mixHue(h, uHues.w, smoothstep(0.42, 0.94, r.y * f * 1.7));
+  h = mixHue(h, uHues.y, smoothstep(mix(0.18, 0.36, settle), mix(0.90, 0.74, settle), r.x));
+  h = mixHue(h, uHues.z, smoothstep(mix(0.20, 0.40, settle), mix(0.92, 0.78, settle), q.y));
+  h = mixHue(h, uHues.w, smoothstep(mix(0.24, 0.46, settle), mix(0.96, 0.82, settle), r.y * f * 1.7));
 
-  // Where the field is strong the paint sits thicker: slightly more chroma and
-  // slightly less light, which is how real pigment behaves in a loaded passage.
-  float body = smoothstep(0.30, 0.78, f);
-  float L = lightness - 0.055 * body;
-  float C = chroma * (0.72 + 0.46 * body);
+  // Where the field is strong the paint sits thicker. Early: foggy softstep.
+  // Late: tighter body so forms read as a soft-focus painting, not fog.
+  float bodyLo = mix(0.12, 0.32, settle);
+  float bodyHi = mix(0.88, 0.68, settle);
+  float body = smoothstep(bodyLo, bodyHi, f) * (0.88 + 0.12 * dabEdge);
+  float L = lightness - mix(0.025, 0.045, settle) * body;
+  float C = chroma * (0.68 + 0.44 * body);
 
-  vec3 paper = vec3(0.973, 0.968, 0.957);
+  // Light cream ground — closer to Midjourney submitting / early tiles than
+  // the previous aged parchment, which read too heavy under mute chroma.
+  vec3 paper = vec3(0.972, 0.962, 0.942);
   vec3 pigment = linearToSrgb(oklchToLinear(L, C, h));
 
-  // Thin the wash back toward paper where the field is weak, so the canvas
-  // still reads as a primed surface with paint on it, not a colored panel. The
-  // bare ground is covered progressively, so the surface gains body over time.
-  vec3 col = mix(paper, pigment, coverage * smoothstep(0.02, 0.56, f + 0.26));
+  // Thin the wash back toward paper where the field is weak. Early coverage is
+  // sparse so the canvas stays pale; late, soft masses fill like a painting
+  // coming into focus.
+  float wash = coverage * smoothstep(
+    mix(0.00, 0.08, settle),
+    mix(0.72, 0.52, settle),
+    f + mix(0.34, 0.16, settle)
+  );
+  vec3 col = mix(paper, pigment, wash);
 
-  float sheen = sin((uv.x + uv.y) * 2.1 - t * 0.5) * 0.5 + 0.5;
-  col += 0.030 * (1.0 - 0.5 * p) * smoothstep(0.0, 1.0, sheen);
+  // Matte lift — keeps life without gloss.
+  float lift = sin((uv.x * 1.4 + uv.y * 0.7) * 1.8 - t * 0.35) * 0.5 + 0.5;
+  col += 0.010 * (1.0 - 0.40 * p) * lift * dabEdge;
+
+  // Boiling multi-scale noise — the Midjourney progressive tiles keep a live
+  // grain field moving over the soft image, not a static weave stamp.
+  float nA = noise(uv * 72.0 + vec2(t * 1.85, -t * 1.45));
+  float nB = noise(uv * 148.0 + vec2(-t * 2.75, t * 2.15));
+  float nC = noise(uv * 280.0 + vec2(t * 4.2, t * 3.1));
+  float nD = hash(floor(uv * 420.0 + vec2(t * 18.0, -t * 14.0))) - 0.5;
+  float boil = (nA - 0.5) * 0.38 + (nB - 0.5) * 0.32 + (nC - 0.5) * 0.22 + nD * 0.28;
+  // Stronger while abstract; quieter as the soft painting resolves.
+  col += boil * mix(0.055, 0.028, settle);
+
+  // Soft animated canvas tooth — drifts slowly so it never reads as a decal.
+  float weave = 0.5
+    + 0.5 * sin(uv.x * 190.0 + t * 0.55) * sin(uv.y * 175.0 - t * 0.40);
+  col += (weave - 0.5) * mix(0.022, 0.012, settle);
 
   // The vignette back to paper relaxes as the canvas fills, so the colour
   // reaches the edges instead of stopping at a pale border.
   vec2 d = abs(uv - 0.5) * 2.0;
   float edge = 1.0 - smoothstep(0.80, 1.0, max(d.x, d.y));
-  vec3 ground = mix(paper, col, mix(0.0, 0.82, p));
-  col = mix(ground, col, 0.38 + 0.62 * edge);
+  vec3 ground = mix(paper, col, mix(0.0, 0.72, p));
+  col = mix(ground, col, 0.32 + 0.68 * edge);
 
   gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

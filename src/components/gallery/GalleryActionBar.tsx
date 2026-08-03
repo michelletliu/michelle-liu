@@ -110,6 +110,9 @@ export default function GalleryActionBar({
   const [expanded, setExpanded] = useState(true);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [addHovering, setAddHovering] = useState(false);
+  // Flips true in submit before awaiting parent `onGenerate`, so the resting
+  // Met chip cannot linger for a frame while `generating` catches up.
+  const [submitPending, setSubmitPending] = useState(false);
 
   /*
    * The search lives here, above the collapse, and not inside the picker.
@@ -130,12 +133,22 @@ export default function GalleryActionBar({
 
   const blocked =
     inspiration !== null && !artworkEligibility(inspiration).eligible;
-  const addDisabled = generating || inspiration !== null;
-  const addTooltip = generating
+  const isGenerating = generating || submitPending;
+  const addDisabled = isGenerating || inspiration !== null;
+  const addTooltip = isGenerating
     ? "Generating artwork"
     : inspiration
       ? "Remove artwork to add another"
-      : "Add artwork";
+      : "Get inspired by The Met";
+  // Fan + empty "Find inspiration" chip — never while generating or while the
+  // curated Met set is still hydrating (empty artworks would otherwise flash
+  // the top-right text pill above Generate).
+  const showRestingStack =
+    expanded &&
+    !pickerOpen &&
+    !inspiration &&
+    !isGenerating &&
+    !search.curatedLoading;
 
   /**
    * Focus follows the toggle into whichever control just appeared, so keyboard
@@ -193,14 +206,14 @@ export default function GalleryActionBar({
         setInspirationMinimized(true);
         return;
       }
-      if (generating) return;
+      if (isGenerating) return;
       collapseBar(moveFocus);
     },
     [
       pickerOpen,
       inspiration,
       inspirationMinimized,
-      generating,
+      isGenerating,
       collapseBar,
     ],
   );
@@ -286,8 +299,9 @@ export default function GalleryActionBar({
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const next = prompt.trim();
-    if (!next || generating || blocked) return;
+    if (!next || isGenerating || blocked) return;
     setError(null);
+    setSubmitPending(true);
     if (inspiration) setInspirationCanMinimize(true);
     try {
       await onGenerate(
@@ -299,6 +313,8 @@ export default function GalleryActionBar({
       setPrompt("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Generation failed");
+    } finally {
+      setSubmitPending(false);
     }
   };
 
@@ -308,12 +324,13 @@ export default function GalleryActionBar({
    *    0ms   shells share one centered grid cell
    *  280ms   outgoing shell scales 1 → 0.92 + fades (origin: center)
    *  280ms   incoming shell scales 0.92 → 1 + fades in (origin: center)
-   *  200ms   contents fade in (opacity only — no filter/blur)
    *
-   * At rest the expanded shell drops `transform` entirely (see
-   * `transformTemplate` below). Leaving scale (even at 1) or filter (even
-   * blur(0)) on an ancestor puts the focused prompt through a compositor
-   * layer, which makes the native caret short and unevenly anti-aliased.
+   * The expanded prompt shell must not leave the focused input under a
+   * compositor layer at rest: no residual scale, no backdrop-filter, no
+   * nested opacity wrapper. Those make the native caret short and uneven.
+   * `transformTemplate` drops scale when it hits 1; the shell is solid white
+   * (blur was decorative-only on an opaque fill); contents are not wrapped in
+   * a second opacity motion node.
    * ───────────────────────────────────────────────────────── */
   const shellTransition = reduceMotion
     ? { duration: 0 }
@@ -351,21 +368,6 @@ export default function GalleryActionBar({
     return generated;
   };
 
-  /** Contents fade in once the shell is carrying the size change. */
-  const contentReveal = reduceMotion
-    ? {
-        initial: false as const,
-        animate: { opacity: 1 },
-        exit: { opacity: 0 },
-        transition: { duration: 0 },
-      }
-    : {
-        initial: { opacity: 0 },
-        animate: { opacity: 1 },
-        exit: { opacity: 0 },
-        transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] as const },
-      };
-
   return (
     <div
       ref={rootRef}
@@ -383,15 +385,24 @@ export default function GalleryActionBar({
       {/* A sibling of the panel rather than a child of it, because a child
           cannot be painted behind its own parent's background. */}
       <AnimatePresence initial={false}>
-        {expanded && !pickerOpen && !inspiration && !generating && (
-          <RestingStack
+        {showRestingStack && (
+          // Instant exit: a timed fade left the empty "Find inspiration" chip
+          // (and the fan) visible over Generating…. Duration 0 clears it on the
+          // same frame `showRestingStack` flips false.
+          <motion.div
             key="stack"
-            artworks={search.artworks}
-            controls={pickerId}
-            transition={shellTransition}
-            lifted={addHovering}
-            onOpen={() => setPickerOpen(true)}
-          />
+            initial={false}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0 }}
+          >
+            <RestingStack
+              artworks={search.artworks}
+              controls={pickerId}
+              transition={shellTransition}
+              lifted={addHovering}
+              onOpen={() => setPickerOpen(true)}
+            />
+          </motion.div>
         )}
       </AnimatePresence>
       <AnimatePresence initial={false}>
@@ -430,7 +441,7 @@ export default function GalleryActionBar({
                 search={search}
                 selected={inspiration}
                 onSelect={selectInspiration}
-                disabled={generating}
+                disabled={isGenerating}
                 panel
               />
             </motion.div>
@@ -475,92 +486,88 @@ export default function GalleryActionBar({
               {...shellMotion}
               transformTemplate={shellTransformTemplate}
               style={{ transformOrigin: "center center" }}
-              className="col-start-1 row-start-1 flex w-full flex-col gap-2 rounded-full border border-black/10 bg-white px-3 py-[9px] shadow-[0_12px_20px_rgba(0,0,0,0.12)] backdrop-blur-md"
+              // Solid fill — no backdrop-blur. Blur on this node promotes a
+              // compositor layer and shrinks/unevens the native caret.
+              className="col-start-1 row-start-1 flex w-full flex-col gap-2 rounded-full border border-black/10 bg-white px-2.5 py-[9px] shadow-[0_12px_20px_rgba(0,0,0,0.12)]"
             >
-              <motion.div
-                {...contentReveal}
-                className="flex w-full flex-col gap-2"
-              >
-                <form onSubmit={submit} className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <Tooltip label={addTooltip} position="top" offset={10}>
-                      <button
-                        ref={(node) => {
-                          pickerToggleRef.current = node;
-                          focusOnMount("bar")(node);
-                        }}
-                        type="button"
-                        onPointerEnter={() => {
-                          if (!addDisabled) setAddHovering(true);
-                        }}
-                        onPointerLeave={() => setAddHovering(false)}
-                        onFocus={(e) => {
-                          if (
-                            !addDisabled &&
-                            e.currentTarget.matches(":focus-visible")
-                          ) {
-                            setAddHovering(true);
-                          }
-                        }}
-                        onBlur={() => setAddHovering(false)}
-                        onClick={() => {
-                          if (addDisabled) return;
-                          setPickerOpen((open) => !open);
-                        }}
-                        aria-expanded={pickerOpen}
-                        aria-controls={pickerId}
-                        aria-label={
-                          pickerOpen
-                            ? "Hide inspiration picker"
-                            : "Add inspiration image"
-                        }
-                        disabled={addDisabled}
-                        className={`grid size-10 shrink-0 place-items-center rounded-full transition-colors ${
-                          addDisabled
-                            ? "cursor-not-allowed bg-zinc-100/70 text-zinc-300"
-                            : "cursor-pointer text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
-                        } ${GALLERY_FOCUS_RING}`}
-                      >
-                        <PlusIcon className="size-[15px]" strokeWidth={1.25} />
-                      </button>
-                    </Tooltip>
-                    <input
-                      type="text"
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      onKeyDown={stopGalleryKeys}
-                      placeholder="Describe your artwork…"
-                      disabled={generating}
-                      // No inner focus ring — the outer composer pill is the
-                      // surface. `gallery-focus` opts out of the unlayered
-                      // global outline. Caret height follows text metrics;
-                      // even stroke depends on no scaled/filtered ancestors
-                      // (see shellTransformTemplate / contentReveal above).
-                      className="gallery-focus min-w-0 flex-1 rounded-full border-0 bg-transparent px-0 py-2 text-lg leading-7 text-zinc-900 caret-zinc-900 outline-none ring-0 placeholder:text-zinc-300 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 disabled:opacity-60"
-                      aria-label="Artwork prompt"
-                    />
+              <form onSubmit={submit} className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <Tooltip label={addTooltip} position="top" offset={10}>
                     <button
-                      type="submit"
-                      disabled={generating || !prompt.trim() || blocked}
-                      className={`shrink-0 rounded-full bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
+                      ref={(node) => {
+                        pickerToggleRef.current = node;
+                        focusOnMount("bar")(node);
+                      }}
+                      type="button"
+                      onPointerEnter={() => {
+                        if (!addDisabled) setAddHovering(true);
+                      }}
+                      onPointerLeave={() => setAddHovering(false)}
+                      onFocus={(e) => {
+                        if (
+                          !addDisabled &&
+                          e.currentTarget.matches(":focus-visible")
+                        ) {
+                          setAddHovering(true);
+                        }
+                      }}
+                      onBlur={() => setAddHovering(false)}
+                      onClick={() => {
+                        if (addDisabled) return;
+                        setPickerOpen((open) => !open);
+                      }}
+                      aria-expanded={pickerOpen}
+                      aria-controls={pickerId}
+                      aria-label={
+                        pickerOpen
+                          ? "Hide inspiration picker"
+                          : "Get inspired by The Met"
+                      }
+                      disabled={addDisabled}
+                      className={`grid size-10 shrink-0 place-items-center rounded-full transition-colors ${
+                        addDisabled
+                          ? "cursor-not-allowed bg-zinc-100/70 text-zinc-300"
+                          : "cursor-pointer text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
+                      } ${GALLERY_FOCUS_RING}`}
                     >
-                      {generating ? (
-                        <GeneratingLabel reduceMotion={Boolean(reduceMotion)} />
-                      ) : (
-                        "Generate"
-                      )}
+                      <PlusIcon className="size-[15px]" strokeWidth={1.25} />
                     </button>
-                  </div>
-                  <p aria-live="polite" className="sr-only">
-                    {generating ? "Generating your image…" : ""}
+                  </Tooltip>
+                  <input
+                    type="text"
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    onKeyDown={stopGalleryKeys}
+                    placeholder="Describe your artwork…"
+                    disabled={isGenerating}
+                    // No inner focus ring — the outer composer pill is the
+                    // surface. `gallery-focus` opts out of the unlayered
+                    // global outline. Caret follows text metrics; even stroke
+                    // needs no scaled/blurred/opacity ancestors at rest.
+                    className="gallery-focus min-w-0 flex-1 rounded-full border-0 bg-transparent px-0 py-2 text-base leading-6 text-zinc-900 caret-zinc-900 outline-none ring-0 placeholder:text-zinc-300 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 disabled:opacity-60"
+                    aria-label="Artwork prompt"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isGenerating || !prompt.trim() || blocked}
+                    className={`shrink-0 rounded-full bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
+                  >
+                    {isGenerating ? (
+                      <GeneratingLabel reduceMotion={Boolean(reduceMotion)} />
+                    ) : (
+                      "Generate"
+                    )}
+                  </button>
+                </div>
+                <p aria-live="polite" className="sr-only">
+                  {isGenerating ? "Generating your image…" : ""}
+                </p>
+                {error && (
+                  <p className="px-1 text-base text-red-600" role="alert">
+                    {error}
                   </p>
-                  {error && (
-                    <p className="px-1 text-base text-red-600" role="alert">
-                      {error}
-                    </p>
-                  )}
-                </form>
-              </motion.div>
+                )}
+              </form>
             </motion.div>
           ) : (
             <motion.div
@@ -670,7 +677,7 @@ function SelectedInspirationCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 6, scale: 0.985 }}
       transition={transition}
-      className={`absolute bottom-[calc(100%-14px)] left-1/2 z-0 flex w-[calc(100%-38px)] -translate-x-1/2 gap-4 rounded-[34px] border border-black/10 bg-white/95 px-4 pt-4 pb-6 pr-12 text-left shadow-[0_12px_28px_rgba(0,0,0,0.10)] backdrop-blur-md ${
+      className={`absolute bottom-[calc(100%-14px)] left-1/2 z-0 flex w-[calc(100%-38px)] -translate-x-1/2 gap-4 rounded-t-[34px] rounded-b-none border border-black/10 bg-white/95 px-4 pt-4 pb-6 pr-12 text-left shadow-[0_12px_28px_rgba(0,0,0,0.10)] backdrop-blur-md ${
         titleWraps ? "items-start" : "items-center"
       }`}
     >
@@ -790,18 +797,11 @@ function RestingStack({
     .slice(0, STACK_CARDS.length);
 
   if (cards.length === 0) {
-    return (
-      <button
-        type="button"
-        onClick={onOpen}
-        aria-expanded={false}
-        aria-controls={controls}
-        className={`absolute bottom-full right-4 mb-1 inline-flex items-center gap-1.5 rounded-xl border border-black/10 bg-white/90 px-2.5 py-1.5 text-xs text-zinc-500 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-md transition-colors hover:text-zinc-700 ${GALLERY_FOCUS_RING}`}
-      >
-        <PlusIcon className="size-3" />
-        Find inspiration in The Met
-      </button>
-    );
+    // No top-right "Find inspiration in The Met" text chip. While curated
+    // data is loading or Met returned nothing, the composer's + still opens
+    // the picker — a floating label above Generate only confused loading /
+    // generating states.
+    return null;
   }
 
   const fan = STACK_CARDS.slice(STACK_CARDS.length - cards.length);
@@ -825,7 +825,7 @@ function RestingStack({
      * inline-flex`, so taking that away to make room for our own placement
      * would have unmoored the bubble in the act of anchoring the cards.
      */
-    <div className="absolute bottom-[calc(100%-2.95rem)] left-6">
+    <div className="absolute bottom-[calc(100%-2.95rem)] left-6 overflow-visible">
       {/* Reuses the site's tooltip rather than growing a gallery-only one.
           Hover is the component's own; `forceOpen` is how focus gets the same
           hint, since the shared tooltip has no focus path of its own and this
@@ -834,7 +834,11 @@ function RestingStack({
       <Tooltip
         label="Get inspired by The Met"
         position="top"
-        offset={20}
+        // Anchor matches the tile box (`h-25` = `size-25` cards). A taller
+        // hit target left empty air above the fan, so offset alone could not
+        // close the gap without going negative. Overflow stays visible so
+        // rotate / hover lift still paint above the box.
+        offset={10}
         forceOpen={focused}
       >
         <button
@@ -844,23 +848,21 @@ function RestingStack({
           onBlur={() => setFocused(false)}
           aria-expanded={false}
           aria-controls={controls}
-          className={`group relative h-25 w-[154px] rounded-xl ${GALLERY_FOCUS_RING}`}
+          className={`group relative h-25 w-[154px] overflow-visible rounded-xl ${GALLERY_FOCUS_RING}`}
         >
           <span className="sr-only">Find inspiration in The Met</span>
-          <span className="absolute inset-0 block">
+          <span className="absolute inset-0 block overflow-visible">
             {/* Painted back to front, so the first work in the strip — the most
               recognisable one — is the square card on top of the pile. */}
             {[...cards].reverse().map(({ artwork, src }, i) => {
               const { rotate, x, y, hoverY, hoverRotate } = fan[i]!;
               const trimScale = metImageTrimScale(artwork.objectID);
-              const restTransform =
-                trimScale > 1
-                  ? `scale(${trimScale}) rotate(var(--rest-rotate))`
-                  : "rotate(var(--rest-rotate))";
+              // Rotate/lift the clip box itself. Putting overflow-hidden on a
+              // non-rotated parent (with rotate on the img) axis-aligned the
+              // clip and sliced the fan tops into a hard horizontal edge.
+              const restTransform = "rotate(var(--rest-rotate))";
               const hoverTransform =
-                trimScale > 1
-                  ? `translateY(var(--hover-y)) scale(${trimScale}) rotate(var(--hover-rotate))`
-                  : "translateY(var(--hover-y)) rotate(var(--hover-rotate))";
+                "translateY(var(--hover-y)) rotate(var(--hover-rotate))";
               return (
                 <motion.span
                   // The same id the strip tile carries, so this card and that
@@ -870,13 +872,9 @@ function RestingStack({
                   key={artwork.objectID}
                   transition={transition}
                   style={{ x, y }}
-                  className="absolute bottom-0 left-0 block overflow-hidden"
+                  className="absolute bottom-0 left-0 block overflow-visible"
                 >
-                  <img
-                    src={src}
-                    alt=""
-                    aria-hidden
-                    decoding="async"
+                  <span
                     style={
                       {
                         "--rest-rotate": `${rotate}deg`,
@@ -886,12 +884,25 @@ function RestingStack({
                         "--hover-transform": hoverTransform,
                       } as React.CSSProperties
                     }
-                    className={`border-2 border-white/20 bg-white object-cover shadow-lg transition-transform duration-200 ease-out ${
+                    className={`block overflow-hidden border-2 border-white/20 bg-white shadow-lg transition-transform duration-200 ease-out ${
                       lifted
                         ? "[transform:var(--hover-transform)]"
                         : "[transform:var(--rest-transform)]"
                     } group-hover:[transform:var(--hover-transform)] group-focus-visible:[transform:var(--hover-transform)] motion-reduce:transition-none motion-reduce:[transform:var(--rest-transform)] ${TILE_SHAPE}`}
-                  />
+                  >
+                    <img
+                      src={src}
+                      alt=""
+                      aria-hidden
+                      decoding="async"
+                      style={
+                        trimScale > 1
+                          ? { transform: `scale(${trimScale})` }
+                          : undefined
+                      }
+                      className="size-full object-cover"
+                    />
+                  </span>
                 </motion.span>
               );
             })}

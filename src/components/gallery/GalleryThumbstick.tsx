@@ -34,18 +34,24 @@ type GalleryThumbstickProps = {
 };
 
 /** Base and knob radii in px. Knob travel is their difference, less a margin. */
-const BASE_RADIUS = 46;
+const BASE_RADIUS = 60;
 const KNOB_RADIUS = 19;
 const MAX_TRAVEL = BASE_RADIUS - KNOB_RADIUS - 5;
+/** Ring band between knob edge and outer rim — glyphs sit centered in this. */
+const RING_BAND = BASE_RADIUS - KNOB_RADIUS;
 /**
  * Axis hint size.
  *
- * Sized against the 27px band between the knob and the rim rather than against
- * the base as a whole, so the glyphs read as labels on the ring they sit in and
- * the knob stays the largest thing on the control.
+ * Sized against the ring band rather than the base as a whole, so the glyphs
+ * read as labels on the ring they sit in and the knob stays the largest thing
+ * on the control.
  */
 const ICON_SIZE = 15;
 const PLUS_AXIS_ICON_CLASS = "size-[11px]";
+/** Hit/hover wash around each glyph; kept smaller than the ring band. */
+const GLYPH_BOX = 26;
+/** Equal padding from knob edge and outer rim to the glyph box. */
+const GLYPH_PAD = (RING_BAND - GLYPH_BOX) / 2;
 
 function MinusIcon() {
   return (
@@ -69,15 +75,15 @@ function MinusIcon() {
 /**
  * Where each axis button sits, and how much of the base it may claim.
  *
- * The numbers are forced by the geometry rather than chosen. The base is 92px
- * across with a 38px knob in the middle, which leaves a 27px band per side —
- * so a 44×44 target centred on a glyph would cover a third of the knob and
- * collide with its neighbours at the diagonals. Instead each target stops dead
- * at the knob's edge (27px from the base's own edge) and makes up the area
- * outwards, past the rim into empty room. That yields ~41×38 of pressable area
- * against the glyph's 15×15, no overlap between the four, and a knob whose
- * drag region is untouched — the one thing that must not be traded away, since
- * dragging is still the only way to zoom and step continuously.
+ * The numbers are forced by the geometry rather than chosen. The base is 120px
+ * across with a 38px knob in the middle, which leaves a 41px band per side —
+ * wide enough that a 26px glyph wash can sit centred with clear air to the knob
+ * and the rim. Each target still stops dead at the knob's edge (`RING_BAND`
+ * from the base's own edge) and makes up the area outwards, past the rim into
+ * empty room. That yields pressable area against the glyph's 15×15, no overlap
+ * between the four, and a knob whose drag region is untouched — the one thing
+ * that must not be traded away, since dragging is still the only way to zoom
+ * and step continuously.
  *
  * Each arm is pinned on both ends of its short side rather than given a length,
  * which is the difference between four targets that meet at the corners and
@@ -88,7 +94,7 @@ function MinusIcon() {
  * painted last took the press. Anchoring both ends to the same box removes the
  * discrepancy by construction instead of paying it off with a magic number.
  */
-const AXIS_INSET = 27;
+const AXIS_INSET = RING_BAND;
 const AXIS_OUTSET = 14;
 
 const AXIS_BOX: Record<AxisName, React.CSSProperties> = {
@@ -118,12 +124,19 @@ const AXIS_BOX: Record<AxisName, React.CSSProperties> = {
   },
 };
 
-/** Pins the glyph to the target's inner edge, where it has always been drawn. */
+/** Centres each glyph in the ring band (equal pad to knob and outer rim). */
 const AXIS_GLYPH: Record<AxisName, string> = {
-  left: "right-0 top-1/2 -translate-y-1/2",
-  right: "left-0 top-1/2 -translate-y-1/2",
-  top: "bottom-0 left-1/2 -translate-x-1/2",
-  bottom: "top-0 left-1/2 -translate-x-1/2",
+  left: "top-1/2 -translate-y-1/2",
+  right: "top-1/2 -translate-y-1/2",
+  top: "left-1/2 -translate-x-1/2",
+  bottom: "left-1/2 -translate-x-1/2",
+};
+
+const AXIS_GLYPH_INSET: Record<AxisName, React.CSSProperties> = {
+  left: { right: GLYPH_PAD },
+  right: { left: GLYPH_PAD },
+  top: { bottom: GLYPH_PAD },
+  bottom: { top: GLYPH_PAD },
 };
 
 type AxisName = "left" | "right" | "top" | "bottom";
@@ -159,6 +172,7 @@ function AxisButton({
     >
       <span
         aria-hidden
+        style={AXIS_GLYPH_INSET[axis]}
         className={`absolute grid size-[26px] place-items-center rounded-full text-zinc-500 transition-colors duration-150 group-hover:bg-zinc-900/[0.06] group-hover:text-zinc-700 group-active:bg-zinc-900/[0.12] motion-reduce:transition-none ${AXIS_GLYPH[axis]}`}
       >
         {children}
