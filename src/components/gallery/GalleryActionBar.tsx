@@ -308,7 +308,12 @@ export default function GalleryActionBar({
    *    0ms   shells share one centered grid cell
    *  280ms   outgoing shell scales 1 → 0.92 + fades (origin: center)
    *  280ms   incoming shell scales 0.92 → 1 + fades in (origin: center)
-   *  200ms   contents blur 6px → 0 and fade (no y/x drift)
+   *  200ms   contents fade in (opacity only — no filter/blur)
+   *
+   * At rest the expanded shell drops `transform` entirely (see
+   * `transformTemplate` below). Leaving scale (even at 1) or filter (even
+   * blur(0)) on an ancestor puts the focused prompt through a compositor
+   * layer, which makes the native caret short and unevenly anti-aliased.
    * ───────────────────────────────────────────────────────── */
   const shellTransition = reduceMotion
     ? { duration: 0 }
@@ -333,18 +338,31 @@ export default function GalleryActionBar({
         transition: shellTransition,
       };
 
-  /** Contents blur in once the shell is carrying the size change. */
+  /**
+   * While scale is exactly 1, emit no transform so the prompt caret paints on
+   * the device pixel grid. Any non-1 scale (enter/exit morph) keeps the matrix.
+   */
+  const shellTransformTemplate = (
+    { scale }: { scale?: number | string },
+    generated: string,
+  ) => {
+    const s = typeof scale === "number" ? scale : Number(scale);
+    if (!Number.isFinite(s) || Math.abs(s - 1) < 0.001) return "none";
+    return generated;
+  };
+
+  /** Contents fade in once the shell is carrying the size change. */
   const contentReveal = reduceMotion
     ? {
         initial: false as const,
-        animate: { opacity: 1, filter: "blur(0px)" },
+        animate: { opacity: 1 },
         exit: { opacity: 0 },
         transition: { duration: 0 },
       }
     : {
-        initial: { opacity: 0, filter: "blur(6px)" },
-        animate: { opacity: 1, filter: "blur(0px)" },
-        exit: { opacity: 0, filter: "blur(6px)" },
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
         transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] as const },
       };
 
@@ -455,6 +473,7 @@ export default function GalleryActionBar({
             <motion.div
               key="panel"
               {...shellMotion}
+              transformTemplate={shellTransformTemplate}
               style={{ transformOrigin: "center center" }}
               className="col-start-1 row-start-1 flex w-full flex-col gap-2 rounded-full border border-black/10 bg-white px-3 py-[9px] shadow-[0_12px_20px_rgba(0,0,0,0.12)] backdrop-blur-md"
             >
@@ -514,8 +533,9 @@ export default function GalleryActionBar({
                       disabled={generating}
                       // No inner focus ring — the outer composer pill is the
                       // surface. `gallery-focus` opts out of the unlayered
-                      // global outline; caret scales with text-lg so it reads
-                      // proportional to the tall bar.
+                      // global outline. Caret height follows text metrics;
+                      // even stroke depends on no scaled/filtered ancestors
+                      // (see shellTransformTemplate / contentReveal above).
                       className="gallery-focus min-w-0 flex-1 rounded-full border-0 bg-transparent px-0 py-2 text-lg leading-7 text-zinc-900 caret-zinc-900 outline-none ring-0 placeholder:text-zinc-300 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 disabled:opacity-60"
                       aria-label="Artwork prompt"
                     />
