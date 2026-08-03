@@ -34,7 +34,7 @@ type GalleryThumbstickProps = {
 };
 
 /** Base and knob radii in px. Knob travel is their difference, less a margin. */
-const BASE_RADIUS = 60;
+const BASE_RADIUS = 58; // 116px across — between the prior 112 and the 120 bump
 const KNOB_RADIUS = 19;
 const MAX_TRAVEL = BASE_RADIUS - KNOB_RADIUS - 5;
 /** Ring band between knob edge and outer rim — glyphs sit centered in this. */
@@ -75,8 +75,8 @@ function MinusIcon() {
 /**
  * Where each axis button sits, and how much of the base it may claim.
  *
- * The numbers are forced by the geometry rather than chosen. The base is 120px
- * across with a 38px knob in the middle, which leaves a 41px band per side —
+ * The numbers are forced by the geometry rather than chosen. The base is 116px
+ * across with a 38px knob in the middle, which leaves a 39px band per side —
  * wide enough that a 26px glyph wash can sit centred with clear air to the knob
  * and the rim. Each target still stops dead at the knob's edge (`RING_BAND`
  * from the base's own edge) and makes up the area outwards, past the rim into

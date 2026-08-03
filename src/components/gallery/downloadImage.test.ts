@@ -49,6 +49,25 @@ test("sanitizeFilenameLabel caps length without trailing whitespace", () => {
   assert.ok(!label.endsWith(" "), label);
 });
 
+test("sanitizeFilenameLabel keeps a full Great Wave Met title by default", () => {
+  const title =
+    "Under the Wave off Kanagawa (Kanagawa oki nami ura), or The Great Wave, from the series Thirty-six Views of Mount Fuji (Fugaku sanjurokkei)";
+  const label = sanitizeFilenameLabel(title);
+  assert.equal(label, title);
+  assert.ok(label.includes("Thirty-six Views of Mount Fuji"), label);
+});
+
+test("sanitizeFilenameLabel truncates long titles at a word boundary", () => {
+  const label = sanitizeFilenameLabel(
+    "Under the Wave off Kanagawa (Kanagawa oki nami ura), or The Great Wave, from the series",
+    60,
+  );
+  assert.ok(label.length <= 60, label);
+  assert.ok(!label.endsWith(" "), label);
+  assert.ok(!/(?:,|\bor|\bfrom|\bthe)$/i.test(label), `dangling crumb: ${label}`);
+  assert.match(label, /Kanagawa/, label);
+});
+
 test("slugifyForFilename strips characters that are illegal in filenames", () => {
   assert.equal(
     slugifyForFilename('Sun/flowers: "a study" \\ <1887>'),
@@ -75,6 +94,18 @@ test("generatedImageFilename uses Inspired by + title when inspiration exists", 
     imageUrl: "data:image/png;base64,iVBORw0KGgo=",
   });
   assert.equal(name, "Inspired by The Lake of Zug.png");
+});
+
+test("generatedImageFilename keeps the full Great Wave title before .png", () => {
+  const title =
+    "Under the Wave off Kanagawa (Kanagawa oki nami ura), or The Great Wave, from the series Thirty-six Views of Mount Fuji (Fugaku sanjurokkei)";
+  const name = generatedImageFilename({
+    inspirationTitle: title,
+    imageUrl: "data:image/png;base64,iVBORw0KGgo=",
+  });
+  assert.equal(name, `Inspired by ${title}.png`);
+  assert.ok(name.endsWith(".png"), name);
+  assert.ok(!name.includes("from the.png"), name);
 });
 
 test("generatedImageFilename never leaks an internal painting id", () => {

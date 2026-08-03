@@ -20,6 +20,16 @@ const MIME_EXTENSIONS: Record<string, string> = {
 /** Characters Windows (and most filesystems) reject in a filename. */
 const ILLEGAL_FILENAME_CHARS = /[\\/:*?"<>|]/g;
 
+/**
+ * Soft ceiling for a single filename (base + extension). macOS/Windows allow
+ * ~255; stay under that so a Downloads folder path still fits MAX_PATH, without
+ * chopping ordinary Met titles mid-phrase.
+ */
+const MAX_FILENAME_LENGTH = 200;
+
+/** Default label budget — long enough for full Met titles like The Great Wave. */
+const DEFAULT_LABEL_MAX = 180;
+
 export function extensionForMimeType(mimeType: string | null): string {
   if (!mimeType) return DEFAULT_EXTENSION;
   return MIME_EXTENSIONS[mimeType.trim().toLowerCase()] ?? DEFAULT_EXTENSION;
@@ -34,8 +44,14 @@ export function mimeTypeFromUrl(url: string): string | null {
 /**
  * Keep a human-readable label filesystem-safe: strip illegal characters and
  * control chars, collapse whitespace, preserve case and spaces.
+ *
+ * Truncates only when an explicit or default ceiling is hit, preferring a
+ * word boundary so titles are not sliced mid-phrase.
  */
-export function sanitizeFilenameLabel(text: string, maxLength = 80): string {
+export function sanitizeFilenameLabel(
+  text: string,
+  maxLength = DEFAULT_LABEL_MAX,
+): string {
   const cleaned = text
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -45,7 +61,27 @@ export function sanitizeFilenameLabel(text: string, maxLength = 80): string {
     .trim();
 
   if (cleaned.length <= maxLength) return cleaned;
-  return cleaned.slice(0, maxLength).trim();
+  return truncateAtWordBoundary(cleaned, maxLength);
+}
+
+/** Prefer cutting on a space; fall back to a hard slice. Strip trailing crumbs. */
+function truncateAtWordBoundary(text: string, maxLength: number): string {
+  let truncated = text.slice(0, maxLength).trimEnd();
+  const lastSpace = truncated.lastIndexOf(" ");
+  if (lastSpace >= Math.floor(maxLength * 0.55)) {
+    truncated = truncated.slice(0, lastSpace).trimEnd();
+  }
+  // Drop dangling punctuation and short connectors left by a mid-title cut
+  // ("…, or" / "… from the") so the filename does not end mid-phrase.
+  for (let i = 0; i < 3; i++) {
+    const next = truncated
+      .replace(/[,;:\-–—.(]+$/u, "")
+      .replace(/\b(?:or|and|the|a|an|from|of|to|in|with)\s*$/i, "")
+      .trimEnd();
+    if (next === truncated) break;
+    truncated = next;
+  }
+  return truncated;
 }
 
 /**
@@ -77,14 +113,30 @@ export type GeneratedFilenameParts = {
  * "Artwork" label. Browser overwrite-on-redownload is fine — no timestamp.
  *
  * Examples: `Inspired by The Lake of Zug.png`, `Artwork.png`
+ *
+ * Keeps the full Met title whenever it fits under {@link MAX_FILENAME_LENGTH};
+ * only then trims at a word boundary so `.png` is never glued to a mid-phrase cut.
  */
 export function generatedImageFilename({
   inspirationTitle,
   imageUrl,
 }: GeneratedFilenameParts): string {
   const extension = extensionForMimeType(mimeTypeFromUrl(imageUrl));
-  const title = inspirationTitle ? sanitizeFilenameLabel(inspirationTitle) : "";
-  const base = title ? `Inspired by ${title}` : "Artwork";
+  const maxBase = MAX_FILENAME_LENGTH - extension.length - 1;
+  const title = inspirationTitle
+    ? sanitizeFilenameLabel(inspirationTitle, maxBase)
+    : "";
+  let base = title ? `Inspired by ${title}` : "Artwork";
+
+  if (base.length > maxBase) {
+    const prefix = "Inspired by ";
+    const titleBudget = Math.max(24, maxBase - prefix.length);
+    const shortTitle = sanitizeFilenameLabel(title, titleBudget);
+    base = shortTitle ? `${prefix}${shortTitle}` : "Artwork";
+    if (base.length > maxBase) {
+      base = truncateAtWordBoundary(base, maxBase);
+    }
+  }
 
   return `${base}.${extension}`;
 }
