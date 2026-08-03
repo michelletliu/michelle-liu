@@ -1,10 +1,13 @@
 /**
- * Some Met Open Access JPEGs ship with a baked-in black digital mat / letterbox
- * (not a CSS border). Cropping those edges on display keeps the painting filling
- * the tile or frame instead of showing a thick black surround.
+ * Some Met Open Access JPEGs ship with a baked-in digital mat / letterbox
+ * (not a CSS border) — black scan pads on oils, cream paper margins on works
+ * on paper. Cropping those edges on display keeps the painting filling the
+ * tile or frame instead of showing an empty surround.
  *
- * Fractions are measured from `primaryImageSmall` against near-black edge rows
- * and columns; fame is no guide — Irises is clean, Manet's garden scene is not.
+ * Fractions are measured from `primaryImageSmall` against near-uniform edge
+ * rows and columns; fame is no guide — Irises is clean, Manet's garden scene
+ * is not, and Turner's Lake of Zug has a pale paper band that reads as a gap
+ * under `object-cover` in the resting stack.
  */
 export const MET_BLACK_MAT_TRIM: Readonly<Record<number, number>> = {
   // Edouard Manet, The Monet Family in Their Garden at Argenteuil — ~4.5–7%
@@ -13,6 +16,9 @@ export const MET_BLACK_MAT_TRIM: Readonly<Record<number, number>> = {
   436535: 0.055,
   // Vincent van Gogh, La Berceuse — ~1.5–2%
   437984: 0.04,
+  // J. M. W. Turner, The Lake of Zug — cream paper edge ~1.5–3%; trim a bit
+  // further so the pale band does not read as an unfilled tile top
+  337499: 0.055,
 };
 
 /** Uniform scale that trims `trim` from each edge inside an overflow-hidden box. */

@@ -79,7 +79,8 @@ export const KEEP_BAR_OPEN_ATTR = "data-gallery-keep-bar-open";
 const STACK_CARDS = [
   { rotate: 15, x: 54, y: 14, hoverY: -6, hoverRotate: 20 },
   { rotate: 6, x: 27, y: 8, hoverY: -9, hoverRotate: 3 },
-  { rotate: 0, x: 0, y: 0, hoverY: -12, hoverRotate: -3 },
+  // Slight CCW tip so the front tile’s bottom-right lifts toward NE
+  { rotate: -3, x: 0, y: 0, hoverY: -12, hoverRotate: -6 },
 ];
 
 type GalleryActionBarProps = {
@@ -825,7 +826,7 @@ function RestingStack({
      * inline-flex`, so taking that away to make room for our own placement
      * would have unmoored the bubble in the act of anchoring the cards.
      */
-    <div className="absolute bottom-[calc(100%-2.95rem)] left-6 overflow-visible">
+    <div className="absolute bottom-[calc(100%-2.95rem)] left-3 overflow-visible">
       {/* Reuses the site's tooltip rather than growing a gallery-only one.
           Hover is the component's own; `forceOpen` is how focus gets the same
           hint, since the shared tooltip has no focus path of its own and this

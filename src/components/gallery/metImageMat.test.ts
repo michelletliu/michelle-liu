@@ -16,6 +16,11 @@ test("clean works stay unscaled", () => {
   assert.equal(metImageTrimStyle(436528), undefined);
 });
 
+test("Lake of Zug trims its cream paper edge enough to fill the tile", () => {
+  assert.equal(MET_BLACK_MAT_TRIM[337499]! >= 0.05, true);
+  assert.ok(metImageTrimScale(337499) > 1.1);
+});
+
 test("trim style only appears when a scale is needed", () => {
   assert.deepEqual(metImageTrimStyle(436965), {
     transform: `scale(${metImageTrimScale(436965)})`,
