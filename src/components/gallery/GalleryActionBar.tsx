@@ -107,7 +107,6 @@ export default function GalleryActionBar({
   const [error, setError] = useState<string | null>(null);
   const [inspiration, setInspiration] = useState<MetArtwork | null>(null);
   const [inspirationCanMinimize, setInspirationCanMinimize] = useState(false);
-  const [inspirationMinimized, setInspirationMinimized] = useState(false);
   const [expanded, setExpanded] = useState(true);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [addHovering, setAddHovering] = useState(false);
@@ -186,15 +185,14 @@ export default function GalleryActionBar({
   }, []);
 
   /**
-   * Stepped dismiss: picker → inspiration card → whole bar.
+   * Stepped dismiss: picker → whole bar.
    *
-   * With an inspiration selected, the first outside click / Escape tucks it
-   * into the minimized peek rather than folding the composer away — that is
-   * the "minimized mode" the fan and peek were built for. Full collapse only
-   * happens once the card is already tucked (or there is no inspiration).
-   * Generation no longer holds the bar open — submit auto-collapses to the
-   * Generating pill, and outside click / Escape can fold an expanded bar
-   * while a run is in flight.
+   * Inspiration stays selected across collapse; only the composer shell folds
+   * to the pen / Generating / download pill. Re-expanding restores the full
+   * SelectedInspirationCard when a work is still chosen — there is no
+   * intermediate artwork-peek state. Generation no longer holds the bar open
+   * — submit auto-collapses to the Generating pill, and outside click /
+   * Escape can fold an expanded bar while a run is in flight.
    */
   const dismissComposer = useCallback(
     (moveFocus: boolean) => {
@@ -203,14 +201,10 @@ export default function GalleryActionBar({
         if (moveFocus) pickerToggleRef.current?.focus();
         return;
       }
-      if (inspiration && !inspirationMinimized) {
-        setInspirationCanMinimize(true);
-        setInspirationMinimized(true);
-        return;
-      }
+      if (inspiration) setInspirationCanMinimize(true);
       collapseBar(moveFocus);
     },
-    [pickerOpen, inspiration, inspirationMinimized, collapseBar],
+    [pickerOpen, inspiration, collapseBar],
   );
 
   const expandBar = () => {
@@ -229,7 +223,6 @@ export default function GalleryActionBar({
   const selectInspiration = (artwork: MetArtwork | null) => {
     setInspiration(artwork);
     setInspirationCanMinimize(false);
-    setInspirationMinimized(false);
     if (artwork) setPickerOpen(false);
   };
 
@@ -244,7 +237,6 @@ export default function GalleryActionBar({
     focusedIdRef.current = focusedId;
     setInspiration(null);
     setInspirationCanMinimize(false);
-    setInspirationMinimized(false);
     setPickerOpen(false);
   }, [focusedId]);
 
@@ -309,7 +301,13 @@ export default function GalleryActionBar({
     if (inspiration) setInspirationCanMinimize(true);
     // Fold to the Generating pill immediately — same collapsed shell as an
     // outside click, so the room stays clear while the canvas shimmers.
-    collapseBar(true);
+    // Don't move focus onto the pill: that paints a focus-visible ring flash
+    // right as "Generating…" appears. Blur instead; keyboard users can Tab
+    // to the pill later, and generation-end still hands focus to the pen.
+    collapseBar(false);
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     try {
       await onGenerate(
         next,
@@ -460,25 +458,19 @@ export default function GalleryActionBar({
         )}
       </AnimatePresence>
       <AnimatePresence initial={false}>
-        {expanded && !pickerOpen && inspiration && !inspirationMinimized && (
+        {expanded && !pickerOpen && inspiration && (
           <SelectedInspirationCard
             key="selected-inspiration"
             artwork={inspiration}
             canMinimize={inspirationCanMinimize}
-            onMinimize={() => setInspirationMinimized(true)}
+            onMinimize={() => {
+              setInspirationCanMinimize(true);
+              collapseBar(false);
+            }}
             onRemove={() => {
               setInspiration(null);
               setInspirationCanMinimize(false);
-              setInspirationMinimized(false);
             }}
-            transition={shellTransition}
-          />
-        )}
-        {expanded && !pickerOpen && inspiration && inspirationMinimized && (
-          <MinimizedInspirationPeek
-            key="selected-inspiration-peek"
-            artwork={inspiration}
-            onRestore={() => setInspirationMinimized(false)}
             transition={shellTransition}
           />
         )}
@@ -753,7 +745,7 @@ function SelectedInspirationCard({
       <button
         type="button"
         onClick={canMinimize ? onMinimize : onRemove}
-        aria-label={canMinimize ? "Minimize inspiration" : "Remove inspiration"}
+        aria-label={canMinimize ? "Collapse prompt bar" : "Remove inspiration"}
         className={`absolute right-3 top-3 grid size-7 place-items-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 active:bg-zinc-200/70 ${GALLERY_FOCUS_RING}`}
       >
         {canMinimize ? (
@@ -763,45 +755,6 @@ function SelectedInspirationCard({
         )}
       </button>
     </motion.div>
-  );
-}
-
-function MinimizedInspirationPeek({
-  artwork,
-  onRestore,
-  transition,
-}: {
-  artwork: MetArtwork;
-  onRestore: () => void;
-  transition: Transition;
-}) {
-  const src = openAccessImageUrl(artwork);
-  if (!src) return null;
-
-  return (
-    <motion.button
-      type="button"
-      onClick={onRestore}
-      aria-label={`Show inspiration: ${artwork.title}`}
-      initial={{ opacity: 0, y: 10, scale: 0.98, rotate: -3 }}
-      animate={{ opacity: 1, y: 0, scale: 1, rotate: -3 }}
-      exit={{ opacity: 0, y: 6, scale: 0.98, rotate: -3 }}
-      transition={transition}
-      className={`absolute bottom-[calc(100%-34px)] left-10 z-0 rounded-[18px] ${GALLERY_FOCUS_RING}`}
-    >
-      <span className="block size-24 overflow-hidden rounded-[18px] border-2 border-white/20 shadow-lg">
-        <motion.img
-          layoutId={tileLayoutId(artwork.objectID)}
-          src={src}
-          alt=""
-          aria-hidden
-          decoding="async"
-          transition={transition}
-          style={metImageTrimStyle(artwork.objectID)}
-          className="size-full object-cover"
-        />
-      </span>
-    </motion.button>
   );
 }
 
