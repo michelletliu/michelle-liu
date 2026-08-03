@@ -21,7 +21,10 @@ import {
   type GalleryPainting,
   type GalleryRoomPose,
 } from "./galleryPaintings";
-import { frameGeometryForArtwork } from "./galleryFrameGeometry";
+import {
+  coverUvTransform,
+  frameGeometryForArtwork,
+} from "./galleryFrameGeometry";
 
 type GallerySceneProps = {
   pose: GalleryRoomPose;
@@ -54,7 +57,10 @@ type FrameEntry = {
   artLit: number;
   /** Largest artwork aperture for this hang, before aspect fitting. */
   maxArtSize: { width: number; height: number };
-  /** Mesh scale that fits the current texture inside the frame undistorted. */
+  /**
+   * Mesh scale for the hung image. Generated fills keep `{1,1}` and crop via
+   * texture UVs; empty canvases also sit at full aperture.
+   */
   artFit: { x: number; y: number };
   texture: THREE.Texture | null;
 };
@@ -106,6 +112,12 @@ function setArtLighting(material: THREE.MeshStandardMaterial, lit: number) {
  * Blank canvases keep their own material: they are paper, and the room's
  * ambient wash is what makes them read white, so they have no unlit state to
  * interpolate toward.
+ *
+ * Generated hangs use `cover`: the art plane fills the hang aperture and
+ * mismatched aspects crop through texture UVs — the same idea as CSS
+ * `object-fit: cover`. The white mat ridge between art and frame lip stays
+ * on both cover and contain. Met inspiration tiles in the composer are
+ * separate DOM and untouched here.
  */
 function setFrameTexture(entry: FrameEntry, texture: THREE.Texture | null) {
   entry.texture = texture;
@@ -115,15 +127,27 @@ function setFrameTexture(entry: FrameEntry, texture: THREE.Texture | null) {
   entry.artMaterial.emissiveMap = texture;
   entry.artMaterial.needsUpdate = true;
 
+  const aspect = textureAspect(texture);
+  // Hung images fill the aperture via cover UVs; blank canvases letterbox.
+  const fit = texture ? "cover" : "contain";
   const geometry = frameGeometryForArtwork(
     entry.maxArtSize.width,
     entry.maxArtSize.height,
-    textureAspect(texture),
+    aspect,
+    fit,
   );
   entry.artFit = {
     x: geometry.art.width / entry.maxArtSize.width,
     y: geometry.art.height / entry.maxArtSize.height,
   };
+
+  if (texture) {
+    const apertureAspect =
+      entry.maxArtSize.width / entry.maxArtSize.height;
+    const uv = coverUvTransform(apertureAspect, aspect);
+    texture.offset.set(uv.offsetX, uv.offsetY);
+    texture.repeat.set(uv.repeatX, uv.repeatY);
+  }
 
   const previousFrameGeometry = entry.frame.geometry;
   const nextFrameGeometry = new THREE.BoxGeometry(
@@ -148,9 +172,8 @@ function setFrameTexture(entry: FrameEntry, texture: THREE.Texture | null) {
   previousMatteGeometry.dispose();
 
   entry.mesh.material = texture ? entry.artMaterial : entry.blankMaterial;
-  // A blank canvas and the shimmer both fill the frame; only artwork is fitted.
-  if (texture) entry.mesh.scale.set(entry.artFit.x, entry.artFit.y, 1);
-  else entry.mesh.scale.set(1, 1, 1);
+  // Cover fills keep scale at 1; blank canvases also fill the aperture.
+  entry.mesh.scale.set(entry.artFit.x, entry.artFit.y, 1);
 }
 
 /**
@@ -885,8 +908,8 @@ export default function GalleryScene({
             : entry.blankMaterial;
         if (entry.mesh.material !== surface) {
           entry.mesh.material = surface;
-          // The shimmer and a blank canvas are the canvas itself, so they fill
-          // the frame; a hung image keeps whatever fit its shape needs.
+          // Shimmer and blank paper fill the aperture; hung images do too
+          // (cover), so artFit is 1 unless a future contain hang lands here.
           const fit = surface === entry.artMaterial ? entry.artFit : null;
           entry.mesh.scale.set(fit?.x ?? 1, fit?.y ?? 1, 1);
         }
