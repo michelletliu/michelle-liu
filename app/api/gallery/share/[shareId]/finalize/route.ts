@@ -10,6 +10,10 @@ import {
   hangUrlBelongsToShare,
   putShareMeta,
 } from "@/lib/gallery/shareBlob";
+import {
+  editTokenFromRequest,
+  verifyShareEditToken,
+} from "@/lib/gallery/shareEditAuth";
 
 export const runtime = "nodejs";
 
@@ -74,6 +78,17 @@ export async function POST(req: NextRequest, context: RouteContext) {
   const { shareId } = await context.params;
   if (!validShareId(shareId)) {
     return NextResponse.json({ error: "Invalid share id." }, { status: 400 });
+  }
+
+  const authorized = await verifyShareEditToken(
+    shareId,
+    editTokenFromRequest(req),
+  );
+  if (!authorized) {
+    return NextResponse.json(
+      { error: "Not allowed to save this gallery." },
+      { status: 403 },
+    );
   }
 
   if (!allowFinalize(clientIp(req))) {

@@ -2,6 +2,8 @@
 
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
+import { useReducedMotion } from "framer-motion";
+import { Copy } from "lucide-react";
 import { CloseIcon } from "@/components/Close";
 import { ghostIconButtonClass } from "@/components/ghostIconButton";
 import { useScrollLock } from "@/utils/useScrollLock";
@@ -15,6 +17,28 @@ import {
   type LastShareRecord,
 } from "./sharedGallery";
 import { saveGalleryShare, type SaveGalleryHangInput } from "./saveGalleryShare";
+
+/** Same keyframes / class as Film + the design-system Loading dots specimen. */
+const FILM_DOT_STYLE = `@keyframes film-dot-pulse{0%,80%,100%{opacity:.15}40%{opacity:1}}.film-dot{animation:film-dot-pulse 1.4s ease-in-out infinite;opacity:.15}`;
+
+function FilmLoadingDots({ reduceMotion }: { reduceMotion: boolean }) {
+  if (reduceMotion) {
+    return <span aria-hidden>…</span>;
+  }
+  return (
+    <span aria-hidden>
+      <span className="film-dot" style={{ animationDelay: "0s" }}>
+        .
+      </span>
+      <span className="film-dot" style={{ animationDelay: "0.2s" }}>
+        .
+      </span>
+      <span className="film-dot" style={{ animationDelay: "0.4s" }}>
+        .
+      </span>
+    </span>
+  );
+}
 
 type SaveMode = "create" | "update";
 
@@ -34,6 +58,7 @@ export default function GallerySaveDialog({
   const closeRef = useRef<HTMLButtonElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = !!useReducedMotion();
 
   const [visible, setVisible] = useState(false);
   const [name, setName] = useState("");
@@ -88,7 +113,7 @@ export default function GallerySaveDialog({
       setError("Generate at least one artwork to save.");
       return;
     }
-    if (mode === "update" && !lastShare?.shareId) {
+    if (mode === "update" && (!lastShare?.shareId || !lastShare?.editToken)) {
       setError("No previous link in this session. Create a new link.");
       setMode("create");
       return;
@@ -101,10 +126,16 @@ export default function GallerySaveDialog({
         name: cleaned,
         mode,
         existingShareId: mode === "update" ? lastShare?.shareId : undefined,
+        existingEditToken: mode === "update" ? lastShare?.editToken : undefined,
         hangs,
       });
-      writeLastShare({ shareId: result.shareId, name: result.name });
-      setLastShare({ shareId: result.shareId, name: result.name });
+      const record = {
+        shareId: result.shareId,
+        name: result.name,
+        editToken: result.editToken,
+      };
+      writeLastShare(record);
+      setLastShare(record);
       setResultUrl(result.url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed.");
@@ -158,25 +189,48 @@ export default function GallerySaveDialog({
             aria-label="Close save dialog"
             className={ghostIconButtonClass(
               "sm",
-              `-mr-2 -mt-1 text-zinc-400 ${GALLERY_FOCUS_RING}`,
+              `-mr-1 !size-auto p-1 text-zinc-400 ${GALLERY_FOCUS_RING}`,
             )}
           >
             <CloseIcon size="16px" />
           </button>
         </div>
 
+        <style>{FILM_DOT_STYLE}</style>
+
         {resultUrl ? (
-          <div className="mt-4 flex flex-col gap-3">
+          <div className="mt-4 flex flex-col gap-5">
             <p className="text-base leading-relaxed text-zinc-500">
               Send this link to a friend. They can walk the room and download
-              artworks, but not edit.
+              artworks.
             </p>
-            <div className="rounded-2xl border border-zinc-100 bg-zinc-50 px-3 py-2.5">
-              <p className="break-all text-sm leading-relaxed text-zinc-700">
-                {resultUrl}
-              </p>
+            <div className="relative">
+              <input
+                type="text"
+                readOnly
+                value={resultUrl}
+                aria-label="Share link"
+                onFocus={(e) => e.currentTarget.select()}
+                className={`w-full rounded-2xl border border-zinc-100 bg-zinc-50 py-2.5 pl-3 pr-10 text-sm leading-relaxed text-zinc-700 outline-none ${GALLERY_FOCUS_RING}`}
+              />
+              <button
+                type="button"
+                onClick={() => void copyLink()}
+                aria-label="Copy link"
+                className={`absolute right-1.5 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
+              >
+                <Copy size={14} strokeWidth={1.5} aria-hidden />
+              </button>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <a
+                href={resultUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={`rounded-full border border-zinc-200 px-4 py-2.5 text-base font-medium text-zinc-700 transition-colors hover:bg-zinc-50 ${GALLERY_FOCUS_RING}`}
+              >
+                Preview
+              </a>
               <button
                 type="button"
                 onClick={() => void copyLink()}
@@ -184,14 +238,6 @@ export default function GallerySaveDialog({
               >
                 {copied ? "Copied" : "Copy link"}
               </button>
-              <a
-                href={resultUrl}
-                target="_blank"
-                rel="noreferrer"
-                className={`rounded-full border border-zinc-200 px-4 py-2.5 text-base font-medium text-zinc-700 transition-colors hover:bg-zinc-50 ${GALLERY_FOCUS_RING}`}
-              >
-                Open shared view
-              </a>
             </div>
             {error && (
               <p className="text-base text-red-600" role="alert">
@@ -202,9 +248,6 @@ export default function GallerySaveDialog({
         ) : (
           <form className="mt-4 flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor={nameId} className="text-sm text-zinc-500">
-                Gallery name
-              </label>
               <input
                 ref={nameRef}
                 id={nameId}
@@ -213,16 +256,17 @@ export default function GallerySaveDialog({
                 maxLength={MAX_GALLERY_NAME_LENGTH}
                 disabled={saving}
                 placeholder="Name this gallery"
+                aria-label="Gallery name"
                 onChange={(e) => setName(e.target.value)}
                 className={`rounded-2xl border border-zinc-200 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none placeholder:text-zinc-300 focus:border-zinc-400 ${GALLERY_FOCUS_RING}`}
               />
             </div>
 
             {lastShare && (
-              <fieldset className="flex flex-col gap-2">
-                <legend className="text-sm text-zinc-500">
-                  You already saved in this session
-                </legend>
+              <fieldset
+                className="flex flex-col gap-4"
+                aria-label="Update existing gallery or create a new link"
+              >
                 <label className="flex cursor-pointer items-start gap-2.5 text-base text-zinc-700">
                   <input
                     type="radio"
@@ -235,7 +279,7 @@ export default function GallerySaveDialog({
                   <span>
                     Update existing gallery
                     <span className="mt-0.5 block text-sm text-zinc-500">
-                      Same link — refreshes “{lastShare.name}”
+                      Refreshes same link
                     </span>
                   </span>
                 </label>
@@ -278,11 +322,16 @@ export default function GallerySaveDialog({
                 disabled={saving || !name.trim()}
                 className={`rounded-full bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
               >
-                {saving
-                  ? "Saving…"
-                  : mode === "update"
-                    ? "Update link"
-                    : "Create link"}
+                {saving ? (
+                  <span aria-label="Saving">
+                    Saving
+                    <FilmLoadingDots reduceMotion={reduceMotion} />
+                  </span>
+                ) : mode === "update" ? (
+                  "Update link"
+                ) : (
+                  "Create link"
+                )}
               </button>
             </div>
           </form>

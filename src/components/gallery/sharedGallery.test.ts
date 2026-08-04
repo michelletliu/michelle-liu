@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  createEditToken,
   createShareId,
+  EDIT_TOKEN_LENGTH,
   isGalleryPaintingId,
   MAX_GALLERY_NAME_LENGTH,
   sanitizeGalleryName,
+  SHARE_ID_LENGTH,
 } from "./sharedGallery.ts";
 
 test("sanitizeGalleryName trims and strips control characters", () => {
@@ -40,4 +43,15 @@ test("createShareId returns opaque URL-safe id of expected length", () => {
   });
   assert.equal(id.length, 12);
   assert.match(id, /^[A-Za-z0-9_-]+$/);
+});
+
+test("createEditToken is longer than share id and URL-safe", () => {
+  const token = createEditToken((n) => {
+    const bytes = new Uint8Array(n);
+    for (let i = 0; i < n; i++) bytes[i] = i * 3;
+    return bytes;
+  });
+  assert.equal(token.length, EDIT_TOKEN_LENGTH);
+  assert.ok(token.length > SHARE_ID_LENGTH);
+  assert.match(token, /^[A-Za-z0-9_-]+$/);
 });

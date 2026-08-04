@@ -1,6 +1,9 @@
 export const MAX_GALLERY_NAME_LENGTH = 80;
 export const MAX_HANG_BYTES = 8 * 1024 * 1024;
 export const SHARE_ID_LENGTH = 12;
+/** High-entropy secret for write ops; never embedded in the public share URL. */
+export const EDIT_TOKEN_LENGTH = 32;
+export const EDIT_TOKEN_HEADER = "x-gallery-edit-token";
 
 export const LAST_SHARE_STORAGE_KEY = "gallery:lastShare";
 
@@ -22,6 +25,8 @@ export type SharedGalleryMeta = {
 export type LastShareRecord = {
   shareId: string;
   name: string;
+  /** Creator-only write capability; required to update an existing share. */
+  editToken: string;
 };
 
 /** Fixed hang ids: `{wall}-{1|2|3}` for the four room walls. */
@@ -54,11 +59,17 @@ export function readLastShare(): LastShareRecord | null {
     if (
       typeof parsed.shareId !== "string" ||
       !parsed.shareId ||
-      typeof parsed.name !== "string"
+      typeof parsed.name !== "string" ||
+      typeof parsed.editToken !== "string" ||
+      !parsed.editToken
     ) {
       return null;
     }
-    return { shareId: parsed.shareId, name: parsed.name };
+    return {
+      shareId: parsed.shareId,
+      name: parsed.name,
+      editToken: parsed.editToken,
+    };
   } catch {
     return null;
   }
@@ -74,14 +85,30 @@ export function clearLastShare(): void {
   sessionStorage.removeItem(LAST_SHARE_STORAGE_KEY);
 }
 
-/** Opaque URL-safe share id (~12 chars). */
-export function createShareId(randomBytes: (n: number) => Uint8Array): string {
-  const bytes = randomBytes(SHARE_ID_LENGTH);
+const URL_SAFE_ALPHABET =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+function opaqueUrlSafeId(
+  length: number,
+  randomBytes: (n: number) => Uint8Array,
+): string {
+  const bytes = randomBytes(length);
   let out = "";
-  const alphabet =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
   for (let i = 0; i < bytes.length; i++) {
-    out += alphabet[bytes[i]! % 64]!;
+    out += URL_SAFE_ALPHABET[bytes[i]! % 64]!;
   }
   return out;
+}
+
+/** Opaque URL-safe share id (~12 chars). */
+export function createShareId(randomBytes: (n: number) => Uint8Array): string {
+  return opaqueUrlSafeId(SHARE_ID_LENGTH, randomBytes);
+}
+
+/**
+ * Opaque write capability for a share. Kept in sessionStorage only —
+ * never put in the public viewer URL or public meta.json.
+ */
+export function createEditToken(randomBytes: (n: number) => Uint8Array): string {
+  return opaqueUrlSafeId(EDIT_TOKEN_LENGTH, randomBytes);
 }

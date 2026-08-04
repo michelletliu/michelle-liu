@@ -1,4 +1,7 @@
-import type { SharedGalleryHang } from "./sharedGallery";
+import {
+  EDIT_TOKEN_HEADER,
+  type SharedGalleryHang,
+} from "./sharedGallery";
 
 export type SaveGalleryHangInput = {
   paintingId: string;
@@ -11,11 +14,13 @@ export type SaveGalleryShareInput = {
   name: string;
   mode: "create" | "update";
   existingShareId?: string;
+  existingEditToken?: string;
   hangs: SaveGalleryHangInput[];
 };
 
 export type SaveGalleryShareResult = {
   shareId: string;
+  editToken: string;
   url: string;
   name: string;
 };
@@ -56,20 +61,27 @@ export async function saveGalleryShare(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(
       input.mode === "update"
-        ? { mode: "update", shareId: input.existingShareId }
+        ? {
+            mode: "update",
+            shareId: input.existingShareId,
+            editToken: input.existingEditToken,
+          }
         : { mode: "create" },
     ),
   });
   const startData = (await startRes.json()) as {
     shareId?: string;
+    editToken?: string;
     error?: string;
     previous?: { createdAt?: string };
   };
-  if (!startRes.ok || !startData.shareId) {
+  if (!startRes.ok || !startData.shareId || !startData.editToken) {
     throw new Error(startData.error || "Could not start save.");
   }
 
   const shareId = startData.shareId;
+  const editToken = startData.editToken;
+  const editHeaders = { [EDIT_TOKEN_HEADER]: editToken };
   const uploaded: SharedGalleryHang[] = [];
 
   for (const hang of input.hangs) {
@@ -83,6 +95,7 @@ export async function saveGalleryShare(
 
     const hangRes = await fetch(`/api/gallery/share/${shareId}/hang`, {
       method: "POST",
+      headers: editHeaders,
       body: form,
     });
     const hangData = (await hangRes.json()) as {
@@ -107,7 +120,10 @@ export async function saveGalleryShare(
 
   const finalizeRes = await fetch(`/api/gallery/share/${shareId}/finalize`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...editHeaders,
+    },
     body: JSON.stringify({
       name: input.name,
       hangs: uploaded,
@@ -126,6 +142,7 @@ export async function saveGalleryShare(
 
   return {
     shareId: finalizeData.shareId,
+    editToken,
     url: finalizeData.url,
     name: finalizeData.name || input.name,
   };
