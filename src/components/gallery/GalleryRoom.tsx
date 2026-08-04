@@ -9,8 +9,10 @@ type GalleryRoomProps = {
   zoom?: number;
   focusedId: string;
   paintings?: GalleryPainting[];
-  generatingId?: string | null;
-  shimmerHues?: ShimmerHues | null;
+  /** Painting ids currently mid-generate — each keeps its own wall shimmer. */
+  generatingIds?: ReadonlySet<string>;
+  /** Shimmer palette per in-flight painting id. */
+  shimmerHuesById?: Record<string, ShimmerHues | null>;
   onSelectPainting: (id: string) => void;
   onOpenComposer?: () => void;
 };

@@ -87,7 +87,7 @@ export async function saveGalleryShare(
             shareId: input.existingShareId,
             editToken: input.existingEditToken,
           }
-        : { mode: "create" },
+        : { mode: "create", name: input.name },
     ),
   });
   const startData = (await startRes.json()) as {

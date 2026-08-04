@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { createPortal } from "react-dom";
 import { useReducedMotion } from "framer-motion";
 import { Copy } from "lucide-react";
@@ -37,6 +44,67 @@ function FilmLoadingDots({ reduceMotion }: { reduceMotion: boolean }) {
         .
       </span>
     </span>
+  );
+}
+
+/** Right-edge fade when a long share URL overflows toward the copy control. */
+function ShareUrlField({
+  url,
+  onCopy,
+}: {
+  url: string;
+  onCopy: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [showRightFade, setShowRightFade] = useState(false);
+
+  const updateFade = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    const overflow = el.scrollWidth > el.clientWidth + 1;
+    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+    setShowRightFade(overflow && !atEnd);
+  };
+
+  useLayoutEffect(() => {
+    updateFade();
+  }, [url]);
+
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(updateFade);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [url]);
+
+  return (
+    <div className="relative">
+      <input
+        ref={inputRef}
+        type="text"
+        readOnly
+        value={url}
+        aria-label="Share link"
+        onFocus={(e) => e.currentTarget.select()}
+        onScroll={updateFade}
+        className={`w-full overflow-x-auto rounded-2xl border border-zinc-100 bg-zinc-50 py-2.5 pl-3 pr-10 text-sm leading-relaxed text-zinc-700 outline-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${GALLERY_FOCUS_RING}`}
+      />
+      <div
+        aria-hidden
+        className={`pointer-events-none absolute inset-y-0 right-8 z-[1] w-10 bg-gradient-to-l from-zinc-50 to-transparent transition-opacity duration-150 ease-out motion-reduce:transition-none ${
+          showRightFade ? "opacity-100" : "opacity-0"
+        }`}
+      />
+      <button
+        type="button"
+        onClick={onCopy}
+        aria-label="Copy link"
+        className={`absolute right-1.5 top-1/2 z-[2] grid h-6 w-6 -translate-y-1/2 place-items-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
+      >
+        <Copy size={14} strokeWidth={1.5} aria-hidden />
+      </button>
+    </div>
   );
 }
 
@@ -204,24 +272,7 @@ export default function GallerySaveDialog({
               Send this link to a friend. They can walk the room and download
               artworks.
             </p>
-            <div className="relative">
-              <input
-                type="text"
-                readOnly
-                value={resultUrl}
-                aria-label="Share link"
-                onFocus={(e) => e.currentTarget.select()}
-                className={`w-full rounded-2xl border border-zinc-100 bg-zinc-50 py-2.5 pl-3 pr-10 text-sm leading-relaxed text-zinc-700 outline-none ${GALLERY_FOCUS_RING}`}
-              />
-              <button
-                type="button"
-                onClick={() => void copyLink()}
-                aria-label="Copy link"
-                className={`absolute right-1.5 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
-              >
-                <Copy size={14} strokeWidth={1.5} aria-hidden />
-              </button>
-            </div>
+            <ShareUrlField url={resultUrl} onCopy={() => void copyLink()} />
             <div className="flex flex-wrap items-center justify-end gap-2">
               <a
                 href={resultUrl}
