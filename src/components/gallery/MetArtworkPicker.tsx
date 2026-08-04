@@ -467,7 +467,7 @@ export default function MetArtworkPicker({
               aria-label="Remove inspiration"
               className={`shrink-0 text-zinc-400 transition-colors hover:text-zinc-600 disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
             >
-              <CloseIcon size={iconSize("inline")} />
+              <CloseIcon size="14px" />
             </button>
           )}
           <button
@@ -478,7 +478,7 @@ export default function MetArtworkPicker({
             aria-label="Artwork details"
             className={`shrink-0 rounded-full text-zinc-400 transition-colors hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
           >
-            <Info size={iconSize("inline")} />
+            <Info size="15px" />
           </button>
         </div>
       )}
@@ -902,7 +902,7 @@ function ArtworkThumbnail({
           aria-hidden
           className="absolute right-1.5 top-1.5 grid size-4 place-items-center rounded-full bg-zinc-900 text-white"
         >
-          <CloseIcon size={iconSize("meta")} strokeWidth={3} />
+          <CloseIcon size={iconSize("xs")} strokeWidth={3} />
         </span>
       )}
     </motion.button>
