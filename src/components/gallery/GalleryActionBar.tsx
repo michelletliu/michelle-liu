@@ -784,7 +784,7 @@ function SelectedInspirationCard({
         className={`absolute right-3 top-3 grid size-7 place-items-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 active:bg-zinc-200/70 ${GALLERY_FOCUS_RING}`}
       >
         {canMinimize ? (
-          <ChevronDownIcon size={15} />
+          <ChevronDownIcon size="15px" />
         ) : (
           <CloseIcon size="14px" />
         )}
