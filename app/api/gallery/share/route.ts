@@ -106,13 +106,22 @@ export async function POST(req: NextRequest) {
   const editToken = createEditToken((n) => randomBytes(n));
   const tokenHash = hashEditToken(editToken);
   let lastReserveError: unknown = null;
+  // Avoid re-reading the same blob keys across allocation retries.
+  const takenCache = new Map<string, boolean>();
+  const isTakenCached = async (id: string): Promise<boolean> => {
+    const cached = takenCache.get(id);
+    if (cached !== undefined) return cached;
+    const taken = await shareIdTaken(id);
+    takenCache.set(id, taken);
+    return taken;
+  };
 
   // Allocate a free slug, then reserve it via edit secret. A rare race with
   // another create can lose the put — retry the next candidate a few times.
-  for (let attempt = 0; attempt < 12; attempt++) {
+  for (let attempt = 0; attempt < 8; attempt++) {
     const candidate = await allocateShareSlug(
       name,
-      shareIdTaken,
+      isTakenCached,
       (n) => randomBytes(n),
     );
     try {
@@ -121,6 +130,7 @@ export async function POST(req: NextRequest) {
       break;
     } catch (err) {
       lastReserveError = err;
+      takenCache.set(candidate, true);
       const message = err instanceof Error ? err.message : "";
       // Config / auth failures will not recover on retry.
       if (
