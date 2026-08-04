@@ -32,16 +32,47 @@ export function editTokensMatch(token: string, storedHash: string): boolean {
 
 /**
  * Short-lived OK cache so a save that uploads many hangs does not re-fetch
- * `edit.json` from Blob on every hang POST.
- *
- * Also seeded immediately after `putShareEditSecret` / successful HMAC verify.
+ * `edit.json` from Blob on every hang POST. Seeded only after successful verify
+ * (not on unauthenticated share creation).
  */
 const VERIFY_CACHE_TTL_MS = 30_000;
+const VERIFY_CACHE_MAX_ENTRIES = 2_048;
 const verifyOkCache = new Map<string, number>();
 
-function rememberVerified(shareId: string, tokenHash: string): void {
-  verifyOkCache.set(`${shareId}:${tokenHash}`, Date.now() + VERIFY_CACHE_TTL_MS);
+function pruneVerifyOkCache(now: number): void {
+  for (const [key, expiresAt] of verifyOkCache) {
+    if (expiresAt <= now) verifyOkCache.delete(key);
+  }
+  while (verifyOkCache.size > VERIFY_CACHE_MAX_ENTRIES) {
+    const oldestKey = verifyOkCache.keys().next().value;
+    if (oldestKey === undefined) break;
+    verifyOkCache.delete(oldestKey);
+  }
 }
+
+function rememberVerified(
+  shareId: string,
+  tokenHash: string,
+  now = Date.now(),
+): void {
+  const key = `${shareId}:${tokenHash}`;
+  // Re-insert so refreshed entries are newest under the insertion-order cap.
+  if (verifyOkCache.has(key)) verifyOkCache.delete(key);
+  verifyOkCache.set(key, now + VERIFY_CACHE_TTL_MS);
+  pruneVerifyOkCache(now);
+}
+
+/** @internal Test-only accessors for verify-ok cache bounds. */
+export const verifyOkCacheTestApi = {
+  clear: () => {
+    verifyOkCache.clear();
+  },
+  size: () => verifyOkCache.size,
+  remember: (shareId: string, tokenHash: string, now?: number) =>
+    rememberVerified(shareId, tokenHash, now),
+  maxEntries: () => VERIFY_CACHE_MAX_ENTRIES,
+  ttlMs: () => VERIFY_CACHE_TTL_MS,
+};
 
 /** Backoff when Blob GET of a fresh public object returns transient 403/5xx. */
 const EDIT_SECRET_RETRY_DELAYS_MS = [0, 40, 120, 280] as const;
@@ -145,8 +176,6 @@ export async function putShareEditSecret(
     addRandomSuffix: false,
     allowOverwrite: overwrite,
   });
-  // Same-isolate create → hang can skip Blob GET entirely.
-  rememberVerified(shareId, normalizedHash);
 }
 
 /**
@@ -232,9 +261,11 @@ export async function verifyShareEditToken(
   const trimmed = token.trim();
   const tokenHash = hashEditToken(trimmed);
   const cacheKey = `${shareId}:${tokenHash}`;
+  const now = Date.now();
   const cachedUntil = verifyOkCache.get(cacheKey);
-  if (cachedUntil !== undefined && cachedUntil > Date.now()) {
-    return true;
+  if (cachedUntil !== undefined) {
+    if (cachedUntil > now) return true;
+    verifyOkCache.delete(cacheKey);
   }
 
   // New tokens: local crypto only — avoids parallel GET storms on edit.json.

@@ -511,7 +511,7 @@ export default function GallerySaveDialog({
             </p>
           )}
 
-          <div className="flex items-center justify-end gap-2">
+          <div className="flex items-center justify-end gap-[2px]">
             <button
               type="button"
               onClick={close}

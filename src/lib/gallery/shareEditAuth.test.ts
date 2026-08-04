@@ -7,6 +7,7 @@ import {
   hashEditToken,
   mintShareEditToken,
   verifyShareEditTokenHmac,
+  verifyOkCacheTestApi,
 } from "./shareEditAuth.ts";
 import {
   createEditToken,
@@ -74,4 +75,33 @@ test("mintShareEditToken is bound to shareId via HMAC", () => {
     hashEditToken(token),
     createHash("sha256").update("x").digest("hex"),
   );
+});
+
+test("verifyOkCache evicts expired entries on write", () => {
+  verifyOkCacheTestApi.clear();
+  const t0 = 1_000_000;
+  const ttl = verifyOkCacheTestApi.ttlMs();
+
+  verifyOkCacheTestApi.remember("share-a", "a".repeat(64), t0);
+  verifyOkCacheTestApi.remember("share-b", "b".repeat(64), t0);
+  assert.equal(verifyOkCacheTestApi.size(), 2);
+
+  // After TTL, the next write must drop expired keys (not leave them forever).
+  verifyOkCacheTestApi.remember("share-c", "c".repeat(64), t0 + ttl + 1);
+  assert.equal(verifyOkCacheTestApi.size(), 1);
+  verifyOkCacheTestApi.clear();
+});
+
+test("verifyOkCache enforces a hard max entry cap", () => {
+  verifyOkCacheTestApi.clear();
+  const t0 = 2_000_000;
+  const max = verifyOkCacheTestApi.maxEntries();
+
+  for (let i = 0; i < max + 50; i++) {
+    const hash = createHash("sha256").update(String(i)).digest("hex");
+    verifyOkCacheTestApi.remember(`share-${i}`, hash, t0);
+  }
+
+  assert.equal(verifyOkCacheTestApi.size(), max);
+  verifyOkCacheTestApi.clear();
 });
