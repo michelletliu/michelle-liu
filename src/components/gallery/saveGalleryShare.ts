@@ -10,13 +10,19 @@ export type SaveGalleryHangInput = {
   inspirationTitle?: string;
 };
 
-export type SaveGalleryShareInput = {
-  name: string;
-  mode: "create" | "update";
-  existingShareId?: string;
-  existingEditToken?: string;
-  hangs: SaveGalleryHangInput[];
-};
+export type SaveGalleryShareInput =
+  | {
+      mode: "create";
+      name: string;
+      hangs: SaveGalleryHangInput[];
+    }
+  | {
+      mode: "update";
+      name: string;
+      hangs: SaveGalleryHangInput[];
+      existingShareId: string;
+      existingEditToken: string;
+    };
 
 export type SaveGalleryShareResult = {
   shareId: string;
@@ -24,6 +30,26 @@ export type SaveGalleryShareResult = {
   url: string;
   name: string;
 };
+
+async function readShareApiJson<T extends object>(
+  res: Response,
+  fallbackError: string,
+): Promise<T> {
+  let data: T & { error?: string };
+  try {
+    data = (await res.json()) as T & { error?: string };
+  } catch {
+    throw new Error(fallbackError);
+  }
+  if (!res.ok) {
+    throw new Error(
+      typeof data.error === "string" && data.error
+        ? data.error
+        : fallbackError,
+    );
+  }
+  return data;
+}
 
 /**
  * Hang uploads still require PNG (Blob path + magic check). Live generates
@@ -68,7 +94,8 @@ async function imageUrlToPngFile(
 
 /**
  * Start → sequential hang uploads → finalize.
- * Does not POST a whole room of base64 in one request.
+ * Uploads stay sequential so one failure stops before finalize, and hang
+ * routes stay easy to rate-limit. Does not POST a whole room of base64.
  */
 export async function saveGalleryShare(
   input: SaveGalleryShareInput,
@@ -77,27 +104,32 @@ export async function saveGalleryShare(
     throw new Error("Generate at least one artwork to save.");
   }
 
+  const startHeaders: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (input.mode === "update") {
+    startHeaders[EDIT_TOKEN_HEADER] = input.existingEditToken;
+  }
+
   const startRes = await fetch("/api/gallery/share", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: startHeaders,
     body: JSON.stringify(
       input.mode === "update"
         ? {
             mode: "update",
             shareId: input.existingShareId,
-            editToken: input.existingEditToken,
           }
         : { mode: "create", name: input.name },
     ),
   });
-  const startData = (await startRes.json()) as {
+  const startData = await readShareApiJson<{
     shareId?: string;
     editToken?: string;
-    error?: string;
     previous?: { createdAt?: string };
-  };
-  if (!startRes.ok || !startData.shareId || !startData.editToken) {
-    throw new Error(startData.error || "Could not start save.");
+  }>(startRes, "Could not start save.");
+  if (!startData.shareId || !startData.editToken) {
+    throw new Error("Could not start save.");
   }
 
   const shareId = startData.shareId;
@@ -119,14 +151,13 @@ export async function saveGalleryShare(
       headers: editHeaders,
       body: form,
     });
-    const hangData = (await hangRes.json()) as {
+    const hangData = await readShareApiJson<{
       paintingId?: string;
       imageUrl?: string;
       inspirationTitle?: string;
-      error?: string;
-    };
-    if (!hangRes.ok || !hangData.imageUrl || !hangData.paintingId) {
-      throw new Error(hangData.error || `Failed to upload ${hang.paintingId}.`);
+    }>(hangRes, `Failed to upload ${hang.paintingId}.`);
+    if (!hangData.imageUrl || !hangData.paintingId) {
+      throw new Error(`Failed to upload ${hang.paintingId}.`);
     }
     uploaded.push({
       paintingId: hangData.paintingId,
@@ -151,14 +182,13 @@ export async function saveGalleryShare(
       createdAt: startData.previous?.createdAt,
     }),
   });
-  const finalizeData = (await finalizeRes.json()) as {
+  const finalizeData = await readShareApiJson<{
     shareId?: string;
     url?: string;
     name?: string;
-    error?: string;
-  };
-  if (!finalizeRes.ok || !finalizeData.shareId || !finalizeData.url) {
-    throw new Error(finalizeData.error || "Failed to finish saving.");
+  }>(finalizeRes, "Failed to finish saving.");
+  if (!finalizeData.shareId || !finalizeData.url) {
+    throw new Error("Failed to finish saving.");
   }
 
   return {

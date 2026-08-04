@@ -9,6 +9,7 @@ import {
 } from "@/components/gallery/sharedGallery";
 import { getShareMeta } from "@/lib/gallery/shareBlob";
 import {
+  editTokenFromRequest,
   getShareEditSecret,
   hashEditToken,
   putShareEditSecret,
@@ -20,7 +21,6 @@ export const runtime = "nodejs";
 type StartBody = {
   mode?: "create" | "update";
   shareId?: string;
-  editToken?: string;
   /** Display name — used to allocate a readable share slug on create. */
   name?: string;
 };
@@ -59,8 +59,7 @@ export async function POST(req: NextRequest) {
     if (!isValidShareId(shareId)) {
       return NextResponse.json({ error: "Invalid share id." }, { status: 400 });
     }
-    const editToken =
-      typeof body.editToken === "string" ? body.editToken.trim() : "";
+    const editToken = editTokenFromRequest(req);
     if (!editToken) {
       return NextResponse.json(
         { error: "Edit token required to update this gallery." },

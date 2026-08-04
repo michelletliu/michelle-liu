@@ -7,6 +7,7 @@ import {
 } from "./shareEditAuth.ts";
 import {
   createEditToken,
+  EDIT_TOKEN_HEADER,
   EDIT_TOKEN_LENGTH,
 } from "../../components/gallery/sharedGallery.ts";
 
@@ -39,7 +40,9 @@ test("editTokensMatch accepts the correct token only", () => {
 test("editTokenFromRequest reads the write-capability header", () => {
   assert.equal(
     editTokenFromRequest({
-      headers: { get: (name) => (name === "x-gallery-edit-token" ? " secret " : null) },
+      headers: {
+        get: (name) => (name === EDIT_TOKEN_HEADER ? " secret " : null),
+      },
     }),
     "secret",
   );

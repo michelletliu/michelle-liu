@@ -18,7 +18,7 @@ type RouteContext = { params: Promise<{ shareId: string }> };
 const PNG_MAGIC = [0x89, 0x50, 0x4e, 0x47];
 
 function isPng(bytes: Uint8Array): boolean {
-  if (bytes.length < 4) return false;
+  if (bytes.length < PNG_MAGIC.length) return false;
   return PNG_MAGIC.every((b, i) => bytes[i] === b);
 }
 

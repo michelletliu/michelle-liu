@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { get, put } from "@vercel/blob";
+import { EDIT_TOKEN_HEADER } from "../../components/gallery/sharedGallery.ts";
 
 export type ShareEditSecret = {
   version: 1;
@@ -84,7 +85,7 @@ export async function verifyShareEditToken(
 export function editTokenFromRequest(req: {
   headers: { get(name: string): string | null };
 }): string | null {
-  const header = req.headers.get("x-gallery-edit-token");
+  const header = req.headers.get(EDIT_TOKEN_HEADER);
   if (typeof header === "string" && header.trim()) return header.trim();
   return null;
 }
