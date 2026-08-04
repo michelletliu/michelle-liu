@@ -14,7 +14,6 @@ import {
   useReducedMotion,
   type Transition,
 } from "framer-motion";
-import { ChevronDownIcon } from "@/components/Chevron";
 import { CloseIcon } from "@/components/Close";
 import {
   FILM_DOT_STYLE,
@@ -117,7 +116,6 @@ export default function GalleryActionBar({
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [inspiration, setInspiration] = useState<MetArtwork | null>(null);
-  const [inspirationCanMinimize, setInspirationCanMinimize] = useState(false);
   const [expanded, setExpanded] = useState(true);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [addHovering, setAddHovering] = useState(false);
@@ -225,15 +223,13 @@ export default function GalleryActionBar({
         if (moveFocus) pickerToggleRef.current?.focus();
         return;
       }
-      if (inspiration) setInspirationCanMinimize(true);
       collapseBar(moveFocus);
     },
-    [pickerOpen, inspiration, collapseBar],
+    [pickerOpen, collapseBar],
   );
 
   const selectInspiration = (artwork: MetArtwork | null) => {
     setInspiration(artwork);
-    setInspirationCanMinimize(false);
     if (artwork) setPickerOpen(false);
   };
 
@@ -246,11 +242,9 @@ export default function GalleryActionBar({
       if (context) {
         setPrompt(context.prompt);
         setInspiration(context.inspiration);
-        setInspirationCanMinimize(Boolean(context.inspiration));
       } else {
         setPrompt("");
         setInspiration(null);
-        setInspirationCanMinimize(false);
       }
       setPickerOpen(false);
     },
@@ -364,7 +358,6 @@ export default function GalleryActionBar({
     setError(null);
     setSubmitPending(true);
     setPickerOpen(false);
-    if (inspiration) setInspirationCanMinimize(true);
     // Fold to the Generating pill immediately — same collapsed shell as an
     // outside click, so the room stays clear while the canvas shimmers.
     // Don't move focus onto the pill: that paints a focus-visible ring flash
@@ -529,16 +522,8 @@ export default function GalleryActionBar({
           <SelectedInspirationCard
             key="selected-inspiration"
             artwork={inspiration}
-            canMinimize={inspirationCanMinimize}
             onChangeInspiration={() => setPickerOpen(true)}
-            onMinimize={() => {
-              setInspirationCanMinimize(true);
-              collapseBar(false);
-            }}
-            onRemove={() => {
-              setInspiration(null);
-              setInspirationCanMinimize(false);
-            }}
+            onCollapse={() => collapseBar(false)}
             transition={shellTransition}
           />
         )}
@@ -725,17 +710,13 @@ function GeneratingLabel({ reduceMotion }: { reduceMotion: boolean }) {
 
 function SelectedInspirationCard({
   artwork,
-  canMinimize,
   onChangeInspiration,
-  onMinimize,
-  onRemove,
+  onCollapse,
   transition,
 }: {
   artwork: MetArtwork;
-  canMinimize: boolean;
   onChangeInspiration: () => void;
-  onMinimize: () => void;
-  onRemove: () => void;
+  onCollapse: () => void;
   transition: Transition;
 }) {
   const src = openAccessImageUrl(artwork);
@@ -780,7 +761,7 @@ function SelectedInspirationCard({
         <button
           type="button"
           onClick={onChangeInspiration}
-          aria-label="Change inspiration image"
+          aria-label="Change inspiration"
           className={`size-24 shrink-0 cursor-pointer overflow-hidden rounded-[18px] bg-white shadow-md transition-opacity hover:opacity-90 ${GALLERY_FOCUS_RING}`}
         >
           <motion.img
@@ -811,15 +792,11 @@ function SelectedInspirationCard({
       </div>
       <button
         type="button"
-        onClick={canMinimize ? onMinimize : onRemove}
-        aria-label={canMinimize ? "Collapse prompt bar" : "Remove inspiration"}
+        onClick={onCollapse}
+        aria-label="Collapse prompt bar"
         className={`absolute right-3 top-3 grid size-7 place-items-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 active:bg-zinc-200/70 ${GALLERY_FOCUS_RING}`}
       >
-        {canMinimize ? (
-          <ChevronDownIcon size="15px" />
-        ) : (
-          <CloseIcon size="14px" />
-        )}
+        <CloseIcon size="14px" />
       </button>
     </motion.div>
   );
