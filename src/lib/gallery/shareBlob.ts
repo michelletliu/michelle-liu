@@ -1,12 +1,36 @@
 import { get, put } from "@vercel/blob";
 import type { SharedGalleryMeta } from "@/components/gallery/sharedGallery";
 
+/** Public Vercel Blob store host: `{storeId}.public.blob.vercel-storage.com`. */
+const VERCEL_BLOB_PUBLIC_HOST_RE =
+  /^[a-z0-9-]+\.public\.blob\.vercel-storage\.com$/i;
+
 export function metaPath(shareId: string): string {
   return `galleries/${shareId}/meta.json`;
 }
 
 export function hangPath(shareId: string, paintingId: string): string {
   return `galleries/${shareId}/${paintingId}.png`;
+}
+
+/**
+ * True when `imageUrl` is an https public Vercel Blob URL for this share hang.
+ * Rejects attacker-controlled hosts that only mimic the pathname prefix.
+ */
+export function hangUrlBelongsToShare(
+  imageUrl: string,
+  shareId: string,
+  paintingId: string,
+): boolean {
+  try {
+    const url = new URL(imageUrl);
+    if (url.protocol !== "https:") return false;
+    if (url.username || url.password) return false;
+    if (!VERCEL_BLOB_PUBLIC_HOST_RE.test(url.hostname)) return false;
+    return url.pathname === `/${hangPath(shareId, paintingId)}`;
+  } catch {
+    return false;
+  }
 }
 
 export async function putHangPng(

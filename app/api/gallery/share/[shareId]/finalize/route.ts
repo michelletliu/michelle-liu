@@ -5,7 +5,11 @@ import {
   type SharedGalleryHang,
   type SharedGalleryMeta,
 } from "@/components/gallery/sharedGallery";
-import { getShareMeta, putShareMeta } from "@/lib/gallery/shareBlob";
+import {
+  getShareMeta,
+  hangUrlBelongsToShare,
+  putShareMeta,
+} from "@/lib/gallery/shareBlob";
 
 export const runtime = "nodejs";
 
@@ -57,16 +61,6 @@ function absoluteShareUrl(req: NextRequest, shareId: string): string {
     return `https://${process.env.VERCEL_URL}/gallery/s/${shareId}`;
   }
   return `/gallery/s/${shareId}`;
-}
-
-function hangUrlBelongsToShare(imageUrl: string, shareId: string): boolean {
-  try {
-    const url = new URL(imageUrl);
-    // Public blob URLs embed the pathname; require our prefix.
-    return url.pathname.includes(`/galleries/${shareId}/`);
-  } catch {
-    return false;
-  }
 }
 
 export async function POST(req: NextRequest, context: RouteContext) {
@@ -123,7 +117,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
     if (!isGalleryPaintingId(paintingId) || seen.has(paintingId)) {
       return NextResponse.json({ error: "Invalid hang list." }, { status: 400 });
     }
-    if (!imageUrl || !hangUrlBelongsToShare(imageUrl, shareId)) {
+    if (!imageUrl || !hangUrlBelongsToShare(imageUrl, shareId, paintingId)) {
       return NextResponse.json(
         { error: "Hang image URL does not belong to this gallery." },
         { status: 400 },
