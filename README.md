@@ -4,7 +4,7 @@
 
 My personal portfolio and digital archive. Designed in Figma and built with Next.js, TypeScript, React, Sanity, Notion, and a few agentic coding friends.
 
-## What's inside
+## Contents
 
 - 🔐 Portfolio case studies 
 - 🧩 Design system 
