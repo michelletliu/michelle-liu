@@ -670,18 +670,6 @@ export default function GalleryActionBar({
               >
                 <GeneratingLabel reduceMotion={Boolean(reduceMotion)} />
               </button>
-              {canDownload && onDownload && (
-                <Tooltip label="Download image" position="top" offset={10}>
-                  <button
-                    type="button"
-                    onClick={onDownload}
-                    aria-label="Download the generated image on this canvas"
-                    className={`grid size-9 cursor-pointer place-items-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 ${GALLERY_FOCUS_RING}`}
-                  >
-                    <GalleryDownloadIcon className="size-[18px]" />
-                  </button>
-                </Tooltip>
-              )}
             </motion.div>
           ) : (
             <motion.div
