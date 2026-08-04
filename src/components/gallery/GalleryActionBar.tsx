@@ -856,15 +856,22 @@ export default function GalleryActionBar({
                 scale: reduceMotion ? 1 : 0.98,
               }}
               transition={shellTransition}
-              className="absolute bottom-[calc(100%+104px)] left-1/2 z-40 w-[min(90vw,690px)] -translate-x-1/2"
+              // Viewport-centered (flex), not anchored above the composer —
+              // the old bottom-[calc(100%+104px)] sat the modal in the upper half.
+              // pointer-events-none on the full-bleed shell so dimmer clicks still
+              // dismiss; the panel re-enables hits. Avoid top-1/2 -translate-* so
+              // Motion's y/scale transform isn't fighting Tailwind translate.
+              className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center px-4"
             >
-              <MetArtworkPicker
-                search={search}
-                selected={inspiration}
-                onSelect={selectInspiration}
-                disabled={isGenerating}
-                panel
-              />
+              <div className="pointer-events-auto w-[min(90vw,690px)]">
+                <MetArtworkPicker
+                  search={search}
+                  selected={inspiration}
+                  onSelect={selectInspiration}
+                  disabled={isGenerating}
+                  panel
+                />
+              </div>
             </motion.div>
           </>
         )}
