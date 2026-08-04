@@ -101,9 +101,8 @@ export function FilterDropdown({
         }
       }}
       className={clsx(
-        // ring instead of border so the hairline sits outside the box and doesn't nudge text
-        "bg-white rounded-xl shadow-elevated ring-1 ring-zinc-100 z-[9999] animate-in fade-in slide-in-from-top-1 duration-200",
-        usePortal ? "fixed w-max" : "absolute left-0 top-[calc(100%+4px)] min-w-full w-max"
+        "filter-dropdown-panel",
+        usePortal ? "portal" : "inline",
       )}
       style={usePortal ? {
         top: 0,
@@ -111,7 +110,7 @@ export function FilterDropdown({
         willChange: "transform",
       } : undefined}
     >
-      <div className="flex flex-col gap-1 px-1 py-1">
+      <div className="filter-dropdown-options">
         {options.map((option) => {
           const isActive = activeValue === option.value;
           return (
@@ -122,18 +121,14 @@ export function FilterDropdown({
                 setOpen(false);
               }}
               className={clsx(
-                // 4px panel inset + 8px option padding matches the trigger's 12px inset.
-                "flex items-center px-2 py-1 rounded-[10px] supports-[corner-shape:squircle]:rounded-[1.125rem] transition-colors text-left",
-                isActive ? "bg-zinc-100" : "hover:bg-zinc-50"
+                "filter-dropdown-option",
+                isActive && "active",
               )}
             >
-              <span className={clsx(
-                "font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap",
-                isActive ? "text-zinc-600" : "text-zinc-400"
-              )}>
+              <span className="filter-dropdown-option-label">
                 {option.label}
                 {option.count !== undefined && (
-                  <span className={isActive ? "text-zinc-400" : "text-zinc-300"}>
+                  <span className="filter-dropdown-option-count">
                     {" "}{option.count}
                   </span>
                 )}
@@ -146,7 +141,7 @@ export function FilterDropdown({
   );
 
   return (
-    <div className={clsx("relative", className)} ref={containerRef}>
+    <div className={clsx("filter-dropdown", className)} ref={containerRef}>
       <button
         ref={buttonRef}
         onClick={() => {
@@ -156,20 +151,20 @@ export function FilterDropdown({
           }
           setOpen(!open);
         }}
-        className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-zinc-500/10 px-3 py-1.5 transition-colors duration-200 hover:bg-zinc-500/15"
+        className="filter-dropdown-trigger"
       >
-        <span className="font-['Michelle',sans-serif] font-medium text-base tracking-[0.01em] whitespace-nowrap text-zinc-500">
+        <span className="filter-dropdown-trigger-label">
           {activeOption?.label ?? activeValue}
           {activeOption?.count !== undefined && (
-            <span className="text-zinc-400"> {activeOption.count}</span>
+            <span className="filter-dropdown-trigger-count"> {activeOption.count}</span>
           )}
         </span>
         <Chevron
           direction="down"
           size={iconSize("md")}
           className={clsx(
-            "text-zinc-400 transition-transform duration-200",
-            open && "rotate-180"
+            "filter-dropdown-chevron",
+            open && "open",
           )}
         />
       </button>

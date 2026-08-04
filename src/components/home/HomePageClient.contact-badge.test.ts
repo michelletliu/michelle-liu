@@ -7,6 +7,10 @@ const badgeSource = readFileSync(
   new URL("../shared/ContactBadge.tsx", import.meta.url),
   "utf8",
 );
+const cssSource = readFileSync(
+  new URL("../../styles/globals.css", import.meta.url),
+  "utf8",
+);
 const specimenSource = readFileSync(
   new URL(
     "../system/sections/component-section/NavigationSpecimens.tsx",
@@ -34,38 +38,38 @@ test("uses large contact text and deeper intro fade on Work", () => {
     homeSource,
     /<ContactBadge[\s\S]*?size="lg"[\s\S]*?onExpandedChange=\{setIsContactBadgeExpanded\}/,
   );
-  assert.match(badgeSource, /resolvedSize === "lg" \? "text-lg"/);
-  assert.match(
-    badgeSource,
-    /resolvedSize === "lg" &&\s+"gap-1 py-0 pl-1 pr-3 md:ml-0\.5"/,
-  );
+  assert.match(badgeSource, /resolvedSize/);
+  assert.match(badgeSource, /"contact-badge"/);
+  assert.match(cssSource, /\.contact-badge\.lg \.contact-badge-text/);
+  assert.match(cssSource, /\.contact-badge\.lg\.expanded/);
   assert.match(badgeSource, /touch\s+<\/a>!/);
   assert.doesNotMatch(badgeSource, /touch!\s+<\/a>/);
 });
 
 test("fades the pulse ring out instead of snapping it off", () => {
-  const cssSource = readFileSync(new URL("../../styles/globals.css", import.meta.url), "utf8");
-  assert.match(
-    badgeSource,
-    /transition-opacity duration-300 ease-out",\s+isExpanded \? "opacity-0" : "opacity-100"/,
-  );
+  assert.match(badgeSource, /contact-badge-pulse/);
+  assert.match(badgeSource, /isExpanded \? "off" : "on"/);
+  assert.match(cssSource, /\.contact-badge-pulse\s*\{[^}]*transition:\s*opacity 300ms/s);
   assert.doesNotMatch(badgeSource, /green-pulse-ring-off/);
   assert.doesNotMatch(cssSource, /green-pulse-ring-off/);
 });
 
 test("keeps the hover badge open within an 8px cursor buffer", () => {
+  assert.match(badgeSource, /hover-mode/);
   assert.match(
-    badgeSource,
-    /hoverMode &&\s+"[^"]*before:pointer-events-auto[^"]*before:-inset-2[^"]*"/,
+    cssSource,
+    /\.contact-badge\.hover-mode::before\s*\{[^}]*pointer-events:\s*auto[^}]*inset:\s*-0\.5rem/s,
   );
-  assert.doesNotMatch(badgeSource, /before:pointer-events-none/);
+  assert.doesNotMatch(
+    cssSource,
+    /\.contact-badge\.hover-mode::before\s*\{[^}]*pointer-events:\s*none/s,
+  );
 });
 
 test("keeps the contact link clickable above the hover buffer", () => {
-  assert.match(
-    badgeSource,
-    /"relative z-10 overflow-hidden text-nowrap font-\['Michelle:Medium',sans-serif\]/,
-  );
+  assert.match(badgeSource, /contact-badge-text/);
+  assert.match(badgeSource, /contact-badge-link/);
+  assert.match(cssSource, /\.contact-badge-text\s*\{[^}]*z-index:\s*10/s);
 });
 
 test("shows the header badge at its large size in the design system", () => {

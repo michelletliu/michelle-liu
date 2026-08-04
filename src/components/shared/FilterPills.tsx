@@ -132,13 +132,13 @@ export function FilterPills({
   return (
     <div
       ref={containerRef}
-      className={clsx("relative flex items-center gap-1", className)}
+      className={clsx("filter-pills", className)}
     >
       <div
         aria-hidden="true"
         className={clsx(
-          "absolute left-0 top-0 z-0 rounded-full bg-zinc-500/10 motion-reduce:transition-none",
-          indicatorReady && "transition-[transform,width,opacity] duration-300 ease-out",
+          "filter-pill-indicator",
+          indicatorReady && "ready",
         )}
         style={{
           opacity: indicatorStyle.opacity,
@@ -166,17 +166,12 @@ export function FilterPills({
             onMouseLeave={() => onOptionMouseLeave?.(option.value)}
             onFocus={() => onOptionFocus?.(option.value)}
             onBlur={(event) => onOptionBlur?.(option.value, event)}
-            className="group relative z-10 flex shrink-0 cursor-pointer items-center justify-center rounded-full px-3 py-1"
+            className={clsx("filter-pill group", isActive && "active")}
           >
-            <span
-              className={clsx(
-                "font-['Michelle',sans-serif] text-base font-medium tracking-wide whitespace-nowrap transition-colors duration-200 ease-out",
-                isActive ? "text-zinc-500" : "text-zinc-400 group-hover:text-zinc-500",
-              )}
-            >
+            <span className={clsx("filter-pill-label", isActive && "active")}>
               {option.label}
               {option.count !== undefined && (
-                <span className={isActive ? "text-zinc-400" : "text-zinc-300"}>
+                <span className="filter-pill-count">
                   {" "}
                   {option.count}
                 </span>
@@ -187,7 +182,7 @@ export function FilterPills({
       })}
 
       {showOverflowFade && overflowing && (
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-12 bg-gradient-to-r from-transparent to-white" />
+        <div className="filter-pills-fade" />
       )}
     </div>
   );

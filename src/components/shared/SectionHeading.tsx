@@ -1,3 +1,5 @@
+import clsx from "clsx";
+
 type SectionHeadingProps = {
   title: string;
   subtitle?: string;
@@ -7,6 +9,7 @@ type SectionHeadingProps = {
 /**
  * Consistent section heading used throughout About page (Experience, Community,
  * Philosophy, Shelf, Lore) and potentially other pages.
+ * Visuals live in `globals.css` under `.section-heading`.
  */
 export default function SectionHeading({
   title,
@@ -14,15 +17,9 @@ export default function SectionHeading({
   className = "",
 }: SectionHeadingProps) {
   return (
-    <div className={`flex flex-col ${className}`}>
-      <h2 className="font-['Michelle',sans-serif] font-medium text-zinc-600 text-3xl leading-normal shrink-0">
-        {title}
-      </h2>
-      {subtitle && (
-        <p className="font-['Michelle',sans-serif] tracking-wide font-normal text-zinc-400 text-lg">
-          {subtitle}
-        </p>
-      )}
+    <div className={clsx("section-heading", className)}>
+      <h2 className="section-heading-title">{title}</h2>
+      {subtitle && <p className="section-heading-subtitle">{subtitle}</p>}
     </div>
   );
 }

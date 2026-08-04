@@ -1,14 +1,22 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { INLINE_LINK_CLASS } from "./inlineLink.ts";
 
+const globalsCss = readFileSync(
+  new URL("../../styles/globals.css", import.meta.url),
+  "utf8",
+);
+
+test("inline editorial links use the semantic inline-link class", () => {
+  assert.equal(INLINE_LINK_CLASS, "inline-link");
+});
+
 test("inline editorial links inherit color and use the blue interaction accent", () => {
-  assert.match(INLINE_LINK_CLASS, /\btext-inherit\b/);
-  assert.match(INLINE_LINK_CLASS, /\bhover:text-blue-500\b/);
-  assert.match(INLINE_LINK_CLASS, /\bfocus-visible:text-blue-500\b/);
-  assert.match(INLINE_LINK_CLASS, /\btransition-colors\b/);
-  assert.match(INLINE_LINK_CLASS, /\bduration-200\b/);
-  assert.match(INLINE_LINK_CLASS, /\bease-out\b/);
-  assert.doesNotMatch(INLINE_LINK_CLASS, /\bunderline\b/);
-  assert.doesNotMatch(INLINE_LINK_CLASS, /\bunderline-offset-/);
+  assert.match(globalsCss, /\.inline-link\s*\{[^}]*color:\s*inherit/s);
+  assert.match(
+    globalsCss,
+    /\.inline-link:hover,\s*\.inline-link:focus-visible\s*\{[^}]*color:\s*#3b82f6/s,
+  );
+  assert.doesNotMatch(globalsCss, /\.inline-link\s*\{[^}]*text-decoration:\s*underline/s);
 });

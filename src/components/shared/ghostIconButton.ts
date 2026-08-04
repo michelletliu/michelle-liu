@@ -1,18 +1,18 @@
 /**
  * SpecButton ghost · icon — transparent idle, circular wash on hover.
  * Pair with a text-* color for the glyph (e.g. text-zinc-400 / text-zinc-500).
+ * Visuals live in `globals.css` under `.ghost-icon-button`.
  */
 export const ghostIconButtonSize = {
-  sm: "size-8",
-  md: "size-10",
-  lg: "size-12",
+  sm: "sm",
+  md: "md",
+  lg: "lg",
 } as const;
 
 export type GhostIconButtonSize = keyof typeof ghostIconButtonSize;
 
-/** Base classes for a ghost icon button (add size + text color). */
-export const GHOST_ICON_BUTTON =
-  "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full bg-transparent transition-colors duration-200 ease-out hover:bg-zinc-900/5";
+/** Base semantic class for a ghost icon button (add size + text color). */
+export const GHOST_ICON_BUTTON = "ghost-icon-button";
 
 export function ghostIconButtonClass(
   size: GhostIconButtonSize = "md",

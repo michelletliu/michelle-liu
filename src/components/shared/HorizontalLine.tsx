@@ -12,7 +12,7 @@ export function HorizontalLine({ className }: HorizontalLineProps) {
   return (
     <div
       role="separator"
-      className={clsx("h-px w-full shrink-0 bg-zinc-100", className)}
+      className={clsx("horizontal-line shrink-0", className)}
     />
   );
 }
