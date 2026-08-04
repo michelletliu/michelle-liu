@@ -530,6 +530,7 @@ export default function GalleryActionBar({
             key="selected-inspiration"
             artwork={inspiration}
             canMinimize={inspirationCanMinimize}
+            onChangeInspiration={() => setPickerOpen(true)}
             onMinimize={() => {
               setInspirationCanMinimize(true);
               collapseBar(false);
@@ -725,12 +726,14 @@ function GeneratingLabel({ reduceMotion }: { reduceMotion: boolean }) {
 function SelectedInspirationCard({
   artwork,
   canMinimize,
+  onChangeInspiration,
   onMinimize,
   onRemove,
   transition,
 }: {
   artwork: MetArtwork;
   canMinimize: boolean;
+  onChangeInspiration: () => void;
   onMinimize: () => void;
   onRemove: () => void;
   transition: Transition;
@@ -774,7 +777,12 @@ function SelectedInspirationCard({
       }`}
     >
       {src && (
-        <span className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-white shadow-md">
+        <button
+          type="button"
+          onClick={onChangeInspiration}
+          aria-label="Change inspiration image"
+          className={`size-24 shrink-0 cursor-pointer overflow-hidden rounded-[18px] bg-white shadow-md transition-opacity hover:opacity-90 ${GALLERY_FOCUS_RING}`}
+        >
           <motion.img
             layoutId={tileLayoutId(artwork.objectID)}
             src={src}
@@ -785,7 +793,7 @@ function SelectedInspirationCard({
             style={metImageTrimStyle(artwork.objectID)}
             className="size-full object-cover"
           />
-        </span>
+        </button>
       )}
       <div className="flex min-w-0 flex-1 flex-col">
         <p className="text-sm leading-tight text-zinc-400">Inspired by</p>
