@@ -181,12 +181,14 @@ function AxisButton({
       onPointerDown={(e) => e.stopPropagation()}
       onClick={onPress}
       style={AXIS_BOX[axis]}
-      className={`group absolute rounded-lg ${GALLERY_FOCUS_RING}`}
+      // Hit area stays the large arm; focus ring paints on the circular glyph
+      // wash below so keyboard focus matches the mark (not the tall rect).
+      className="group absolute gallery-focus focus-visible:outline-none"
     >
       <span
         aria-hidden
         style={{ ...AXIS_GLYPH_INSET[axis], width: GLYPH_BOX, height: GLYPH_BOX }}
-        className={`absolute grid place-items-center rounded-full text-zinc-400 transition-colors duration-150 group-hover:bg-zinc-900/[0.06] group-hover:text-zinc-600 group-active:bg-zinc-900/[0.12] motion-reduce:transition-none ${AXIS_GLYPH[axis]}`}
+        className={`absolute grid place-items-center rounded-full text-zinc-400 transition-colors duration-150 group-hover:bg-zinc-900/[0.06] group-hover:text-zinc-600 group-active:bg-zinc-900/[0.12] group-focus-visible:ring-2 group-focus-visible:ring-zinc-300 motion-reduce:transition-none ${AXIS_GLYPH[axis]}`}
       >
         {children}
       </span>
