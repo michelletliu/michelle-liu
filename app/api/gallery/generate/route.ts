@@ -21,26 +21,21 @@ const REVE_REMIX_URL = "https://api.reve.com/v1/image/remix/";
 const MAX_REFERENCE_BYTES = 8 * 1024 * 1024;
 
 /**
- * Remix has a documented fast tier (`latest-fast` → `reve-remix-fast@…`).
- * Create does not — `latest-fast` on create silently maps back to the same
- * `reve-create@…` model, so text-only stays on `latest`.
- *
- * Measured (same prompt / aspect, Met web-large reference when remixing):
- *   remix `latest`      ~18s, 30 credits
- *   remix `latest-fast`  ~8s,  5 credits
- * Quality tradeoff: fast tier is slightly softer on fine brushwork; still
- * reads as a painting on the wall and is the right default for interactive use.
+ * Remix and create both use `latest`. Remix also exposes `latest-fast`
+ * (~8s / 5 credits vs ~18s / 30), but the fast tier softens fine brushwork
+ * enough that wall hangs look blurry — quality wins over that latency cut.
+ * Create ignores `latest-fast` anyway (maps back to the same create model).
  */
 const REVE_CREATE_VERSION = "latest";
-const REVE_REMIX_VERSION = "latest-fast";
+const REVE_REMIX_VERSION = "latest";
 
 /**
  * Ask Reve for WebP bytes instead of the default JSON+PNG base64 payload.
- * Generation time is unchanged (~6s create / ~8s remix-fast), but the response
- * drops from ~2–3MB PNG-in-JSON to ~70–160KB WebP — cutting Reve→server and
- * server→client transfer that used to dominate the wait after the image was
- * already ready. Wall/download quality at native Reve resolution is fine;
- * share upload re-encodes to PNG for the existing Blob pipeline.
+ * Generation time is unchanged; the response drops from ~2–3MB PNG-in-JSON to
+ * ~70–160KB WebP — cutting Reve→server and server→client transfer after the
+ * image is already ready. Decode-to-texture quality at native Reve resolution
+ * is fine; softness came from the remix model tier, not WebP. Share upload
+ * re-encodes to PNG for the existing Blob pipeline.
  */
 const REVE_ACCEPT = "image/webp";
 

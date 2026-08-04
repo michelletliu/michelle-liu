@@ -7,6 +7,7 @@ import {
   createShimmerMaterial,
   shimmerProgress,
   shimmerTimeStep,
+  type ShimmerMaterial,
 } from "./generationShimmer";
 import {
   easeHues,
@@ -32,13 +33,13 @@ type GallerySceneProps = {
   zoom?: number;
   focusedId: string;
   paintings?: GalleryPainting[];
-  generatingId?: string | null;
+  /** Painting ids currently mid-generate — each keeps its own wall shimmer. */
+  generatingIds?: ReadonlySet<string>;
   /**
-   * Hues for the generation shimmer, from the artwork that inspired it. Null
-   * for a text-only generation, or before extraction has finished, in which
-   * case the shimmer's own default set is used.
-  */
-  shimmerHues?: ShimmerHues | null;
+   * Hues for each in-flight shimmer, from the artwork that inspired it. Missing
+   * / null entries use the shimmer's own default set.
+   */
+  shimmerHuesById?: Record<string, ShimmerHues | null>;
   onSelectPainting: (id: string) => void;
   onOpenComposer?: () => void;
 };
@@ -54,6 +55,10 @@ type FrameEntry = {
   blankMaterial: THREE.MeshStandardMaterial;
   /** A hung image. Unlit when focused, lit by the room when not — see `setArtLighting`. */
   artMaterial: THREE.MeshStandardMaterial;
+  /** Per-canvas shimmer so concurrent gens don't share one progress/hue clock. */
+  shimmerMaterial: ShimmerMaterial;
+  /** Wall-clock start of this canvas's current generation, or null when idle. */
+  shimmerStartedAt: number | null;
   /** Current 0..1 focus lighting, eased toward the target each frame. */
   artLit: number;
   /** Largest artwork aperture for this hang, before aspect fitting. */
@@ -65,6 +70,8 @@ type FrameEntry = {
   artFit: { x: number; y: number };
   texture: THREE.Texture | null;
 };
+
+const EMPTY_GENERATING_IDS: ReadonlySet<string> = new Set();
 
 /** The texture's pixel aspect, or null before its image has decoded. */
 function textureAspect(texture: THREE.Texture | null): number | null {
@@ -687,6 +694,8 @@ function buildFrames(
       frameMaterial,
       blankMaterial,
       artMaterial,
+      shimmerMaterial: createShimmerMaterial(),
+      shimmerStartedAt: null,
       artLit: 0,
       maxArtSize: { width: layout.width, height: layout.height },
       artFit: { x: 1, y: 1 },
@@ -702,8 +711,8 @@ export default function GalleryScene({
   zoom = 1,
   focusedId,
   paintings = GALLERY_PAINTINGS,
-  generatingId = null,
-  shimmerHues = null,
+  generatingIds,
+  shimmerHuesById,
   onSelectPainting,
   onOpenComposer,
 }: GallerySceneProps) {
@@ -711,8 +720,12 @@ export default function GalleryScene({
   const poseRef = useRef(pose);
   const zoomRef = useRef(zoom);
   const focusedRef = useRef(focusedId);
-  const generatingRef = useRef(generatingId);
-  const shimmerHuesRef = useRef(shimmerHues);
+  const generatingIdsRef = useRef<ReadonlySet<string>>(
+    generatingIds ?? EMPTY_GENERATING_IDS,
+  );
+  const shimmerHuesByIdRef = useRef<Record<string, ShimmerHues | null>>(
+    shimmerHuesById ?? {},
+  );
   const paintingsRef = useRef(paintings);
   const onSelectRef = useRef(onSelectPainting);
   const onOpenComposerRef = useRef(onOpenComposer);
@@ -725,8 +738,8 @@ export default function GalleryScene({
   poseRef.current = pose;
   zoomRef.current = zoom;
   focusedRef.current = focusedId;
-  generatingRef.current = generatingId;
-  shimmerHuesRef.current = shimmerHues;
+  generatingIdsRef.current = generatingIds ?? EMPTY_GENERATING_IDS;
+  shimmerHuesByIdRef.current = shimmerHuesById ?? {};
   paintingsRef.current = paintings;
   onSelectRef.current = onSelectPainting;
   onOpenComposerRef.current = onOpenComposer;
@@ -839,9 +852,6 @@ export default function GalleryScene({
     const ro = new ResizeObserver(resize);
     ro.observe(mount);
 
-    const shimmer = createShimmerMaterial();
-    /** Wall-clock start of the current generation, or `null` when idle. */
-    let shimmerStartedAt: number | null = null;
     const clock = new THREE.Clock();
 
     let raf = 0;
@@ -854,36 +864,39 @@ export default function GalleryScene({
       camera.updateProjectionMatrix();
 
       const focused = focusedRef.current;
-      const generating = generatingRef.current;
-
-      // Only burn shader time while something is actually generating.
-      if (generating !== null && frames.has(generating)) {
-        shimmer.uniforms.uTime.value += shimmerTimeStep(delta, reduceMotion);
-        // Clock starts on the first frame of each generation and is cleared
-        // below, so a second run begins pale again rather than resuming at the
-        // previous depth. It is bound to the generating canvas, not the focused
-        // one, so moving focus mid-flight does not disturb it.
-        shimmerStartedAt ??= performance.now();
-        shimmer.uniforms.uProgress.value = shimmerProgress(
-          performance.now() - shimmerStartedAt,
-        );
-        easeHues(
-          shimmer.uniforms.uHues.value,
-          shimmerHuesRef.current ?? FALLBACK_HUES,
-          delta,
-        );
-      } else if (shimmerStartedAt !== null) {
-        shimmerStartedAt = null;
-        shimmer.uniforms.uProgress.value = 0;
-        // Back to the default set between runs, so a text-only generation that
-        // follows an inspired one does not open on the previous artwork's hues.
-        shimmer.uniforms.uHues.value.set(...FALLBACK_HUES);
-      }
+      const generating = generatingIdsRef.current;
+      const huesById = shimmerHuesByIdRef.current;
 
       for (const [id, entry] of frames) {
         const isFocused = id === focused;
-        const isGenerating = id === generating;
+        const isGenerating = generating.has(id);
         entry.mesh.position.z = isFocused ? 0.08 : 0.055;
+
+        if (isGenerating) {
+          // Clock starts on the first frame of each generation and is cleared
+          // below, so a second run begins pale again rather than resuming at the
+          // previous depth. Bound to this canvas, not the focused one, so
+          // moving focus mid-flight does not disturb it.
+          entry.shimmerStartedAt ??= performance.now();
+          entry.shimmerMaterial.uniforms.uTime.value += shimmerTimeStep(
+            delta,
+            reduceMotion,
+          );
+          entry.shimmerMaterial.uniforms.uProgress.value = shimmerProgress(
+            performance.now() - entry.shimmerStartedAt,
+          );
+          easeHues(
+            entry.shimmerMaterial.uniforms.uHues.value,
+            huesById[id] ?? FALLBACK_HUES,
+            delta,
+          );
+        } else if (entry.shimmerStartedAt !== null) {
+          entry.shimmerStartedAt = null;
+          entry.shimmerMaterial.uniforms.uProgress.value = 0;
+          // Back to the default set between runs, so a text-only generation that
+          // follows an inspired one does not open on the previous artwork's hues.
+          entry.shimmerMaterial.uniforms.uHues.value.set(...FALLBACK_HUES);
+        }
 
         // Selection is colour only. The frame's geometry is identical in both
         // states, so stepping along a wall never resizes anything.
@@ -902,7 +915,7 @@ export default function GalleryScene({
         // rather than mutated, a failed or aborted generation drops back to a
         // clean canvas on its own — no opacity or shader state can get stuck.
         const surface = isGenerating
-          ? shimmer
+          ? entry.shimmerMaterial
           : entry.texture
             ? entry.artMaterial
             : entry.blankMaterial;
@@ -970,7 +983,6 @@ export default function GalleryScene({
       ro.disconnect();
       renderer.domElement.removeEventListener("click", onClick);
       renderer.domElement.removeEventListener("dblclick", onDoubleClick);
-      shimmer.dispose();
       // Materials do not own their maps, so disposing the frame materials
       // leaves this behind. It is shared by all twelve, hence disposed here.
       woodgrain.dispose();
@@ -978,6 +990,7 @@ export default function GalleryScene({
         entry.texture?.dispose();
         entry.blankMaterial.dispose();
         entry.artMaterial.dispose();
+        entry.shimmerMaterial.dispose();
       }
       disposeSceneGraph(scene);
 

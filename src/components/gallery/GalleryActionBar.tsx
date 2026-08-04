@@ -144,6 +144,15 @@ export default function GalleryActionBar({
   generationContextRef.current = generationContext;
   const reduceMotion = useReducedMotion();
 
+  // Drop a previous canvas's in-flight submit latch as soon as focus moves, so
+  // `submitPending` from canvas A cannot paint "Generating…" on canvas B for a
+  // frame (or longer) while A's await is still running.
+  const [submitFocusId, setSubmitFocusId] = useState(focusedId);
+  if (focusedId !== submitFocusId) {
+    setSubmitFocusId(focusedId);
+    if (submitPending) setSubmitPending(false);
+  }
+
   const blocked =
     inspiration !== null && !artworkEligibility(inspiration).eligible;
   const isGenerating = generating || submitPending;
@@ -281,8 +290,20 @@ export default function GalleryActionBar({
     if (focusedIdRef.current === focusedId) return;
     focusedIdRef.current = focusedId;
     // Drop the previous hang's draft; load this hang's stored generate if any.
+    setError(null);
+    setPickerOpen(false);
     applyGenerationContext(generationContextRef.current);
-  }, [focusedId, applyGenerationContext]);
+    // Use parent `generating` (not local submitPending): focused canvas
+    // mid-generate → Generating pill; anything else → editable composer so the
+    // visitor can kick off another hang without waiting.
+    if (generating) {
+      pendingFocus.current = null;
+      setExpanded(false);
+    } else {
+      pendingFocus.current = null;
+      setExpanded(true);
+    }
+  }, [focusedId, generating, applyGenerationContext]);
 
   /**
    * A pointer landing anywhere else in the room dismisses one level.
@@ -339,6 +360,7 @@ export default function GalleryActionBar({
     e.preventDefault();
     const next = prompt.trim();
     if (!next || isGenerating || blocked) return;
+    const paintingId = focusedId;
     setError(null);
     setSubmitPending(true);
     setPickerOpen(false);
@@ -357,12 +379,17 @@ export default function GalleryActionBar({
       // Keep prompt + inspiration so re-expanding to edit shows the same
       // context; parent also stores them keyed by painting id.
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Generation failed");
-      // Surface the alert — the collapsed pill has nowhere to show it.
-      pendingFocus.current = "bar";
-      setExpanded(true);
+      // Only surface errors on the canvas that kicked off this run — navigating
+      // away mid-flight should not dump another hang's failure onto the new one.
+      if (focusedIdRef.current === paintingId) {
+        setError(err instanceof Error ? err.message : "Generation failed");
+        pendingFocus.current = "bar";
+        setExpanded(true);
+      }
     } finally {
-      setSubmitPending(false);
+      if (focusedIdRef.current === paintingId) {
+        setSubmitPending(false);
+      }
     }
   };
 

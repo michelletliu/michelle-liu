@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   isGalleryPaintingId,
+  isValidShareId,
   MAX_HANG_BYTES,
 } from "@/components/gallery/sharedGallery";
 import { putHangPng } from "@/lib/gallery/shareBlob";
@@ -16,10 +17,6 @@ type RouteContext = { params: Promise<{ shareId: string }> };
 
 const PNG_MAGIC = [0x89, 0x50, 0x4e, 0x47];
 
-function validShareId(shareId: string): boolean {
-  return Boolean(shareId) && shareId.length <= 32 && /^[A-Za-z0-9_-]+$/.test(shareId);
-}
-
 function isPng(bytes: Uint8Array): boolean {
   if (bytes.length < 4) return false;
   return PNG_MAGIC.every((b, i) => bytes[i] === b);
@@ -34,7 +31,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
   }
 
   const { shareId } = await context.params;
-  if (!validShareId(shareId)) {
+  if (!isValidShareId(shareId)) {
     return NextResponse.json({ error: "Invalid share id." }, { status: 400 });
   }
 
