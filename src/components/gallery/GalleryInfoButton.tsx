@@ -238,7 +238,7 @@ export default function GalleryInfoButton({
                     <Link
                       ref={createOwnRef}
                       href="/gallery"
-                      className={`inline-flex shrink-0 items-center justify-center rounded-full bg-zinc-900 px-4 py-2.5 font-['Michelle',sans-serif] text-base font-medium text-white transition-opacity hover:opacity-90 ${GALLERY_FOCUS_RING}`}
+                      className={`inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-solid border-blue-400 bg-blue-500 px-4 py-1.5 font-['Michelle',sans-serif] text-sm font-semibold text-white transition-colors duration-200 ease-out hover:border-blue-300 hover:bg-blue-400 ${GALLERY_FOCUS_RING}`}
                     >
                       Create your own
                     </Link>

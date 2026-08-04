@@ -72,14 +72,23 @@ export function RotatingLoadingText({
 
   useEffect(() => {
     if (phrases.length <= 1) return;
+    let cancelled = false;
+    let fadeTimeout: ReturnType<typeof setTimeout> | undefined;
     const id = setInterval(() => {
+      if (cancelled) return;
       setFade(false);
-      setTimeout(() => {
+      if (fadeTimeout !== undefined) clearTimeout(fadeTimeout);
+      fadeTimeout = setTimeout(() => {
+        if (cancelled) return;
         setIdx((i) => (i + 1) % phrases.length);
         setFade(true);
       }, 200);
     }, 1400);
-    return () => clearInterval(id);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+      if (fadeTimeout !== undefined) clearTimeout(fadeTimeout);
+    };
   }, [phrases]);
 
   return (

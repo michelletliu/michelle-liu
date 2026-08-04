@@ -71,7 +71,7 @@ export function readLastShare(): LastShareRecord | null {
     const parsed = JSON.parse(raw) as Partial<LastShareRecord>;
     if (
       typeof parsed.shareId !== "string" ||
-      !parsed.shareId ||
+      !isValidShareId(parsed.shareId) ||
       typeof parsed.name !== "string" ||
       typeof parsed.editToken !== "string" ||
       !parsed.editToken
@@ -90,7 +90,11 @@ export function readLastShare(): LastShareRecord | null {
 
 export function writeLastShare(record: LastShareRecord): void {
   if (typeof window === "undefined") return;
-  sessionStorage.setItem(LAST_SHARE_STORAGE_KEY, JSON.stringify(record));
+  try {
+    sessionStorage.setItem(LAST_SHARE_STORAGE_KEY, JSON.stringify(record));
+  } catch {
+    // Private mode / quota — update UX still works for this session via state.
+  }
 }
 
 export function clearLastShare(): void {

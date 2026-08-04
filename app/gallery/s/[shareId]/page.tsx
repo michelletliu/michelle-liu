@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import GalleryPage from "@/components/gallery/GalleryPage";
-import { isGalleryPaintingId } from "@/components/gallery/sharedGallery";
+import {
+  isGalleryPaintingId,
+  isValidShareId,
+} from "@/components/gallery/sharedGallery";
 import { getShareMeta } from "@/lib/gallery/shareBlob";
+
+/** Always read latest meta — update-existing must show regenerated hangs. */
+export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ shareId: string }>;
@@ -12,9 +18,10 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { shareId } = await params;
-  const meta = process.env.BLOB_READ_WRITE_TOKEN
-    ? await getShareMeta(shareId)
-    : null;
+  const meta =
+    process.env.BLOB_READ_WRITE_TOKEN && isValidShareId(shareId)
+      ? await getShareMeta(shareId)
+      : null;
 
   const title = meta?.name ? `${meta.name} · gallery` : "gallery";
 
@@ -29,6 +36,10 @@ export default async function SharedGalleryPage({ params }: PageProps) {
 
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     return <SharedGalleryError message="This gallery link is unavailable." />;
+  }
+
+  if (!isValidShareId(shareId)) {
+    return <SharedGalleryError message="Gallery not found." />;
   }
 
   const meta = await getShareMeta(shareId);

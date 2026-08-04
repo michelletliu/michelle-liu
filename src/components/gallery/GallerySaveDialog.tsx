@@ -6,6 +6,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type FormEvent,
 } from "react";
 import { createPortal } from "react-dom";
@@ -136,6 +137,11 @@ export default function GallerySaveDialog({
   const [error, setError] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const isClient = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   useScrollLock(open);
 
@@ -190,13 +196,21 @@ export default function GallerySaveDialog({
     setSaving(true);
     setError(null);
     try {
-      const result = await saveGalleryShare({
-        name: cleaned,
-        mode,
-        existingShareId: mode === "update" ? lastShare?.shareId : undefined,
-        existingEditToken: mode === "update" ? lastShare?.editToken : undefined,
-        hangs,
-      });
+      const result = await saveGalleryShare(
+        mode === "update"
+          ? {
+              mode: "update",
+              name: cleaned,
+              hangs,
+              existingShareId: lastShare!.shareId,
+              existingEditToken: lastShare!.editToken,
+            }
+          : {
+              mode: "create",
+              name: cleaned,
+              hangs,
+            },
+      );
       const record = {
         shareId: result.shareId,
         name: result.name,
@@ -223,7 +237,7 @@ export default function GallerySaveDialog({
     }
   };
 
-  if (!open) return null;
+  if (!open || !isClient) return null;
 
   return createPortal(
     <div
