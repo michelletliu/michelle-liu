@@ -47,13 +47,13 @@ const POPOVER_RIGHT_NUDGE_PX = 10;
 
 /**
  * Compact save fields: muted FieldShell with py-1.5 (not default py-2) so
- * pills sit closer to one-line control height. Action pills match that row.
- * Scoped overrides on FloatingPanel: gap-3.5 + px-5 + pb-5 (Library stays
- * gap-3 / px-5 / pb-5). px/pb at 20px; pt stays FloatingPanel pt-4.
+ * pills sit closer to one-line control height. Action pills use h-9 to match
+ * that field row. Scoped overrides on FloatingPanel: gap-3.5 + px-5 + pb-5
+ * (Library stays gap-3 / px-5 / pb-5). px/pb at 20px; pt stays FloatingPanel pt-4.
  */
 const SAVE_FIELD_SHELL = "rounded-full !py-1.5";
 const SAVE_ACTION_BTN =
-  "inline-flex h-8 items-center justify-center rounded-full px-4 text-base";
+  "inline-flex h-9 items-center justify-center rounded-full px-4 text-base";
 const SAVE_PANEL_BODY = "!gap-3.5 !px-5 !pb-5";
 
 function FilmLoadingDots({ reduceMotion }: { reduceMotion: boolean }) {
@@ -467,7 +467,7 @@ export default function GallerySaveDialog({
 
           {lastShare && (
             <fieldset
-              className="flex flex-col gap-4"
+              className="flex flex-col gap-4 py-1"
               aria-label="Update existing gallery or create a new link"
             >
               <label className="flex cursor-pointer items-center gap-3 text-base text-zinc-700">
