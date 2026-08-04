@@ -211,7 +211,7 @@ export default function Tooltip({
 
     const collision = {
       padding: VIEWPORT_PADDING,
-      boundary: 'viewport' as const,
+      boundary: document.documentElement,
       rootBoundary: 'viewport' as const,
     };
 
