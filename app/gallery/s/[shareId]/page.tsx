@@ -4,6 +4,9 @@ import GalleryPage from "@/components/gallery/GalleryPage";
 import { isGalleryPaintingId } from "@/components/gallery/sharedGallery";
 import { getShareMeta } from "@/lib/gallery/shareBlob";
 
+/** Always read latest meta — update-existing must show regenerated hangs. */
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   params: Promise<{ shareId: string }>;
 };

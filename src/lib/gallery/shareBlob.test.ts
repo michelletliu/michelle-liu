@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { hangUrlBelongsToShare } from "./shareBlob.ts";
+import {
+  hangContentVersion,
+  hangUrlBelongsToShare,
+  withHangCacheBust,
+} from "./shareBlob.ts";
 
 const SHARE = "abc123XYZ_-";
 const PAINTING = "front-1";
@@ -8,6 +12,33 @@ const TRUSTED = `https://mystoreid.public.blob.vercel-storage.com/galleries/${SH
 
 test("hangUrlBelongsToShare accepts trusted Vercel Blob hang URLs", () => {
   assert.equal(hangUrlBelongsToShare(TRUSTED, SHARE, PAINTING), true);
+});
+
+test("hangUrlBelongsToShare accepts cache-bust query on hang URLs", () => {
+  assert.equal(
+    hangUrlBelongsToShare(`${TRUSTED}?v=abc123def456`, SHARE, PAINTING),
+    true,
+  );
+});
+
+test("hangContentVersion is stable for the same bytes", () => {
+  const a = hangContentVersion(Buffer.from("png-bytes"));
+  const b = hangContentVersion(Buffer.from("png-bytes"));
+  const c = hangContentVersion(Buffer.from("other-bytes"));
+  assert.equal(a, b);
+  assert.notEqual(a, c);
+  assert.equal(a.length, 12);
+});
+
+test("withHangCacheBust sets and replaces v query", () => {
+  assert.equal(
+    withHangCacheBust(TRUSTED, "aaa"),
+    `${TRUSTED}?v=aaa`,
+  );
+  assert.equal(
+    withHangCacheBust(`${TRUSTED}?v=old`, "new"),
+    `${TRUSTED}?v=new`,
+  );
 });
 
 test("hangUrlBelongsToShare rejects attacker hosts with matching pathname", () => {
