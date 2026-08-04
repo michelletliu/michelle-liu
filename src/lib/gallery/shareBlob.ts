@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { get, put } from "@vercel/blob";
 import {
   isGalleryPaintingId,
+  sanitizeCreatorName,
   sanitizeGalleryName,
   type SharedGalleryHang,
   type SharedGalleryMeta,
@@ -206,10 +207,15 @@ export async function getShareMeta(
       if (!hang) return null;
       hangs.push(hang);
     }
+    const creator =
+      typeof parsed.creator === "string"
+        ? sanitizeCreatorName(parsed.creator) ?? undefined
+        : undefined;
     return {
       version: 1,
       shareId,
       name,
+      ...(creator ? { creator } : {}),
       createdAt: parsed.createdAt,
       updatedAt: parsed.updatedAt,
       hangs,

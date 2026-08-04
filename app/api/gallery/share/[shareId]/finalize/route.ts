@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   isGalleryPaintingId,
   isValidShareId,
+  sanitizeCreatorName,
   sanitizeGalleryName,
   type SharedGalleryHang,
   type SharedGalleryMeta,
@@ -22,6 +23,7 @@ type RouteContext = { params: Promise<{ shareId: string }> };
 
 type FinalizeBody = {
   name?: string;
+  creator?: string;
   hangs?: Array<{
     paintingId?: string;
     imageUrl?: string;
@@ -77,10 +79,19 @@ export async function POST(req: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Invalid share id." }, { status: 400 });
   }
 
-  const authorized = await verifyShareEditToken(
-    shareId,
-    editTokenFromRequest(req),
-  );
+  let authorized = false;
+  try {
+    authorized = await verifyShareEditToken(
+      shareId,
+      editTokenFromRequest(req),
+    );
+  } catch (err) {
+    console.error("[gallery/share/finalize] edit-secret lookup failed", err);
+    return NextResponse.json(
+      { error: "Could not verify gallery permissions. Try again." },
+      { status: 502 },
+    );
+  }
   if (!authorized) {
     return NextResponse.json(
       { error: "Not allowed to save this gallery." },
@@ -106,6 +117,16 @@ export async function POST(req: NextRequest, context: RouteContext) {
   if (!name) {
     return NextResponse.json(
       { error: "Gallery name is required (1–80 characters)." },
+      { status: 400 },
+    );
+  }
+
+  const creator = sanitizeCreatorName(
+    typeof body.creator === "string" ? body.creator : "",
+  );
+  if (!creator) {
+    return NextResponse.json(
+      { error: "Your name is required (1–80 characters)." },
       { status: 400 },
     );
   }
@@ -159,6 +180,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
     version: 1,
     shareId,
     name,
+    creator,
     createdAt,
     updatedAt: now,
     hangs,
@@ -183,5 +205,6 @@ export async function POST(req: NextRequest, context: RouteContext) {
     shareId,
     url: absoluteShareUrl(req, shareId),
     name: meta.name,
+    creator: meta.creator,
   });
 }

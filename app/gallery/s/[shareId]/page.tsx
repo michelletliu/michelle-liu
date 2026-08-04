@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import imgLogo from "@/assets/logo.png";
 import GalleryPage from "@/components/gallery/GalleryPage";
 import {
+  formatGalleryAttribution,
   isGalleryPaintingId,
   isValidShareId,
 } from "@/components/gallery/sharedGallery";
@@ -23,7 +25,9 @@ export async function generateMetadata({
       ? await getShareMeta(shareId)
       : null;
 
-  const title = meta?.name ? `${meta.name} · gallery` : "gallery";
+  const title = meta?.name
+    ? `${formatGalleryAttribution(meta.name, meta.creator)} · gallery`
+    : "gallery";
 
   return {
     title,
@@ -61,6 +65,7 @@ export default async function SharedGalleryPage({ params }: PageProps) {
     <GalleryPage
       mode="view"
       galleryName={meta.name}
+      galleryCreator={meta.creator}
       initialImageById={initialImageById}
       initialInspirationTitles={initialInspirationTitles}
     />
@@ -69,19 +74,26 @@ export default async function SharedGalleryPage({ params }: PageProps) {
 
 function SharedGalleryError({ message }: { message: string }) {
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-[#e4e4e4] px-6 text-center">
-      <p className="text-base text-zinc-700">{message}</p>
+    <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-zinc-100 px-6 text-center">
+      <a
+        href="/"
+        aria-label="Go back to home"
+        className="transition-opacity duration-200 hover:opacity-80"
+      >
+        <img
+          src={imgLogo}
+          alt="Michelle Liu Logo"
+          className="size-8 object-contain md:size-[44px]"
+          loading="eager"
+          decoding="async"
+        />
+      </a>
+      <p className="text-base text-zinc-500">{message}</p>
       <Link
         href="/gallery"
-        className="text-base text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline"
+        className="text-base text-zinc-700 transition-colors duration-200 hover:text-blue-500"
       >
-        Create your own at /gallery
-      </Link>
-      <Link
-        href="/"
-        className="text-sm text-zinc-400 underline-offset-4 hover:text-zinc-600 hover:underline"
-      >
-        Home
+        www.liumichelle.com/gallery
       </Link>
     </div>
   );

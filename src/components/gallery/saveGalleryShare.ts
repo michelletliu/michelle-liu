@@ -15,11 +15,13 @@ export type SaveGalleryShareInput =
   | {
       mode: "create";
       name: string;
+      creator: string;
       hangs: SaveGalleryHangInput[];
     }
   | {
       mode: "update";
       name: string;
+      creator: string;
       hangs: SaveGalleryHangInput[];
       existingShareId: string;
       existingEditToken: string;
@@ -30,6 +32,7 @@ export type SaveGalleryShareResult = {
   editToken: string;
   url: string;
   name: string;
+  creator: string;
 };
 
 export type SaveGalleryShareProgress = {
@@ -324,6 +327,7 @@ async function saveGalleryShareInner(
     },
     body: JSON.stringify({
       name: input.name,
+      creator: input.creator,
       hangs: uploaded,
       createdAt: startData.previous?.createdAt,
     }),
@@ -333,6 +337,7 @@ async function saveGalleryShareInner(
     shareId?: string;
     url?: string;
     name?: string;
+    creator?: string;
   }>(finalizeRes, "Failed to finish saving.");
   if (!finalizeData.shareId || !finalizeData.url) {
     throw new Error("Failed to finish saving.");
@@ -346,5 +351,6 @@ async function saveGalleryShareInner(
     editToken,
     url: finalizeData.url,
     name: finalizeData.name || input.name,
+    creator: finalizeData.creator || input.creator,
   };
 }

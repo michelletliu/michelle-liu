@@ -1,5 +1,12 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
+import {
+  autoUpdate,
+  computePosition,
+  flip,
+  offset as floatingOffset,
+  shift,
+} from '@floating-ui/dom';
 import clsx from 'clsx';
 
 type TooltipProps = {
@@ -28,6 +35,8 @@ type TooltipProps = {
 };
 
 const DEFAULT_HOVER_DELAY = 400;
+/** Keep tips clear of the viewport edge on narrow screens. */
+const VIEWPORT_PADDING = 8;
 
 // Tooltip warmup state - tracks if any tooltip is currently open
 // This allows subsequent tooltips to open instantly without delay or animation
@@ -83,11 +92,9 @@ export default function Tooltip({
   const [isEnding, setIsEnding] = useState(false);
   const [isInstant, setIsInstant] = useState(false);
   const [forceRevealed, setForceRevealed] = useState(false);
-  const [coords, setCoords] = useState<{ top: number; left: number } | null>(
-    null,
-  );
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const tipRef = useRef<HTMLDivElement>(null);
 
   const hideImmediately = () => {
     if (hoverTimeoutRef.current) {
@@ -188,27 +195,44 @@ export default function Tooltip({
 
   const showTooltip = forceRevealed || (isVisible && !disabled);
 
+  // Portal tips: Floating UI owns fixed coords + flip/shift so long labels
+  // stay on-screen and centered on the trigger (not double-shifted by .tooltip).
+  // boundary/rootBoundary must be the viewport — portaled tips escape
+  // overflow:hidden ancestors (RestingStack clip, morph shell) on purpose;
+  // default clippingAncestors would shove them back into that clip (Met tip
+  // overlapping + / composer with the fan still rolled up behind the pill).
   useLayoutEffect(() => {
-    if (!portal || !showTooltip) {
-      setCoords(null);
-      return;
-    }
+    if (!portal || !showTooltip) return;
+    const reference = wrapRef.current;
+    const floating = tipRef.current;
+    if (!reference || !floating) return;
+
+    floating.style.visibility = 'hidden';
+
+    const collision = {
+      padding: VIEWPORT_PADDING,
+      boundary: 'viewport' as const,
+      rootBoundary: 'viewport' as const,
+    };
+
     const update = () => {
-      const el = wrapRef.current;
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      setCoords({
-        left: r.left + r.width / 2,
-        top: position === 'top' ? r.top - offset : r.bottom + offset,
+      void computePosition(reference, floating, {
+        placement: position === 'top' ? 'top' : 'bottom',
+        strategy: 'fixed',
+        middleware: [
+          floatingOffset(offset),
+          flip(collision),
+          shift(collision),
+        ],
+      }).then(({ x, y }) => {
+        if (tipRef.current !== floating) return;
+        floating.style.left = `${x}px`;
+        floating.style.top = `${y}px`;
+        floating.style.visibility = 'visible';
       });
     };
-    update();
-    window.addEventListener('scroll', update, true);
-    window.addEventListener('resize', update);
-    return () => {
-      window.removeEventListener('scroll', update, true);
-      window.removeEventListener('resize', update);
-    };
+
+    return autoUpdate(reference, floating, update);
   }, [portal, showTooltip, position, offset, label, forceOpen]);
 
   const tipClassName = clsx(
@@ -220,6 +244,7 @@ export default function Tooltip({
     className: tipClassName,
     'data-ending-style': !forceOpen && isEnding ? '' : undefined,
     'data-instant': forceOpen || isInstant ? '' : undefined,
+    'data-portal': portal ? '' : undefined,
   } as const;
 
   const inlinePositionStyles =
@@ -234,17 +259,18 @@ export default function Tooltip({
         };
 
   const tip = showTooltip ? (
-    portal && coords ? (
+    portal ? (
       createPortal(
-        // Outer node owns fixed placement + centering; inner keeps scale
-        // animation so transform doesn't fight translate(-50%, …).
+        // Floating UI writes left/top on this node (strategy: fixed).
+        // Inner .tooltip[data-portal] skips the globals left:50% / translateX
+        // centering that was double-shifting portaled tips off their trigger.
         <div
-          className="pointer-events-none fixed z-[9999]"
+          ref={tipRef}
+          className="pointer-events-none fixed z-[9999] w-max"
           style={{
-            left: coords.left,
-            top: coords.top,
-            transform:
-              position === 'top' ? 'translate(-50%, -100%)' : 'translate(-50%, 0)',
+            left: 0,
+            top: 0,
+            visibility: 'hidden',
           }}
         >
           <div
@@ -261,11 +287,11 @@ export default function Tooltip({
         </div>,
         document.body,
       )
-    ) : !portal ? (
+    ) : (
       <div {...tipProps} style={inlinePositionStyles}>
         {label}
       </div>
-    ) : null
+    )
   ) : null;
 
   return (

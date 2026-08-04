@@ -52,6 +52,11 @@ type GallerySceneProps = {
 type FrameEntry = {
   id: string;
   mesh: THREE.Mesh;
+  /**
+   * Sits just behind the art plane during a dissolve-in so shimmer or blank
+   * paper stays visible while the new texture opacity rises.
+   */
+  underlay: THREE.Mesh;
   frame: THREE.Mesh;
   matte: THREE.Mesh;
   /** Held directly so the focus tint can be eased without a per-frame cast. */
@@ -64,6 +69,16 @@ type FrameEntry = {
   shimmerMaterial: ShimmerMaterial;
   /** Wall-clock start of this canvas's current generation, or null when idle. */
   shimmerStartedAt: number | null;
+  /**
+   * Keep the wet-paint shimmer up after `generatingIds` clears until the new
+   * image has decoded and dissolved in — otherwise the canvas pops to the old
+   * hang (or blank) for a frame between gen-end and texture-ready.
+   */
+  holdShimmerForReveal: boolean;
+  /** True while a newly hung texture is fading opacity 0→1 over the underlay. */
+  revealActive: boolean;
+  /** 0 = fully transparent art (underlay only), 1 = fully opaque hang. */
+  revealProgress: number;
   /** Current 0..1 focus lighting, eased toward the target each frame. */
   artLit: number;
   /** Largest artwork aperture for this hang, before aspect fitting. */
@@ -111,6 +126,12 @@ const BLANK_UNFOCUSED_ALBEDO = 0.975;
 /** Exponential-ease time constant for the focus lighting, ~95% in 260ms. */
 const ART_LIGHT_TAU = 0.088;
 /**
+ * Soft dissolve when a new hang lands: art opacity 0→1 over the underlay
+ * (shimmer after generate, blank paper otherwise). Long enough to read as a
+ * dissolve, short enough not to feel sluggish after a long remix wait.
+ */
+const ART_REVEAL_DURATION_S = 0.4;
+/**
  * Light a hung image according to how focused it is: 1 renders it unlit at
  * exactly its source values, 0 hands it entirely to the room's lights.
  *
@@ -141,6 +162,25 @@ function setBlankLighting(material: THREE.MeshStandardMaterial, lit: number) {
 }
 
 /**
+ * Drive hung-art opacity for the dissolve-in. Below 1 the material is
+ * transparent so the underlay (shimmer / blank) reads through; at 1 it returns
+ * to the opaque path so depth write and sorting stay clean for settled hangs.
+ */
+function setArtRevealOpacity(
+  material: THREE.MeshStandardMaterial,
+  opacity: number,
+) {
+  const next = Math.min(1, Math.max(0, opacity));
+  const transparent = next < 0.999;
+  if (material.transparent !== transparent) {
+    material.transparent = transparent;
+    material.depthWrite = !transparent;
+    material.needsUpdate = true;
+  }
+  material.opacity = transparent ? next : 1;
+}
+
+/**
  * Hang an image, or clear back to a blank canvas.
  *
  * Blank canvases keep their own material: they are paper, and the room's
@@ -152,6 +192,9 @@ function setBlankLighting(material: THREE.MeshStandardMaterial, lit: number) {
  * `object-fit: cover`. The white mat ridge between art and frame lip stays
  * on both cover and contain. Met inspiration tiles in the composer are
  * separate DOM and untouched here.
+ *
+ * New textures start a soft opacity dissolve (`revealActive`); clearing a hang
+ * snaps back with no fade.
  */
 function setFrameTexture(entry: FrameEntry, texture: THREE.Texture | null) {
   entry.texture = texture;
@@ -192,6 +235,28 @@ function setFrameTexture(entry: FrameEntry, texture: THREE.Texture | null) {
     texture.wrapT = THREE.ClampToEdgeWrapping;
     texture.offset.set(uv.offsetX, uv.offsetY);
     texture.repeat.set(uv.repeatX, uv.repeatY);
+    // Dissolve in over shimmer/blank; the tick loop owns opacity + underlay.
+    // Reduced-motion users skip the crossfade entirely.
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      entry.revealProgress = 1;
+      entry.revealActive = false;
+      entry.holdShimmerForReveal = false;
+      entry.underlay.visible = false;
+      setArtRevealOpacity(entry.artMaterial, 1);
+    } else {
+      entry.revealProgress = 0;
+      entry.revealActive = true;
+      setArtRevealOpacity(entry.artMaterial, 0);
+    }
+  } else {
+    entry.revealActive = false;
+    entry.revealProgress = 1;
+    entry.holdShimmerForReveal = false;
+    entry.underlay.visible = false;
+    setArtRevealOpacity(entry.artMaterial, 1);
   }
 
   const previousFrameGeometry = entry.frame.geometry;
@@ -219,6 +284,7 @@ function setFrameTexture(entry: FrameEntry, texture: THREE.Texture | null) {
   entry.mesh.material = texture ? entry.artMaterial : entry.blankMaterial;
   // Cover fills keep scale at 1; blank canvases also fill the aperture.
   entry.mesh.scale.set(entry.artFit.x, entry.artFit.y, 1);
+  entry.underlay.scale.set(entry.artFit.x, entry.artFit.y, 1);
 }
 
 /**
@@ -712,21 +778,26 @@ function buildFrames(
       toneMapped: false,
     });
     setArtLighting(artMaterial, 0);
-    const mesh = new THREE.Mesh(
-      artPlaneGeometry(layout.width, layout.height),
-      blankMaterial,
-    );
+    const artGeometry = artPlaneGeometry(layout.width, layout.height);
+    const underlay = new THREE.Mesh(artGeometry.clone(), blankMaterial);
+    // Just behind the art plane so a transparent dissolve reads the underlay.
+    underlay.position.z = 0.053;
+    underlay.visible = false;
+    underlay.raycast = () => {};
+    const mesh = new THREE.Mesh(artGeometry, blankMaterial);
     mesh.position.z = 0.055;
     frame.userData.paintingId = painting.id;
     matte.userData.paintingId = painting.id;
     mesh.userData.paintingId = painting.id;
     group.userData.paintingId = painting.id;
+    group.add(underlay);
     group.add(mesh);
     root.add(group);
 
     frames.set(painting.id, {
       id: painting.id,
       mesh,
+      underlay,
       frame,
       matte,
       frameMaterial,
@@ -734,6 +805,9 @@ function buildFrames(
       artMaterial,
       shimmerMaterial: createShimmerMaterial(),
       shimmerStartedAt: null,
+      holdShimmerForReveal: false,
+      revealActive: false,
+      revealProgress: 1,
       artLit: 0,
       maxArtSize: { width: layout.width, height: layout.height },
       artFit: { x: 1, y: 1 },
@@ -906,17 +980,51 @@ export default function GalleryScene({
       const focused = focusedRef.current;
       const generating = generatingIdsRef.current;
       const huesById = shimmerHuesByIdRef.current;
+      const imageUrlById = new Map<string, string | undefined>();
+      for (const painting of paintingsRef.current) {
+        imageUrlById.set(painting.id, painting.imageUrl);
+      }
 
       for (const [id, entry] of frames) {
         const isFocused = id === focused;
         const isGenerating = generating.has(id);
+        const hungUrl = entry.texture?.userData.url as string | undefined;
+        const desiredUrl = imageUrlById.get(id);
+        const awaitingTexture = Boolean(desiredUrl && desiredUrl !== hungUrl);
         entry.mesh.position.z = isFocused ? 0.08 : 0.055;
+        entry.underlay.position.z = isFocused ? 0.078 : 0.053;
 
         if (isGenerating) {
+          entry.holdShimmerForReveal = true;
+          // A new run cancels any in-flight dissolve; shimmer owns the plane.
+          if (entry.revealActive) {
+            entry.revealActive = false;
+            entry.underlay.visible = false;
+            setArtRevealOpacity(entry.artMaterial, 1);
+          }
           // Clock starts on the first frame of each generation and is cleared
           // below, so a second run begins pale again rather than resuming at the
           // previous depth. Bound to this canvas, not the focused one, so
           // moving focus mid-flight does not disturb it.
+          entry.shimmerStartedAt ??= performance.now();
+          entry.shimmerMaterial.uniforms.uTime.value += shimmerTimeStep(
+            delta,
+            reduceMotion,
+          );
+          entry.shimmerMaterial.uniforms.uProgress.value = shimmerProgress(
+            performance.now() - entry.shimmerStartedAt,
+          );
+          easeHues(
+            entry.shimmerMaterial.uniforms.uHues.value,
+            huesById[id] ?? FALLBACK_HUES,
+            delta,
+          );
+        } else if (
+          entry.holdShimmerForReveal &&
+          (awaitingTexture || entry.revealActive)
+        ) {
+          // Gen finished but the new texture is still decoding, or dissolving
+          // in — keep the wet-paint shader alive as the underlay / hold surface.
           entry.shimmerStartedAt ??= performance.now();
           entry.shimmerMaterial.uniforms.uTime.value += shimmerTimeStep(
             delta,
@@ -936,6 +1044,10 @@ export default function GalleryScene({
           // Back to the default set between runs, so a text-only generation that
           // follows an inspired one does not open on the previous artwork's hues.
           entry.shimmerMaterial.uniforms.uHues.value.set(...FALLBACK_HUES);
+          // Failed / aborted gen: nothing new to reveal, drop the hold.
+          if (!awaitingTexture && !entry.revealActive) {
+            entry.holdShimmerForReveal = false;
+          }
         }
 
         // Selection is colour only. The frame's geometry is identical in both
@@ -950,22 +1062,54 @@ export default function GalleryScene({
           );
         }
 
-        // Straight assignment each frame, never a new material: generating wins,
-        // then a hung image, then blank paper. Because the surface is chosen
-        // rather than mutated, a failed or aborted generation drops back to a
-        // clean canvas on its own — no opacity or shader state can get stuck.
-        const surface = isGenerating
-          ? entry.shimmerMaterial
-          : entry.texture
-            ? entry.artMaterial
+        if (entry.revealActive && entry.texture && !isGenerating) {
+          entry.revealProgress = reduceMotion
+            ? 1
+            : Math.min(
+                1,
+                entry.revealProgress + delta / ART_REVEAL_DURATION_S,
+              );
+          setArtRevealOpacity(entry.artMaterial, entry.revealProgress);
+          entry.underlay.visible = entry.revealProgress < 0.999;
+          entry.underlay.material = entry.holdShimmerForReveal
+            ? entry.shimmerMaterial
             : entry.blankMaterial;
+          entry.underlay.scale.set(entry.artFit.x, entry.artFit.y, 1);
+          if (entry.holdShimmerForReveal) {
+            entry.shimmerMaterial.uniformsNeedUpdate = true;
+          } else {
+            setBlankLighting(entry.blankMaterial, entry.artLit);
+          }
+          if (entry.revealProgress >= 0.999) {
+            entry.revealActive = false;
+            entry.revealProgress = 1;
+            entry.holdShimmerForReveal = false;
+            entry.underlay.visible = false;
+            setArtRevealOpacity(entry.artMaterial, 1);
+          }
+        } else if (!entry.revealActive) {
+          entry.underlay.visible = false;
+        }
+
+        // Straight assignment each frame, never a new material: generating wins,
+        // then a hung image (including mid-dissolve), then blank paper. Holding
+        // shimmer after gen-end until the texture is ready prevents a one-frame
+        // flash of the previous hang.
+        const holdShimmer =
+          entry.holdShimmerForReveal && awaitingTexture && !entry.revealActive;
+        const surface =
+          isGenerating || holdShimmer
+            ? entry.shimmerMaterial
+            : entry.texture
+              ? entry.artMaterial
+              : entry.blankMaterial;
         if (entry.mesh.material !== surface) {
           entry.mesh.material = surface;
           // Shimmer and blank paper fill the aperture; hung images do too
           // (cover), so artFit is 1 unless a future contain hang lands here.
           const fit = surface === entry.artMaterial ? entry.artFit : null;
           entry.mesh.scale.set(fit?.x ?? 1, fit?.y ?? 1, 1);
-        } else if (isGenerating) {
+        } else if (isGenerating || holdShimmer) {
           // Keep the shader hot — some drivers skip redrawing a material that
           // only mutates uniforms if they think the mesh is static.
           entry.shimmerMaterial.uniformsNeedUpdate = true;

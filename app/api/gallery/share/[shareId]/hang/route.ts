@@ -59,10 +59,19 @@ export async function POST(req: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Invalid share id." }, { status: 400 });
   }
 
-  const authorized = await verifyShareEditToken(
-    shareId,
-    editTokenFromRequest(req),
-  );
+  let authorized = false;
+  try {
+    authorized = await verifyShareEditToken(
+      shareId,
+      editTokenFromRequest(req),
+    );
+  } catch (err) {
+    console.error("[gallery/share/hang] edit-secret lookup failed", err);
+    return NextResponse.json(
+      { error: "Could not verify gallery permissions. Try again." },
+      { status: 502 },
+    );
+  }
   if (!authorized) {
     return NextResponse.json(
       { error: "Not allowed to upload to this gallery." },

@@ -968,7 +968,7 @@ export default function GalleryActionBar({
                       <Tooltip
                         label={addTooltip}
                         position="top"
-                        offset={10}
+                        offset={12}
                         portal
                         disabled={!metHoverArmed}
                       >
@@ -1117,7 +1117,7 @@ export default function GalleryActionBar({
             setRef={setPanelRef}
           >
             <div className="flex items-center gap-1 p-1 leading-none text-zinc-500">
-              <Tooltip label="Open prompt" position="top" offset={10} portal>
+              <Tooltip label="Open prompt" position="top" offset={12} portal>
                 <button
                   type="button"
                   onClick={expandBar}
@@ -1130,7 +1130,7 @@ export default function GalleryActionBar({
                 </button>
               </Tooltip>
               {canDownload && onDownload && (
-                <Tooltip label="Download image" position="top" offset={10} portal>
+                <Tooltip label="Download image" position="top" offset={12} portal>
                   <button
                     type="button"
                     onClick={onDownload}
@@ -1229,7 +1229,7 @@ function SelectedInspirationCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 6, scale: 0.985 }}
       transition={transition}
-      className={`absolute bottom-[calc(100%-6px)] left-1/2 z-0 flex w-[calc(100%-38px)] -translate-x-1/2 gap-4 rounded-t-[34px] rounded-b-none border border-black/5 bg-white/95 px-4 pt-4 pb-5 pr-12 text-left shadow-soft backdrop-blur-md ${
+      className={`absolute bottom-[calc(100%-6px)] left-1/2 z-0 flex w-[calc(100%-38px)] -translate-x-1/2 gap-4 rounded-t-[24px] rounded-b-none border border-black/5 bg-white/95 px-4 pt-4 pb-5 pr-12 text-left shadow-soft backdrop-blur-md md:rounded-t-[34px] ${
         titleWraps ? "items-start" : "items-center"
       }`}
     >
@@ -1238,7 +1238,7 @@ function SelectedInspirationCard({
           type="button"
           onClick={onChangeInspiration}
           aria-label="Change inspiration"
-          className={`size-24 shrink-0 cursor-pointer overflow-hidden rounded-[18px] bg-white shadow-md transition-opacity hover:opacity-90 ${GALLERY_FOCUS_RING}`}
+          className={`size-24 shrink-0 cursor-pointer overflow-hidden rounded-[8px] bg-white shadow-md transition-opacity hover:opacity-90 md:rounded-[18px] ${GALLERY_FOCUS_RING}`}
         >
           <motion.img
             layoutId={tileLayoutId(artwork.objectID)}
@@ -1348,8 +1348,8 @@ function RestingStack({
       <Tooltip
         label="Get inspired by The Met"
         position="top"
-        // Nudge above the fan a bit more than the default stack gap.
-        offset={16}
+        // Clear rotated/hover-lifted fan tops; keep a tight gap above the cards.
+        offset={26}
         // forceOpen is otherwise instant; 2× Tooltip hover default (400→800).
         delay={800}
         portal

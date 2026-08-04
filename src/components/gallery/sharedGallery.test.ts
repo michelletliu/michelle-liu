@@ -5,11 +5,13 @@ import {
   createEditToken,
   createShareId,
   EDIT_TOKEN_LENGTH,
+  formatGalleryAttribution,
   isGalleryPaintingId,
   isValidShareId,
   MAX_GALLERY_NAME_LENGTH,
   MAX_SHARE_ID_LENGTH,
   MAX_SHARE_SLUG_PROBES,
+  sanitizeCreatorName,
   sanitizeGalleryName,
   SHARE_ID_LENGTH,
   slugifyGalleryShareId,
@@ -31,6 +33,21 @@ test("sanitizeGalleryName enforces max length", () => {
   const result = sanitizeGalleryName(long);
   assert.ok(result);
   assert.equal(result.length, MAX_GALLERY_NAME_LENGTH);
+});
+
+test("sanitizeCreatorName mirrors gallery name cleaning", () => {
+  assert.equal(sanitizeCreatorName("  Michelle\n "), "Michelle");
+  assert.equal(sanitizeCreatorName("   "), null);
+});
+
+test("formatGalleryAttribution appends creator when present", () => {
+  assert.equal(
+    formatGalleryAttribution("Sunset Room", "Michelle"),
+    "Sunset Room by Michelle",
+  );
+  assert.equal(formatGalleryAttribution("Sunset Room", ""), "Sunset Room");
+  assert.equal(formatGalleryAttribution("Sunset Room", null), "Sunset Room");
+  assert.equal(formatGalleryAttribution("Sunset Room"), "Sunset Room");
 });
 
 test("isGalleryPaintingId accepts room hang ids only", () => {

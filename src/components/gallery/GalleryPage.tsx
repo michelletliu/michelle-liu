@@ -33,6 +33,8 @@ export type GalleryPageProps = {
   initialInspirationTitles?: Record<string, string>;
   /** Shared gallery display name (view mode). */
   galleryName?: string;
+  /** Who made the shared gallery (view mode attribution). */
+  galleryCreator?: string;
 };
 
 function GalleryDownloadIcon({ className = "" }: { className?: string }) {
@@ -67,6 +69,7 @@ export default function GalleryPage({
   initialImageById,
   initialInspirationTitles,
   galleryName,
+  galleryCreator,
 }: GalleryPageProps) {
   /** Hard-assign home — soft push waits on WebGL dispose and feels broken. */
   const goHome = useCallback(() => {
@@ -296,8 +299,16 @@ export default function GalleryPage({
           </button>
         ) : null}
         {isView && galleryName ? (
-          <p className="max-w-[min(50vw,16rem)] truncate text-base text-gray-500">
-            {galleryName}
+          <p className="max-w-[min(55vw,20rem)] truncate text-base text-zinc-500">
+            {galleryCreator?.trim() ? (
+              <>
+                {galleryName}{" "}
+                <span className="text-zinc-400">by</span>{" "}
+                {galleryCreator.trim()}
+              </>
+            ) : (
+              galleryName
+            )}
           </p>
         ) : null}
         <GalleryInfoButton viewOnly={isView} />
