@@ -16,7 +16,17 @@
   .rounded-\[1000px\],
   .rounded-\[100px\],
   [style*="border-radius: 50%"],
-  [style*="border-radius:50%"] {
+  [style*="border-radius:50%"],
+  /* Semantic shared primitives (CSS border-radius: 9999px / 50%) */
+  .button,
+  .field-shell,
+  .ghost-icon-button,
+  .filter-pill,
+  .filter-pill-indicator,
+  .filter-dropdown-trigger,
+  .contact-badge,
+  .contact-badge-dot,
+  .loading-spinner-ring {
     corner-shape: round;
   }
 

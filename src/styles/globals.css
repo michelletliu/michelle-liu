@@ -149,6 +149,7 @@
     border-style: solid;
     border-width: 0;
     border-radius: 9999px;
+    corner-shape: round;
     font-weight: 500;
     line-height: 1.5;
     transition:
@@ -257,7 +258,9 @@
     flex-shrink: 0;
     align-items: center;
     border-radius: 9999px;
+    corner-shape: round;
     border: 1px solid transparent;
+    overflow: hidden;
     transition: border-color 200ms ease;
   }
 
@@ -284,6 +287,20 @@
     border-color: #f87171; /* red-400 */
   }
 
+  /* Design-system matrix sizing / composition layout */
+  .field-shell.input-sample {
+    max-width: 11.5rem;
+  }
+
+  .field-shell.leading {
+    gap: 0.625rem;
+    padding-left: 0.25rem; /* 4px — matches prior !pl-1 */
+  }
+
+  .field-shell.trailing {
+    justify-content: space-between;
+  }
+
   .field-input {
     min-width: 0;
     flex: 1 1 0%;
@@ -308,6 +325,17 @@
     opacity: 0.5;
   }
 
+  .field-shell.leading .field-input {
+    padding-right: 0.75rem;
+    letter-spacing: 0.01em;
+    color: #3f3f46; /* zinc-700 */
+  }
+
+  .field-shell.muted .field-input {
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+  }
+
   .field-icon-slot {
     display: flex;
     width: 1.25rem;
@@ -328,6 +356,10 @@
     color: #a1a1aa;
   }
 
+  .field-trailing-icon {
+    color: #a1a1aa;
+  }
+
   /* —— Ghost icon button —— */
   .ghost-icon-button {
     display: inline-flex;
@@ -336,6 +368,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 9999px;
+    corner-shape: round;
     background-color: transparent;
     transition: background-color 200ms ease-out;
   }

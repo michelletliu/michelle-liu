@@ -64,12 +64,10 @@ function InputSample({
   const showValue = state === "filled" || state === "error";
 
   const shellTone = composition === "muted" ? "muted" : "surface";
-  const shellClass =
-    composition === "leading"
-      ? "max-w-[11.5rem] gap-2.5 !pl-1"
-      : composition === "trailing"
-        ? "max-w-[11.5rem] justify-between"
-        : "max-w-[11.5rem]";
+  const shellComposition =
+    composition === "leading" || composition === "trailing"
+      ? composition
+      : null;
 
   const placeholder =
     composition === "leading"
@@ -92,7 +90,7 @@ function InputSample({
       tone={shellTone}
       active={isFocus}
       error={isError}
-      className={clsx("input-sample", shellClass)}
+      className={clsx("input-sample", shellComposition)}
     >
       {composition === "leading" ? (
         <FieldLeadingIcon>
@@ -110,16 +108,9 @@ function InputSample({
         autoCorrect="off"
         spellCheck={false}
         aria-label={`${COMPOSITION_LABELS[composition]} · ${STATE_LABELS[state]}`}
-        className={
-          composition === "leading"
-            ? "pr-3 tracking-[0.01em] text-zinc-700"
-            : composition === "muted"
-              ? "px-3.5"
-              : undefined
-        }
       />
       {composition === "trailing" ? (
-        <FieldTrailingIcon className="text-zinc-400">
+        <FieldTrailingIcon className="field-trailing-icon">
           <ArrowRightIcon size={iconSize("md")} />
         </FieldTrailingIcon>
       ) : null}

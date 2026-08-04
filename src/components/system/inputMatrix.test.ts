@@ -74,7 +74,10 @@ test("only the muted input composition uses the muted shell tone", () => {
     /const shellTone =\s*composition === "muted" \? "muted" : "surface";/,
   );
   assert.match(section, /tone=\{shellTone\}/);
-  assert.match(section, /className=\{clsx\("input-sample", shellClass\)\}/);
+  assert.match(
+    section,
+    /className=\{clsx\("input-sample", shellComposition\)\}/,
+  );
   assert.doesNotMatch(
     section,
     /composition === "leading" \|\| composition === "muted"/,
@@ -82,9 +85,15 @@ test("only the muted input composition uses the muted shell tone", () => {
 });
 
 test("leading icon specimens use a 4px shell left inset", () => {
+  const css = readFileSync(
+    new URL("../../styles/globals.css", import.meta.url),
+    "utf8",
+  );
+  assert.match(section, /shellComposition/);
+  assert.match(section, /composition === "leading"/);
   assert.match(
-    section,
-    /composition === "leading"\s*\?\s*"max-w-\[11\.5rem\] gap-2\.5 !pl-1"/,
+    css,
+    /\.field-shell\.leading\s*\{[^}]*padding-left:\s*0\.25rem/s,
   );
 });
 
