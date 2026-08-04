@@ -1,7 +1,34 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { MetArtwork, MetSearchResponse } from "./metArtworks";
+import {
+  openAccessImageUrl,
+  type MetArtwork,
+  type MetSearchResponse,
+} from "./metArtworks";
+import {
+  CURATED_MET_FINGERPRINT,
+  CURATED_MET_OBJECT_IDS,
+  curatedFirstOpenObjectIds,
+} from "./metCurated";
+
+/**
+ * Warm the five first-open carousel JPEGs as soon as the curated hand arrives,
+ * so opening the picker does not paint Monet Family (and ±2) as empty white
+ * frames while the network catches up.
+ */
+function preloadCuratedFirstOpenImages(artworks: readonly MetArtwork[]): void {
+  if (typeof Image === "undefined" || artworks.length === 0) return;
+  const warm = new Set(curatedFirstOpenObjectIds());
+  for (const artwork of artworks) {
+    if (!warm.has(artwork.objectID)) continue;
+    const url = openAccessImageUrl(artwork);
+    if (!url) continue;
+    const img = new Image();
+    img.decoding = "async";
+    img.src = url;
+  }
+}
 
 export type MetSearchStatus = "idle" | "loading" | "success" | "error";
 
@@ -73,37 +100,58 @@ async function requestPage(
 }
 
 /**
- * The curated default set, fetched once per mount.
+ * The curated default set.
  *
  * Failure is silent by design. These works are an opening suggestion, not the
  * feature; if The Met is unreachable the picker still searches, and an error
  * banner about a list the visitor never asked for would be noise.
+ *
+ * Fetched on mount. Soft-refreshed when the picker opens only if the hand looks
+ * thin — a full set is stable museum metadata, and re-hitting `/api/met/curated`
+ * on every open stampedes The Met and was what left Monet Family off Hokusai's
+ * left. The fingerprint query busts HTTP caches when the list itself changes.
  */
 function useCuratedArtworks() {
   const [artworks, setArtworks] = useState<MetArtwork[]>([]);
   const [loading, setLoading] = useState(true);
+  const inFlight = useRef<AbortController | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(async (soft: boolean) => {
+    inFlight.current?.abort();
     const controller = new AbortController();
-    void (async () => {
-      try {
-        const res = await fetch("/api/met/curated", {
-          signal: controller.signal,
-        });
-        if (!res.ok) throw new Error(String(res.status));
-        const data = (await res.json()) as { artworks?: MetArtwork[] };
-        if (controller.signal.aborted) return;
-        setArtworks(data.artworks ?? []);
-      } catch {
-        if (!controller.signal.aborted) setArtworks([]);
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    })();
-    return () => controller.abort();
+    inFlight.current = controller;
+    if (!soft) setLoading(true);
+    try {
+      const res = await fetch(
+        `/api/met/curated?v=${encodeURIComponent(CURATED_MET_FINGERPRINT)}`,
+        { signal: controller.signal, cache: "no-store" },
+      );
+      if (!res.ok) throw new Error(String(res.status));
+      const data = (await res.json()) as { artworks?: MetArtwork[] };
+      if (controller.signal.aborted) return;
+      const next = data.artworks ?? [];
+      setArtworks(next);
+      preloadCuratedFirstOpenImages(next);
+    } catch {
+      if (!controller.signal.aborted && !soft) setArtworks([]);
+    } finally {
+      if (!controller.signal.aborted) setLoading(false);
+    }
   }, []);
 
-  return { curated: artworks, curatedLoading: loading };
+  useEffect(() => {
+    void load(false);
+    return () => inFlight.current?.abort();
+  }, [load]);
+
+  const refresh = useCallback(() => {
+    // Only re-fetch when the strip is incomplete. A full hand matching the
+    // curated id list is already what first-open should show.
+    if (artworks.length >= CURATED_MET_OBJECT_IDS.length) return;
+    void load(true);
+  }, [artworks.length, load]);
+
+  return { curated: artworks, curatedLoading: loading, refreshCurated: refresh };
 }
 
 export function useMetSearch() {
@@ -116,7 +164,7 @@ export function useMetSearch() {
   const [query, setQueryText] = useState("");
   const inFlight = useRef<AbortController | null>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { curated, curatedLoading } = useCuratedArtworks();
+  const { curated, curatedLoading, refreshCurated } = useCuratedArtworks();
 
   const clearDebounce = useCallback(() => {
     if (debounceTimer.current) {
@@ -265,6 +313,8 @@ export function useMetSearch() {
     artworks,
     curatedLoading,
     curatedCount: curated.length,
+    /** Soft re-fetch so an open tab picks up a reordered curated hand. */
+    refreshCurated,
     search,
     loadMore,
     reset,

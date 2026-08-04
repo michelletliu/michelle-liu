@@ -55,6 +55,17 @@ test("hangUrlBelongsToShare accepts trusted Vercel Blob hang URLs", () => {
   });
 });
 
+test("hangUrlBelongsToShare accepts WebP hang URLs", () => {
+  withPinnedHost(TRUSTED_HOST, () => {
+    const webp = `https://${TRUSTED_HOST}/galleries/${SHARE}/${PAINTING}.webp`;
+    assert.equal(hangUrlBelongsToShare(webp, SHARE, PAINTING), true);
+    assert.equal(
+      hangUrlBelongsToShare(`${webp}?v=abc123def456`, SHARE, PAINTING),
+      true,
+    );
+  });
+});
+
 test("hangUrlBelongsToShare accepts cache-bust query on hang URLs", () => {
   withPinnedHost(TRUSTED_HOST, () => {
     assert.equal(

@@ -6,6 +6,7 @@ import {
   coverUvTransform,
   frameGeometryForArtwork,
 } from "./galleryFrameGeometry.ts";
+import { paintingSize } from "./galleryPaintings.ts";
 
 const closeTo = (actual: number, expected: number, label: string) => {
   assert.ok(
@@ -13,6 +14,13 @@ const closeTo = (actual: number, expected: number, label: string) => {
     `${label}: expected ${expected}, got ${actual}`,
   );
 };
+
+test("paint apertures match Reve 3:4 and 3:2 generate ratios", () => {
+  const portrait = paintingSize("portrait");
+  const landscape = paintingSize("landscape");
+  closeTo(portrait.width / portrait.height, 3 / 4, "portrait aspect");
+  closeTo(landscape.width / landscape.height, 3 / 2, "landscape aspect");
+});
 
 test("3:2 landscape artwork has one world-space mat width on every side", () => {
   const geometry = frameGeometryForArtwork(1.95, 1.32, 3 / 2);

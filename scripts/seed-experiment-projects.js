@@ -83,6 +83,23 @@ const experimentProjects = [
     order: 3,
     isPublished: true,
   },
+  {
+    _type: 'experimentProject',
+    projectId: 'gallery',
+    title: 'Gallery',
+    year: '2026',
+    description: 'An interactive art gallery to visualize your ideas.',
+    muxPlaybackId: 't2gAjutGf202eNq15sczNsA9MmmxcGnmJ7cl8LFHuMZg',
+    tryItOutHref: '/gallery',
+    toolCategories: [
+      { _type: 'toolCategory', _key: 'interface', label: 'Interface', tools: ['Next.js', 'React'] },
+      { _type: 'toolCategory', _key: 'scene', label: 'Scene', tools: ['Three.js'] },
+      { _type: 'toolCategory', _key: 'data', label: 'Data', tools: ['The Met API', 'Open Access'] },
+      { _type: 'toolCategory', _key: 'motion', label: 'Motion', tools: ['Framer Motion'] },
+    ],
+    order: 5,
+    isPublished: true,
+  },
 ];
 
 async function seedProjects() {

@@ -188,6 +188,22 @@ const staticProjects: Project[] = [
     ],
   },
   {
+    id: "gallery",
+    title: "Gallery",
+    year: "2026",
+    description: "An interactive art gallery to visualize your ideas.",
+    imageSrc: "https://image.mux.com/t2gAjutGf202eNq15sczNsA9MmmxcGnmJ7cl8LFHuMZg/thumbnail.png?width=1920",
+    videoSrc: "https://stream.mux.com/t2gAjutGf202eNq15sczNsA9MmmxcGnmJ7cl8LFHuMZg.m3u8",
+    backgroundColor: "#ffffff",
+    toolCategories: [
+      { label: 'Interface', tools: ['Next.js', 'React'] },
+      { label: 'Scene', tools: ['Three.js'] },
+      { label: 'Data', tools: ['The Met API', 'Open Access'] },
+      { label: 'Motion', tools: ['Framer Motion'] },
+    ],
+  },
+  // Kept for routes/modal deep-links; filtered from the home grid via HIDDEN_EXPERIMENT_IDS.
+  {
     id: "sundays",
     title: "Sundays",
     year: "2026",
@@ -354,6 +370,7 @@ function getExperimentLink(projectId: string): { href: string; label: string; ex
     case 'library': return { href: '/library', label: 'Try It Out!', external: false };
     case 'film': return { href: '/film', label: 'Try It Out!', external: false };
     case 'sundays': return { href: 'https://sundays.rsvp', label: 'Visit Site', external: true };
+    case 'gallery': return { href: '/gallery', label: 'Try It Out!', external: false };
     default: return null;
   }
 }
@@ -366,8 +383,16 @@ type ProjectCardProps = {
   index?: number;
 };
 
-const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library", "film", "sundays"];
+const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library", "film", "gallery", "sundays"];
+/** Experiments kept in data/routes but omitted from the home experiments grid. */
+const HIDDEN_EXPERIMENT_IDS = ["sundays"];
+/** Experiments that skip the preview modal and navigate straight to their page. */
+const DIRECT_NAV_EXPERIMENT_IDS = ["gallery"];
 const MAIN_PROJECT_IDS = ["apple", "roblox", "adobe", "nasa"];
+
+function isVisibleOnHomeGrid(project: Project): boolean {
+  return !HIDDEN_EXPERIMENT_IDS.includes(project.id);
+}
 
 const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, featured = false, index = 0 }: ProjectCardProps) {
   const experimentLink = getExperimentLink(project.id);
@@ -375,6 +400,16 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
   
   const handleClick = () => {
     const isDesktop = window.innerWidth >= 768;
+
+    // Gallery (and similar) skip the film-style /project preview modal.
+    if (
+      experimentLink &&
+      !experimentLink.external &&
+      DIRECT_NAV_EXPERIMENT_IDS.includes(project.id)
+    ) {
+      window.location.href = experimentLink.href;
+      return;
+    }
     
     if (experimentLink && !experimentLink.external && !isDesktop) {
       window.location.href = experimentLink.href;
@@ -936,9 +971,31 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     return () => window.removeEventListener("popstate", onPopState);
   }, [localSlug]);
 
+  // Deep links to /project/gallery should land on the real page, not a preview modal.
+  useEffect(() => {
+    if (slug === "gallery" || localSlug === "gallery") {
+      window.location.replace("/gallery");
+    }
+  }, [slug, localSlug]);
+
   const isFullscreenFromUrl = localFullscreen;
 
   const handleProjectClick = useCallback((projectId: string) => {
+    // Direct-nav experiments never open ExperimentModal /film-style popup routes.
+    if (DIRECT_NAV_EXPERIMENT_IDS.includes(projectId)) {
+      const link = getExperimentLink(projectId);
+      if (link && !link.external) {
+        if (posthogEnabled) {
+          posthog.capture("project_opened", {
+            project_id: projectId,
+            view_mode: "direct",
+          });
+        }
+        window.location.href = link.href;
+        return;
+      }
+    }
+
     const isMobile = window.innerWidth < 768;
     const shouldGoFullscreen = projectId === 'film' || (isMobile && projectId !== 'sketchbook' && projectId !== 'sundays');
 
@@ -1113,7 +1170,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
       <NavigationTabs activeTab="work" heroAnimationPlayed={heroAnimationPlayed} />
 
       <div className="hidden md:grid gap-6 grid-cols-2 px-16 max-md:px-8 pt-2.5 pb-2 relative shrink-0 w-full">
-          {projects.map((project, index) => (
+          {projects.filter(isVisibleOnHomeGrid).map((project, index) => (
             <ProjectCard
               key={project.id}
               project={project}
@@ -1126,6 +1183,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
 
         <div className="md:hidden flex flex-col gap-8 px-6 py-4 relative shrink-0 w-full">
           {projects
+            .filter(isVisibleOnHomeGrid)
             .map((p, i) => ({ project: p, originalIndex: i }))
             .sort((a, b) => {
               if (a.project.id === 'sketchbook' && b.project.id === 'library') return 1;
@@ -1145,7 +1203,8 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
 
       <Footer />
 
-      {selectedProject && (
+      {selectedProject &&
+        !DIRECT_NAV_EXPERIMENT_IDS.includes(selectedProject.id) && (
         SIDE_PROJECT_IDS.includes(selectedProject.id) ? (
           <ExperimentModal 
             key={selectedProject.id}

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  BARE_ARTISTIC_GUIDANCE,
   GALLERY_INFO_TEXT,
   MET_ATTRIBUTION,
   MET_SAFETY_NOTE,
@@ -304,14 +305,31 @@ test("composed prompt requires the subject to stay legible", () => {
     referenceImage: true,
   });
   assert.match(prompt, /clearly recognisable/i);
-  assert.match(prompt, /whole subject inside the frame/i);
-  assert.match(prompt, /complete and uncropped/i);
+  assert.match(prompt, /whole subject complete and uncropped/i);
+  assert.match(prompt, /clear space around it on every side/i);
 
   // Both wordings that previously cost the subject are gone. "close-up" is here
   // because naming the unwanted composition is what produced it: warning
   // against a close-up returned a butterfly cropped off three sides.
+  // "inside the frame" invited a black keyline pad around the paint.
   assert.ok(!/edge to edge/i.test(prompt), prompt);
   assert.ok(!/close-up/i.test(prompt), prompt);
+  assert.ok(!/inside the frame/i.test(prompt), prompt);
+});
+
+test("composed prompt forbids baked-in borders and letterboxes", () => {
+  const { prompt } = composeInspiredPrompt("a butterfly", artwork());
+  assert.match(prompt, /no black border/i);
+  assert.match(prompt, /letterbox/i);
+  assert.match(prompt, /meets every edge of the canvas/i);
+});
+
+test("inspired prompts ask for museum-wall taste", () => {
+  const { prompt } = composeInspiredPrompt("a butterfly", artwork(), {
+    referenceImage: true,
+  });
+  assert.match(prompt, /museum-wall quality/i);
+  assert.match(prompt, /tasteful/i);
 });
 
 test("composed prompt leads with style and states the subject second", () => {
@@ -339,14 +357,15 @@ test("composed prompt carries counter-guidance against digital-illustration outp
 
 test("artwork context is never silently dropped from the composed prompt", () => {
   // Regression guard for the whole chain: if the artwork stops reaching the
-  // composer, or the composer stops using it, the prompt collapses back to the
-  // bare subject and style influence disappears from the output.
+  // composer, or the composer stops using it, the prompt collapses back to a
+  // generic bare subject and style influence disappears from the output.
   const subject = "a butterfly painting";
   const bare = composeInspiredPrompt(subject, null);
   const inspired = composeInspiredPrompt(subject, artwork());
 
-  assert.equal(bare.prompt, subject);
-  assert.notEqual(inspired.prompt, subject);
+  assert.ok(bare.prompt.includes(subject));
+  assert.equal(bare.inspiredByObjectID, null);
+  assert.notEqual(inspired.prompt, bare.prompt);
   assert.ok(inspired.prompt.length > subject.length * 5, inspired.prompt);
   assert.ok(inspired.prompt.includes(mediumDescriptor(artwork())));
   assert.equal(inspired.inspiredByObjectID, 436524);
@@ -472,13 +491,24 @@ test("composed prompt never asks the model to copy or reproduce the artwork", ()
   }
 });
 
-test("composed prompt collapses whitespace and passes the subject through alone with no artwork", () => {
+test("composed prompt collapses whitespace and wraps bare subjects in artistic guidance", () => {
   const { prompt, inspiredByObjectID } = composeInspiredPrompt(
     "  a   quiet   harbor  ",
     null,
   );
-  assert.equal(prompt, "a quiet harbor");
+  assert.match(prompt, /\ba quiet harbor\b/);
+  assert.ok(!prompt.includes("a   quiet"));
+  assert.match(prompt, /museum-quality hand-made/i);
+  assert.match(prompt, /not a digital illustration/i);
   assert.equal(inspiredByObjectID, null);
+});
+
+test("bare prompts reject glossy digital defaults", () => {
+  const { prompt } = composeInspiredPrompt("a butterfly", null);
+  assert.match(prompt, /visible hand of the artist/i);
+  assert.match(prompt, /no cgi sheen/i);
+  assert.ok(prompt.includes(BARE_ARTISTIC_GUIDANCE));
+  assert.ok(prompt.includes(STYLE_COUNTER_GUIDANCE));
 });
 
 test("the required attribution and safety strings are exact", () => {
@@ -488,7 +518,7 @@ test("the required attribution and safety strings are exact", () => {
   );
   assert.equal(
     MET_SAFETY_NOTE,
-    "Generated images are AI-created and are not affiliated with or endorsed by The Met.",
+    "Generated images are not affiliated with or endorsed by The Met.",
   );
 });
 
@@ -496,6 +526,6 @@ test("the info panel copy is the two notices, verbatim", () => {
   assert.equal(
     GALLERY_INFO_TEXT,
     "Source artwork data and image from The Metropolitan Museum of Art Open Access collection. " +
-      "Generated images are AI-created and are not affiliated with or endorsed by The Met.",
+      "Generated images are not affiliated with or endorsed by The Met.",
   );
 });

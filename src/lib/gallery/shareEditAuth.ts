@@ -69,6 +69,14 @@ export async function getShareEditSecret(
 }
 
 /**
+ * Short-lived OK cache so a save that uploads many hangs does not re-fetch
+ * `edit.json` from Blob on every hang POST (each uncached GET added hundreds
+ * of ms of wall time under sequential uploads).
+ */
+const VERIFY_CACHE_TTL_MS = 30_000;
+const verifyOkCache = new Map<string, number>();
+
+/**
  * True when `token` matches the private edit secret for `shareId`.
  * Galleries without an edit secret (legacy) cannot be written.
  */
@@ -77,9 +85,20 @@ export async function verifyShareEditToken(
   token: string | null | undefined,
 ): Promise<boolean> {
   if (typeof token !== "string" || !token.trim()) return false;
+  const trimmed = token.trim();
+  const cacheKey = `${shareId}:${hashEditToken(trimmed)}`;
+  const cachedUntil = verifyOkCache.get(cacheKey);
+  if (cachedUntil !== undefined && cachedUntil > Date.now()) {
+    return true;
+  }
+
   const secret = await getShareEditSecret(shareId);
   if (!secret) return false;
-  return editTokensMatch(token.trim(), secret.tokenHash);
+  const ok = editTokensMatch(trimmed, secret.tokenHash);
+  if (ok) {
+    verifyOkCache.set(cacheKey, Date.now() + VERIFY_CACHE_TTL_MS);
+  }
+  return ok;
 }
 
 export function editTokenFromRequest(req: {

@@ -31,38 +31,50 @@ type GalleryThumbstickProps = {
    * each frame means a bound is a wall, and reversing takes effect at once.
    */
   onZoomBy: (delta: number) => void;
+  /**
+   * When true, hide on viewports below `md` (768px) — e.g. while the composer
+   * is maximized and would otherwise cover / peek behind the stick.
+   * Desktop (`md+`) stays visible.
+   */
+  hideOnMobile?: boolean;
 };
 
-/** Base and knob radii in px. Knob travel is their difference, less a margin. */
-const BASE_RADIUS = 58; // 116px across — between the prior 112 and the 120 bump
-const KNOB_RADIUS = 19;
-const MAX_TRAVEL = BASE_RADIUS - KNOB_RADIUS - 5;
-/** Ring band between knob edge and outer rim — glyphs sit centered in this. */
-const RING_BAND = BASE_RADIUS - KNOB_RADIUS;
 /**
- * Axis hint size.
- *
- * Sized against the ring band rather than the base as a whole, so the glyphs
- * read as labels on the ring they sit in and the knob stays the largest thing
- * on the control.
+ * Match the collapsed composer actions pill padding (`p-1` outside the
+ * circular icon buttons). Ring air used to be ~6.5px on each side of a 26px
+ * wash, which ballooned the outer disc; 4px pad + the same wash keeps the
+ * stick compact (106px across, was 116). Plus is optically smaller than the
+ * 18px − / chevrons because PlusIcon fills its viewBox more heavily.
  */
-const ICON_SIZE = 15;
-const PLUS_AXIS_ICON_CLASS = "size-[11px]";
-/** Hit/hover wash around each glyph; kept smaller than the ring band. */
 const GLYPH_BOX = 26;
-/** Equal padding from knob edge and outer rim to the glyph box. */
-const GLYPH_PAD = (RING_BAND - GLYPH_BOX) / 2;
+const GLYPH_PAD = 4; // composer actions `p-1`
+const KNOB_RADIUS = 19;
+/** Ring band between knob edge and outer rim — glyphs sit centered in this. */
+const RING_BAND = GLYPH_BOX + GLYPH_PAD * 2;
+/** Base radius from knob + matched ring. */
+const BASE_RADIUS = KNOB_RADIUS + RING_BAND;
+const MAX_TRAVEL = BASE_RADIUS - KNOB_RADIUS - 5;
+/**
+ * Axis glyphs share one optical weight. Library `PlusIcon` draws nearly
+ * edge-to-edge in its 24 viewBox; the chevron path is a much smaller mark,
+ * so the same CSS size makes + look oversized. Chevrons run larger; minus
+ * matches composer actions (18px); plus is stepped down for optical parity.
+ */
+const PLUS_ICON_CLASS = "block size-[13px] shrink-0";
+const MINUS_ICON_CLASS = "block size-[18px] shrink-0";
+const CHEVRON_SIZE = "20px";
 
-function MinusIcon() {
+function AxisMinusIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
-      className="block size-[15px] shrink-0"
+      className={MINUS_ICON_CLASS}
       aria-hidden
     >
       <path
-        d="M4 12H20"
+        // Same horizontal span as PlusIcon (2→22), so − isn't a shorter stub.
+        d="M2 12H22"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
@@ -75,15 +87,16 @@ function MinusIcon() {
 /**
  * Where each axis button sits, and how much of the base it may claim.
  *
- * The numbers are forced by the geometry rather than chosen. The base is 116px
- * across with a 38px knob in the middle, which leaves a 39px band per side —
- * wide enough that a 26px glyph wash can sit centred with clear air to the knob
- * and the rim. Each target still stops dead at the knob's edge (`RING_BAND`
- * from the base's own edge) and makes up the area outwards, past the rim into
- * empty room. That yields pressable area against the glyph's 15×15, no overlap
- * between the four, and a knob whose drag region is untouched — the one thing
- * that must not be traded away, since dragging is still the only way to zoom
- * and step continuously.
+ * The numbers are forced by the geometry rather than chosen. The base is
+ * `BASE_RADIUS * 2` across with a `KNOB_RADIUS * 2` knob in the middle, which
+ * leaves a `RING_BAND` band per side — wide enough that a `GLYPH_BOX` wash
+ * can sit centred with `GLYPH_PAD` air to the knobs and the rim (same 4px
+ * the composer actions pill uses). Each target still stops dead at the
+ * knob's edge (`RING_BAND` from the base's own edge) and makes up the area
+ * outwards, past the rim into empty room. That yields pressable area against
+ * the glyph, no overlap between the four, and a knob whose drag region is
+ * untouched — the one thing that must not be traded away, since dragging is
+ * still the only way to zoom and step continuously.
  *
  * Each arm is pinned on both ends of its short side rather than given a length,
  * which is the difference between four targets that meet at the corners and
@@ -172,8 +185,8 @@ function AxisButton({
     >
       <span
         aria-hidden
-        style={AXIS_GLYPH_INSET[axis]}
-        className={`absolute grid size-[26px] place-items-center rounded-full text-zinc-500 transition-colors duration-150 group-hover:bg-zinc-900/[0.06] group-hover:text-zinc-700 group-active:bg-zinc-900/[0.12] motion-reduce:transition-none ${AXIS_GLYPH[axis]}`}
+        style={{ ...AXIS_GLYPH_INSET[axis], width: GLYPH_BOX, height: GLYPH_BOX }}
+        className={`absolute grid place-items-center rounded-full text-zinc-400 transition-colors duration-150 group-hover:bg-zinc-900/[0.06] group-hover:text-zinc-600 group-active:bg-zinc-900/[0.12] motion-reduce:transition-none ${AXIS_GLYPH[axis]}`}
       >
         {children}
       </span>
@@ -196,6 +209,7 @@ export default function GalleryThumbstick({
   focusedId,
   onSelect,
   onZoomBy,
+  hideOnMobile = false,
 }: GalleryThumbstickProps) {
   const baseRef = useRef<HTMLDivElement>(null);
   const knobRef = useRef<HTMLDivElement>(null);
@@ -259,6 +273,10 @@ export default function GalleryThumbstick({
     moveKnob(0, 0, true);
     setActive(false);
   }, [moveKnob]);
+
+  useEffect(() => {
+    if (hideOnMobile) endDrag();
+  }, [hideOnMobile, endDrag]);
 
   const tick = useCallback((now: number) => {
     // Clamped so a backgrounded tab resuming after seconds does not cash in
@@ -360,7 +378,7 @@ export default function GalleryThumbstick({
        * sat squarely on top of the bar at 768–1024, which the previous version
        * of this note wrongly claimed could not happen. At 4rem it clears from
        * ~890px. Below that the two genuinely do not fit — 576px of bar leaves
-       * 96px a side, and the stick needs 156 — and it still overlaps until the
+       * 96px a side, and the stick needs ~134 — and it still overlaps until the
        * narrow treatment takes over.
        *
        * Narrow keeps its own smaller side inset, matched to the logo's optical
@@ -368,7 +386,9 @@ export default function GalleryThumbstick({
        * height plus a small breathing gap, with safe-area padding added so the
        * relationship survives mobile browser chrome.
        */
-      className="pointer-events-none absolute right-6 bottom-[calc(env(safe-area-inset-bottom)+7.25rem)] z-30 md:right-16 md:bottom-16"
+      className={`pointer-events-none absolute right-6 bottom-[calc(env(safe-area-inset-bottom)+7.25rem)] z-30 transition-opacity duration-200 ease-out motion-reduce:transition-none md:right-16 md:bottom-16 ${
+        hideOnMobile ? "max-md:opacity-0" : ""
+      }`}
     >
       <div
         ref={baseRef}
@@ -380,9 +400,9 @@ export default function GalleryThumbstick({
         onPointerCancel={endDrag}
         onLostPointerCapture={endDrag}
         style={{ width: BASE_RADIUS * 2, height: BASE_RADIUS * 2 }}
-        className={`pointer-events-auto relative touch-none select-none rounded-full border border-black/10 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-md transition-colors duration-150 motion-reduce:transition-none ${
-          active ? "bg-white/85" : "bg-white/60"
-        } ${GALLERY_FOCUS_RING}`}
+        className={`relative touch-none select-none rounded-full border border-black/10 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-md transition-colors duration-150 motion-reduce:transition-none ${
+          hideOnMobile ? "max-md:pointer-events-none md:pointer-events-auto" : "pointer-events-auto"
+        } ${active ? "bg-white/85" : "bg-white/60"} ${GALLERY_FOCUS_RING}`}
       >
         {/* The four axes, now pressable as well as draggable. They were hints
             painted on a drag surface, which is why they were hard to click:
@@ -393,28 +413,28 @@ export default function GalleryThumbstick({
           label="Previous painting"
           onPress={() => onSelect(adjacentPaintingId(focusedId, -1))}
         >
-          <ChevronLeftIcon size={`${ICON_SIZE}px`} />
+          <ChevronLeftIcon size={CHEVRON_SIZE} />
         </AxisButton>
         <AxisButton
           axis="right"
           label="Next painting"
           onPress={() => onSelect(adjacentPaintingId(focusedId, 1))}
         >
-          <ChevronRightIcon size={`${ICON_SIZE}px`} />
+          <ChevronRightIcon size={CHEVRON_SIZE} />
         </AxisButton>
         <AxisButton
           axis="top"
           label="Zoom in"
           onPress={() => onZoomBy(ZOOM_STEP)}
         >
-          <PlusIcon className={PLUS_AXIS_ICON_CLASS} />
+          <PlusIcon className={PLUS_ICON_CLASS} />
         </AxisButton>
         <AxisButton
           axis="bottom"
           label="Zoom out"
           onPress={() => onZoomBy(-ZOOM_STEP)}
         >
-          <MinusIcon />
+          <AxisMinusIcon />
         </AxisButton>
 
         <div

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import LogoBackButton from "@/components/layout/LogoBackButton";
+import { ghostIconButtonClass } from "@/components/shared/ghostIconButton";
+import { SendIcon } from "@/components/library/icons";
 import { warmWorkPage } from "@/components/shared/doorwayWarm";
 import GalleryActionBar, { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import GalleryInfoButton from "./GalleryInfoButton";
@@ -101,7 +103,10 @@ export default function GalleryPage({
     () => new Set(),
   );
   const [composerOpenSignal, setComposerOpenSignal] = useState(0);
+  /** Matches action-bar maximized shell; edit mode starts expanded. */
+  const [composerExpanded, setComposerExpanded] = useState(!isView);
   const [saveOpen, setSaveOpen] = useState(false);
+  const shareButtonRef = useRef<HTMLButtonElement>(null);
   /**
    * Hues for in-flight shimmers, keyed by painting id so concurrent gens keep
    * their own palette when the visitor steps between canvases.
@@ -272,16 +277,22 @@ export default function GalleryPage({
       >
         {canSave ? (
           <button
+            ref={shareButtonRef}
             type="button"
-            onClick={() => setSaveOpen(true)}
+            onClick={() => setSaveOpen((open) => !open)}
             aria-label="Share"
+            aria-haspopup="dialog"
+            aria-expanded={saveOpen}
+            data-gallery-share-button
             // Persistent room furniture: must not fold the composer away.
             {...{ [KEEP_BAR_OPEN_ATTR]: "" }}
-            // Site CTA ink (Generate / Save dialog): zinc-900 fill, white
-            // label. h-10 matches ghostIconButtonClass("md") info control.
-            className={`inline-flex h-10 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-zinc-900 px-4 py-1.5 font-['Michelle',sans-serif] text-base font-medium text-white transition-opacity duration-200 hover:opacity-90 motion-reduce:transition-none ${GALLERY_FOCUS_RING}`}
+            // Same ghost md control as GalleryInfoButton; paper plane = share.
+            className={ghostIconButtonClass(
+              "md",
+              `text-zinc-400 ${saveOpen ? "bg-zinc-900/5" : ""} ${GALLERY_FOCUS_RING}`,
+            )}
           >
-            Share
+            <SendIcon className="size-5" />
           </button>
         ) : null}
         {isView && galleryName ? (
@@ -309,7 +320,11 @@ export default function GalleryPage({
           gaps either side of the bar. */}
       <div
         ref={bottomStack.ref}
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex flex-col items-center px-4 pb-6 md:pb-8"
+        // Desktop: lift the composer so its vertical center matches the
+        // thumbstick (`md:bottom-16` + 106px disc → center at 117px). Expanded
+        // single-line bar is ~62px tall, so pb = 117 − 31 = 86. Mobile keeps
+        // pb-6 — the stick sits above the bar there on purpose.
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex flex-col items-center px-4 pb-6 md:pb-[86px]"
       >
         {isView ? (
           canDownload ? (
@@ -331,6 +346,7 @@ export default function GalleryPage({
             onDownload={onDownload}
             openSignal={composerOpenSignal}
             onGenerate={onGenerate}
+            onExpandedChange={setComposerExpanded}
           />
         )}
       </div>
@@ -338,11 +354,13 @@ export default function GalleryPage({
         focusedId={focusedId}
         onSelect={selectPainting}
         onZoomBy={zoomBy}
+        hideOnMobile={composerExpanded}
       />
       {!isView && (
         <GallerySaveDialog
           open={saveOpen}
           hangs={saveHangs}
+          anchorRef={shareButtonRef}
           onClose={() => setSaveOpen(false)}
         />
       )}

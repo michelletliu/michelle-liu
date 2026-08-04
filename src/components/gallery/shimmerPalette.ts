@@ -16,11 +16,10 @@ export type ShimmerHues = [number, number, number, number];
 
 /**
  * Used for text-only generations, and whenever extraction cannot produce
- * something better. Warm earth angles first (terracotta, ochre), then a soft
- * slate and muted violet for depth — aged-painting territory rather than a
- * neon rainbow around the wheel.
+ * something better. Soft mesh-gradient pastels — peach, lime, sky, magenta —
+ * matching the white-heavy grain field rather than heavy earth tones.
  */
-export const FALLBACK_HUES: ShimmerHues = [32, 68, 198, 262];
+export const FALLBACK_HUES: ShimmerHues = [32, 95, 205, 330];
 
 /**
  * Smallest angle allowed between two hues in the returned set.

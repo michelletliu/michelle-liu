@@ -12,7 +12,7 @@ export const MET_ATTRIBUTION =
   "Source artwork data and image from The Metropolitan Museum of Art Open Access collection.";
 
 export const MET_SAFETY_NOTE =
-  "Generated images are AI-created and are not affiliated with or endorsed by The Met.";
+  "Generated images are not affiliated with or endorsed by The Met.";
 
 /**
  * The one place the gallery states attribution and AI provenance.
@@ -452,7 +452,15 @@ export function strokeIdiom(artwork: MetArtwork): string | null {
  * negative-prompt parameter, so the exclusions have to live in the prompt body.
  */
 export const STYLE_COUNTER_GUIDANCE =
-  "Not a photograph and not photorealistic. Not a digital illustration, not a 3D render, not concept art. No airbrushed gradients, no smooth glossy shading, no clean vector edges, no CGI sheen. Every part of the surface must show the hand of the painter and the texture of the material.";
+  "Not a photograph and not photorealistic. Not a digital illustration, not a 3D render, not concept art, not stock art. No airbrushed gradients, no smooth glossy shading, no clean vector edges, no CGI sheen, no plastic skin, no over-sharpened AI look. No black border, mat, picture frame or letterbox around the painting — the painted surface meets every edge of the canvas. Every part of the surface must show the hand of the painter or draughtsperson and the texture of the material.";
+
+/**
+ * Used when the user generates without a Met inspiration. Bare subject text
+ * alone drifts toward generic digital illustration; this keeps the default
+ * output in museum-wall, hand-made territory.
+ */
+export const BARE_ARTISTIC_GUIDANCE =
+  "A museum-quality hand-made painting or drawing: beautiful, tasteful, and refined. Thoughtful composition with intentional negative space and harmonious colour. Visible hand of the artist — brush marks or drawn marks, uneven pigment, physical surface — never flat digital fill.";
 
 /**
  * How Reve binds a prompt to an entry in `reference_images`, 0-based. Exactly
@@ -502,7 +510,11 @@ export function composeInspiredPrompt(
 
   if (!artwork) {
     return {
-      prompt: cleanSubject,
+      prompt: [
+        BARE_ARTISTIC_GUIDANCE,
+        `The picture depicts: ${cleanSubject}, clearly recognisable, complete and uncropped, with clear space around it on every side.`,
+        STYLE_COUNTER_GUIDANCE,
+      ].join(" "),
       inspiredByObjectID: null,
       usesReferenceImage: false,
     };
@@ -544,10 +556,12 @@ export function composeInspiredPrompt(
      * butterfly running off three sides.
      *
      * Naming the failure was the problem — "close-up" is the composition the
-     * model then reached for. So this asks positively for what is wanted, in
-     * framing terms it can act on, and never says the word.
+     * model then reached for. So this asks positively for what is wanted and
+     * never says the word. Avoid "inside the frame" too: Reve treats that as a
+     * request to draw a black keyline / picture-frame pad around the paint.
      */
-    `The painting depicts: ${cleanSubject}, clearly recognisable. Show the whole subject inside the frame, complete and uncropped, with clear space around it on every side.`,
+    `The painting depicts: ${cleanSubject}, clearly recognisable. Show the whole subject complete and uncropped, with clear space around it on every side.`,
+    `Museum-wall quality: beautiful, tasteful, and refined — not decorative kitsch and not generic AI art.`,
     ...style,
     STYLE_COUNTER_GUIDANCE,
   ]

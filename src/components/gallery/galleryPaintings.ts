@@ -107,13 +107,18 @@ export function hangOffset(
   return -span / 2 + (span / (count - 1)) * clamped;
 }
 
+/**
+ * World size of the paint aperture. Matched exactly to Reve's `3:4` / `3:2`
+ * generate ratios so hung textures cover the plane without residual
+ * letterboxing from a 1–1.5% aspect mismatch.
+ */
 export function paintingSize(aspect: GalleryPainting["aspect"]): {
   width: number;
   height: number;
 } {
   return aspect === "portrait"
-    ? { width: 1.15, height: 1.55 }
-    : { width: 1.95, height: 1.32 };
+    ? { width: 1.1625, height: 1.55 } // 3:4
+    : { width: 1.98, height: 1.32 }; // 3:2
 }
 
 export function paintingLayout(
@@ -289,14 +294,21 @@ export type GalleryRoomPose = {
 };
 
 /**
- * Stand squarely in front of the focused hang and face it.
+ * Lateral nudge of the framed view along the wall (world units).
+ * `0` keeps the eye and look square on the hang's own center.
+ */
+export const FRAMING_LATERAL_BIAS = 0;
+
+/**
+ * Stand in front of the focused hang and face it.
  * Hangs stay fixed; the camera relocates between canvases.
  *
- * The eye backs straight off the hang's own center along its wall normal, so
- * it is laterally aligned with that canvas and looks down the normal at it.
- * Anchoring the eye to the wall's midpoint instead — as the end walls used to,
- * for a one-point view of the room — centers only the middle hang of a wall
- * and leaves its neighbours off to one side by the full hang spacing.
+ * The eye backs off along the wall normal from the hang center
+ * (`FRAMING_LATERAL_BIAS` is zero), so the focused canvas sits in screen
+ * center. Anchoring the eye to the wall's midpoint instead — as the end
+ * walls used to, for a one-point view of the room — centers only the middle
+ * hang of a wall and leaves its neighbours off to one side by the full hang
+ * spacing.
  */
 export function roomPoseForPainting(
   id: string,
@@ -307,9 +319,14 @@ export function roomPoseForPainting(
   const layout = paintingLayout(painting);
   const { width, depth, eyeY, frameInset } = GALLERY_ROOM;
 
-  const lookX = layout.position.x;
+  // Same lateral nudge on eye and look keeps the view square on the wall.
+  const travel = WALL_TRAVEL[painting.wall];
+  const lateral = FRAMING_LATERAL_BIAS * travel.sign;
+  const lookX =
+    layout.position.x + (travel.axis === "x" ? lateral : 0);
   const lookY = layout.position.y;
-  const lookZ = layout.position.z;
+  const lookZ =
+    layout.position.z + (travel.axis === "z" ? lateral : 0);
 
   // Bound the dolly along the wall normal rather than bounding x and z apart.
   // The eye only ever travels that one axis, so a distance bound keeps it both
