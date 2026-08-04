@@ -14,6 +14,7 @@ import VideoPlayer from "../shared/VideoPlayer";
 import ShimmerImage from "../shared/ShimmerImage";
 import ShimmerVideo from "../shared/ShimmerVideo";
 import Footer from "../layout/Footer";
+import { buttonClassName } from "../shared/Button";
 import { TryItOutButton } from "../shared/TryItOutButton";
 import {
   getCachedData,
@@ -682,18 +683,22 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
               href={project.xLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-blue-500 border border-blue-400 border-solid content-stretch flex gap-1 items-center justify-center px-4 py-1.5 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out mt-1"
+              className={buttonClassName({
+                variant: "primary",
+                size: "md",
+                className: "relative mt-1 gap-1 whitespace-nowrap",
+              })}
             >
-              <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-base tracking-[0.005em] text-white whitespace-nowrap">
+              <span className="relative shrink-0 leading-normal tracking-[0.005em] whitespace-nowrap">
                 View on
               </span>
-              <svg 
-                className="block w-[14px] h-[14px] fill-white" 
+              <svg
+                className="block h-[14px] w-[14px] fill-white"
                 viewBox="0 0 19 18"
               >
                 <path d={svgPaths.p16308a80} />
               </svg>
-              <span className="text-white inline-flex items-center">
+              <span className="inline-flex items-center text-white">
                 <ArrowUpRight size="14px" />
               </span>
             </a>

@@ -1,13 +1,17 @@
 "use client";
 
 import clsx from "clsx";
-import {
-  useState,
-  type ButtonHTMLAttributes,
-  type ReactNode,
-} from "react";
+import { useState, type ReactNode } from "react";
 import { ArrowUpRight } from "../../../icons/ArrowUpRight";
 import { Chevron } from "../../../icons/Chevron";
+import {
+  Button,
+  BUTTON_RADIUS_CLASS,
+  BUTTON_TEXT_SIZE_CLASS,
+  type ButtonRadius,
+  type ButtonSize,
+  type ButtonVariant,
+} from "../../../shared/Button";
 import { FilterPills } from "../../../shared/FilterPills";
 import { ghostIconButtonClass } from "../../../shared/ghostIconButton";
 import { iconSize } from "../../../shared/iconSizes";
@@ -25,40 +29,8 @@ import {
   SpecimenGrid,
 } from "./ComponentSpecimen";
 
-type ButtonVariant = "primary" | "secondary" | "tertiary" | "ghost";
-type ButtonSize = "sm" | "md" | "lg";
-type ButtonRadius = "circular" | "rectangular";
 type ButtonContent = "label" | "icon-label" | "icon";
 type GlassButtonVariant = Exclude<ButtonVariant, "ghost">;
-
-const GHOST_SURFACE =
-  "bg-transparent transition-colors duration-200 hover:bg-zinc-900/5";
-
-const BUTTON_VARIANT_CLASS: Record<ButtonVariant, string> = {
-  primary:
-    "border border-blue-400 bg-blue-500 text-white hover:border-blue-300 hover:bg-blue-400",
-  secondary:
-    "border border-[#e4e4e7] bg-[#fafafa] text-zinc-700 hover:bg-zinc-900/5",
-  tertiary: "bg-zinc-100 text-zinc-700 hover:bg-zinc-500/10",
-  ghost: `${GHOST_SURFACE} text-zinc-700`,
-};
-
-const BUTTON_RADIUS_CLASS: Record<ButtonRadius, string> = {
-  circular: "rounded-full",
-  rectangular: "rounded-xl",
-};
-
-const BUTTON_TEXT_SIZE_CLASS: Record<ButtonSize, string> = {
-  sm: "gap-1 px-3 py-1 text-sm",
-  md: "gap-1.5 px-4 py-1.5 text-base",
-  lg: "gap-1.5 px-5 py-2.5 text-base",
-};
-
-const BUTTON_ICON_SIZE_CLASS: Record<ButtonSize, string> = {
-  sm: "size-8",
-  md: "size-10",
-  lg: "size-12",
-};
 
 const BUTTON_VARIANTS: ButtonVariant[] = [
   "primary",
@@ -86,43 +58,6 @@ const CONTENT_OPTIONS = [
   { value: "icon", label: "Icon" },
 ];
 
-function Button({
-  variant,
-  size = "md",
-  icon = false,
-  radius = "circular",
-  children,
-  className,
-  type = "button",
-  ...props
-}: {
-  variant: ButtonVariant;
-  size?: ButtonSize;
-  icon?: boolean;
-  radius?: ButtonRadius;
-  children?: ReactNode;
-  className?: string;
-} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className" | "children">) {
-  return (
-    <button
-      {...props}
-      type={type}
-      className={clsx(
-        "button-sample inline-flex shrink-0 items-center justify-center transition-[border-radius,background-color,border-color,color] duration-200 ease-in-out motion-reduce:transition-none",
-        BUTTON_RADIUS_CLASS[radius],
-        BUTTON_VARIANT_CLASS[variant],
-        icon ? BUTTON_ICON_SIZE_CLASS[size] : BUTTON_TEXT_SIZE_CLASS[size],
-        !icon && variant === "primary"
-          ? "font-['Michelle',sans-serif] font-semibold"
-          : "font-medium",
-        className,
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
 function ButtonSample({
   variant,
   size,
@@ -142,6 +77,7 @@ function ButtonSample({
         icon
         radius={radius}
         aria-label="Send"
+        className="button-sample"
       >
         <SendIcon className="-ml-0.5 w-5 pt-0.5" />
       </Button>
@@ -154,7 +90,10 @@ function ButtonSample({
         variant={variant}
         size={size}
         radius={radius}
-        className={size === "sm" ? "gap-1" : "gap-1.5"}
+        className={clsx(
+          "button-sample",
+          size === "sm" ? "gap-1" : "gap-1.5",
+        )}
       >
         <span>Continue</span>
         {variant === "secondary" ? (
@@ -167,7 +106,12 @@ function ButtonSample({
   }
 
   return (
-    <Button variant={variant} size={size} radius={radius}>
+    <Button
+      variant={variant}
+      size={size}
+      radius={radius}
+      className="button-sample"
+    >
       Label
     </Button>
   );

@@ -1,5 +1,6 @@
 import React from "react";
 import { posthog, posthogEnabled } from "../../lib/posthog";
+import { Button } from "./Button";
 
 type TryItOutButtonProps = {
   href?: string;
@@ -7,7 +8,11 @@ type TryItOutButtonProps = {
   className?: string;
 };
 
-export function TryItOutButton({ href = "/polaroid", onClick, className = "" }: TryItOutButtonProps) {
+export function TryItOutButton({
+  href = "/polaroid",
+  onClick,
+  className = "",
+}: TryItOutButtonProps) {
   const handleClick = () => {
     if (posthogEnabled) {
       posthog.capture("try_it_out_clicked", { href });
@@ -15,24 +20,20 @@ export function TryItOutButton({ href = "/polaroid", onClick, className = "" }: 
     if (onClick) {
       onClick();
     } else {
-      // Default behavior: navigate in same window
       window.location.href = href;
     }
   };
 
   return (
-    <button
+    <Button
+      variant="primary"
+      size="md"
       onClick={handleClick}
-      className={`bg-blue-500 border border-blue-400 border-solid content-stretch flex gap-1.5 items-center justify-center px-4 py-1.5 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out ${className}`}
+      className={className}
     >
-      <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-base text-white whitespace-nowrap">
-        Try It Out!
-      </span>
-    </button>
+      Try It Out!
+    </Button>
   );
 }
 
 export default TryItOutButton;
-
-
-

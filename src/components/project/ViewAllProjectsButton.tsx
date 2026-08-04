@@ -1,5 +1,6 @@
 import React from "react";
 import clsx from "clsx";
+import { Button } from "../shared/Button";
 
 type ViewAllProjectsButtonProps = {
   onClick?: () => void;
@@ -14,25 +15,20 @@ export default function ViewAllProjectsButton({
     <div
       className={clsx(
         "content-stretch flex flex-col items-center relative shrink-0 w-full",
-        className
+        className,
       )}
     >
-      <button
-        type="button"
+      <Button
+        variant="secondary"
+        size="md"
+        className="relative z-10"
         onClick={(e) => {
           e.stopPropagation();
           onClick?.();
         }}
-        className="bg-[#fafafa] border border-[#e4e4e7] border-solid content-stretch flex items-center justify-center px-4 py-1.5 relative rounded-full shrink-0 hover:bg-[#f4f4f5] transition-colors cursor-pointer z-10"
       >
-        <span className="font-medium leading-normal relative shrink-0 text-zinc-700 hover:text-zinc-800 text-base">
-          View all projects
-        </span>
-      </button>
+        View all projects
+      </Button>
     </div>
   );
 }
-
-
-
-

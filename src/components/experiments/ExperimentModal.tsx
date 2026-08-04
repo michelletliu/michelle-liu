@@ -7,6 +7,7 @@ import ShimmerImage from '../shared/ShimmerImage';
 import ShimmerVideo from '../shared/ShimmerVideo';
 import { ArrowUpRight } from '../icons/ArrowUpRight';
 import type { ToolCategory } from '../shared/InfoButton';
+import { buttonClassName } from '../shared/Button';
 import { HorizontalLine } from '../shared/HorizontalLine';
 import { TryItOutButton } from '../shared/TryItOutButton';
 import Tooltip from '../shared/Tooltip';
@@ -353,7 +354,11 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
                   href={project.xLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+                  className={buttonClassName({
+                    variant: "primary",
+                    size: "sm",
+                    className: "whitespace-nowrap",
+                  })}
                 >
                   <span className="font-['Michelle',sans-serif] font-medium leading-normal text-sm text-white whitespace-nowrap">
                     View on
@@ -375,7 +380,11 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
                 href={project.xLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+                className={buttonClassName({
+                    variant: "primary",
+                    size: "sm",
+                    className: "whitespace-nowrap",
+                  })}
               >
                 <span className="font-['Michelle',sans-serif] font-medium leading-normal text-sm text-white whitespace-nowrap">
                   View on
@@ -522,7 +531,11 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
             href={project.xLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="self-start bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+            className={buttonClassName({
+              variant: "primary",
+              size: "sm",
+              className: "relative self-start whitespace-nowrap",
+            })}
           >
             <span className="font-['Michelle',sans-serif] font-medium leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
               View on
@@ -964,7 +977,11 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
               href={project.xLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+              className={buttonClassName({
+                variant: "primary",
+                size: "sm",
+                className: "relative whitespace-nowrap",
+              })}
             >
               <span className="font-['Michelle',sans-serif] font-medium leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
                 View on

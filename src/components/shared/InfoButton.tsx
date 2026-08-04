@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import ShimmerImage from './ShimmerImage';
 import ShimmerVideo from './ShimmerVideo';
 import { ArrowUpRight } from '../icons/ArrowUpRight';
+import { buttonClassName } from './Button';
 import { HorizontalLine } from './HorizontalLine';
 import { useScrollLock } from '../../utils/useScrollLock';
 import { ghostIconButtonClass } from './ghostIconButton';
@@ -227,18 +228,22 @@ export default function InfoButton({ project }: InfoButtonProps) {
                     href={project.xLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hidden md:flex bg-blue-500 border border-blue-400 border-solid gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+                    className={buttonClassName({
+                      variant: "primary",
+                      size: "sm",
+                      className: "hidden md:flex relative whitespace-nowrap",
+                    })}
                   >
-                    <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
+                    <span className="leading-normal relative shrink-0 whitespace-nowrap">
                       View on
                     </span>
                     <svg
-                      className="block w-[12px] h-[12px] fill-white"
+                      className="block h-[12px] w-[12px] fill-white"
                       viewBox="0 0 19 18"
                     >
                       <path d={xLogoPath} />
                     </svg>
-                    <span className="text-white inline-flex items-center">
+                    <span className="inline-flex items-center text-white">
                       <ArrowUpRight size="12px" />
                     </span>
                   </a>
@@ -283,18 +288,22 @@ export default function InfoButton({ project }: InfoButtonProps) {
                   href={project.xLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="md:hidden self-end mt-2 bg-blue-500 border border-blue-400 border-solid flex gap-1 items-center justify-center px-3 py-1 relative rounded-full shrink-0 cursor-pointer hover:bg-blue-400 hover:border-blue-300 transition-colors duration-200 ease-out"
+                  className={buttonClassName({
+                    variant: "primary",
+                    size: "sm",
+                    className: "relative mt-2 self-end whitespace-nowrap md:hidden",
+                  })}
                 >
-                  <span className="font-['Michelle',sans-serif] font-semibold leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
+                  <span className="leading-normal relative shrink-0 whitespace-nowrap">
                     View on
                   </span>
-                  <svg 
-                    className="block w-[12px] h-[12px] fill-white" 
+                  <svg
+                    className="block h-[12px] w-[12px] fill-white"
                     viewBox="0 0 19 18"
                   >
                     <path d={xLogoPath} />
                   </svg>
-                  <span className="text-white inline-flex items-center">
+                  <span className="inline-flex items-center text-white">
                     <ArrowUpRight size="12px" />
                   </span>
                 </a>
