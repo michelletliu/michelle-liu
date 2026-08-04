@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, usePathname } from "next/navigation";
+import { useSelectedLayoutSegments } from "next/navigation";
 import HomePageClient from "@/components/HomePageClient";
 
 export default function HomeLayout({
@@ -8,19 +8,21 @@ export default function HomeLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const params = useParams();
-  const pathname = usePathname();
+  const segments = useSelectedLayoutSegments();
+  const [section, slugOrPopup, mode, bookSlug] = segments;
 
-  // /film/popup is a special route that opens the film popup on the homepage
-  const isFilmPopup = pathname === "/film/popup";
+  const isProjectRoute = section === "project";
+  const isFilmPopupRoute = section === "film" && slugOrPopup === "popup";
 
-  const slug = isFilmPopup ? "film" : (params.slug as string | undefined);
-  const mode = params.mode as string | undefined;
-  const bookSlug = params.bookSlug as string | undefined;
+  const slug = isFilmPopupRoute ? "film" : isProjectRoute ? slugOrPopup : undefined;
 
   return (
     <>
-      <HomePageClient slug={slug} mode={mode} bookSlug={bookSlug} />
+      <HomePageClient
+        slug={slug}
+        mode={isProjectRoute ? mode : undefined}
+        bookSlug={isProjectRoute ? bookSlug : undefined}
+      />
       {children}
     </>
   );
