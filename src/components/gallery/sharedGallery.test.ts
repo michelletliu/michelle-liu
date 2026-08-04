@@ -9,6 +9,7 @@ import {
   isValidShareId,
   MAX_GALLERY_NAME_LENGTH,
   MAX_SHARE_ID_LENGTH,
+  MAX_SHARE_SLUG_PROBES,
   sanitizeGalleryName,
   SHARE_ID_LENGTH,
   slugifyGalleryShareId,
@@ -93,4 +94,27 @@ test("allocateShareSlug falls back to gallery when name cannot slugify", async (
     (n) => new Uint8Array(n),
   );
   assert.equal(id, "gallery");
+});
+
+test("allocateShareSlug caps sequential probes before opaque fallback", async () => {
+  let probes = 0;
+  const id = await allocateShareSlug(
+    "Michelle",
+    async () => {
+      probes += 1;
+      return true;
+    },
+    (n) => {
+      const bytes = new Uint8Array(n);
+      bytes.fill(7);
+      return bytes;
+    },
+  );
+  // Numbered slug probes are bounded; opaque attempts may add a few more checks.
+  assert.ok(
+    probes <= MAX_SHARE_SLUG_PROBES + 8,
+    `expected at most ${MAX_SHARE_SLUG_PROBES + 8} probes, got ${probes}`,
+  );
+  assert.equal(id.length, SHARE_ID_LENGTH);
+  assert.ok(!id.startsWith("michelle"));
 });

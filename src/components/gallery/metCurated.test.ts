@@ -11,7 +11,7 @@ import { CURATED_MET_OBJECT_IDS } from "./metCurated.ts";
  */
 const LEAD_WORKS = [
   39799, // Hokusai, The Great Wave
-  436528, // Van Gogh, Irises
+  436535, // Van Gogh, Wheat Field with Cypresses
   337499, // J. M. W. Turner, The Lake of Zug
 ];
 
