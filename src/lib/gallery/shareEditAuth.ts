@@ -31,8 +31,10 @@ export async function putShareEditSecret(
   { overwrite = false }: { overwrite?: boolean } = {},
 ): Promise<void> {
   const body: ShareEditSecret = { version: 1, tokenHash };
+  // Public store only allows public blobs. Payload is a SHA-256 of a
+  // high-entropy edit token (not reversible), never the raw token.
   await put(editSecretPath(shareId), JSON.stringify(body), {
-    access: "private",
+    access: "public",
     contentType: "application/json",
     addRandomSuffix: false,
     allowOverwrite: overwrite,
@@ -44,7 +46,7 @@ export async function getShareEditSecret(
 ): Promise<ShareEditSecret | null> {
   try {
     const result = await get(editSecretPath(shareId), {
-      access: "private",
+      access: "public",
       useCache: false,
     });
     if (!result || result.statusCode !== 200 || !result.stream) {

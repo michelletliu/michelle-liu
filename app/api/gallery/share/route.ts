@@ -85,10 +85,16 @@ export async function POST(req: NextRequest) {
     await putShareEditSecret(shareId, hashEditToken(editToken));
   } catch (err) {
     console.error("[gallery/share] failed to store edit secret", err);
-    return NextResponse.json(
-      { error: "Could not start save." },
-      { status: 502 },
-    );
+    const message = err instanceof Error ? err.message : "";
+    const hint =
+      /private access on a public store/i.test(message)
+        ? "Blob store is public-only; edit secrets must use public access."
+        : /BLOB_READ_WRITE_TOKEN|not configured|unauthorized|forbidden/i.test(
+              message,
+            )
+          ? "Blob storage is misconfigured."
+          : "Could not start save.";
+    return NextResponse.json({ error: hint }, { status: 502 });
   }
 
   return NextResponse.json({
