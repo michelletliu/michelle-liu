@@ -2,9 +2,9 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import MediaCard, { type MediaCardData } from "./MediaCard";
 import { getShelfDisplayItems } from "./shelfCoverDate";
-import { ArrowUpRight } from "../ArrowUpRight";
-import { FilterDropdown } from "../FilterDropdown";
-import { FilterPills } from "../FilterPills";
+import { ArrowUpRight } from "../icons/ArrowUpRight";
+import { FilterDropdown } from "../shared/FilterDropdown";
+import { FilterPills } from "../shared/FilterPills";
 
 type YearFilter = {
   year: string;

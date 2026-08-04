@@ -1,4 +1,4 @@
-import Sidebar, { type SidebarNode } from "../Sidebar";
+import Sidebar, { type SidebarNode } from "../layout/Sidebar";
 
 // Sidebar navigation categories
 export type AboutCategory = "hi" | "experience" | "community" | "philosophy" | "shelf" | "lore";

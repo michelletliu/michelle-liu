@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import type { Book } from "./types";
-import ShimmerImage from "../ShimmerImage";
+import ShimmerImage from "../shared/ShimmerImage";
 import { ArrowRightIcon } from "./icons";
-import { iconSize } from "../iconSizes";
+import { iconSize } from "../shared/iconSizes";
 
 // Format a YYYY-MM-DD date string. Force UTC so the stored calendar date isn't
 // shifted a day earlier when rendered in a negative-offset timezone.

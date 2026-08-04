@@ -5,4 +5,4 @@ export {
   ChevronRightIcon,
   ChevronDownIcon,
   ChevronUpIcon,
-} from "../Chevron";
+} from "../icons/Chevron";

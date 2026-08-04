@@ -1,5 +1,5 @@
 import React from "react";
-import ShimmerImage from "../ShimmerImage";
+import ShimmerImage from "../shared/ShimmerImage";
 import { urlFor } from "../../sanity/client";
 import type { SanityImage } from "../../sanity/types";
 

@@ -14,14 +14,14 @@ import {
   useReducedMotion,
   type Transition,
 } from "framer-motion";
-import { CloseIcon } from "@/components/Close";
+import { CloseIcon } from "@/components/icons/Close";
 import {
   FILM_DOT_STYLE,
   GALLERY_LOADING_PHRASES,
   RotatingLoadingText,
 } from "@/components/RotatingLoadingText";
-import Tooltip from "@/components/Tooltip";
-import { iconSize } from "@/components/iconSizes";
+import Tooltip from "@/components/shared/Tooltip";
+import { iconSize } from "@/components/shared/iconSizes";
 import { PlusIcon, SquarePenIcon } from "@/components/library/icons";
 import MetArtworkPicker from "./MetArtworkPicker";
 import { isGalleryDialogOpen } from "./galleryDialog";

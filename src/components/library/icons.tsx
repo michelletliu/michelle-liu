@@ -3,9 +3,9 @@
 // so optical weight stays 1.5 CSS px at any display size.
 // Chevron → ../Chevron.tsx · Close → ../Close.tsx · Arrow → ../Arrow.tsx
 
-export { ArrowRightIcon, ArrowDownIcon } from "../Arrow";
-export { ChevronDownIcon } from "../Chevron";
-export { CloseIcon } from "../Close";
+export { ArrowRightIcon, ArrowDownIcon } from "../icons/Arrow";
+export { ChevronDownIcon } from "../icons/Chevron";
+export { CloseIcon } from "../icons/Close";
 
 interface IconProps {
   className?: string;

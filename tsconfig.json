@@ -47,10 +47,6 @@
   ],
   "exclude": [
     "node_modules",
-    "src/assets/receipt",
-    "src/components/ui",
-    "src/imports/BreakpointSm.tsx",
-    "src/imports/Test.tsx",
-    "src/imports/V1.tsx"
+    "src/assets/receipt"
   ]
 }

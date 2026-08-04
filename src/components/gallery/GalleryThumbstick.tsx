@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeftIcon, ChevronRightIcon } from "@/components/Chevron";
+import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Chevron";
 import { PlusIcon } from "@/components/library/icons";
 import { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";

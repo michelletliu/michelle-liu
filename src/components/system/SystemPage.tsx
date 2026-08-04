@@ -6,24 +6,24 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import Sidebar, { type SidebarNode } from "../Sidebar";
-import BlueprintLogo from "../BlueprintLogo";
+import Sidebar, { type SidebarNode } from "../layout/Sidebar";
+import BlueprintLogo from "../shared/BlueprintLogo";
 import {
   markBlueprintDoorwayNav,
   getDoorwayReturnPath,
   doorwayReturnLabel,
-} from "../blueprintDoorwayNav";
-import { warmDoorwayReturn } from "../doorwayWarm";
-import Footer from "../Footer";
-import { Chevron } from "../Chevron";
-import { Close } from "../Close";
+} from "../shared/blueprintDoorwayNav";
+import { warmDoorwayReturn } from "../shared/doorwayWarm";
+import Footer from "../layout/Footer";
+import { Chevron } from "../icons/Chevron";
+import { Close } from "../icons/Close";
 import {
   FieldInput,
   FieldLeadingIcon,
   FieldShell,
   SearchMagnifierIcon,
-} from "../FieldInput";
-import { iconSize } from "../iconSizes";
+} from "../shared/FieldInput";
+import { iconSize } from "../shared/iconSizes";
 import { useScrollLock } from "../../utils/useScrollLock";
 import {
   tocSections,

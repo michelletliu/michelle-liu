@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import { SendIcon, SmileyIcon } from "./icons";
 import { posthog, posthogEnabled } from "../../lib/posthog";
-import { FieldInput, FieldShell } from "../FieldInput";
+import { FieldInput, FieldShell } from "../shared/FieldInput";
 
 interface AddBookModalProps {
   onClose: () => void;

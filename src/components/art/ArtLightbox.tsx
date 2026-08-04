@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { useScrollLock } from "../../utils/useScrollLock";
-import { ghostIconButtonClass } from "../ghostIconButton";
+import { ghostIconButtonClass } from "../shared/ghostIconButton";
 
 export type ArtLightboxItem = {
   imageSrc: string;

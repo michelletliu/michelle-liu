@@ -6,22 +6,22 @@ import { createPortal } from "react-dom";
 import { useScrollLock } from "../../utils/useScrollLock";
 import { useNavigate } from "@/lib/navigation";
 import clsx from "clsx";
-import { ScrollReveal } from "../ScrollReveal";
-import PageHeader from "../PageHeader";
+import { ScrollReveal } from "../shared/ScrollReveal";
+import PageHeader from "../layout/PageHeader";
 import { useHeroAnimation } from "../../hooks/useHeroAnimation";
 import { fadeUpStyles } from "../../styles/animations";
-import SectionHeading from "../SectionHeading";
-import LoadingSpinner from "../LoadingSpinner";
+import SectionHeading from "../shared/SectionHeading";
+import LoadingSpinner from "../shared/LoadingSpinner";
 
 // Above-the-fold About chrome stays eager; heavier sections load as separate
 // chunks so Work → About isn't blocked on Community/Shelf/Lore JS.
 import ExperienceCard from "./ExperienceCard";
 import StartupCard from "./StartupCard";
 import AboutSidebar from "./AboutSidebar";
-import Footer from "../Footer";
-import { ArrowUpRight } from "../ArrowUpRight";
-import ContactBadge from "../ContactBadge";
-import NavigationTabs from "../NavigationTabs";
+import Footer from "../layout/Footer";
+import { ArrowUpRight } from "../icons/ArrowUpRight";
+import ContactBadge from "../shared/ContactBadge";
+import NavigationTabs from "../layout/NavigationTabs";
 
 import type { AboutCategory, ShelfSubcategory, CommunitySidebarItem } from "./AboutSidebar";
 
@@ -61,8 +61,8 @@ import {
   getShelfCoverDateLabel,
   resolveShelfCoverDateRaw,
 } from "./shelfCoverDate";
-import { Close } from "../Close";
-import { ghostIconButtonClass } from "../ghostIconButton";
+import { Close } from "../icons/Close";
+import { ghostIconButtonClass } from "../shared/ghostIconButton";
 
 const CommunityCard = dynamic(() => import("./CommunityCard"));
 const ShelfSection = dynamic(() => import("./ShelfSection"));

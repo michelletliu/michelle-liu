@@ -19,7 +19,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import imgLogo from '../../assets/logo.png';
-import InfoButton from '../InfoButton';
+import InfoButton from '../shared/InfoButton';
 import {
   FILM_DOT_STYLE,
   FILM_LOADING_PHRASES,
@@ -829,7 +829,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
     let cancelled = false;
     const warmHome = () => {
       if (!cancelled) {
-        void import('../HomePageClient');
+        void import('../home/HomePageClient');
         void import('../../../app/(home)/layout');
       }
     };
@@ -2185,15 +2185,15 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
         aria-label="Go back to home"
         onMouseEnter={() => {
           router.prefetch('/');
-          void import('../HomePageClient');
+          void import('../home/HomePageClient');
         }}
         onFocus={() => {
           router.prefetch('/');
-          void import('../HomePageClient');
+          void import('../home/HomePageClient');
         }}
         onTouchStart={() => {
           router.prefetch('/');
-          void import('../HomePageClient');
+          void import('../home/HomePageClient');
         }}
         onClick={() => {
           // Stop in-flight film work immediately; don't wait for exit animation.

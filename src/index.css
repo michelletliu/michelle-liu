@@ -16,8 +16,23 @@
   .rounded-\[1000px\],
   .rounded-\[100px\],
   [style*="border-radius: 50%"],
-  [style*="border-radius:50%"] {
+  [style*="border-radius:50%"],
+  /* Semantic shared primitives (CSS border-radius: 9999px / 50%) */
+  .button,
+  .field-shell,
+  .ghost-icon-button,
+  .filter-pill,
+  .filter-pill-indicator,
+  .filter-dropdown-trigger,
+  .contact-badge,
+  .contact-badge-dot,
+  .loading-spinner-ring {
     corner-shape: round;
+  }
+
+  /* DS Inputs matrix only — beat global squircle without changing /gallery FieldShell */
+  .field-shell.input-sample {
+    corner-shape: round !important;
   }
 
   /* Compensate border-radius to preserve visual size (~1.7x) */

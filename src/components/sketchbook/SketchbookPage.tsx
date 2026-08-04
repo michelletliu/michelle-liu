@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, useMotionValue, useTransform, animate, PanInfo, AnimatePresence, MotionValue } from 'framer-motion';
 import clsx from 'clsx';
 import { useNavigate } from '@/lib/navigation';
-import InfoButton from '../InfoButton';
+import InfoButton from '../shared/InfoButton';
 import imgLogo from '../../assets/logo.png';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
 import { client, urlFor } from '../../sanity/client';

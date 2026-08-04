@@ -9,7 +9,7 @@ export { default as SketchbookGallery } from "./SketchbookGallery";
 export type { SketchbookData, SketchbookItem } from "./SketchbookGallery";
 export { default as MuralGallery } from "./MuralGallery";
 export type { MuralData, MuralImage } from "./MuralGallery";
-export { Chevron, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon } from "../Chevron";
+export { Chevron, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon } from "../icons/Chevron";
 
 
 

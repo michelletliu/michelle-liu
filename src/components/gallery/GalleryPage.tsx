@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import LogoBackButton from "@/components/LogoBackButton";
-import { warmWorkPage } from "@/components/doorwayWarm";
+import LogoBackButton from "@/components/layout/LogoBackButton";
+import { warmWorkPage } from "@/components/shared/doorwayWarm";
 import GalleryActionBar, { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import GalleryInfoButton from "./GalleryInfoButton";
 import GalleryRoom from "./GalleryRoom";

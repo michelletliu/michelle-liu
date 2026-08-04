@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import clsx from "clsx";
 import lockIcon from "../../assets/lock.svg";
-import { FieldInput, FieldShell, fieldIconSlotClassName } from "../FieldInput";
-import { ArrowRightIcon } from "../Arrow";
-import { iconSize } from "../iconSizes";
-import { INLINE_LINK_CLASS } from "../inlineLink";
+import { FieldInput, FieldShell, fieldIconSlotClassName } from "../shared/FieldInput";
+import { ArrowRightIcon } from "../icons/Arrow";
+import { iconSize } from "../shared/iconSizes";
+import { INLINE_LINK_CLASS } from "../shared/inlineLink";
 
 // Lock icon with circular background and shadow (matches Figma exactly)
 const LockIcon = () => (

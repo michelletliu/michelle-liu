@@ -6,7 +6,7 @@ import {
   useCallback,
   type SyntheticEvent,
 } from "react";
-import Tooltip from "../Tooltip";
+import Tooltip from "../shared/Tooltip";
 
 export type MediaCardData = {
   id: string;

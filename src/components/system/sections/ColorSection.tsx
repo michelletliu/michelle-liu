@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { colorGroups, uniformTag, type ColorGroup, type ColorToken, type Tag } from "../tokens";
 import { Section, SubLabel, RowList, TagChip } from "../primitives";
-import { FilterDropdown } from "../../FilterDropdown";
-import { FilterPills } from "../../FilterPills";
-import Tooltip from "../../Tooltip";
+import { FilterDropdown } from "../../shared/FilterDropdown";
+import { FilterPills } from "../../shared/FilterPills";
+import Tooltip from "../../shared/Tooltip";
 
 function ColorSwatch({
   name,
