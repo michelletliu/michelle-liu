@@ -284,20 +284,13 @@ export default function GalleryActionBar({
     if (focusedIdRef.current === focusedId) return;
     focusedIdRef.current = focusedId;
     // Drop the previous hang's draft; load this hang's stored generate if any.
+    // Keep `expanded` as the visitor left it — minimized stays the Generating /
+    // pen pill across canvas switches; maximized stays the composer shell
+    // (disabled + Generating label when the new hang is mid-run).
     setError(null);
     setPickerOpen(false);
     applyGenerationContext(generationContextRef.current);
-    // Use parent `generating` (not local submitPending): focused canvas
-    // mid-generate → Generating pill; anything else → editable composer so the
-    // visitor can kick off another hang without waiting.
-    if (generating) {
-      pendingFocus.current = null;
-      setExpanded(false);
-    } else {
-      pendingFocus.current = null;
-      setExpanded(true);
-    }
-  }, [focusedId, generating, applyGenerationContext]);
+  }, [focusedId, applyGenerationContext]);
 
   /**
    * A pointer landing anywhere else in the room dismisses one level.

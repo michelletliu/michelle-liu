@@ -8,6 +8,8 @@ import { ghostIconButtonClass } from "@/components/ghostIconButton";
 import { HorizontalLine } from "@/components/HorizontalLine";
 import { Info } from "@/components/Info";
 import { iconSize } from "@/components/iconSizes";
+import ShimmerImage from "@/components/ShimmerImage";
+import ShimmerVideo from "@/components/ShimmerVideo";
 import { useScrollLock } from "@/utils/useScrollLock";
 import { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import { GALLERY_DIALOG_ATTR, useGalleryDialogKeys } from "./galleryDialog";
@@ -15,6 +17,11 @@ import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { GALLERY_INFO_TEXT } from "./metArtworks";
 
 const CLOSE_ANIMATION_MS = 300;
+
+const GALLERY_INFO_MUX_PLAYBACK_ID =
+  "nGFOTP8WV7KPkAVlX6cXWoR1lDZRrtqcT6uyGtGm2F4";
+const GALLERY_INFO_IMAGE_SRC = `https://image.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}/thumbnail.png?width=1920`;
+const GALLERY_INFO_VIDEO_SRC = `https://stream.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}.m3u8`;
 
 /**
  * The room's controls, written down somewhere.
@@ -81,6 +88,7 @@ export default function GalleryInfoButton({
 }: GalleryInfoButtonProps) {
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
   const titleId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -90,12 +98,41 @@ export default function GalleryInfoButton({
 
   useScrollLock(open);
 
+  // Warm HLS + poster so opening the dialog does not wait on a cold Mux fetch.
   useEffect(() => {
-    if (!open) return;
+    const manifest = document.createElement("link");
+    manifest.rel = "preload";
+    manifest.as = "fetch";
+    manifest.crossOrigin = "anonymous";
+    manifest.href = GALLERY_INFO_VIDEO_SRC;
+    document.head.appendChild(manifest);
+
+    const poster = document.createElement("link");
+    poster.rel = "preload";
+    poster.as = "image";
+    poster.href = GALLERY_INFO_IMAGE_SRC;
+    document.head.appendChild(poster);
+
+    return () => {
+      document.head.removeChild(manifest);
+      document.head.removeChild(poster);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      setVideoReady(false);
+      return;
+    }
     const frame = requestAnimationFrame(() => setVisible(true));
     if (viewOnly) createOwnRef.current?.focus();
     else closeRef.current?.focus();
-    return () => cancelAnimationFrame(frame);
+    // Let the dialog fade in before mounting HLS — same cadence as InfoButton.
+    const videoTimer = setTimeout(() => setVideoReady(true), 350);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(videoTimer);
+    };
   }, [open, viewOnly]);
 
   useEffect(() => () => {
@@ -222,13 +259,29 @@ export default function GalleryInfoButton({
                 </div>
                 <GalleryStackMetadata />
                 <div
-                  aria-label="Gallery walkthrough video placeholder"
-                  className="relative mt-1 flex aspect-[1097/616] w-full shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-100"
+                  aria-label="Gallery walkthrough video"
+                  className="relative mt-1 aspect-[1097/616] w-full shrink-0 overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-100"
                 >
-                  <div className="absolute inset-0 bg-[linear-gradient(135deg,#f4f4f5_0%,#e4e4e7_52%,#d4d4d8_100%)]" />
-                  <span className="relative font-['Michelle',sans-serif] text-sm text-zinc-400">
-                    Video placeholder
-                  </span>
+                  <ShimmerImage
+                    alt=""
+                    className="absolute object-cover size-full"
+                    wrapperClassName="absolute inset-0"
+                    rounded="rounded-2xl"
+                    src={GALLERY_INFO_IMAGE_SRC}
+                  />
+                  {videoReady && (
+                    <ShimmerVideo
+                      src={GALLERY_INFO_VIDEO_SRC}
+                      className="absolute object-cover size-full rounded-2xl"
+                      wrapperClassName="absolute inset-0"
+                      rounded="rounded-2xl"
+                      autoPlay
+                      muted
+                      loop
+                      controls={false}
+                      muxEnvKey="e4cc19a78gcf0tbtfmu4m7ruf"
+                    />
+                  )}
                 </div>
                 <p className="text-sm leading-relaxed text-[#71717a] md:text-base">
                   {GALLERY_CONTROLS_TEXT}
