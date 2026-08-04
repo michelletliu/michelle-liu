@@ -6,8 +6,6 @@ import { ArrowUpRight } from "../../../icons/ArrowUpRight";
 import { Chevron } from "../../../icons/Chevron";
 import {
   Button,
-  BUTTON_RADIUS_CLASS,
-  BUTTON_TEXT_SIZE_CLASS,
   type ButtonRadius,
   type ButtonSize,
   type ButtonVariant,
@@ -31,6 +29,18 @@ import {
 
 type ButtonContent = "label" | "icon-label" | "icon";
 type GlassButtonVariant = Exclude<ButtonVariant, "ghost">;
+
+/** Glass specimens still use Tailwind sizing; solid buttons use CSS `.button`. */
+const GLASS_RADIUS_CLASS: Record<ButtonRadius, string> = {
+  circular: "rounded-full",
+  rectangular: "rounded-xl",
+};
+
+const GLASS_TEXT_SIZE_CLASS: Record<ButtonSize, string> = {
+  sm: "gap-1 px-3 py-1 text-sm",
+  md: "gap-1.5 px-4 py-1.5 text-base",
+  lg: "gap-1.5 px-5 py-2.5 text-base",
+};
 
 const BUTTON_VARIANTS: ButtonVariant[] = [
   "primary",
@@ -166,8 +176,8 @@ function GlassButtonSample({
       type="button"
       className={clsx(
         "button-sample inline-flex shrink-0 items-center justify-center border border-white/50 shadow-glass transition-[border-radius,transform] duration-200 ease-in-out motion-reduce:transition-none hover:scale-105",
-        BUTTON_RADIUS_CLASS[radius],
-        BUTTON_TEXT_SIZE_CLASS[size],
+        GLASS_RADIUS_CLASS[radius],
+        GLASS_TEXT_SIZE_CLASS[size],
         variant === "primary"
           ? "font-['Michelle',sans-serif] font-semibold"
           : "font-medium",
