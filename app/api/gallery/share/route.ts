@@ -2,7 +2,6 @@ import { randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import {
   allocateShareSlug,
-  createEditToken,
   isValidShareId,
   sanitizeGalleryName,
   type SharedGalleryMeta,
@@ -12,6 +11,7 @@ import {
   editTokenFromRequest,
   getShareEditSecret,
   hashEditToken,
+  mintShareEditToken,
   putShareEditSecret,
   verifyShareEditToken,
 } from "@/lib/gallery/shareEditAuth";
@@ -32,7 +32,11 @@ function blobConfigured(): boolean {
 async function shareIdTaken(shareId: string): Promise<boolean> {
   const [meta, secret] = await Promise.all([
     getShareMeta(shareId),
-    getShareEditSecret(shareId),
+    getShareEditSecret(shareId).catch((err) => {
+      // Blob edge blips should not make an occupied slug look free.
+      console.warn(`[gallery/share] edit-secret probe failed for ${shareId}`, err);
+      return { version: 1 as const, tokenHash: "unknown" };
+    }),
   ]);
   return Boolean(meta || secret);
 }
@@ -73,7 +77,16 @@ export async function POST(req: NextRequest) {
         { status: 404 },
       );
     }
-    const authorized = await verifyShareEditToken(shareId, editToken);
+    let authorized = false;
+    try {
+      authorized = await verifyShareEditToken(shareId, editToken);
+    } catch (err) {
+      console.error("[gallery/share] edit-secret lookup failed", err);
+      return NextResponse.json(
+        { error: "Could not verify gallery permissions. Try again." },
+        { status: 502 },
+      );
+    }
     if (!authorized) {
       return NextResponse.json(
         { error: "Not allowed to update this gallery. Create a new link instead." },
@@ -86,8 +99,10 @@ export async function POST(req: NextRequest) {
       mode: "update" as const,
       previous: {
         name: existing.name,
+        ...(existing.creator ? { creator: existing.creator } : {}),
         createdAt: existing.createdAt,
-      } satisfies Pick<SharedGalleryMeta, "name" | "createdAt">,
+      } satisfies Pick<SharedGalleryMeta, "name" | "createdAt"> &
+        Partial<Pick<SharedGalleryMeta, "creator">>,
     });
   }
 
@@ -102,8 +117,7 @@ export async function POST(req: NextRequest) {
   }
 
   let shareId: string | null = null;
-  const editToken = createEditToken((n) => randomBytes(n));
-  const tokenHash = hashEditToken(editToken);
+  let editToken: string | null = null;
   let lastReserveError: unknown = null;
   // Avoid re-reading the same blob keys across allocation retries.
   const takenCache = new Map<string, boolean>();
@@ -115,17 +129,20 @@ export async function POST(req: NextRequest) {
     return taken;
   };
 
-  // Allocate a free slug, then reserve it via edit secret. A rare race with
-  // another create can lose the put — retry the next candidate a few times.
+  // Allocate a free slug, mint a shareId-bound edit token, then reserve via
+  // edit secret. A rare race with another create can lose the put — retry.
   for (let attempt = 0; attempt < 8; attempt++) {
     const candidate = await allocateShareSlug(
       name,
       isTakenCached,
       (n) => randomBytes(n),
     );
+    const candidateToken = mintShareEditToken(candidate, (n) => randomBytes(n));
+    const tokenHash = hashEditToken(candidateToken);
     try {
       await putShareEditSecret(candidate, tokenHash);
       shareId = candidate;
+      editToken = candidateToken;
       break;
     } catch (err) {
       lastReserveError = err;
@@ -151,7 +168,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  if (!shareId) {
+  if (!shareId || !editToken) {
     console.error("[gallery/share] could not reserve share slug", lastReserveError);
     return NextResponse.json(
       { error: "Could not reserve a share link. Try again." },

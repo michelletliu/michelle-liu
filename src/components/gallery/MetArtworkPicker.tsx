@@ -65,10 +65,20 @@ const STRIP_PADDING = "px-4 py-2";
  */
 const STRIP_SHADOW_CLIP = "h-[132px] -mb-4";
 const STRIP_BLEED = "-mx-4";
-/** Loaded carousel and its loading skeleton share this footprint. */
-const PANEL_CAROUSEL_HEIGHT = "h-[220px]";
-/** Title/artist caption under the panel carousel — reserved while loading too. */
-const PANEL_CAPTION_HEIGHT = "h-[74px]";
+/**
+ * Loaded carousel and its loading skeleton share this footprint.
+ * Fixed (not min) so intrinsic/undecoded images cannot stretch the panel.
+ */
+const PANEL_CAROUSEL_HEIGHT = "h-[220px] shrink-0 overflow-hidden";
+/**
+ * Title/artist caption under the panel carousel — same slot while loading.
+ * 2× text-base/leading-normal title + gap-0.5 + 1× artist ≈ 74px.
+ * min/max defeat flex `min-height: auto` growth from long titles.
+ */
+const PANEL_CAPTION_HEIGHT =
+  "h-[74px] min-h-[74px] max-h-[74px] shrink-0 overflow-hidden";
+/** Carousel + gap-5 + caption — fixed so skeleton ↔ loaded never jumps. */
+const PANEL_BODY_HEIGHT = "h-[314px] shrink-0";
 const PANEL_OFFSETS = [-2, -1, 0, 1, 2] as const;
 const PANEL_TILE: Record<
   (typeof PANEL_OFFSETS)[number],
@@ -219,7 +229,9 @@ export default function MetArtworkPicker({
     <div
       className={
         panel
-          ? "flex min-h-[400px] flex-col gap-[54px] rounded-[26px] border border-black/10 bg-white px-2.5 pt-2.5 pb-10 shadow-[0_20px_60px_rgba(0,0,0,0.16)]"
+          ? // Fixed body (314) + search row + gap-54 + padding — no min-h that
+            // left empty air under skeletons and made loading read taller.
+            "flex flex-col gap-[54px] rounded-[26px] border border-black/10 bg-white px-2.5 pt-2.5 pb-10 shadow-[0_20px_60px_rgba(0,0,0,0.16)]"
           : "flex flex-col gap-3 rounded-[10px] bg-black/5 px-4 py-2.5"
       }
     >
@@ -228,7 +240,7 @@ export default function MetArtworkPicker({
           // DS FieldShell — pill + focus-within zinc border (system Inputs matrix).
           // Trailing control: clear (X) only while focused with text; info otherwise.
           <div className="relative min-w-0 flex-1">
-            <FieldShell tone="muted" className="gap-2.5">
+            <FieldShell tone="muted" className="gap-2.5 rounded-full">
               <FieldLeadingIcon>
                 <SearchMagnifierIcon size="15px" />
               </FieldLeadingIcon>
@@ -335,9 +347,9 @@ export default function MetArtworkPicker({
       <div
         aria-live="polite"
         className={`flex flex-col empty:hidden ${
-          // Carousel + gap-5 + caption (220+20+74) — same footprint while
-          // skeletons stand in for the loaded strip so the panel doesn't jump.
-          panel ? "min-h-[314px] justify-center gap-5" : "gap-3"
+          // Fixed 220 + gap-5 + 74 — skeleton and loaded share one box; no
+          // justify-center that floated a short hand in a taller min-height.
+          panel ? `${PANEL_BODY_HEIGHT} justify-start gap-5` : "gap-3"
         }`}
       >
         {showSkeletons &&
@@ -346,9 +358,6 @@ export default function MetArtworkPicker({
           ) : (
             <ThumbnailSkeletons />
           ))}
-        {showSkeletons && panel && (
-          <div aria-hidden className={`shrink-0 ${PANEL_CAPTION_HEIGHT}`} />
-        )}
 
         {status === "error" && (
           <p className="px-1 text-base text-red-600">
@@ -441,41 +450,46 @@ export default function MetArtworkPicker({
           </div>
         )}
 
-        {panel && displayedArtwork && (
-          // Named for a screen reader, which gets only the title otherwise and
-          // no hint that this row is the chosen inspiration rather than a
-          // caption. Lives with the carousel (same column + gap-5) so the
-          // loading skeleton can reserve an identical caption slot.
+        {panel && (showSkeletons || showStrip) && (
+          // Always the same caption slot — empty while skeletons, filled when
+          // metadata is ready — so title/artist never jump the panel height.
           <div
-            role="group"
-            aria-label={`Selected inspiration: ${displayedArtwork.title}`}
-            className={`flex shrink-0 items-start gap-3 px-6 text-center ${PANEL_CAPTION_HEIGHT}`}
+            role={displayedArtwork ? "group" : undefined}
+            aria-hidden={displayedArtwork ? undefined : true}
+            aria-label={
+              displayedArtwork
+                ? `Selected inspiration: ${displayedArtwork.title}`
+                : undefined
+            }
+            className={`flex items-start gap-3 px-6 text-center ${PANEL_CAPTION_HEIGHT}`}
           >
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <p className="line-clamp-2 text-base font-medium leading-normal text-zinc-900">
-                {displayedArtwork.title}
-              </p>
-              {/* Same size as the title now, so the difference has to be carried
-                  by weight and colour alone — medium zinc-900 over normal
-                  zinc-400 — rather than by shrinking the secondary line. */}
-              <p className="truncate text-base leading-normal text-zinc-400">
-                {[
-                  displayedArtwork.artistDisplayName,
-                  displayedArtwork.objectDate,
-                ]
-                  .filter(Boolean)
-                  .join(" · ") || "The Met Open Access"}
-              </p>
-              {eligibility && !eligibility.eligible && (
-                <p
-                  role="alert"
-                  className="mt-1.5 rounded-lg bg-amber-50 px-2 py-1.5 text-base leading-snug text-amber-900"
-                >
-                  Generation is disabled for this artwork.{" "}
-                  {eligibility.message}
+            {displayedArtwork ? (
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <p className="line-clamp-2 text-base font-medium leading-normal text-zinc-900">
+                  {displayedArtwork.title}
                 </p>
-              )}
-            </div>
+                {/* Same size as the title now, so the difference has to be carried
+                    by weight and colour alone — medium zinc-900 over normal
+                    zinc-400 — rather than by shrinking the secondary line. */}
+                <p className="truncate text-base leading-normal text-zinc-400">
+                  {[
+                    displayedArtwork.artistDisplayName,
+                    displayedArtwork.objectDate,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") || "The Met Open Access"}
+                </p>
+                {eligibility && !eligibility.eligible && (
+                  <p
+                    role="alert"
+                    className="mt-1.5 rounded-lg bg-amber-50 px-2 py-1.5 text-base leading-snug text-amber-900"
+                  >
+                    Generation is disabled for this artwork.{" "}
+                    {eligibility.message}
+                  </p>
+                )}
+              </div>
+            ) : null}
           </div>
         )}
       </div>
@@ -645,7 +659,7 @@ function PanelCarouselSkeleton({
 
   return (
     <div
-      className={`relative flex ${PANEL_CAROUSEL_HEIGHT} items-center justify-center overflow-hidden`}
+      className={`relative flex items-center justify-center ${PANEL_CAROUSEL_HEIGHT}`}
     >
       <span className="sr-only">Searching The Met…</span>
       {PANEL_OFFSETS.map((distance) => {
@@ -915,7 +929,7 @@ function PanelArtworkCarousel({
   return (
     <div
       ref={rootRef}
-      className={`relative flex ${PANEL_CAROUSEL_HEIGHT} items-center justify-center overflow-x-hidden overflow-y-visible`}
+      className={`relative flex items-center justify-center ${PANEL_CAROUSEL_HEIGHT}`}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -1000,6 +1014,11 @@ function PanelArtworkCarousel({
                 }
                 transition={morphTransition}
                 style={{
+                  // Pin size in the style attribute so undecoded JPEGs cannot
+                  // inflate the abspos tile (and scrollHeight) before Motion
+                  // writes width/height from `animate`.
+                  width: size.width,
+                  height: size.height,
                   zIndex: slot.z,
                   left: "50%",
                   top: "50%",
@@ -1009,6 +1028,8 @@ function PanelArtworkCarousel({
                 <img
                   src={src}
                   alt={artworkLabel(artwork)}
+                  width={Math.round(size.width)}
+                  height={Math.round(size.height)}
                   // Visible carousel slots are all on-screen; lazy deferral left
                   // Monet Family as a white max-aspect box until decode.
                   loading="eager"

@@ -19,6 +19,24 @@ test("panel carousel reserves curated image size before onLoad", () => {
   assert.match(source, /predictCurated=\{mode === "curated"\}/);
 });
 
+test("panel loading and loaded share fixed carousel and caption heights", () => {
+  assert.match(source, /const PANEL_CAROUSEL_HEIGHT = "h-\[220px\] shrink-0 overflow-hidden"/);
+  assert.match(source, /const PANEL_CAPTION_HEIGHT =[\s\S]*?h-\[74px\] min-h-\[74px\] max-h-\[74px\]/);
+  assert.match(source, /const PANEL_BODY_HEIGHT = "h-\[314px\] shrink-0"/);
+  assert.match(source, /panel && \(showSkeletons \|\| showStrip\)/);
+  assert.doesNotMatch(source, /min-h-\[400px\]/);
+  assert.doesNotMatch(source, /min-h-\[314px\]/);
+});
+
+test("panel carousel tiles pin width\/height so undecoded images cannot inflate layout", () => {
+  assert.match(
+    source,
+    /style=\{\{[\s\S]*?width: size\.width,[\s\S]*?height: size\.height,[\s\S]*?zIndex: slot\.z/,
+  );
+  assert.match(source, /width=\{Math\.round\(size\.width\)\}/);
+  assert.match(source, /height=\{Math\.round\(size\.height\)\}/);
+});
+
 test("panel carousel eagerly loads visible inspiration tiles", () => {
   assert.match(
     source,

@@ -43,8 +43,8 @@ type GalleryThumbstickProps = {
  * Match the collapsed composer actions pill padding (`p-1` outside the
  * circular icon buttons). Ring air used to be ~6.5px on each side of a 26px
  * wash, which ballooned the outer disc; 4px pad + the same wash keeps the
- * stick compact (106px across, was 116). Plus is optically smaller than the
- * 18px − / chevrons because PlusIcon fills its viewBox more heavily.
+ * stick compact (106px across, was 116). +/− share one CSS size so the
+ * crossbar and minus stroke match optically; chevrons run larger.
  */
 const GLYPH_BOX = 26;
 const GLYPH_PAD = 4; // composer actions `p-1`
@@ -57,11 +57,10 @@ const MAX_TRAVEL = BASE_RADIUS - KNOB_RADIUS - 5;
 /**
  * Axis glyphs share one optical weight. Library `PlusIcon` draws nearly
  * edge-to-edge in its 24 viewBox; the chevron path is a much smaller mark,
- * so the same CSS size makes + look oversized. Chevrons run larger; minus
- * matches composer actions (18px); plus is stepped down for optical parity.
+ * so the same CSS size makes + look oversized. Chevrons run larger; +/− both
+ * use 13px so the minus bar matches the plus crossbar (hit wash stays 26px).
  */
-const PLUS_ICON_CLASS = "block size-[13px] shrink-0";
-const MINUS_ICON_CLASS = "block size-[18px] shrink-0";
+const AXIS_CROSS_ICON_CLASS = "block size-[13px] shrink-0";
 const CHEVRON_SIZE = "20px";
 
 function AxisMinusIcon() {
@@ -69,11 +68,12 @@ function AxisMinusIcon() {
     <svg
       viewBox="0 0 24 24"
       fill="none"
-      className={MINUS_ICON_CLASS}
+      className={AXIS_CROSS_ICON_CLASS}
       aria-hidden
     >
       <path
-        // Same horizontal span as PlusIcon (2→22), so − isn't a shorter stub.
+        // Same horizontal span as PlusIcon (2→22), sized identically so −
+        // matches the + crossbar optically.
         d="M2 12H22"
         stroke="currentColor"
         strokeWidth="1.5"
@@ -181,12 +181,14 @@ function AxisButton({
       onPointerDown={(e) => e.stopPropagation()}
       onClick={onPress}
       style={AXIS_BOX[axis]}
-      className={`group absolute rounded-lg ${GALLERY_FOCUS_RING}`}
+      // Hit area stays the large arm; focus ring paints on the circular glyph
+      // wash below so keyboard focus matches the mark (not the tall rect).
+      className="group absolute gallery-focus focus-visible:outline-none"
     >
       <span
         aria-hidden
         style={{ ...AXIS_GLYPH_INSET[axis], width: GLYPH_BOX, height: GLYPH_BOX }}
-        className={`absolute grid place-items-center rounded-full text-zinc-400 transition-colors duration-150 group-hover:bg-zinc-900/[0.06] group-hover:text-zinc-600 group-active:bg-zinc-900/[0.12] motion-reduce:transition-none ${AXIS_GLYPH[axis]}`}
+        className={`absolute grid place-items-center rounded-full text-zinc-400 transition-colors duration-150 group-hover:bg-zinc-900/[0.06] group-hover:text-zinc-600 group-active:bg-zinc-900/[0.12] group-focus-visible:ring-2 group-focus-visible:ring-zinc-300 motion-reduce:transition-none ${AXIS_GLYPH[axis]}`}
       >
         {children}
       </span>
@@ -427,7 +429,7 @@ export default function GalleryThumbstick({
           label="Zoom in"
           onPress={() => onZoomBy(ZOOM_STEP)}
         >
-          <PlusIcon className={PLUS_ICON_CLASS} />
+          <PlusIcon className={AXIS_CROSS_ICON_CLASS} />
         </AxisButton>
         <AxisButton
           axis="bottom"

@@ -21,8 +21,10 @@ import { useScrollLock } from "@/utils/useScrollLock";
 import { GALLERY_DIALOG_ATTR, useGalleryDialogKeys } from "./galleryDialog";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import {
+  MAX_CREATOR_NAME_LENGTH,
   MAX_GALLERY_NAME_LENGTH,
   readLastShare,
+  sanitizeCreatorName,
   sanitizeGalleryName,
   writeLastShare,
   type LastShareRecord,
@@ -42,6 +44,17 @@ const POPOVER_OFFSET_PX = 6;
  * the icon button’s right padding (same idea as Library’s -mr on the trigger).
  */
 const POPOVER_RIGHT_NUDGE_PX = 10;
+
+/**
+ * Compact save fields: muted FieldShell with py-1.5 (not default py-2) so
+ * pills sit closer to one-line control height. Action pills use h-9 to match
+ * that field row. Scoped overrides on FloatingPanel: gap-3.5 + px-5 + pb-5
+ * (Library stays gap-3 / px-5 / pb-5). px/pb at 20px; pt stays FloatingPanel pt-4.
+ */
+const SAVE_FIELD_SHELL = "rounded-full !py-1.5";
+const SAVE_ACTION_BTN =
+  "inline-flex h-9 items-center justify-center rounded-full px-4 text-base";
+const SAVE_PANEL_BODY = "!gap-3.5 !px-5 !pb-5";
 
 function FilmLoadingDots({ reduceMotion }: { reduceMotion: boolean }) {
   if (reduceMotion) {
@@ -94,9 +107,9 @@ function ShareUrlField({
   }, [url]);
 
   return (
-    // muted shell defaults to px-1 (icon gutters); link field has no leading
-    // icon — match horizontal pad to py-2 so the URL isn’t flush left.
-    <FieldShell tone="muted" className="min-h-10 !px-2">
+    // Shell: !p-2 with !pl-3 (12px) so URL text has a bit more left inset.
+    // !pl-0 on the input kills muted field-input’s extra horizontal pad.
+    <FieldShell tone="muted" className="rounded-full !p-2 !pl-3">
       <FieldInput
         ref={inputRef}
         readOnly
@@ -104,7 +117,7 @@ function ShareUrlField({
         aria-label="Share link"
         onFocus={(e) => e.currentTarget.select()}
         onScroll={updateFade}
-        className={`overflow-x-auto pr-8 text-sm text-zinc-700 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${GALLERY_FOCUS_RING}`}
+        className={`overflow-x-auto !pl-0 !pr-8 text-sm text-zinc-700 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${GALLERY_FOCUS_RING}`}
       />
       <div
         aria-hidden
@@ -156,6 +169,7 @@ export default function GallerySaveDialog({
 }: GallerySaveDialogProps) {
   const titleId = useId();
   const nameId = useId();
+  const creatorId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -169,11 +183,10 @@ export default function GallerySaveDialog({
 
   const [visible, setVisible] = useState(false);
   const [name, setName] = useState("");
+  const [creator, setCreator] = useState("");
   const [lastShare, setLastShare] = useState<LastShareRecord | null>(null);
   const [mode, setMode] = useState<SaveMode>("create");
   const [saving, setSaving] = useState(false);
-  /** 0…1 while saving — drives the button progress pill. */
-  const [saveProgress, setSaveProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -200,11 +213,11 @@ export default function GallerySaveDialog({
     setLastShare(prior);
     setMode(prior ? "update" : "create");
     setName(prior?.name ?? "");
+    setCreator(prior?.creator ?? "");
     setError(null);
     setResultUrl(null);
     setCopied(false);
     setSaving(false);
-    setSaveProgress(0);
     const frame = requestAnimationFrame(() => setVisible(true));
     return () => cancelAnimationFrame(frame);
   }, [open]);
@@ -242,8 +255,9 @@ export default function GallerySaveDialog({
   }, [open, isDesktop, popoverPos]);
 
   // Morph panel height as form ↔ link-ready content changes.
-  // Measure the shell at height:auto so padding/borders aren't under-reported
-  // when a prior fixed height + overflow-hidden is already clipping the body.
+  // Clear fixed height before measuring so overflow-hidden doesn't clip pb.
+  // Use offsetHeight (not getBoundingClientRect) so popoverIn's scale()
+  // transform can't under-report height mid-animation.
   useLayoutEffect(() => {
     if (!open || !isDesktop) {
       setMorphHeight(null);
@@ -257,7 +271,7 @@ export default function GallerySaveDialog({
       const prevTransition = shell.style.transition;
       shell.style.transition = "none";
       shell.style.height = "auto";
-      const next = Math.ceil(shell.getBoundingClientRect().height);
+      const next = shell.offsetHeight;
       shell.style.height = prevHeight;
       void shell.offsetHeight;
       shell.style.transition = prevTransition;
@@ -269,7 +283,7 @@ export default function GallerySaveDialog({
     const ro = new ResizeObserver(measure);
     ro.observe(inner);
     return () => ro.disconnect();
-  }, [open, isDesktop, resultUrl, lastShare, saving, error, mode, name, copied]);
+  }, [open, isDesktop, resultUrl, lastShare, saving, error, mode, name, creator, copied]);
 
   // Click-outside dismiss — same as ExperimentModal InfoPopover (Library).
   useEffect(() => {
@@ -315,6 +329,11 @@ export default function GallerySaveDialog({
       setError("Give this gallery a name.");
       return;
     }
+    const cleanedCreator = sanitizeCreatorName(creator);
+    if (!cleanedCreator) {
+      setError("Add your name.");
+      return;
+    }
     if (hangs.length === 0) {
       setError("Generate at least one artwork to save.");
       return;
@@ -326,7 +345,6 @@ export default function GallerySaveDialog({
     }
 
     setSaving(true);
-    setSaveProgress(0.06);
     setError(null);
     try {
       const result = await saveGalleryShare(
@@ -334,6 +352,7 @@ export default function GallerySaveDialog({
           ? {
               mode: "update",
               name: cleaned,
+              creator: cleanedCreator,
               hangs,
               existingShareId: lastShare!.shareId,
               existingEditToken: lastShare!.editToken,
@@ -341,20 +360,14 @@ export default function GallerySaveDialog({
           : {
               mode: "create",
               name: cleaned,
+              creator: cleanedCreator,
               hangs,
             },
-        {
-          onProgress: ({ completed, total }) => {
-            setSaveProgress(
-              total <= 0 ? 1 : Math.min(1, Math.max(0.06, completed / total)),
-            );
-          },
-        },
       );
-      setSaveProgress(1);
-      const record = {
+      const record: LastShareRecord = {
         shareId: result.shareId,
         name: result.name,
+        creator: result.creator,
         editToken: result.editToken,
       };
       writeLastShare(record);
@@ -364,7 +377,6 @@ export default function GallerySaveDialog({
       setError(err instanceof Error ? err.message : "Save failed.");
     } finally {
       setSaving(false);
-      setSaveProgress(0);
     }
   };
 
@@ -397,14 +409,14 @@ export default function GallerySaveDialog({
               href={resultUrl}
               target="_blank"
               rel="noreferrer"
-              className={`rounded-full border border-zinc-200 px-4 py-2.5 text-base font-medium text-zinc-700 transition-colors hover:bg-zinc-50 ${GALLERY_FOCUS_RING}`}
+              className={`${SAVE_ACTION_BTN} border border-zinc-200 font-medium text-zinc-700 transition-colors hover:bg-zinc-50 ${GALLERY_FOCUS_RING}`}
             >
               Preview
             </a>
             <button
               type="button"
               onClick={() => void copyLink()}
-              className={`rounded-full bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-opacity hover:opacity-90 ${GALLERY_FOCUS_RING}`}
+              className={`${SAVE_ACTION_BTN} bg-zinc-900 font-medium text-white transition-opacity hover:opacity-90 ${GALLERY_FOCUS_RING}`}
             >
               {copied ? "Copied!" : "Copy link"}
             </button>
@@ -416,8 +428,8 @@ export default function GallerySaveDialog({
           )}
         </div>
       ) : (
-        <form className="flex flex-col gap-3" onSubmit={(e) => void submit(e)}>
-          <FieldShell tone="muted">
+        <form className="flex flex-col gap-3.5" onSubmit={(e) => void submit(e)}>
+          <FieldShell tone="muted" className={SAVE_FIELD_SHELL}>
             <FieldInput
               ref={nameRef}
               id={nameId}
@@ -427,14 +439,35 @@ export default function GallerySaveDialog({
               disabled={saving}
               placeholder="Name this gallery"
               aria-label="Gallery name"
-              className="px-3.5"
               onChange={(e) => setName(e.target.value)}
             />
           </FieldShell>
 
+          {/* “by” left-aligns with the Save gallery title — no extra pl. */}
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0 text-base text-zinc-300" aria-hidden>
+              by
+            </span>
+            <FieldShell
+              tone="muted"
+              className={`min-w-0 flex-1 ${SAVE_FIELD_SHELL}`}
+            >
+              <FieldInput
+                id={creatorId}
+                type="text"
+                value={creator}
+                maxLength={MAX_CREATOR_NAME_LENGTH}
+                disabled={saving}
+                placeholder="Your name"
+                aria-label="Your name"
+                onChange={(e) => setCreator(e.target.value)}
+              />
+            </FieldShell>
+          </div>
+
           {lastShare && (
             <fieldset
-              className="flex flex-col gap-4"
+              className="flex flex-col gap-4 py-1"
               aria-label="Update existing gallery or create a new link"
             >
               <label className="flex cursor-pointer items-center gap-3 text-base text-zinc-700">
@@ -478,50 +511,35 @@ export default function GallerySaveDialog({
             </p>
           )}
 
-          <div className="flex items-center justify-end gap-2">
+          <div className="flex items-center justify-end gap-[2px]">
             <button
               type="button"
               onClick={close}
               disabled={saving}
-              className={`rounded-full px-4 py-2.5 text-base text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-700 ${GALLERY_FOCUS_RING}`}
+              className={`${SAVE_ACTION_BTN} text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-700 ${GALLERY_FOCUS_RING}`}
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={saving || !name.trim()}
+              disabled={saving || !name.trim() || !creator.trim()}
               aria-busy={saving || undefined}
-              className={`relative overflow-hidden rounded-full bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-opacity hover:opacity-90 ${
+              className={`${SAVE_ACTION_BTN} bg-zinc-900 font-medium text-white transition-opacity hover:opacity-90 ${
                 saving
                   ? "cursor-wait opacity-100"
                   : "disabled:cursor-not-allowed disabled:opacity-40"
               } ${GALLERY_FOCUS_RING}`}
             >
-              <span className={`relative z-[1] ${saving ? "pb-1" : ""}`}>
-                {saving ? (
-                  <span aria-label="Saving">
-                    Saving
-                    <FilmLoadingDots reduceMotion={reduceMotion} />
-                  </span>
-                ) : mode === "update" ? (
-                  "Update link"
-                ) : (
-                  "Create link"
-                )}
-              </span>
               {saving ? (
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-x-2.5 bottom-1.5 h-1 overflow-hidden rounded-full bg-white/20"
-                >
-                  <span
-                    className="block h-full rounded-full bg-blue-400 transition-[width] duration-200 ease-out motion-reduce:transition-none"
-                    style={{
-                      width: `${Math.round(Math.min(1, Math.max(0.08, saveProgress)) * 100)}%`,
-                    }}
-                  />
+                <span aria-label="Saving">
+                  Saving
+                  <FilmLoadingDots reduceMotion={reduceMotion} />
                 </span>
-              ) : null}
+              ) : mode === "update" ? (
+                "Update link"
+              ) : (
+                "Create link"
+              )}
             </button>
           </div>
         </form>
@@ -536,6 +554,7 @@ export default function GallerySaveDialog({
         ref={dialogRef}
         variant="popover"
         bodyRef={morphInnerRef}
+        bodyClassName={SAVE_PANEL_BODY}
         {...{ [GALLERY_DIALOG_ATTR]: "gallery-save" }}
         role="dialog"
         aria-modal="false"
@@ -571,6 +590,7 @@ export default function GallerySaveDialog({
       <FloatingPanel
         ref={dialogRef}
         variant="sheet"
+        bodyClassName={SAVE_PANEL_BODY}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

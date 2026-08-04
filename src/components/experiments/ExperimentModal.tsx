@@ -801,7 +801,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
             projectId === 'sundays' && 'max-md:hidden'
           )}>
             <div className="pointer-events-auto">
-              <Tooltip label="Expand" position="bottom">
+              <Tooltip label="Expand" position="bottom" portal>
                 <button
                   onClick={handleExpand}
                   className="cursor-pointer transition-colors duration-200 hover:bg-zinc-100 text-[#a1a1aa] rounded-sm p-1"
@@ -822,7 +822,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
             <div className="pointer-events-auto relative inline-flex" data-info-button-container>
               {/* Negative margin cancels the 10px the 40px hit area adds around
                   the 20px glyph, so the glyph lines up with the expand icon. */}
-              <Tooltip label="Info" position="bottom" disabled={showInfoModal} className="-mr-2.5">
+              <Tooltip label="Info" position="bottom" disabled={showInfoModal} className="-mr-2.5" portal>
                 <button
                   onClick={() => setShowInfoModal(!showInfoModal)}
                   className={ghostIconButtonClass(

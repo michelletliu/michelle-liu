@@ -51,7 +51,7 @@ export function FilmLoadingDots({
 
 /**
  * Rotating loading copy + staggered film-dot-pulse ellipsis.
- * Matches Film: swap every 1400ms with a 200ms opacity fade; Film does not
+ * Matches Film: swap every 2000ms with a 200ms opacity fade; Film does not
  * pause phrase rotation for reduced motion (only gallery dots may freeze).
  */
 export function RotatingLoadingText({
@@ -83,7 +83,7 @@ export function RotatingLoadingText({
         setIdx((i) => (i + 1) % phrases.length);
         setFade(true);
       }, 200);
-    }, 1400);
+    }, 2000);
     return () => {
       cancelled = true;
       clearInterval(id);

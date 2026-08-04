@@ -1,4 +1,6 @@
 export const MAX_GALLERY_NAME_LENGTH = 80;
+/** Same length budget as gallery name — creator shows in viewer chrome. */
+export const MAX_CREATOR_NAME_LENGTH = MAX_GALLERY_NAME_LENGTH;
 export const MAX_HANG_BYTES = 8 * 1024 * 1024;
 /** Opaque fallback id length when a name cannot yield a slug. */
 export const SHARE_ID_LENGTH = 12;
@@ -30,6 +32,8 @@ export type SharedGalleryMeta = {
   version: 1;
   shareId: string;
   name: string;
+  /** Display name of who made the gallery; omitted on legacy shares. */
+  creator?: string;
   createdAt: string;
   updatedAt: string;
   hangs: SharedGalleryHang[];
@@ -38,6 +42,8 @@ export type SharedGalleryMeta = {
 export type LastShareRecord = {
   shareId: string;
   name: string;
+  /** Prefill “Your name” when updating an existing share this session. */
+  creator?: string;
   /** Creator-only write capability; required to update an existing share. */
   editToken: string;
 };
@@ -63,6 +69,25 @@ export function sanitizeGalleryName(raw: string): string | null {
   return cleaned.slice(0, MAX_GALLERY_NAME_LENGTH);
 }
 
+/** Same cleaning rules as gallery name (creator attribution). */
+export function sanitizeCreatorName(raw: string): string | null {
+  const cleaned = sanitizeGalleryName(raw);
+  if (!cleaned) return null;
+  return cleaned.slice(0, MAX_CREATOR_NAME_LENGTH);
+}
+
+/**
+ * Viewer chrome / metadata label: `"Name by Creator"` when creator is set,
+ * otherwise just the gallery name (legacy shares).
+ */
+export function formatGalleryAttribution(
+  name: string,
+  creator?: string | null,
+): string {
+  const who = typeof creator === "string" ? creator.trim() : "";
+  return who ? `${name} by ${who}` : name;
+}
+
 export function readLastShare(): LastShareRecord | null {
   if (typeof window === "undefined") return null;
   try {
@@ -78,9 +103,14 @@ export function readLastShare(): LastShareRecord | null {
     ) {
       return null;
     }
+    const creator =
+      typeof parsed.creator === "string"
+        ? sanitizeCreatorName(parsed.creator) ?? undefined
+        : undefined;
     return {
       shareId: parsed.shareId,
       name: parsed.name,
+      ...(creator ? { creator } : {}),
       editToken: parsed.editToken,
     };
   } catch {

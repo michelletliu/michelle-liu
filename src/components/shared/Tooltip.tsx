@@ -1,10 +1,19 @@
-import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+'use client';
+
+import { useState, useRef, useEffect, useLayoutEffect, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import {
+  autoUpdate,
+  computePosition,
+  flip,
+  offset as floatingOffset,
+  shift,
+} from '@floating-ui/dom';
 import clsx from 'clsx';
 
 type TooltipProps = {
   label: string;
-  children: React.ReactNode;
+  children: ReactNode;
   /** Position of tooltip relative to children */
   position?: 'top' | 'bottom';
   /** Offset from the element in pixels */
@@ -22,12 +31,14 @@ type TooltipProps = {
   className?: string;
   /**
    * Render in document.body with fixed coords so overflow:hidden ancestors
-   * (composer morph shell, stack clips, etc.) cannot crop the tip.
+   * (composer morph shell, stack clips, modal chrome, etc.) cannot crop the tip.
    */
   portal?: boolean;
 };
 
 const DEFAULT_HOVER_DELAY = 400;
+/** Keep tips clear of the viewport edge on narrow screens. */
+const VIEWPORT_PADDING = 8;
 
 // Tooltip warmup state - tracks if any tooltip is currently open
 // This allows subsequent tooltips to open instantly without delay or animation
@@ -66,9 +77,9 @@ if (typeof window !== 'undefined') {
   window.addEventListener('touchstart', markTouch, { passive: true });
 }
 
-export default function Tooltip({ 
-  label, 
-  children, 
+export default function Tooltip({
+  label,
+  children,
   position = 'bottom',
   offset = 6,
   delay,
@@ -79,15 +90,20 @@ export default function Tooltip({
 }: TooltipProps) {
   // Hover tips default to 400ms; forceOpen stays instant unless delay is set.
   const showDelay = delay ?? (forceOpen ? 0 : DEFAULT_HOVER_DELAY);
+  const [mounted, setMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const [isInstant, setIsInstant] = useState(false);
-  const [forceRevealed, setForceRevealed] = useState(false);
-  const [coords, setCoords] = useState<{ top: number; left: number } | null>(
-    null,
-  );
+  // Delayed forceOpen only — instant forceOpen is derived below so tips cannot
+  // stick closed when an effect commit is skipped (force=1, revealed=0).
+  const [delayedForceRevealed, setDelayedForceRevealed] = useState(false);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const tipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const hideImmediately = () => {
     if (hoverTimeoutRef.current) {
@@ -105,19 +121,16 @@ export default function Tooltip({
     if (disabled) hideImmediately();
   }, [disabled]);
 
-  // Delayed forceOpen (e.g. Met tip): wait showDelay, then reveal.
+  // Delayed forceOpen (e.g. Met tip at 800ms): wait showDelay, then reveal.
+  // Instant forceOpen (delay 0 / omitted) is derived — do not rely on this effect.
   useEffect(() => {
-    if (!forceOpen || disabled) {
-      setForceRevealed(false);
+    if (!forceOpen || disabled || showDelay <= 0) {
+      setDelayedForceRevealed(false);
       return;
     }
-    if (showDelay <= 0) {
-      setForceRevealed(true);
-      return;
-    }
-    setForceRevealed(false);
-    const id = window.setTimeout(() => setForceRevealed(true), showDelay);
-    return () => window.clearTimeout(id);
+    setDelayedForceRevealed(false);
+    const id = window.setTimeout(() => setDelayedForceRevealed(true), showDelay);
+    return () => clearTimeout(id);
   }, [forceOpen, disabled, showDelay]);
 
   // Force-hide on any touch anywhere — defensive cleanup in case a tooltip
@@ -186,40 +199,63 @@ export default function Tooltip({
     hideImmediately();
   };
 
-  const showTooltip = forceRevealed || (isVisible && !disabled);
+  const instantForceOpen = Boolean(forceOpen && !disabled && showDelay <= 0);
+  // Portal tips need document.body — wait until mount so SSR never calls
+  // createPortal (ReferenceError: document is not defined) and hydration matches.
+  const showTooltip =
+    (instantForceOpen || delayedForceRevealed || (isVisible && !disabled)) &&
+    (!portal || mounted);
 
+  // Portal tips: Floating UI owns fixed left/top + flip/shift against the
+  // viewport. Do NOT also apply .tooltip’s left:50%/translateX(-50%) — that
+  // double-centers and shifts tips left by half their width (TW v4’s
+  // `-translate-x-1/2` uses the separate `translate` property, which stacks
+  // on top of CSS `transform: translateX(-50%)` for inline tips too).
   useLayoutEffect(() => {
-    if (!portal || !showTooltip) {
-      setCoords(null);
-      return;
-    }
+    if (!portal || !showTooltip) return;
+    const reference = wrapRef.current;
+    const floating = tipRef.current;
+    if (!reference || !floating) return;
+
+    floating.style.visibility = 'hidden';
+
+    // Portaled to body — collide with the viewport only. A custom
+    // documentElement boundary + clippingAncestors both caused bad shifts;
+    // overflow:hidden ancestors of the *trigger* must not clip the tip.
+    const collision = { padding: VIEWPORT_PADDING };
+
     const update = () => {
-      const el = wrapRef.current;
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      setCoords({
-        left: r.left + r.width / 2,
-        top: position === 'top' ? r.top - offset : r.bottom + offset,
+      void computePosition(reference, floating, {
+        placement: position === 'top' ? 'top' : 'bottom',
+        strategy: 'fixed',
+        middleware: [
+          floatingOffset(offset),
+          flip(collision),
+          shift(collision),
+        ],
+      }).then(({ x, y }) => {
+        if (tipRef.current !== floating) return;
+        floating.style.left = `${x}px`;
+        floating.style.top = `${y}px`;
+        floating.style.visibility = 'visible';
       });
     };
-    update();
-    window.addEventListener('scroll', update, true);
-    window.addEventListener('resize', update);
-    return () => {
-      window.removeEventListener('scroll', update, true);
-      window.removeEventListener('resize', update);
-    };
+
+    return autoUpdate(reference, floating, update);
   }, [portal, showTooltip, position, offset, label, forceOpen]);
 
-  const tipClassName = clsx(
-    'tooltip px-2 py-1 bg-zinc-800 text-white text-sm font-medium rounded-lg whitespace-nowrap pointer-events-none z-[9999]',
-    !portal && 'absolute left-1/2 -translate-x-1/2',
-  );
+  // Visuals come from `.tooltip` in globals.css. Do NOT add Tailwind
+  // `left-1/2 -translate-x-1/2` here — in Tailwind v4 those set the
+  // independent `translate` property, which stacks with CSS
+  // `transform: translateX(-50%)` and shifts every tip left by ~50% width.
+  const tipClassName =
+    'tooltip px-2 py-1 bg-zinc-800 text-white text-sm font-medium rounded-lg whitespace-nowrap pointer-events-none z-[9999]';
 
   const tipProps = {
     className: tipClassName,
     'data-ending-style': !forceOpen && isEnding ? '' : undefined,
     'data-instant': forceOpen || isInstant ? '' : undefined,
+    'data-portal': portal ? '' : undefined,
   } as const;
 
   const inlinePositionStyles =
@@ -234,38 +270,33 @@ export default function Tooltip({
         };
 
   const tip = showTooltip ? (
-    portal && coords ? (
+    portal ? (
       createPortal(
-        // Outer node owns fixed placement + centering; inner keeps scale
-        // animation so transform doesn't fight translate(-50%, …).
+        // Single node: Floating UI writes fixed left/top. data-portal clears
+        // the globals left:50% / translateX(-50%) so we don't double-center.
         <div
-          className="pointer-events-none fixed z-[9999]"
-          style={{
-            left: coords.left,
-            top: coords.top,
-            transform:
-              position === 'top' ? 'translate(-50%, -100%)' : 'translate(-50%, 0)',
-          }}
+          ref={tipRef}
+          {...tipProps}
+          style={
+            {
+              position: 'fixed',
+              left: 0,
+              top: 0,
+              visibility: 'hidden',
+              '--transform-origin':
+                position === 'top' ? 'center bottom' : 'center top',
+            } as CSSProperties
+          }
         >
-          <div
-            {...tipProps}
-            style={
-              {
-                '--transform-origin':
-                  position === 'top' ? 'center bottom' : 'center top',
-              } as React.CSSProperties
-            }
-          >
-            {label}
-          </div>
+          {label}
         </div>,
         document.body,
       )
-    ) : !portal ? (
+    ) : (
       <div {...tipProps} style={inlinePositionStyles}>
         {label}
       </div>
-    ) : null
+    )
   ) : null;
 
   return (

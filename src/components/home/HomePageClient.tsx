@@ -192,7 +192,7 @@ const staticProjects: Project[] = [
     title: "Gallery",
     year: "2026",
     description: "An interactive art gallery to visualize your ideas.",
-    imageSrc: "https://image.mux.com/t2gAjutGf202eNq15sczNsA9MmmxcGnmJ7cl8LFHuMZg/thumbnail.png?width=1920",
+    imageSrc: "https://image.mux.com/t2gAjutGf202eNq15sczNsA9MmmxcGnmJ7cl8LFHuMZg/thumbnail.png?time=0&width=1920",
     videoSrc: "https://stream.mux.com/t2gAjutGf202eNq15sczNsA9MmmxcGnmJ7cl8LFHuMZg.m3u8",
     backgroundColor: "#ffffff",
     toolCategories: [

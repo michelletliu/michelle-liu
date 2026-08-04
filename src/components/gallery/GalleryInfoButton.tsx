@@ -10,6 +10,7 @@ import { Info } from "@/components/icons/Info";
 import { iconSize } from "@/components/shared/iconSizes";
 import ShimmerImage from "@/components/shared/ShimmerImage";
 import ShimmerVideo from "@/components/shared/ShimmerVideo";
+import Tooltip from "@/components/shared/Tooltip";
 import { useScrollLock } from "@/utils/useScrollLock";
 import { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import { GALLERY_DIALOG_ATTR, useGalleryDialogKeys } from "./galleryDialog";
@@ -20,7 +21,7 @@ const CLOSE_ANIMATION_MS = 300;
 
 const GALLERY_INFO_MUX_PLAYBACK_ID =
   "t2gAjutGf202eNq15sczNsA9MmmxcGnmJ7cl8LFHuMZg";
-const GALLERY_INFO_IMAGE_SRC = `https://image.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}/thumbnail.png?width=1920`;
+const GALLERY_INFO_IMAGE_SRC = `https://image.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}/thumbnail.png?time=0&width=1920`;
 const GALLERY_INFO_VIDEO_SRC = `https://stream.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}.m3u8`;
 
 /**
@@ -174,24 +175,27 @@ export default function GalleryInfoButton({
 
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={openPanel}
-        aria-label="Gallery information"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        // Persistent room furniture: reaching for it must not fold away the
-        // composer the visitor is in the middle of filling in.
-        {...{ [KEEP_BAR_OPEN_ATTR]: "" }}
-        // Positioned by GalleryPage’s top-right chrome cluster (with Save).
-        className={ghostIconButtonClass(
-          "md",
-          `text-zinc-400 ${GALLERY_FOCUS_RING}`,
-        )}
-      >
-        <Info size={iconSize("md")} />
-      </button>
+      {/* Portal: gallery shell is overflow:hidden; hide tip while the dialog is open. */}
+      <Tooltip label="Info" position="bottom" disabled={open} portal>
+        <button
+          ref={triggerRef}
+          type="button"
+          onClick={openPanel}
+          aria-label="Gallery information"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          // Persistent room furniture: reaching for it must not fold away the
+          // composer the visitor is in the middle of filling in.
+          {...{ [KEEP_BAR_OPEN_ATTR]: "" }}
+          // Positioned by GalleryPage’s top-right chrome cluster (with Save).
+          className={ghostIconButtonClass(
+            "md",
+            `text-zinc-400 ${open ? "bg-zinc-900/5" : ""} ${GALLERY_FOCUS_RING}`,
+          )}
+        >
+          <Info size={iconSize("md")} />
+        </button>
+      </Tooltip>
 
       {open &&
         createPortal(
@@ -218,7 +222,7 @@ export default function GalleryInfoButton({
             >
               <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-6 bg-gradient-to-b from-white to-transparent" />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-8 bg-gradient-to-t from-white to-transparent" />
-              <div className="flex max-h-[calc(100vh-48px)] w-full flex-col gap-4 overflow-y-auto px-8 pb-8 pt-6 max-md:gap-3 max-md:px-6 max-md:py-5">
+              <div className="flex max-h-[calc(100vh-48px)] w-full flex-col gap-4 overflow-y-auto px-7 pb-8 pt-6 max-md:gap-3 max-md:px-7 max-md:py-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 flex-col gap-1">
                     <div className="flex items-center gap-[6px]">
