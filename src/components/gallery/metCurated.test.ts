@@ -12,7 +12,7 @@ import { CURATED_MET_OBJECT_IDS } from "./metCurated.ts";
 const LEAD_WORKS = [
   39799, // Hokusai, The Great Wave
   436528, // Van Gogh, Irises
-  337496, // Leonardo da Vinci, The Head of the Virgin
+  337499, // J. M. W. Turner, The Lake of Zug
 ];
 
 test("opens on the three works the strip is built around, in order", () => {

@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   extensionForMimeType,
-  filenameTimestamp,
   generatedImageFilename,
   mimeTypeFromUrl,
+  sanitizeFilenameLabel,
   slugifyForFilename,
 } from "./downloadImage.ts";
 
@@ -24,6 +24,48 @@ test("extensionForMimeType maps known types and falls back to png", () => {
   assert.equal(extensionForMimeType("IMAGE/WEBP"), "webp");
   assert.equal(extensionForMimeType("application/octet-stream"), "png");
   assert.equal(extensionForMimeType(null), "png");
+});
+
+test("sanitizeFilenameLabel strips illegal characters but keeps readable spacing", () => {
+  assert.equal(
+    sanitizeFilenameLabel('Sun/flowers: "a study" \\ <1887>'),
+    "Sunflowers a study 1887",
+  );
+  assert.equal(
+    sanitizeFilenameLabel("  collapsed   whitespace  "),
+    "collapsed whitespace",
+  );
+  assert.equal(sanitizeFilenameLabel("L'Arlésienne"), "L'Arlesienne");
+  assert.equal(sanitizeFilenameLabel("***"), "");
+  assert.equal(sanitizeFilenameLabel(":::"), "");
+});
+
+test("sanitizeFilenameLabel caps length without trailing whitespace", () => {
+  const label = sanitizeFilenameLabel(
+    "La Berceuse Woman Rocking a Cradle Augustine Alix Pellicot Roulin Extra Words",
+    40,
+  );
+  assert.ok(label.length <= 40, label);
+  assert.ok(!label.endsWith(" "), label);
+});
+
+test("sanitizeFilenameLabel keeps a full Great Wave Met title by default", () => {
+  const title =
+    "Under the Wave off Kanagawa (Kanagawa oki nami ura), or The Great Wave, from the series Thirty-six Views of Mount Fuji (Fugaku sanjurokkei)";
+  const label = sanitizeFilenameLabel(title);
+  assert.equal(label, title);
+  assert.ok(label.includes("Thirty-six Views of Mount Fuji"), label);
+});
+
+test("sanitizeFilenameLabel truncates long titles at a word boundary", () => {
+  const label = sanitizeFilenameLabel(
+    "Under the Wave off Kanagawa (Kanagawa oki nami ura), or The Great Wave, from the series",
+    60,
+  );
+  assert.ok(label.length <= 60, label);
+  assert.ok(!label.endsWith(" "), label);
+  assert.ok(!/(?:,|\bor|\bfrom|\bthe)$/i.test(label), `dangling crumb: ${label}`);
+  assert.match(label, /Kanagawa/, label);
 });
 
 test("slugifyForFilename strips characters that are illegal in filenames", () => {
@@ -46,19 +88,24 @@ test("slugifyForFilename caps length without leaving a trailing separator", () =
   assert.equal(slugifyForFilename("abcdefghij klmnop", 11), "abcdefghij");
 });
 
-test("filenameTimestamp is sortable and free of characters Windows rejects", () => {
-  const stamp = filenameTimestamp(new Date(2026, 6, 24, 17, 5, 3));
-  assert.equal(stamp, "2026-07-24T17-05-03");
-  assert.ok(!/[:\\/*?"<>|]/.test(stamp));
+test("generatedImageFilename uses Inspired by + title when inspiration exists", () => {
+  const name = generatedImageFilename({
+    inspirationTitle: "The Lake of Zug",
+    imageUrl: "data:image/png;base64,iVBORw0KGgo=",
+  });
+  assert.equal(name, "Inspired by The Lake of Zug.png");
 });
 
-test("generatedImageFilename names the file after the artwork and the time", () => {
+test("generatedImageFilename keeps the full Great Wave title before .png", () => {
+  const title =
+    "Under the Wave off Kanagawa (Kanagawa oki nami ura), or The Great Wave, from the series Thirty-six Views of Mount Fuji (Fugaku sanjurokkei)";
   const name = generatedImageFilename({
-    inspirationTitle: "Sunflowers",
+    inspirationTitle: title,
     imageUrl: "data:image/png;base64,iVBORw0KGgo=",
-    date: new Date(2026, 6, 24, 17, 5, 3),
   });
-  assert.equal(name, "gallery-sunflowers-2026-07-24T17-05-03.png");
+  assert.equal(name, `Inspired by ${title}.png`);
+  assert.ok(name.endsWith(".png"), name);
+  assert.ok(!name.includes("from the.png"), name);
 });
 
 test("generatedImageFilename never leaks an internal painting id", () => {
@@ -67,41 +114,35 @@ test("generatedImageFilename never leaks an internal painting id", () => {
   const name = generatedImageFilename({
     inspirationTitle: "Sunflowers",
     imageUrl: "data:image/png;base64,iVBORw0KGgo=",
-    date: new Date(2026, 6, 24, 17, 5, 3),
   });
   assert.ok(!/\b(back|front|left|right)-\d/.test(name), name);
 });
 
-test("generatedImageFilename omits the artwork slug when nothing was selected", () => {
+test("generatedImageFilename falls back to Artwork with no inspiration", () => {
   const name = generatedImageFilename({
     inspirationTitle: null,
     imageUrl: "data:image/png;base64,iVBORw0KGgo=",
-    date: new Date(2026, 6, 24, 17, 5, 3),
   });
-  assert.equal(name, "gallery-2026-07-24T17-05-03.png");
+  assert.equal(name, "Artwork.png");
 });
 
 test("generatedImageFilename derives the extension from the image, not a guess", () => {
   const jpeg = generatedImageFilename({
     imageUrl: "data:image/jpeg;base64,/9j/4AAQ",
-    date: new Date(2026, 6, 24, 17, 5, 3),
   });
   assert.ok(jpeg.endsWith(".jpg"), jpeg);
 
   // A remote URL declares no MIME type, so the default applies.
   const remote = generatedImageFilename({
     imageUrl: "https://cdn.example.com/image",
-    date: new Date(2026, 6, 24, 17, 5, 3),
   });
   assert.ok(remote.endsWith(".png"), remote);
 });
 
-test("generatedImageFilename survives an artwork title of only punctuation", () => {
+test("generatedImageFilename falls back when the title sanitizes to empty", () => {
   const name = generatedImageFilename({
-    inspirationTitle: "!!!",
+    inspirationTitle: ":::???***",
     imageUrl: "data:image/png;base64,iVBORw0KGgo=",
-    date: new Date(2026, 6, 24, 17, 5, 3),
   });
-  assert.equal(name, "gallery-2026-07-24T17-05-03.png");
-  assert.ok(!name.includes("--"), name);
+  assert.equal(name, "Artwork.png");
 });

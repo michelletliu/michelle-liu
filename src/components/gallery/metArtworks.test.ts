@@ -492,11 +492,10 @@ test("the required attribution and safety strings are exact", () => {
   );
 });
 
-test("the info panel copy is the three notices, verbatim", () => {
+test("the info panel copy is the two notices, verbatim", () => {
   assert.equal(
     GALLERY_INFO_TEXT,
     "Source artwork data and image from The Metropolitan Museum of Art Open Access collection. " +
-      "Generated images are AI-created and are not affiliated with or endorsed by The Met. " +
-      "You are responsible for the lawful use of anything you generate here.",
+      "Generated images are AI-created and are not affiliated with or endorsed by The Met.",
   );
 });

@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CloseIcon } from "@/components/Close";
 import { ghostIconButtonClass } from "@/components/ghostIconButton";
+import { HorizontalLine } from "@/components/HorizontalLine";
 import { Info } from "@/components/Info";
 import { iconSize } from "@/components/iconSizes";
 import { useScrollLock } from "@/utils/useScrollLock";
@@ -26,12 +28,63 @@ const CLOSE_ANIMATION_MS = 300;
 const GALLERY_CONTROLS_TEXT =
   "Use the arrow keys to move between paintings, + and − to zoom, and 0 to reset the view. The stick on the right does the same by dragging.";
 
-export default function GalleryInfoButton() {
+const GALLERY_STACK_METADATA = [
+  { label: "Interface", tools: ["Next.js", "React"] },
+  { label: "Scene", tools: ["Three.js"] },
+  { label: "Data", tools: ["The Met API", "Open Access"] },
+  { label: "Generation", tools: ["Reve Image"] },
+];
+
+function GalleryStackMetadata() {
+  return (
+    <div className="flex w-full flex-col gap-4">
+      <HorizontalLine />
+      <div className="hidden w-full grid-cols-4 gap-3 font-['Michelle',sans-serif] text-base font-normal md:grid">
+        {GALLERY_STACK_METADATA.map((item) => (
+          <div key={item.label} className="flex min-w-0 flex-col gap-2">
+            <p className="text-sm leading-normal text-[#a1a1aa]">
+              {item.label}
+            </p>
+            <div className="flex flex-col text-[#71717a]">
+              {item.tools.map((tool) => (
+                <p key={tool} className="truncate leading-normal">
+                  {tool}
+                </p>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex w-full flex-col gap-1.5 font-['Michelle',sans-serif] text-sm font-normal md:hidden">
+        {GALLERY_STACK_METADATA.map((item) => (
+          <div key={item.label} className="flex items-baseline gap-6">
+            <p className="w-[76px] shrink-0 leading-normal text-[#a1a1aa]">
+              {item.label}
+            </p>
+            <p className="leading-normal tracking-[0.005em] text-[#71717a]">
+              {item.tools.join(", ")}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+type GalleryInfoButtonProps = {
+  /** Shared / view-only room: CTA to `/gallery` instead of an X close. */
+  viewOnly?: boolean;
+};
+
+export default function GalleryInfoButton({
+  viewOnly = false,
+}: GalleryInfoButtonProps) {
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
   const titleId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const createOwnRef = useRef<HTMLAnchorElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -40,9 +93,10 @@ export default function GalleryInfoButton() {
   useEffect(() => {
     if (!open) return;
     const frame = requestAnimationFrame(() => setVisible(true));
-    closeRef.current?.focus();
+    if (viewOnly) createOwnRef.current?.focus();
+    else closeRef.current?.focus();
     return () => cancelAnimationFrame(frame);
-  }, [open]);
+  }, [open, viewOnly]);
 
   useEffect(() => () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -65,7 +119,8 @@ export default function GalleryInfoButton() {
     setOpen(true);
     if (interrupting) {
       setVisible(true);
-      closeRef.current?.focus();
+      if (viewOnly) createOwnRef.current?.focus();
+      else closeRef.current?.focus();
     }
   };
 
@@ -92,9 +147,10 @@ export default function GalleryInfoButton() {
         // Persistent room furniture: reaching for it must not fold away the
         // composer the visitor is in the middle of filling in.
         {...{ [KEEP_BAR_OPEN_ATTR]: "" }}
+        // Positioned by GalleryPage’s top-right chrome cluster (with Save).
         className={ghostIconButtonClass(
           "md",
-          `fixed top-8 right-6 z-50 text-zinc-400 md:right-16 ${GALLERY_FOCUS_RING}`,
+          `text-zinc-400 ${GALLERY_FOCUS_RING}`,
         )}
       >
         <Info size={iconSize("md")} />
@@ -112,41 +168,75 @@ export default function GalleryInfoButton() {
               }`}
               onClick={close}
             />
-            {/* Same card as the artwork details panel — 16px corners, 32px of
-                padding and the soft pop-up shadow — so the two read as one
-                surface that the gallery shows things on. */}
+            {/* Match the experiment info surface: title metadata first, then
+                the media area, with the source and control notes kept close. */}
             <div
               ref={dialogRef}
               role="dialog"
               aria-modal="true"
               aria-labelledby={titleId}
-              className={`relative flex w-[550px] max-w-full flex-col rounded-2xl bg-white p-8 shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all duration-300 ease-out ${
+              className={`relative flex max-h-[calc(100vh-48px)] w-[calc(100%*6/12)] max-w-[720px] flex-col overflow-hidden rounded-3xl bg-white max-md:w-[95%] transition-all duration-300 ease-out ${
                 visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
-              <div className="flex items-start justify-between gap-3">
-                <h2 id={titleId} className="text-base text-zinc-900">
-                  About this gallery
-                </h2>
-                <button
-                  ref={closeRef}
-                  type="button"
-                  onClick={close}
-                  aria-label="Close gallery information"
-                  className={ghostIconButtonClass(
-                    "sm",
-                    `-mr-3 -mt-3 text-zinc-400 ${GALLERY_FOCUS_RING}`,
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-6 bg-gradient-to-b from-white to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-8 bg-gradient-to-t from-white to-transparent" />
+              <div className="flex max-h-[calc(100vh-48px)] w-full flex-col gap-4 overflow-y-auto px-8 pb-8 pt-6 max-md:gap-3 max-md:px-6 max-md:py-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <div className="flex items-center gap-[6px]">
+                      <h2 id={titleId} className="text-base text-zinc-900">
+                        Gallery
+                      </h2>
+                      <span className="text-base font-normal leading-snug text-[#a1a1aa]">
+                        •
+                      </span>
+                      <span className="text-base text-[#a1a1aa]">2026</span>
+                    </div>
+                    <p className="text-sm leading-relaxed text-[#71717a] md:text-base">
+                      An interactive art gallery to visualize your ideas.
+                    </p>
+                  </div>
+                  {viewOnly ? (
+                    <Link
+                      ref={createOwnRef}
+                      href="/gallery"
+                      className={`inline-flex shrink-0 items-center justify-center rounded-full bg-zinc-900 px-4 py-2.5 font-['Michelle',sans-serif] text-base font-medium text-white transition-opacity hover:opacity-90 ${GALLERY_FOCUS_RING}`}
+                    >
+                      Create your own
+                    </Link>
+                  ) : (
+                    <button
+                      ref={closeRef}
+                      type="button"
+                      onClick={close}
+                      aria-label="Close gallery information"
+                      className={ghostIconButtonClass(
+                        "sm",
+                        `-mr-3 -mt-1 text-zinc-400 ${GALLERY_FOCUS_RING}`,
+                      )}
+                    >
+                      <CloseIcon size="16px" />
+                    </button>
                   )}
+                </div>
+                <GalleryStackMetadata />
+                <div
+                  aria-label="Gallery walkthrough video placeholder"
+                  className="relative mt-1 flex aspect-[1097/616] w-full shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-100"
                 >
-                  <CloseIcon size="16px" />
-                </button>
+                  <div className="absolute inset-0 bg-[linear-gradient(135deg,#f4f4f5_0%,#e4e4e7_52%,#d4d4d8_100%)]" />
+                  <span className="relative font-['Michelle',sans-serif] text-sm text-zinc-400">
+                    Video placeholder
+                  </span>
+                </div>
+                <p className="text-sm leading-relaxed text-[#71717a] md:text-base">
+                  {GALLERY_CONTROLS_TEXT}
+                </p>
+                <p className="border-t border-zinc-100 pt-4 text-sm leading-relaxed text-[#a1a1aa]">
+                  {GALLERY_INFO_TEXT}
+                </p>
               </div>
-              <p className="mt-3 text-sm leading-relaxed text-zinc-500">
-                {GALLERY_INFO_TEXT}
-              </p>
-              <p className="mt-4 border-t border-zinc-100 pt-4 text-sm leading-relaxed text-zinc-500">
-                {GALLERY_CONTROLS_TEXT}
-              </p>
             </div>
           </div>,
           document.body,

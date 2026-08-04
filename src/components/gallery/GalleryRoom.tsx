@@ -12,7 +12,7 @@ type GalleryRoomProps = {
   generatingId?: string | null;
   shimmerHues?: ShimmerHues | null;
   onSelectPainting: (id: string) => void;
-  onDownload?: () => void;
+  onOpenComposer?: () => void;
 };
 
 const GalleryScene = dynamic(() => import("./GalleryScene"), {

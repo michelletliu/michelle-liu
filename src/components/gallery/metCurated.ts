@@ -19,14 +19,19 @@
 export const CURATED_MET_OBJECT_IDS: readonly number[] = [
   39799, // Hokusai, Under the Wave off Kanagawa (The Great Wave) — woodblock, ca. 1830–32
   436528, // Van Gogh, Irises — oil on canvas, 1890
-  337496, // Leonardo da Vinci, The Head of the Virgin in Three-Quarter View — chalk, 1510–13
+  337499, // J. M. W. Turner, The Lake of Zug — watercolour and gouache, 1843
+  436535, // Van Gogh, Wheat Field with Cypresses — oil on canvas, 1889
+  436532, // Van Gogh, Self-Portrait with a Straw Hat — oil on canvas, 1887
+  437980, // Van Gogh, Cypresses — oil on canvas, 1889
+  436529, // Van Gogh, L'Arlésienne (Madame Ginoux) — oil on canvas, 1888–89
   459016, // Botticelli, The Annunciation — tempera and gold on wood, ca. 1490
   435809, // Pieter Bruegel the Elder, The Harvesters — oil on oak, 1565
   336228, // Albrecht Dürer, Melencolia I — engraving, 1514
   437397, // Rembrandt, Self-Portrait — oil on canvas, 1660
   437881, // Vermeer, Young Woman with a Water Pitcher — oil on canvas, ca. 1662
-  337499, // J. M. W. Turner, The Lake of Zug — watercolour and gouache, 1843
+  337496, // Leonardo da Vinci, The Head of the Virgin in Three-Quarter View — chalk, 1510–13
   435868, // Cézanne, The Card Players — oil on canvas, 1890–92
+  436965, // Manet, The Monet Family in Their Garden at Argenteuil — oil on canvas, 1874
   436132, // Degas, The Dance Lesson — pastel and black chalk, ca. 1879
   11125, // Winslow Homer, Inside the Bar — watercolour, 1883
   37031, // Hiroshige, Ōtsu, from Fifty-Three Stations of the Tōkaidō — woodblock, 1841–44
