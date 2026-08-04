@@ -48,13 +48,13 @@ const POPOVER_RIGHT_NUDGE_PX = 10;
 /**
  * Compact save fields: muted FieldShell with py-1.5 (not default py-2) so
  * pills sit closer to one-line control height. Action pills match that row.
- * Scoped overrides on FloatingPanel: gap-3.5 + px-6 + pb-4 (Library stays
- * gap-3 / px-5 / pb-5). px-6 optically matches pt/pb-4 against title + pills.
+ * Scoped overrides on FloatingPanel: gap-3.5 + px-5 + pb-5 (Library stays
+ * gap-3 / px-5 / pb-5). px/pb at 20px; pt stays FloatingPanel pt-4.
  */
 const SAVE_FIELD_SHELL = "rounded-full !py-1.5";
 const SAVE_ACTION_BTN =
   "inline-flex h-8 items-center justify-center rounded-full px-4 text-base";
-const SAVE_PANEL_BODY = "!gap-3.5 !px-6 !pb-4";
+const SAVE_PANEL_BODY = "!gap-3.5 !px-5 !pb-5";
 
 function FilmLoadingDots({ reduceMotion }: { reduceMotion: boolean }) {
   if (reduceMotion) {
@@ -107,10 +107,9 @@ function ShareUrlField({
   }, [url]);
 
   return (
-    // Equal inset: !p-2 on the shell (no min-h stretch). !pl-0 kills the
-    // muted field-input’s extra horizontal pad so URL text isn’t double-inset
-    // — left edge matches top/bottom padding.
-    <FieldShell tone="muted" className="rounded-full !p-2">
+    // Shell: !p-2 with !pl-3 (12px) so URL text has a bit more left inset.
+    // !pl-0 on the input kills muted field-input’s extra horizontal pad.
+    <FieldShell tone="muted" className="rounded-full !p-2 !pl-3">
       <FieldInput
         ref={inputRef}
         readOnly

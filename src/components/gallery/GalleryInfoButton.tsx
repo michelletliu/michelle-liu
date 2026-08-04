@@ -10,6 +10,7 @@ import { Info } from "@/components/icons/Info";
 import { iconSize } from "@/components/shared/iconSizes";
 import ShimmerImage from "@/components/shared/ShimmerImage";
 import ShimmerVideo from "@/components/shared/ShimmerVideo";
+import Tooltip from "@/components/shared/Tooltip";
 import { useScrollLock } from "@/utils/useScrollLock";
 import { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import { GALLERY_DIALOG_ATTR, useGalleryDialogKeys } from "./galleryDialog";
@@ -174,24 +175,27 @@ export default function GalleryInfoButton({
 
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={openPanel}
-        aria-label="Gallery information"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        // Persistent room furniture: reaching for it must not fold away the
-        // composer the visitor is in the middle of filling in.
-        {...{ [KEEP_BAR_OPEN_ATTR]: "" }}
-        // Positioned by GalleryPage’s top-right chrome cluster (with Save).
-        className={ghostIconButtonClass(
-          "md",
-          `text-zinc-400 ${GALLERY_FOCUS_RING}`,
-        )}
-      >
-        <Info size={iconSize("md")} />
-      </button>
+      {/* Portal: gallery shell is overflow:hidden; hide tip while the dialog is open. */}
+      <Tooltip label="Info" position="bottom" disabled={open} portal>
+        <button
+          ref={triggerRef}
+          type="button"
+          onClick={openPanel}
+          aria-label="Gallery information"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          // Persistent room furniture: reaching for it must not fold away the
+          // composer the visitor is in the middle of filling in.
+          {...{ [KEEP_BAR_OPEN_ATTR]: "" }}
+          // Positioned by GalleryPage’s top-right chrome cluster (with Save).
+          className={ghostIconButtonClass(
+            "md",
+            `text-zinc-400 ${open ? "bg-zinc-900/5" : ""} ${GALLERY_FOCUS_RING}`,
+          )}
+        >
+          <Info size={iconSize("md")} />
+        </button>
+      </Tooltip>
 
       {open &&
         createPortal(

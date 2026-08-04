@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useRef, useEffect, useLayoutEffect, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import {
@@ -75,9 +77,9 @@ if (typeof window !== 'undefined') {
   window.addEventListener('touchstart', markTouch, { passive: true });
 }
 
-export default function Tooltip({ 
-  label, 
-  children, 
+export default function Tooltip({
+  label,
+  children,
   position = 'bottom',
   offset = 6,
   delay,
@@ -88,13 +90,20 @@ export default function Tooltip({
 }: TooltipProps) {
   // Hover tips default to 400ms; forceOpen stays instant unless delay is set.
   const showDelay = delay ?? (forceOpen ? 0 : DEFAULT_HOVER_DELAY);
+  const [mounted, setMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const [isInstant, setIsInstant] = useState(false);
-  const [forceRevealed, setForceRevealed] = useState(false);
+  // Delayed forceOpen only — instant forceOpen is derived below so tips cannot
+  // stick closed when an effect commit is skipped (force=1, revealed=0).
+  const [delayedForceRevealed, setDelayedForceRevealed] = useState(false);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const hideImmediately = () => {
     if (hoverTimeoutRef.current) {
@@ -112,18 +121,15 @@ export default function Tooltip({
     if (disabled) hideImmediately();
   }, [disabled]);
 
-  // Delayed forceOpen (e.g. Met tip): wait showDelay, then reveal.
+  // Delayed forceOpen (e.g. Met tip at 800ms): wait showDelay, then reveal.
+  // Instant forceOpen (delay 0 / omitted) is derived — do not rely on this effect.
   useEffect(() => {
-    if (!forceOpen || disabled) {
-      setForceRevealed(false);
+    if (!forceOpen || disabled || showDelay <= 0) {
+      setDelayedForceRevealed(false);
       return;
     }
-    if (showDelay <= 0) {
-      setForceRevealed(true);
-      return;
-    }
-    setForceRevealed(false);
-    const id = window.setTimeout(() => setForceRevealed(true), showDelay);
+    setDelayedForceRevealed(false);
+    const id = window.setTimeout(() => setDelayedForceRevealed(true), showDelay);
     return () => clearTimeout(id);
   }, [forceOpen, disabled, showDelay]);
 
@@ -193,7 +199,12 @@ export default function Tooltip({
     hideImmediately();
   };
 
-  const showTooltip = forceRevealed || (isVisible && !disabled);
+  const instantForceOpen = Boolean(forceOpen && !disabled && showDelay <= 0);
+  // Portal tips need document.body — wait until mount so SSR never calls
+  // createPortal (ReferenceError: document is not defined) and hydration matches.
+  const showTooltip =
+    (instantForceOpen || delayedForceRevealed || (isVisible && !disabled)) &&
+    (!portal || mounted);
 
   // Portal tips: Floating UI owns fixed left/top + flip/shift against the
   // viewport. Do NOT also apply .tooltip’s left:50%/translateX(-50%) — that
