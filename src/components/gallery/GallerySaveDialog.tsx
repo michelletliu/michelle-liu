@@ -46,12 +46,14 @@ const POPOVER_OFFSET_PX = 6;
 const POPOVER_RIGHT_NUDGE_PX = 10;
 
 /**
- * Action pills match FieldShell height (`min-h-10` / muted py-2 + 1.25rem input).
+ * Compact save fields: muted FieldShell with py-1.5 (not default py-2) so
+ * pills sit closer to one-line control height. Action pills match that row.
  * Scoped overrides on FloatingPanel: gap-3.5 + px-6 + pb-4 (Library stays
  * gap-3 / px-5 / pb-5). px-6 optically matches pt/pb-4 against title + pills.
  */
+const SAVE_FIELD_SHELL = "rounded-full !py-1.5";
 const SAVE_ACTION_BTN =
-  "inline-flex h-10 items-center justify-center rounded-full px-4 text-base";
+  "inline-flex h-8 items-center justify-center rounded-full px-4 text-base";
 const SAVE_PANEL_BODY = "!gap-3.5 !px-6 !pb-4";
 
 function FilmLoadingDots({ reduceMotion }: { reduceMotion: boolean }) {
@@ -105,9 +107,10 @@ function ShareUrlField({
   }, [url]);
 
   return (
-    // muted shell defaults to px-1 (icon gutters); link field has no leading
-    // icon — !px-2 matches py-2. !pl-0 kills stacked muted input inset.
-    <FieldShell tone="muted" className="min-h-10 !px-2 rounded-full">
+    // Equal inset: !p-2 on the shell (no min-h stretch). !pl-0 kills the
+    // muted field-input’s extra horizontal pad so URL text isn’t double-inset
+    // — left edge matches top/bottom padding.
+    <FieldShell tone="muted" className="rounded-full !p-2">
       <FieldInput
         ref={inputRef}
         readOnly
@@ -427,7 +430,7 @@ export default function GallerySaveDialog({
         </div>
       ) : (
         <form className="flex flex-col gap-3.5" onSubmit={(e) => void submit(e)}>
-          <FieldShell tone="muted" className="rounded-full">
+          <FieldShell tone="muted" className={SAVE_FIELD_SHELL}>
             <FieldInput
               ref={nameRef}
               id={nameId}
@@ -437,20 +440,19 @@ export default function GallerySaveDialog({
               disabled={saving}
               placeholder="Name this gallery"
               aria-label="Gallery name"
-              className="px-3.5"
               onChange={(e) => setName(e.target.value)}
             />
           </FieldShell>
 
-          {/*
-            pl matches muted FieldShell edge + FieldInput px-3.5 so “by”
-            lines up with the gallery-name text.
-          */}
-          <div className="flex min-w-0 items-center gap-2 pl-[1.125rem]">
+          {/* “by” left-aligns with the Save gallery title — no extra pl. */}
+          <div className="flex min-w-0 items-center gap-2">
             <span className="shrink-0 text-base text-zinc-300" aria-hidden>
               by
             </span>
-            <FieldShell tone="muted" className="min-w-0 flex-1 rounded-full">
+            <FieldShell
+              tone="muted"
+              className={`min-w-0 flex-1 ${SAVE_FIELD_SHELL}`}
+            >
               <FieldInput
                 id={creatorId}
                 type="text"
@@ -459,7 +461,6 @@ export default function GallerySaveDialog({
                 disabled={saving}
                 placeholder="Your name"
                 aria-label="Your name"
-                className="px-3.5"
                 onChange={(e) => setCreator(e.target.value)}
               />
             </FieldShell>

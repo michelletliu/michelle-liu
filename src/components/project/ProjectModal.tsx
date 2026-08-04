@@ -1224,7 +1224,7 @@ export default function ProjectModal({
           {!isFullscreen && (
             /* Modal header with expand button */
             <div className="absolute top-0 left-0 right-0 flex items-start justify-start pl-6 pr-7 pt-6 pb-3 z-10">
-              <Tooltip label="Expand">
+              <Tooltip label="Expand" portal>
                 <button
                   onClick={handleExpandToFullscreen}
                   className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-lg hover:bg-zinc-200 transition-colors duration-200 ease-out text-[#a1a1aa]"

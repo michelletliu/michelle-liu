@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import {
   autoUpdate,
@@ -11,7 +11,7 @@ import clsx from 'clsx';
 
 type TooltipProps = {
   label: string;
-  children: React.ReactNode;
+  children: ReactNode;
   /** Position of tooltip relative to children */
   position?: 'top' | 'bottom';
   /** Offset from the element in pixels */
@@ -29,7 +29,7 @@ type TooltipProps = {
   className?: string;
   /**
    * Render in document.body with fixed coords so overflow:hidden ancestors
-   * (composer morph shell, stack clips, etc.) cannot crop the tip.
+   * (composer morph shell, stack clips, modal chrome, etc.) cannot crop the tip.
    */
   portal?: boolean;
 };
@@ -124,7 +124,7 @@ export default function Tooltip({
     }
     setForceRevealed(false);
     const id = window.setTimeout(() => setForceRevealed(true), showDelay);
-    return () => window.clearTimeout(id);
+    return () => clearTimeout(id);
   }, [forceOpen, disabled, showDelay]);
 
   // Force-hide on any touch anywhere — defensive cleanup in case a tooltip
@@ -195,12 +195,11 @@ export default function Tooltip({
 
   const showTooltip = forceRevealed || (isVisible && !disabled);
 
-  // Portal tips: Floating UI owns fixed coords + flip/shift so long labels
-  // stay on-screen and centered on the trigger (not double-shifted by .tooltip).
-  // boundary/rootBoundary must be the viewport — portaled tips escape
-  // overflow:hidden ancestors (RestingStack clip, morph shell) on purpose;
-  // default clippingAncestors would shove them back into that clip (Met tip
-  // overlapping + / composer with the fan still rolled up behind the pill).
+  // Portal tips: Floating UI owns fixed left/top + flip/shift against the
+  // viewport. Do NOT also apply .tooltip’s left:50%/translateX(-50%) — that
+  // double-centers and shifts tips left by half their width (TW v4’s
+  // `-translate-x-1/2` uses the separate `translate` property, which stacks
+  // on top of CSS `transform: translateX(-50%)` for inline tips too).
   useLayoutEffect(() => {
     if (!portal || !showTooltip) return;
     const reference = wrapRef.current;
@@ -209,11 +208,10 @@ export default function Tooltip({
 
     floating.style.visibility = 'hidden';
 
-    const collision = {
-      padding: VIEWPORT_PADDING,
-      boundary: document.documentElement,
-      rootBoundary: 'viewport' as const,
-    };
+    // Portaled to body — collide with the viewport only. A custom
+    // documentElement boundary + clippingAncestors both caused bad shifts;
+    // overflow:hidden ancestors of the *trigger* must not clip the tip.
+    const collision = { padding: VIEWPORT_PADDING };
 
     const update = () => {
       void computePosition(reference, floating, {
@@ -235,10 +233,12 @@ export default function Tooltip({
     return autoUpdate(reference, floating, update);
   }, [portal, showTooltip, position, offset, label, forceOpen]);
 
-  const tipClassName = clsx(
-    'tooltip px-2 py-1 bg-zinc-800 text-white text-sm font-medium rounded-lg whitespace-nowrap pointer-events-none z-[9999]',
-    !portal && 'absolute left-1/2 -translate-x-1/2',
-  );
+  // Visuals come from `.tooltip` in globals.css. Do NOT add Tailwind
+  // `left-1/2 -translate-x-1/2` here — in Tailwind v4 those set the
+  // independent `translate` property, which stacks with CSS
+  // `transform: translateX(-50%)` and shifts every tip left by ~50% width.
+  const tipClassName =
+    'tooltip px-2 py-1 bg-zinc-800 text-white text-sm font-medium rounded-lg whitespace-nowrap pointer-events-none z-[9999]';
 
   const tipProps = {
     className: tipClassName,
@@ -261,29 +261,23 @@ export default function Tooltip({
   const tip = showTooltip ? (
     portal ? (
       createPortal(
-        // Floating UI writes left/top on this node (strategy: fixed).
-        // Inner .tooltip[data-portal] skips the globals left:50% / translateX
-        // centering that was double-shifting portaled tips off their trigger.
+        // Single node: Floating UI writes fixed left/top. data-portal clears
+        // the globals left:50% / translateX(-50%) so we don't double-center.
         <div
           ref={tipRef}
-          className="pointer-events-none fixed z-[9999] w-max"
-          style={{
-            left: 0,
-            top: 0,
-            visibility: 'hidden',
-          }}
+          {...tipProps}
+          style={
+            {
+              position: 'fixed',
+              left: 0,
+              top: 0,
+              visibility: 'hidden',
+              '--transform-origin':
+                position === 'top' ? 'center bottom' : 'center top',
+            } as CSSProperties
+          }
         >
-          <div
-            {...tipProps}
-            style={
-              {
-                '--transform-origin':
-                  position === 'top' ? 'center bottom' : 'center top',
-              } as React.CSSProperties
-            }
-          >
-            {label}
-          </div>
+          {label}
         </div>,
         document.body,
       )

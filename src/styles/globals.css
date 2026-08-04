@@ -1337,14 +1337,15 @@ p a:hover {
 }
 
 /**
- * Portaled tips: Floating UI positions the outer fixed wrapper. Drop the
- * absolute left:50% / translateX(-50%) centering here — stacking that on top
- * of the wrapper's placement shifted tips left by half their width (and off
- * the viewport for long labels on mobile).
+ * Portaled tips: Floating UI sets fixed left/top on this node. Drop the
+ * absolute left:50% / translateX(-50%) centering — that double-shift moved
+ * tips left by half their width (and off-screen for long labels).
+ * Keep transform free for enter/exit scale; position:fixed comes from inline.
  */
 .tooltip[data-portal] {
-  position: static;
-  left: auto;
+  position: fixed;
+  left: 0;
+  top: 0;
   transform: none;
 
   @starting-style {
