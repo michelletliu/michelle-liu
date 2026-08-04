@@ -30,6 +30,11 @@
     corner-shape: round;
   }
 
+  /* DS Inputs matrix only — beat global squircle without changing /gallery FieldShell */
+  .field-shell.input-sample {
+    corner-shape: round !important;
+  }
+
   /* Compensate border-radius to preserve visual size (~1.7x) */
   .rounded-xl                { border-radius: 20px; }   /* 12px */
   .rounded-2xl               { border-radius: 27px; }   /* 16px */

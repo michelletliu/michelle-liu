@@ -90,11 +90,12 @@ function InputSample({
       tone={shellTone}
       active={isFocus}
       error={isError}
-      className={clsx("input-sample", shellComposition)}
+      className={clsx("input-sample rounded-full", shellComposition)}
     >
       {composition === "leading" ? (
         <FieldLeadingIcon>
-          <SearchMagnifierIcon />
+          {/* Specimen-only — gallery keeps its own `size="15px"` on MetArtworkPicker. */}
+          <SearchMagnifierIcon size={iconSize("xs")} />
         </FieldLeadingIcon>
       ) : null}
       <FieldInput
@@ -111,7 +112,7 @@ function InputSample({
       />
       {composition === "trailing" ? (
         <FieldTrailingIcon className="field-trailing-icon">
-          <ArrowRightIcon size={iconSize("md")} />
+          <ArrowRightIcon size={iconSize("sm")} />
         </FieldTrailingIcon>
       ) : null}
     </FieldShell>

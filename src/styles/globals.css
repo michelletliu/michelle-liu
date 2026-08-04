@@ -287,9 +287,25 @@
     border-color: #f87171; /* red-400 */
   }
 
-  /* Design-system matrix sizing / composition layout */
+  /* Design-system matrix sizing / composition layout — scoped so /gallery FieldShell is untouched */
   .field-shell.input-sample {
     max-width: 11.5rem;
+    border-radius: 9999px;
+    corner-shape: round;
+  }
+
+  .field-shell.input-sample .field-icon-slot {
+    width: 0.75rem; /* 12px — matches specimen SearchMagnifierIcon xs */
+    height: 0.75rem;
+  }
+
+  .field-shell.input-sample .field-leading-icon {
+    margin-left: 0.625rem;
+  }
+
+  .field-shell.input-sample.leading {
+    gap: 0.5rem;
+    padding-left: 0.5rem;
   }
 
   .field-shell.leading {
