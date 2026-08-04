@@ -1,7 +1,8 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Minus, Plus } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ChevronLeftIcon, ChevronRightIcon } from "@/components/Chevron";
+import { PlusIcon } from "@/components/library/icons";
 import { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { adjacentPaintingId } from "./galleryPaintings";
@@ -33,30 +34,56 @@ type GalleryThumbstickProps = {
 };
 
 /** Base and knob radii in px. Knob travel is their difference, less a margin. */
-const BASE_RADIUS = 46;
+const BASE_RADIUS = 58; // 116px across — between the prior 112 and the 120 bump
 const KNOB_RADIUS = 19;
 const MAX_TRAVEL = BASE_RADIUS - KNOB_RADIUS - 5;
+/** Ring band between knob edge and outer rim — glyphs sit centered in this. */
+const RING_BAND = BASE_RADIUS - KNOB_RADIUS;
 /**
  * Axis hint size.
  *
- * Sized against the 27px band between the knob and the rim rather than against
- * the base as a whole, so the glyphs read as labels on the ring they sit in and
- * the knob stays the largest thing on the control.
+ * Sized against the ring band rather than the base as a whole, so the glyphs
+ * read as labels on the ring they sit in and the knob stays the largest thing
+ * on the control.
  */
 const ICON_SIZE = 15;
+const PLUS_AXIS_ICON_CLASS = "size-[11px]";
+/** Hit/hover wash around each glyph; kept smaller than the ring band. */
+const GLYPH_BOX = 26;
+/** Equal padding from knob edge and outer rim to the glyph box. */
+const GLYPH_PAD = (RING_BAND - GLYPH_BOX) / 2;
+
+function MinusIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className="block size-[15px] shrink-0"
+      aria-hidden
+    >
+      <path
+        d="M4 12H20"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
 
 /**
  * Where each axis button sits, and how much of the base it may claim.
  *
- * The numbers are forced by the geometry rather than chosen. The base is 92px
- * across with a 38px knob in the middle, which leaves a 27px band per side —
- * so a 44×44 target centred on a glyph would cover a third of the knob and
- * collide with its neighbours at the diagonals. Instead each target stops dead
- * at the knob's edge (27px from the base's own edge) and makes up the area
- * outwards, past the rim into empty room. That yields ~41×38 of pressable area
- * against the glyph's 15×15, no overlap between the four, and a knob whose
- * drag region is untouched — the one thing that must not be traded away, since
- * dragging is still the only way to zoom and step continuously.
+ * The numbers are forced by the geometry rather than chosen. The base is 116px
+ * across with a 38px knob in the middle, which leaves a 39px band per side —
+ * wide enough that a 26px glyph wash can sit centred with clear air to the knob
+ * and the rim. Each target still stops dead at the knob's edge (`RING_BAND`
+ * from the base's own edge) and makes up the area outwards, past the rim into
+ * empty room. That yields pressable area against the glyph's 15×15, no overlap
+ * between the four, and a knob whose drag region is untouched — the one thing
+ * that must not be traded away, since dragging is still the only way to zoom
+ * and step continuously.
  *
  * Each arm is pinned on both ends of its short side rather than given a length,
  * which is the difference between four targets that meet at the corners and
@@ -67,7 +94,7 @@ const ICON_SIZE = 15;
  * painted last took the press. Anchoring both ends to the same box removes the
  * discrepancy by construction instead of paying it off with a magic number.
  */
-const AXIS_INSET = 27;
+const AXIS_INSET = RING_BAND;
 const AXIS_OUTSET = 14;
 
 const AXIS_BOX: Record<AxisName, React.CSSProperties> = {
@@ -97,12 +124,19 @@ const AXIS_BOX: Record<AxisName, React.CSSProperties> = {
   },
 };
 
-/** Pins the glyph to the target's inner edge, where it has always been drawn. */
+/** Centres each glyph in the ring band (equal pad to knob and outer rim). */
 const AXIS_GLYPH: Record<AxisName, string> = {
-  left: "right-0 top-1/2 -translate-y-1/2",
-  right: "left-0 top-1/2 -translate-y-1/2",
-  top: "bottom-0 left-1/2 -translate-x-1/2",
-  bottom: "top-0 left-1/2 -translate-x-1/2",
+  left: "top-1/2 -translate-y-1/2",
+  right: "top-1/2 -translate-y-1/2",
+  top: "left-1/2 -translate-x-1/2",
+  bottom: "left-1/2 -translate-x-1/2",
+};
+
+const AXIS_GLYPH_INSET: Record<AxisName, React.CSSProperties> = {
+  left: { right: GLYPH_PAD },
+  right: { left: GLYPH_PAD },
+  top: { bottom: GLYPH_PAD },
+  bottom: { top: GLYPH_PAD },
 };
 
 type AxisName = "left" | "right" | "top" | "bottom";
@@ -138,6 +172,7 @@ function AxisButton({
     >
       <span
         aria-hidden
+        style={AXIS_GLYPH_INSET[axis]}
         className={`absolute grid size-[26px] place-items-center rounded-full text-zinc-500 transition-colors duration-150 group-hover:bg-zinc-900/[0.06] group-hover:text-zinc-700 group-active:bg-zinc-900/[0.12] motion-reduce:transition-none ${AXIS_GLYPH[axis]}`}
       >
         {children}
@@ -293,9 +328,9 @@ export default function GalleryThumbstick({
       // about to fill must not fold the composer away behind you.
       {...{ [KEEP_BAR_OPEN_ATTR]: "" }}
       /*
-       * Right edge, and never a right-hand corner: the info button holds the
-       * top one, and the bottom one is where the action bar grows as its
-       * results grid opens.
+       * Right edge on wide screens, and never a right-hand corner: the info
+       * button holds the top one, and the bottom one is where the action bar
+       * grows as its results grid opens.
        *
        * The vertical anchor differs by width because the room does. Wide, the
        * hangs sit in a band across the middle and leave clear floor beneath
@@ -305,10 +340,10 @@ export default function GalleryThumbstick({
        * not depend on the bar's height: the bar is centred and capped at
        * `max-w-xl`, so at this width it never reaches this column at all.
        *
-       * Narrow, the room fills the viewport and there is no clear floor left to
-       * drop into, so the stick stays centred — the one band the bar cannot
-       * reach even fully expanded. Some overlap with the room is unavoidable at
-       * that width, which is what the translucent base and blur are for.
+       * Narrow, the composer takes the bottom edge and the picker can grow up
+       * from it, so the stick becomes nearby room navigation: bottom-right, just
+       * above the composer, and below the composer's own stack. That keeps it
+       * reachable without letting it float over the modal picker contents.
        *
        * Wide, the right and bottom insets agree so the stick sits in its corner
        * squarely — a corner only looks deliberate when both of its gaps match.
@@ -328,12 +363,12 @@ export default function GalleryThumbstick({
        * 96px a side, and the stick needs 156 — and it still overlaps until the
        * narrow treatment takes over.
        *
-       * Narrow keeps its own smaller inset, matched to the info button's 1.5rem
-       * for the same reason: there is no bottom gap to agree with when the
-       * stick is vertically centred, and 4rem of a 390px viewport would push it
-       * over the middle of the room.
+       * Narrow keeps its own smaller side inset, matched to the logo's optical
+       * margin. The bottom value is the composer's padding plus its resting row
+       * height plus a small breathing gap, with safe-area padding added so the
+       * relationship survives mobile browser chrome.
        */
-      className="pointer-events-none absolute top-1/2 right-6 z-40 -translate-y-1/2 md:top-auto md:right-16 md:bottom-16 md:translate-y-0"
+      className="pointer-events-none absolute right-6 bottom-[calc(env(safe-area-inset-bottom)+7.25rem)] z-30 md:right-16 md:bottom-16"
     >
       <div
         ref={baseRef}
@@ -358,28 +393,28 @@ export default function GalleryThumbstick({
           label="Previous painting"
           onPress={() => onSelect(adjacentPaintingId(focusedId, -1))}
         >
-          <ChevronLeft size={ICON_SIZE} />
+          <ChevronLeftIcon size={`${ICON_SIZE}px`} />
         </AxisButton>
         <AxisButton
           axis="right"
           label="Next painting"
           onPress={() => onSelect(adjacentPaintingId(focusedId, 1))}
         >
-          <ChevronRight size={ICON_SIZE} />
+          <ChevronRightIcon size={`${ICON_SIZE}px`} />
         </AxisButton>
         <AxisButton
           axis="top"
           label="Zoom in"
           onPress={() => onZoomBy(ZOOM_STEP)}
         >
-          <Plus size={ICON_SIZE} />
+          <PlusIcon className={PLUS_AXIS_ICON_CLASS} />
         </AxisButton>
         <AxisButton
           axis="bottom"
           label="Zoom out"
           onPress={() => onZoomBy(-ZOOM_STEP)}
         >
-          <Minus size={ICON_SIZE} />
+          <MinusIcon />
         </AxisButton>
 
         <div

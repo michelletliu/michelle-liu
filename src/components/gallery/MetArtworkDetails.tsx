@@ -9,6 +9,7 @@ import { INLINE_LINK_CLASS } from "@/components/shared/inlineLink";
 import { GALLERY_DIALOG_ATTR, useGalleryDialogKeys } from "./galleryDialog";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { openAccessImageUrl, type MetArtwork } from "./metArtworks";
+import { metImageTrimStyle } from "./metImageMat";
 
 /**
  * The full record behind the inspiration strip's ⓘ.
@@ -103,12 +104,15 @@ export default function MetArtworkDetails({
               // Height-constrained rather than boxed to the design's exact
               // 293×200: that ratio is the Great Wave's, and a Dürer engraving
               // or a Degas pastel in the same box would be cropped or letterboxed.
-              <img
-                src={src}
-                alt={artwork.title}
-                decoding="async"
-                className="h-[200px] w-auto max-w-full rounded-sm object-contain shadow-[0_4px_12px_rgba(0,0,0,0.1)]"
-              />
+              <span className="inline-block max-h-[200px] max-w-full overflow-hidden rounded-sm shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+                <img
+                  src={src}
+                  alt={artwork.title}
+                  decoding="async"
+                  style={metImageTrimStyle(artwork.objectID)}
+                  className="h-[200px] w-auto max-w-full object-contain"
+                />
+              </span>
             )}
 
             <div className="flex w-full flex-col gap-4">

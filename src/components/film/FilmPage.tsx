@@ -19,7 +19,16 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import imgLogo from '../../assets/logo.png';
+<<<<<<< HEAD
 import InfoButton from '../shared/InfoButton';
+=======
+import InfoButton from '../InfoButton';
+import {
+  FILM_DOT_STYLE,
+  FILM_LOADING_PHRASES,
+  RotatingLoadingText,
+} from '../RotatingLoadingText';
+>>>>>>> origin/main
 import { useExperimentProject } from '../../hooks/useExperimentProject';
 import type { FilmPhoto } from './film-data';
 import {
@@ -804,41 +813,13 @@ const DEFAULT_FILM_PROJECT = {
   ],
 };
 
-const FILM_LOADING_PHRASES = [
-  'film reel loading',
-  'developing photos',
-  'rolling the negatives',
-  'dusting off the enlarger',
-  'mixing the chemicals',
-  'checking the light meter',
-  'hanging prints to dry',
-];
-
 function FilmLoadingText() {
-  const [idx, setIdx] = useState(0);
-  const [fade, setFade] = useState(true);
-  useEffect(() => {
-    const id = setInterval(() => {
-      setFade(false);
-      setTimeout(() => {
-        setIdx((i) => (i + 1) % FILM_LOADING_PHRASES.length);
-        setFade(true);
-      }, 200);
-    }, 1400);
-    return () => clearInterval(id);
-  }, []);
   return (
-    <p className="text-sm text-zinc-600">
-      <span
-        className="inline-block transition-opacity duration-300"
-        style={{ opacity: fade ? 1 : 0 }}
-      >
-        {FILM_LOADING_PHRASES[idx]}
-      </span>
-      <span className="film-dot" style={{ animationDelay: '0s' }}>.</span>
-      <span className="film-dot" style={{ animationDelay: '0.2s' }}>.</span>
-      <span className="film-dot" style={{ animationDelay: '0.4s' }}>.</span>
-    </p>
+    <RotatingLoadingText
+      as="p"
+      className="text-sm text-zinc-600"
+      phrases={FILM_LOADING_PHRASES}
+    />
   );
 }
 
@@ -2090,7 +2071,7 @@ export default function FilmPage({ initialPhotos = [], onCollapse, isFullscreen 
         }`}
       >
         <FilmLoadingText />
-        <style>{`@keyframes film-dot-pulse{0%,80%,100%{opacity:.15}40%{opacity:1}}.film-dot{animation:film-dot-pulse 1.4s ease-in-out infinite;opacity:.15}`}</style>
+        <style>{FILM_DOT_STYLE}</style>
         {loadError ? (
           <p className="max-w-sm text-xs leading-relaxed text-zinc-500">
             {loadError}
