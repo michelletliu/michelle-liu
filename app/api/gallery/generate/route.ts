@@ -21,6 +21,25 @@ const REVE_REMIX_URL = "https://api.reve.com/v1/image/remix/";
 const MAX_REFERENCE_BYTES = 8 * 1024 * 1024;
 
 /**
+ * Remix and create both use `latest`. Remix also exposes `latest-fast`
+ * (~8s / 5 credits vs ~18s / 30), but the fast tier softens fine brushwork
+ * enough that wall hangs look blurry — quality wins over that latency cut.
+ * Create ignores `latest-fast` anyway (maps back to the same create model).
+ */
+const REVE_CREATE_VERSION = "latest";
+const REVE_REMIX_VERSION = "latest";
+
+/**
+ * Ask Reve for WebP bytes instead of the default JSON+PNG base64 payload.
+ * Generation time is unchanged; the response drops from ~2–3MB PNG-in-JSON to
+ * ~70–160KB WebP — cutting Reve→server and server→client transfer after the
+ * image is already ready. Decode-to-texture quality at native Reve resolution
+ * is fine; softness came from the remix model tier, not WebP. Share upload
+ * re-encodes to PNG for the existing Blob pipeline.
+ */
+const REVE_ACCEPT = "image/webp";
+
+/**
  * The artwork's Open Access image, base64-encoded for Reve's `reference_images`.
  *
  * Text alone could not carry style: prompts describing impasto and broken
@@ -89,6 +108,17 @@ type GenerateBody = {
  */
 function aspectForPainting(painting: GalleryPainting): "3:4" | "3:2" {
   return painting.aspect === "portrait" ? "3:4" : "3:2";
+}
+
+function reveErrorMessage(raw: string, status: number): string {
+  let message = `Reve error (${status})`;
+  try {
+    const err = JSON.parse(raw) as { message?: string; error?: string };
+    message = err.message || err.error || message;
+  } catch {
+    /* keep default */
+  }
+  return message;
 }
 
 export async function POST(req: NextRequest) {
@@ -167,36 +197,40 @@ export async function POST(req: NextRequest) {
     referenceImage: referenceImage !== null,
   });
   const aspect_ratio = aspectForPainting(painting);
+  const usingRemix = referenceImage !== null;
+  const version = usingRemix ? REVE_REMIX_VERSION : REVE_CREATE_VERSION;
 
   /*
    * Reve rejects unknown fields with a 400 rather than ignoring them, so this
    * is the whole recognised set for remix minus `test_time_scaling` (a paid
-   * quality dial) and `postprocessing`. There is no strength or negative-prompt
-   * parameter — the frame tag and the prompt wording are the only style dial.
+   * quality dial that does not reduce latency) and `postprocessing`. There is
+   * no strength or negative-prompt parameter — the frame tag and the prompt
+   * wording are the only style dial.
    *
    * Exactly one reference is sent, which is what keeps the frame index at 0.
    */
   const payload = {
     prompt: composed.prompt,
     aspect_ratio,
-    version: "latest",
+    version,
     ...(referenceImage ? { reference_images: [referenceImage] } : {}),
   };
 
   console.info(
     `[gallery/generate] painting=${painting.id} inspiration=${
       composed.inspiredByObjectID ?? "none"
-    } endpoint=${referenceImage ? "remix" : "create"} aspect=${aspect_ratio}\n` +
+    } endpoint=${usingRemix ? "remix" : "create"} version=${version} aspect=${aspect_ratio}\n` +
       `[gallery/generate] prompt: ${composed.prompt}`,
   );
 
   let reveRes: Response;
   try {
-    reveRes = await fetch(referenceImage ? REVE_REMIX_URL : REVE_CREATE_URL, {
+    reveRes = await fetch(usingRemix ? REVE_REMIX_URL : REVE_CREATE_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
+        Accept: REVE_ACCEPT,
       },
       body: JSON.stringify(payload),
     });
@@ -207,54 +241,79 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const raw = await reveRes.text();
   // Reve support cannot look up a request without this id.
   console.info(
     `[gallery/generate] reve status=${reveRes.status} request-id=${
       reveRes.headers.get("x-reve-request-id") ?? "none"
-    }`,
+    } version=${reveRes.headers.get("x-reve-version") ?? "none"}`,
   );
 
   if (!reveRes.ok) {
-    let message = `Reve error (${reveRes.status})`;
-    try {
-      const err = JSON.parse(raw) as { message?: string; error?: string };
-      message = err.message || err.error || message;
-    } catch {
-      /* keep default */
-    }
+    const raw = await reveRes.text();
     return NextResponse.json(
-      { error: message },
+      { error: reveErrorMessage(raw, reveRes.status) },
       { status: reveRes.status === 401 ? 502 : reveRes.status },
     );
   }
 
-  try {
-    const data = JSON.parse(raw) as {
-      image?: string;
-      content_violation?: boolean;
-    };
-    if (data.content_violation) {
-      return NextResponse.json(
-        { error: "Prompt was blocked by content policy" },
-        { status: 400 },
-      );
-    }
-    if (!data.image) {
-      return NextResponse.json(
-        { error: "Reve returned no image" },
-        { status: 502 },
-      );
-    }
-    return NextResponse.json({
-      imageUrl: `data:image/png;base64,${data.image}`,
-      paintingId: painting.id,
-      inspiredByObjectID: composed.inspiredByObjectID,
-    });
-  } catch {
+  if (reveRes.headers.get("x-reve-content-violation") === "true") {
     return NextResponse.json(
-      { error: "Invalid Reve response" },
+      { error: "Prompt was blocked by content policy" },
+      { status: 400 },
+    );
+  }
+
+  const bytes = Buffer.from(await reveRes.arrayBuffer());
+  if (bytes.byteLength === 0) {
+    return NextResponse.json(
+      { error: "Reve returned no image" },
       { status: 502 },
     );
   }
+
+  // WebP RIFF magic — guard against an unexpected JSON body slipping through
+  // with a 200 (Reve still returns JSON for some policy/error shapes).
+  if (
+    bytes.byteLength < 12 ||
+    bytes.subarray(0, 4).toString("ascii") !== "RIFF" ||
+    bytes.subarray(8, 12).toString("ascii") !== "WEBP"
+  ) {
+    const asText = bytes.toString("utf8");
+    try {
+      const data = JSON.parse(asText) as {
+        image?: string;
+        content_violation?: boolean;
+        message?: string;
+      };
+      if (data.content_violation) {
+        return NextResponse.json(
+          { error: "Prompt was blocked by content policy" },
+          { status: 400 },
+        );
+      }
+      if (data.image) {
+        // Fallback: older JSON+PNG shape if Accept was ignored.
+        return NextResponse.json({
+          imageUrl: `data:image/png;base64,${data.image}`,
+          paintingId: painting.id,
+          inspiredByObjectID: composed.inspiredByObjectID,
+        });
+      }
+      return NextResponse.json(
+        { error: data.message || "Reve returned no image" },
+        { status: 502 },
+      );
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid Reve response" },
+        { status: 502 },
+      );
+    }
+  }
+
+  return NextResponse.json({
+    imageUrl: `data:image/webp;base64,${bytes.toString("base64")}`,
+    paintingId: painting.id,
+    inspiredByObjectID: composed.inspiredByObjectID,
+  });
 }

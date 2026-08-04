@@ -25,6 +25,11 @@ export type SaveGalleryShareResult = {
   name: string;
 };
 
+/**
+ * Hang uploads still require PNG (Blob path + magic check). Live generates
+ * may be WebP data URLs for faster transfer — re-encode those (and any other
+ * bitmap) via canvas so save stays compatible without slowing generation.
+ */
 async function imageUrlToPngFile(
   imageUrl: string,
   paintingId: string,
@@ -34,15 +39,31 @@ async function imageUrlToPngFile(
     throw new Error(`Could not read image for ${paintingId}.`);
   }
   const blob = await res.blob();
-  // Reve returns PNG data URLs; shared Blob URLs are also PNG.
-  const type = blob.type || "image/png";
-  if (type !== "image/png" && !imageUrl.startsWith("data:image/png")) {
-    // Still try if magic looks fine server-side; prefer failing early when obvious.
-    if (!type.includes("png") && type !== "application/octet-stream") {
-      throw new Error("Only PNG artworks can be saved.");
-    }
+  const type = blob.type || "";
+  const alreadyPng =
+    type === "image/png" || imageUrl.startsWith("data:image/png");
+  if (alreadyPng) {
+    return new File([blob], `${paintingId}.png`, { type: "image/png" });
   }
-  return new File([blob], `${paintingId}.png`, { type: "image/png" });
+
+  const bitmap = await createImageBitmap(blob);
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Could not encode artwork for save.");
+    ctx.drawImage(bitmap, 0, 0);
+    const pngBlob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (next) => (next ? resolve(next) : reject(new Error("PNG encode failed"))),
+        "image/png",
+      );
+    });
+    return new File([pngBlob], `${paintingId}.png`, { type: "image/png" });
+  } finally {
+    bitmap.close();
+  }
 }
 
 /**
@@ -66,7 +87,7 @@ export async function saveGalleryShare(
             shareId: input.existingShareId,
             editToken: input.existingEditToken,
           }
-        : { mode: "create" },
+        : { mode: "create", name: input.name },
     ),
   });
   const startData = (await startRes.json()) as {

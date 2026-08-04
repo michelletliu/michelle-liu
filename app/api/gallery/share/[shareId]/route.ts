@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isGalleryPaintingId } from "@/components/gallery/sharedGallery";
+import {
+  isGalleryPaintingId,
+  isValidShareId,
+} from "@/components/gallery/sharedGallery";
 import { getShareMeta } from "@/lib/gallery/shareBlob";
 
 export const runtime = "nodejs";
 
 type RouteContext = { params: Promise<{ shareId: string }> };
-
-function validShareId(shareId: string): boolean {
-  return Boolean(shareId) && shareId.length <= 32 && /^[A-Za-z0-9_-]+$/.test(shareId);
-}
 
 export async function GET(_req: NextRequest, context: RouteContext) {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
@@ -19,7 +18,7 @@ export async function GET(_req: NextRequest, context: RouteContext) {
   }
 
   const { shareId } = await context.params;
-  if (!validShareId(shareId)) {
+  if (!isValidShareId(shareId)) {
     return NextResponse.json({ error: "Gallery not found." }, { status: 404 });
   }
 

@@ -18,9 +18,9 @@
  */
 export const CURATED_MET_OBJECT_IDS: readonly number[] = [
   39799, // Hokusai, Under the Wave off Kanagawa (The Great Wave) — woodblock, ca. 1830–32
-  436528, // Van Gogh, Irises — oil on canvas, 1890
-  337499, // J. M. W. Turner, The Lake of Zug — watercolour and gouache, 1843
   436535, // Van Gogh, Wheat Field with Cypresses — oil on canvas, 1889
+  337499, // J. M. W. Turner, The Lake of Zug — watercolour and gouache, 1843
+  436528, // Van Gogh, Irises — oil on canvas, 1890
   436532, // Van Gogh, Self-Portrait with a Straw Hat — oil on canvas, 1887
   437980, // Van Gogh, Cypresses — oil on canvas, 1889
   436529, // Van Gogh, L'Arlésienne (Madame Ginoux) — oil on canvas, 1888–89

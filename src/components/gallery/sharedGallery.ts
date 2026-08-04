@@ -1,6 +1,19 @@
 export const MAX_GALLERY_NAME_LENGTH = 80;
 export const MAX_HANG_BYTES = 8 * 1024 * 1024;
+/** Opaque fallback id length when a name cannot yield a slug. */
 export const SHARE_ID_LENGTH = 12;
+/**
+ * Public path segment under `/gallery/s/…`. Name-derived slugs stay readable;
+ * legacy opaque ids (12 chars) remain valid forever.
+ */
+export const MAX_SHARE_ID_LENGTH = 48;
+/** Slug base before `-2` / `-3` uniqueness suffixes. */
+export const SHARE_SLUG_BASE_LENGTH = 40;
+/**
+ * Max numbered slug probes (`name`, `name-2`, …) before falling back to an
+ * opaque id. Keeps unauthenticated create from scanning hundreds of blob keys.
+ */
+export const MAX_SHARE_SLUG_PROBES = 8;
 /** High-entropy secret for write ops; never embedded in the public share URL. */
 export const EDIT_TOKEN_LENGTH = 32;
 export const EDIT_TOKEN_HEADER = "x-gallery-edit-token";
@@ -111,4 +124,68 @@ export function createShareId(randomBytes: (n: number) => Uint8Array): string {
  */
 export function createEditToken(randomBytes: (n: number) => Uint8Array): string {
   return opaqueUrlSafeId(EDIT_TOKEN_LENGTH, randomBytes);
+}
+
+/**
+ * True when `id` is a safe public share path segment.
+ * Accepts legacy opaque ids and newer name-derived slugs (`michelle`, `michelle-2`).
+ */
+export function isValidShareId(id: string): boolean {
+  return (
+    Boolean(id) &&
+    id.length <= MAX_SHARE_ID_LENGTH &&
+    /^[A-Za-z0-9_-]+$/.test(id)
+  );
+}
+
+/**
+ * Turn a gallery display name into a URL slug (`Michelle's Room` → `michelles-room`).
+ * Returns `null` when nothing URL-safe remains (emoji-only names, etc.).
+ */
+export function slugifyGalleryShareId(
+  name: string,
+  maxLength = SHARE_SLUG_BASE_LENGTH,
+): string | null {
+  const slug = name
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  if (!slug) return null;
+  if (slug.length <= maxLength) return slug;
+  return slug.slice(0, maxLength).replace(/-+$/g, "") || null;
+}
+
+/**
+ * Pick the first free slug for `name`: `michelle`, then `michelle-2`, …
+ * Falls back to an opaque id when the name cannot slugify, after
+ * `MAX_SHARE_SLUG_PROBES` collisions, or when suffixes are exhausted.
+ *
+ * `isTaken` should be true for both finished galleries and in-progress creates
+ * (edit secret already reserved).
+ */
+export async function allocateShareSlug(
+  name: string,
+  isTaken: (id: string) => Promise<boolean>,
+  randomBytes: (n: number) => Uint8Array,
+): Promise<string> {
+  const base = slugifyGalleryShareId(name) ?? "gallery";
+  for (let n = 1; n <= MAX_SHARE_SLUG_PROBES; n++) {
+    const suffix = n === 1 ? "" : `-${n}`;
+    const maxBase = MAX_SHARE_ID_LENGTH - suffix.length;
+    const trimmed =
+      base.length <= maxBase
+        ? base
+        : base.slice(0, maxBase).replace(/-+$/g, "") || "gallery";
+    const candidate = `${trimmed}${suffix}`;
+    if (!isValidShareId(candidate)) continue;
+    if (!(await isTaken(candidate))) return candidate;
+  }
+  // Collision storm or probe budget exhausted — opaque id is unique enough.
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const opaque = createShareId(randomBytes);
+    if (!(await isTaken(opaque))) return opaque;
+  }
+  return createShareId(randomBytes);
 }

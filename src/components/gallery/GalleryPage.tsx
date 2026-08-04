@@ -97,22 +97,25 @@ export default function GalleryPage({
   const [generationById, setGenerationById] = useState<
     Record<string, PaintingGenerationContext>
   >({});
-  const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [generatingIds, setGeneratingIds] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
   const [composerOpenSignal, setComposerOpenSignal] = useState(0);
   const [saveOpen, setSaveOpen] = useState(false);
-  /** Hues for the in-flight shimmer, from the artwork that inspired it. */
-  const [shimmerHues, setShimmerHues] = useState<ShimmerHues | null>(null);
   /**
-   * Which generation the in-flight hue extraction belongs to.
-   *
-   * Extraction is deliberately not awaited, so it is not bound to the
-   * generation that asked for it: a slow read — a cold proxy fetch, an eight
-   * second timeout — can still be outstanding when that generation ends and
-   * the next one begins. Landing then, it would paint the new canvas in the
-   * previous artwork's colours. Stamping each request and dropping the ones
-   * that come back superseded is what keeps the hues with their own run.
+   * Hues for in-flight shimmers, keyed by painting id so concurrent gens keep
+   * their own palette when the visitor steps between canvases.
    */
-  const shimmerRequestRef = useRef(0);
+  const [shimmerHuesById, setShimmerHuesById] = useState<
+    Record<string, ShimmerHues | null>
+  >({});
+  /**
+   * Monotonic stamp per generate kickoff. Extraction is deliberately not
+   * awaited, so a slow read can still be outstanding when that generation ends
+   * and another begins on the same canvas. Stamping each request and dropping
+   * superseded ones keeps hues with their own run.
+   */
+  const shimmerRequestByIdRef = useRef<Record<string, number>>({});
 
   const paintings = useMemo(
     () =>
@@ -142,16 +145,25 @@ export default function GalleryPage({
   const onGenerate = useCallback(
     async (prompt: string, inspiration?: MetArtwork) => {
       const paintingId = focusedId;
-      setGeneratingId(paintingId);
+      setGeneratingIds((prev) => {
+        const next = new Set(prev);
+        next.add(paintingId);
+        return next;
+      });
       // Deliberately not awaited. The shimmer opens on its default hues and
       // eases onto the artwork's when they land, because making the canvas
       // wait on an image decode to start animating would trade the whole point
       // of the shimmer for a detail almost nobody would notice arriving late.
-      const shimmerRequest = ++shimmerRequestRef.current;
-      setShimmerHues(null);
+      const shimmerRequest =
+        (shimmerRequestByIdRef.current[paintingId] ?? 0) + 1;
+      shimmerRequestByIdRef.current[paintingId] = shimmerRequest;
+      setShimmerHuesById((prev) => ({ ...prev, [paintingId]: null }));
       if (inspiration) {
         void resolveShimmerHues(inspiration.objectID).then((hues) => {
-          if (shimmerRequestRef.current === shimmerRequest) setShimmerHues(hues);
+          if (shimmerRequestByIdRef.current[paintingId] !== shimmerRequest) {
+            return;
+          }
+          setShimmerHuesById((prev) => ({ ...prev, [paintingId]: hues }));
         });
       }
       try {
@@ -187,7 +199,16 @@ export default function GalleryPage({
         }
       } finally {
         // Runs on failure too, so a canvas never keeps shimmering after an error.
-        setGeneratingId(null);
+        setGeneratingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(paintingId);
+          return next;
+        });
+        setShimmerHuesById((prev) => {
+          if (!(paintingId in prev)) return prev;
+          const { [paintingId]: _, ...rest } = prev;
+          return rest;
+        });
       }
     },
     [focusedId],
@@ -275,8 +296,8 @@ export default function GalleryPage({
         zoom={zoom}
         focusedId={focusedId}
         paintings={paintings}
-        generatingId={isView ? null : generatingId}
-        shimmerHues={isView ? null : shimmerHues}
+        generatingIds={isView ? undefined : generatingIds}
+        shimmerHuesById={isView ? undefined : shimmerHuesById}
         onSelectPainting={selectPainting}
         onOpenComposer={
           isView
@@ -303,7 +324,7 @@ export default function GalleryPage({
           ) : null
         ) : (
           <GalleryActionBar
-            generating={generatingId !== null}
+            generating={generatingIds.has(focusedId)}
             focusedId={focusedId}
             generationContext={generationById[focusedId]}
             canDownload={canDownload}

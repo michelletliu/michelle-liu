@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   isGalleryPaintingId,
+  isValidShareId,
   sanitizeGalleryName,
   type SharedGalleryHang,
   type SharedGalleryMeta,
@@ -33,10 +34,6 @@ type FinalizeBody = {
 const RATE_LIMIT = 5;
 const RATE_WINDOW_MS = 60 * 60 * 1000;
 const finalizeHits = new Map<string, number[]>();
-
-function validShareId(shareId: string): boolean {
-  return Boolean(shareId) && shareId.length <= 32 && /^[A-Za-z0-9_-]+$/.test(shareId);
-}
 
 function clientIp(req: NextRequest): string {
   const forwarded = req.headers.get("x-forwarded-for");
@@ -76,7 +73,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
   }
 
   const { shareId } = await context.params;
-  if (!validShareId(shareId)) {
+  if (!isValidShareId(shareId)) {
     return NextResponse.json({ error: "Invalid share id." }, { status: 400 });
   }
 

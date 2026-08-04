@@ -14,7 +14,6 @@ import {
   useReducedMotion,
   type Transition,
 } from "framer-motion";
-import { ChevronDownIcon } from "@/components/icons/Chevron";
 import { CloseIcon } from "@/components/icons/Close";
 import {
   FILM_DOT_STYLE,
@@ -117,7 +116,6 @@ export default function GalleryActionBar({
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [inspiration, setInspiration] = useState<MetArtwork | null>(null);
-  const [inspirationCanMinimize, setInspirationCanMinimize] = useState(false);
   const [expanded, setExpanded] = useState(true);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [addHovering, setAddHovering] = useState(false);
@@ -143,6 +141,15 @@ export default function GalleryActionBar({
   const generationContextRef = useRef(generationContext);
   generationContextRef.current = generationContext;
   const reduceMotion = useReducedMotion();
+
+  // Drop a previous canvas's in-flight submit latch as soon as focus moves, so
+  // `submitPending` from canvas A cannot paint "Generating…" on canvas B for a
+  // frame (or longer) while A's await is still running.
+  const [submitFocusId, setSubmitFocusId] = useState(focusedId);
+  if (focusedId !== submitFocusId) {
+    setSubmitFocusId(focusedId);
+    if (submitPending) setSubmitPending(false);
+  }
 
   const blocked =
     inspiration !== null && !artworkEligibility(inspiration).eligible;
@@ -216,15 +223,13 @@ export default function GalleryActionBar({
         if (moveFocus) pickerToggleRef.current?.focus();
         return;
       }
-      if (inspiration) setInspirationCanMinimize(true);
       collapseBar(moveFocus);
     },
-    [pickerOpen, inspiration, collapseBar],
+    [pickerOpen, collapseBar],
   );
 
   const selectInspiration = (artwork: MetArtwork | null) => {
     setInspiration(artwork);
-    setInspirationCanMinimize(false);
     if (artwork) setPickerOpen(false);
   };
 
@@ -237,11 +242,9 @@ export default function GalleryActionBar({
       if (context) {
         setPrompt(context.prompt);
         setInspiration(context.inspiration);
-        setInspirationCanMinimize(Boolean(context.inspiration));
       } else {
         setPrompt("");
         setInspiration(null);
-        setInspirationCanMinimize(false);
       }
       setPickerOpen(false);
     },
@@ -281,6 +284,11 @@ export default function GalleryActionBar({
     if (focusedIdRef.current === focusedId) return;
     focusedIdRef.current = focusedId;
     // Drop the previous hang's draft; load this hang's stored generate if any.
+    // Keep `expanded` as the visitor left it — minimized stays the Generating /
+    // pen pill across canvas switches; maximized stays the composer shell
+    // (disabled + Generating label when the new hang is mid-run).
+    setError(null);
+    setPickerOpen(false);
     applyGenerationContext(generationContextRef.current);
   }, [focusedId, applyGenerationContext]);
 
@@ -339,10 +347,10 @@ export default function GalleryActionBar({
     e.preventDefault();
     const next = prompt.trim();
     if (!next || isGenerating || blocked) return;
+    const paintingId = focusedId;
     setError(null);
     setSubmitPending(true);
     setPickerOpen(false);
-    if (inspiration) setInspirationCanMinimize(true);
     // Fold to the Generating pill immediately — same collapsed shell as an
     // outside click, so the room stays clear while the canvas shimmers.
     // Don't move focus onto the pill: that paints a focus-visible ring flash
@@ -357,12 +365,17 @@ export default function GalleryActionBar({
       // Keep prompt + inspiration so re-expanding to edit shows the same
       // context; parent also stores them keyed by painting id.
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Generation failed");
-      // Surface the alert — the collapsed pill has nowhere to show it.
-      pendingFocus.current = "bar";
-      setExpanded(true);
+      // Only surface errors on the canvas that kicked off this run — navigating
+      // away mid-flight should not dump another hang's failure onto the new one.
+      if (focusedIdRef.current === paintingId) {
+        setError(err instanceof Error ? err.message : "Generation failed");
+        pendingFocus.current = "bar";
+        setExpanded(true);
+      }
     } finally {
-      setSubmitPending(false);
+      if (focusedIdRef.current === paintingId) {
+        setSubmitPending(false);
+      }
     }
   };
 
@@ -502,15 +515,8 @@ export default function GalleryActionBar({
           <SelectedInspirationCard
             key="selected-inspiration"
             artwork={inspiration}
-            canMinimize={inspirationCanMinimize}
-            onMinimize={() => {
-              setInspirationCanMinimize(true);
-              collapseBar(false);
-            }}
-            onRemove={() => {
-              setInspiration(null);
-              setInspirationCanMinimize(false);
-            }}
+            onChangeInspiration={() => setPickerOpen(true)}
+            onCollapse={() => collapseBar(false)}
             transition={shellTransition}
           />
         )}
@@ -643,18 +649,6 @@ export default function GalleryActionBar({
               >
                 <GeneratingLabel reduceMotion={Boolean(reduceMotion)} />
               </button>
-              {canDownload && onDownload && (
-                <Tooltip label="Download image" position="top" offset={10}>
-                  <button
-                    type="button"
-                    onClick={onDownload}
-                    aria-label="Download the generated image on this canvas"
-                    className={`grid size-9 cursor-pointer place-items-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 ${GALLERY_FOCUS_RING}`}
-                  >
-                    <GalleryDownloadIcon className="size-[18px]" />
-                  </button>
-                </Tooltip>
-              )}
             </motion.div>
           ) : (
             <motion.div
@@ -709,15 +703,13 @@ function GeneratingLabel({ reduceMotion }: { reduceMotion: boolean }) {
 
 function SelectedInspirationCard({
   artwork,
-  canMinimize,
-  onMinimize,
-  onRemove,
+  onChangeInspiration,
+  onCollapse,
   transition,
 }: {
   artwork: MetArtwork;
-  canMinimize: boolean;
-  onMinimize: () => void;
-  onRemove: () => void;
+  onChangeInspiration: () => void;
+  onCollapse: () => void;
   transition: Transition;
 }) {
   const src = openAccessImageUrl(artwork);
@@ -759,7 +751,12 @@ function SelectedInspirationCard({
       }`}
     >
       {src && (
-        <span className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-white shadow-md">
+        <button
+          type="button"
+          onClick={onChangeInspiration}
+          aria-label="Change inspiration"
+          className={`size-24 shrink-0 cursor-pointer overflow-hidden rounded-[18px] bg-white shadow-md transition-opacity hover:opacity-90 ${GALLERY_FOCUS_RING}`}
+        >
           <motion.img
             layoutId={tileLayoutId(artwork.objectID)}
             src={src}
@@ -770,7 +767,7 @@ function SelectedInspirationCard({
             style={metImageTrimStyle(artwork.objectID)}
             className="size-full object-cover"
           />
-        </span>
+        </button>
       )}
       <div className="flex min-w-0 flex-1 flex-col">
         <p className="text-sm leading-tight text-zinc-400">Inspired by</p>
@@ -788,15 +785,11 @@ function SelectedInspirationCard({
       </div>
       <button
         type="button"
-        onClick={canMinimize ? onMinimize : onRemove}
-        aria-label={canMinimize ? "Collapse prompt bar" : "Remove inspiration"}
+        onClick={onCollapse}
+        aria-label="Collapse prompt bar"
         className={`absolute right-3 top-3 grid size-7 place-items-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 active:bg-zinc-200/70 ${GALLERY_FOCUS_RING}`}
       >
-        {canMinimize ? (
-          <ChevronDownIcon size="15px" />
-        ) : (
-          <CloseIcon size="14px" />
-        )}
+        <CloseIcon size="14px" />
       </button>
     </motion.div>
   );

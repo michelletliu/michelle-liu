@@ -1,13 +1,18 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  allocateShareSlug,
   createEditToken,
   createShareId,
   EDIT_TOKEN_LENGTH,
   isGalleryPaintingId,
+  isValidShareId,
   MAX_GALLERY_NAME_LENGTH,
+  MAX_SHARE_ID_LENGTH,
+  MAX_SHARE_SLUG_PROBES,
   sanitizeGalleryName,
   SHARE_ID_LENGTH,
+  slugifyGalleryShareId,
 } from "./sharedGallery.ts";
 
 test("sanitizeGalleryName trims and strips control characters", () => {
@@ -54,4 +59,62 @@ test("createEditToken is longer than share id and URL-safe", () => {
   assert.equal(token.length, EDIT_TOKEN_LENGTH);
   assert.ok(token.length > SHARE_ID_LENGTH);
   assert.match(token, /^[A-Za-z0-9_-]+$/);
+});
+
+test("isValidShareId accepts legacy opaque ids and name slugs", () => {
+  assert.equal(isValidShareId("vvapHY3AIE"), true);
+  assert.equal(isValidShareId("michelle"), true);
+  assert.equal(isValidShareId("michelle-2"), true);
+  assert.equal(isValidShareId(""), false);
+  assert.equal(isValidShareId("bad id"), false);
+  assert.equal(isValidShareId("a".repeat(MAX_SHARE_ID_LENGTH + 1)), false);
+});
+
+test("slugifyGalleryShareId builds readable path segments", () => {
+  assert.equal(slugifyGalleryShareId("Michelle"), "michelle");
+  assert.equal(slugifyGalleryShareId("Michelle's Room"), "michelle-s-room");
+  assert.equal(slugifyGalleryShareId("  Sunset / Gallery  "), "sunset-gallery");
+  assert.equal(slugifyGalleryShareId("***"), null);
+});
+
+test("allocateShareSlug returns base then numbered suffixes", async () => {
+  const taken = new Set(["michelle", "michelle-2"]);
+  const id = await allocateShareSlug(
+    "Michelle",
+    async (candidate) => taken.has(candidate),
+    (n) => new Uint8Array(n),
+  );
+  assert.equal(id, "michelle-3");
+});
+
+test("allocateShareSlug falls back to gallery when name cannot slugify", async () => {
+  const id = await allocateShareSlug(
+    "***",
+    async () => false,
+    (n) => new Uint8Array(n),
+  );
+  assert.equal(id, "gallery");
+});
+
+test("allocateShareSlug caps sequential probes before opaque fallback", async () => {
+  let probes = 0;
+  const id = await allocateShareSlug(
+    "Michelle",
+    async () => {
+      probes += 1;
+      return true;
+    },
+    (n) => {
+      const bytes = new Uint8Array(n);
+      bytes.fill(7);
+      return bytes;
+    },
+  );
+  // Numbered slug probes are bounded; opaque attempts may add a few more checks.
+  assert.ok(
+    probes <= MAX_SHARE_SLUG_PROBES + 8,
+    `expected at most ${MAX_SHARE_SLUG_PROBES + 8} probes, got ${probes}`,
+  );
+  assert.equal(id.length, SHARE_ID_LENGTH);
+  assert.ok(!id.startsWith("michelle"));
 });
