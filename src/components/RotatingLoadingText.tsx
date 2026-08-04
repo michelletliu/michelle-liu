@@ -17,13 +17,13 @@ export const FILM_LOADING_PHRASES = [
 
 /** Gallery generate — same cadence as Film, quirky 1–3 word art phrases. */
 export const GALLERY_LOADING_PHRASES = [
-  "mixing paints",
-  "finding light",
-  "stretching linen",
-  "layering color",
-  "warming varnish",
-  "composing",
-  "sketching",
+  "Mixing paints",
+  "Finding light",
+  "Stretching linen",
+  "Layering color",
+  "Warming varnish",
+  "Composing",
+  "Sketching",
 ] as const;
 
 export function FilmLoadingDots({
