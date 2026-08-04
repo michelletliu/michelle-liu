@@ -526,7 +526,7 @@ export default function GalleryActionBar({
               style={{ transformOrigin: "center center" }}
               // Solid fill — no backdrop-blur. Blur on this node promotes a
               // compositor layer and shrinks/unevens the native caret.
-              className="col-start-1 row-start-1 flex w-full flex-col gap-2 rounded-full border border-black/10 bg-white px-2.5 py-[9px] shadow-[0_12px_20px_rgba(0,0,0,0.12)]"
+              className="col-start-1 row-start-1 flex w-full flex-col gap-2 rounded-full border border-black/5 bg-white px-2.5 py-[9px] shadow-soft"
             >
               <form onSubmit={submit} className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
@@ -612,7 +612,7 @@ export default function GalleryActionBar({
               key="collapsed-generating"
               {...shellMotion}
               style={{ transformOrigin: "center center" }}
-              className="col-start-1 row-start-1 inline-flex items-center rounded-full border border-black/10 bg-white p-1 text-zinc-700 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+              className="col-start-1 row-start-1 inline-flex items-center gap-1 rounded-full border border-black/5 bg-white p-1 text-zinc-700 shadow-soft"
             >
               <button
                 ref={focusOnMount("pen")}
@@ -625,13 +625,25 @@ export default function GalleryActionBar({
               >
                 <GeneratingLabel reduceMotion={Boolean(reduceMotion)} />
               </button>
+              {canDownload && onDownload && (
+                <Tooltip label="Download image" position="top" offset={10}>
+                  <button
+                    type="button"
+                    onClick={onDownload}
+                    aria-label="Download the generated image on this canvas"
+                    className={`grid size-9 cursor-pointer place-items-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 ${GALLERY_FOCUS_RING}`}
+                  >
+                    <GalleryDownloadIcon className="size-[18px]" />
+                  </button>
+                </Tooltip>
+              )}
             </motion.div>
           ) : (
             <motion.div
               key="collapsed-actions"
               {...shellMotion}
               style={{ transformOrigin: "center center" }}
-              className="col-start-1 row-start-1 inline-flex items-center gap-1 rounded-full border border-black/10 bg-white/90 p-1 text-zinc-500 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-md"
+              className="col-start-1 row-start-1 inline-flex items-center gap-1 rounded-full border border-black/5 bg-white/90 p-1 text-zinc-500 shadow-soft backdrop-blur-md"
             >
               <Tooltip label="Open prompt" position="top" offset={10}>
                 <button
@@ -745,7 +757,7 @@ function SelectedInspirationCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 6, scale: 0.985 }}
       transition={transition}
-      className={`absolute bottom-[calc(100%-14px)] left-1/2 z-0 flex w-[calc(100%-38px)] -translate-x-1/2 gap-4 rounded-t-[34px] rounded-b-none border border-black/10 bg-white/95 px-4 pt-4 pb-6 pr-12 text-left shadow-[0_12px_28px_rgba(0,0,0,0.10)] backdrop-blur-md ${
+      className={`absolute bottom-[calc(100%-14px)] left-1/2 z-0 flex w-[calc(100%-38px)] -translate-x-1/2 gap-4 rounded-t-[34px] rounded-b-none border border-black/5 bg-white/95 px-4 pt-4 pb-6 pr-12 text-left shadow-soft backdrop-blur-md ${
         titleWraps ? "items-start" : "items-center"
       }`}
     >

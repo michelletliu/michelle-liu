@@ -3,24 +3,112 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import LogoBackButton from "@/components/LogoBackButton";
 import { warmWorkPage } from "@/components/doorwayWarm";
-import GalleryActionBar, {
-  type PaintingGenerationContext,
-} from "./GalleryActionBar";
+import { ghostIconButtonClass } from "@/components/ghostIconButton";
+import { iconSize } from "@/components/iconSizes";
+import GalleryActionBar, { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import GalleryInfoButton from "./GalleryInfoButton";
 import GalleryRoom from "./GalleryRoom";
+import GallerySaveDialog from "./GallerySaveDialog";
 import GalleryThumbstick from "./GalleryThumbstick";
 import { downloadImage, generatedImageFilename } from "./downloadImage";
+import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { GALLERY_PAINTINGS } from "./galleryPaintings";
 import type { MetArtwork } from "./metArtworks";
 import { resolveShimmerHues, type ShimmerHues } from "./shimmerPalette";
 import { useGalleryCamera, useMeasuredHeight } from "./useGalleryCamera";
 
-export default function GalleryPage() {
+/** Last successful generate for a canvas — restores the composer on edit. */
+export type PaintingGenerationContext = {
+  prompt: string;
+  inspiration: MetArtwork | null;
+};
+
+export type GalleryPageMode = "edit" | "view";
+
+export type GalleryPageProps = {
+  mode?: GalleryPageMode;
+  /** Preloaded hang images (data URLs or https), keyed by painting id. */
+  initialImageById?: Record<string, string>;
+  /** Met titles for download filenames on shared views. */
+  initialInspirationTitles?: Record<string, string>;
+  /** Shared gallery display name (view mode). */
+  galleryName?: string;
+};
+
+function GalleryDownloadIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M12 4V15M7 10L12 15L17 10"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+      <path
+        d="M5 20H19"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+function GallerySaveIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden
+      width={iconSize("md")}
+      height={iconSize("md")}
+    >
+      <path
+        d="M8 4H16L19 7V19C19 19.5523 18.5523 20 18 20H6C5.44772 20 5 19.5523 5 19V5C5 4.44772 5.44772 4 6 4H8Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+      <path
+        d="M9 4V8H15V4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+      <path
+        d="M8 13H16V20H8V13Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+export default function GalleryPage({
+  mode = "edit",
+  initialImageById,
+  initialInspirationTitles,
+  galleryName,
+}: GalleryPageProps) {
   /** Hard-assign home — soft push waits on WebGL dispose and feels broken. */
   const goHome = useCallback(() => {
     warmWorkPage();
     window.location.assign("/");
   }, []);
+  const isView = mode === "view";
   /*
    * The bottom stack covers the foot of the room, and the action bar inside it
    * changes height as it opens, so how much of the focused frame is hidden is
@@ -32,7 +120,13 @@ export default function GalleryPage() {
     useGalleryCamera({ bottomOcclusionPx: bottomStack.height });
   const { ref, ...pointerBindProps } = bindProps;
 
-  const [imageById, setImageById] = useState<Record<string, string>>({});
+  const [imageById, setImageById] = useState<Record<string, string>>(
+    () => initialImageById ?? {},
+  );
+  /** Met titles for download filenames (shared view + edit session). */
+  const [inspirationTitleById, setInspirationTitleById] = useState<
+    Record<string, string>
+  >(() => initialInspirationTitles ?? {});
   /**
    * Prompt + Met inspiration per canvas. Download filenames read the title;
    * the action bar hydrates from the full record when editing a hang.
@@ -42,6 +136,7 @@ export default function GalleryPage() {
   >({});
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [composerOpenSignal, setComposerOpenSignal] = useState(0);
+  const [saveOpen, setSaveOpen] = useState(false);
   /** Hues for the in-flight shimmer, from the artwork that inspired it. */
   const [shimmerHues, setShimmerHues] = useState<ShimmerHues | null>(null);
   /**
@@ -63,6 +158,22 @@ export default function GalleryPage() {
         imageUrl: imageById[painting.id] ?? painting.imageUrl,
       })),
     [imageById],
+  );
+
+  const filledHangCount = Object.keys(imageById).length;
+  const canSave = !isView && filledHangCount >= 1;
+
+  const saveHangs = useMemo(
+    () =>
+      Object.entries(imageById).map(([paintingId, imageUrl]) => ({
+        paintingId,
+        imageUrl,
+        inspirationTitle:
+          generationById[paintingId]?.inspiration?.title ||
+          inspirationTitleById[paintingId] ||
+          undefined,
+      })),
+    [imageById, generationById, inspirationTitleById],
   );
 
   const onGenerate = useCallback(
@@ -105,6 +216,12 @@ export default function GalleryPage() {
             inspiration: inspiration ?? null,
           },
         }));
+        if (inspiration?.title) {
+          setInspirationTitleById((prev) => ({
+            ...prev,
+            [paintingId]: inspiration.title,
+          }));
+        }
       } finally {
         // Runs on failure too, so a canvas never keeps shimmering after an error.
         setGeneratingId(null);
@@ -120,11 +237,13 @@ export default function GalleryPage() {
       imageUrl,
       generatedImageFilename({
         inspirationTitle:
-          generationById[focusedId]?.inspiration?.title ?? null,
+          generationById[focusedId]?.inspiration?.title ??
+          inspirationTitleById[focusedId] ??
+          null,
         imageUrl,
       }),
     );
-  }, [focusedId, imageById, generationById]);
+  }, [focusedId, imageById, generationById, inspirationTitleById]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -137,6 +256,8 @@ export default function GalleryPage() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [goHome]);
 
+  const canDownload = Boolean(imageById[focusedId]);
+
   return (
     <div
       ref={ref}
@@ -145,6 +266,26 @@ export default function GalleryPage() {
     >
       <div data-gallery-no-drag className="relative z-40">
         <LogoBackButton />
+      </div>
+      <div
+        data-gallery-no-drag
+        className="fixed top-8 right-6 z-50 flex items-center gap-1 md:right-16"
+      >
+        {canSave ? (
+          <button
+            type="button"
+            onClick={() => setSaveOpen(true)}
+            aria-label="Save and share this gallery"
+            // Persistent room furniture: must not fold the composer away.
+            {...{ [KEEP_BAR_OPEN_ATTR]: "" }}
+            className={ghostIconButtonClass(
+              "md",
+              `text-zinc-400 ${GALLERY_FOCUS_RING}`,
+            )}
+          >
+            <GallerySaveIcon />
+          </button>
+        ) : null}
         <GalleryInfoButton />
       </div>
       <GalleryRoom
@@ -152,10 +293,14 @@ export default function GalleryPage() {
         zoom={zoom}
         focusedId={focusedId}
         paintings={paintings}
-        generatingId={generatingId}
-        shimmerHues={shimmerHues}
+        generatingId={isView ? null : generatingId}
+        shimmerHues={isView ? null : shimmerHues}
         onSelectPainting={selectPainting}
-        onOpenComposer={() => setComposerOpenSignal((signal) => signal + 1)}
+        onOpenComposer={
+          isView
+            ? undefined
+            : () => setComposerOpenSignal((signal) => signal + 1)
+        }
       />
       {/* Ignores pointer events itself so the room stays draggable through the
           gaps either side of the bar. */}
@@ -163,21 +308,48 @@ export default function GalleryPage() {
         ref={bottomStack.ref}
         className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex flex-col items-center px-4 pb-6 md:pb-8"
       >
-        <GalleryActionBar
-          generating={generatingId !== null}
-          focusedId={focusedId}
-          generationContext={generationById[focusedId]}
-          canDownload={Boolean(imageById[focusedId])}
-          onDownload={onDownload}
-          openSignal={composerOpenSignal}
-          onGenerate={onGenerate}
-        />
+        {isView ? (
+          <div className="pointer-events-auto flex flex-col items-center gap-3">
+            {canDownload && (
+              <button
+                type="button"
+                onClick={onDownload}
+                aria-label="Download the artwork on this canvas"
+                className={`grid size-10 place-items-center rounded-full border border-black/10 bg-white/90 text-zinc-500 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-md transition-colors hover:bg-white hover:text-zinc-700 ${GALLERY_FOCUS_RING}`}
+              >
+                <GalleryDownloadIcon className="size-[18px]" />
+              </button>
+            )}
+            {galleryName ? (
+              <p className="max-w-[min(90vw,28rem)] truncate text-center text-base text-gray-500">
+                {galleryName}
+              </p>
+            ) : null}
+          </div>
+        ) : (
+          <GalleryActionBar
+            generating={generatingId !== null}
+            focusedId={focusedId}
+            generationContext={generationById[focusedId]}
+            canDownload={canDownload}
+            onDownload={onDownload}
+            openSignal={composerOpenSignal}
+            onGenerate={onGenerate}
+          />
+        )}
       </div>
       <GalleryThumbstick
         focusedId={focusedId}
         onSelect={selectPainting}
         onZoomBy={zoomBy}
       />
+      {!isView && (
+        <GallerySaveDialog
+          open={saveOpen}
+          hangs={saveHangs}
+          onClose={() => setSaveOpen(false)}
+        />
+      )}
     </div>
   );
 }

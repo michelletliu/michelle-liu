@@ -136,9 +136,10 @@ export default function GalleryInfoButton() {
         // Persistent room furniture: reaching for it must not fold away the
         // composer the visitor is in the middle of filling in.
         {...{ [KEEP_BAR_OPEN_ATTR]: "" }}
+        // Positioned by GalleryPage’s top-right chrome cluster (with Save).
         className={ghostIconButtonClass(
           "md",
-          `fixed top-8 right-6 z-50 text-zinc-400 md:right-16 ${GALLERY_FOCUS_RING}`,
+          `text-zinc-400 ${GALLERY_FOCUS_RING}`,
         )}
       >
         <Info size={iconSize("md")} />
