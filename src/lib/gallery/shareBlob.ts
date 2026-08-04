@@ -47,8 +47,15 @@ export function metaPath(shareId: string): string {
   return `galleries/${shareId}/meta.json`;
 }
 
-export function hangPath(shareId: string, paintingId: string): string {
-  return `galleries/${shareId}/${paintingId}.png`;
+/** Stored hang formats. Live generate prefers WebP; legacy shares keep PNG. */
+export type HangImageFormat = "png" | "webp";
+
+export function hangPath(
+  shareId: string,
+  paintingId: string,
+  format: HangImageFormat = "png",
+): string {
+  return `galleries/${shareId}/${paintingId}.${format}`;
 }
 
 /** Short content fingerprint for hang URL cache-busting (`?v=`). */
@@ -86,7 +93,11 @@ export function hangUrlBelongsToShare(
     if (url.protocol !== "https:") return false;
     if (url.username || url.password) return false;
     if (!isAllowedBlobPublicHost(url.hostname)) return false;
-    return url.pathname === `/${hangPath(shareId, paintingId)}`;
+    const path = url.pathname;
+    return (
+      path === `/${hangPath(shareId, paintingId, "png")}` ||
+      path === `/${hangPath(shareId, paintingId, "webp")}`
+    );
   } catch {
     return false;
   }
@@ -116,10 +127,11 @@ function parseSharedHang(
   };
 }
 
-export async function putHangPng(
+export async function putHangImage(
   shareId: string,
   paintingId: string,
   body: Blob | ArrayBuffer | Buffer,
+  format: HangImageFormat,
   { overwrite = false }: { overwrite?: boolean } = {},
 ): Promise<{ url: string }> {
   const bytes =
@@ -128,9 +140,10 @@ export async function putHangPng(
       : Buffer.isBuffer(body)
         ? body
         : Buffer.from(body);
-  const result = await put(hangPath(shareId, paintingId), bytes, {
+  const contentType = format === "webp" ? "image/webp" : "image/png";
+  const result = await put(hangPath(shareId, paintingId, format), bytes, {
     access: "public",
-    contentType: "image/png",
+    contentType,
     addRandomSuffix: false,
     allowOverwrite: overwrite,
     cacheControlMaxAge: HANG_CACHE_MAX_AGE_SEC,
@@ -138,6 +151,16 @@ export async function putHangPng(
   return {
     url: withHangCacheBust(result.url, hangContentVersion(bytes)),
   };
+}
+
+/** @deprecated Prefer `putHangImage` — kept for call sites that only upload PNG. */
+export async function putHangPng(
+  shareId: string,
+  paintingId: string,
+  body: Blob | ArrayBuffer | Buffer,
+  options: { overwrite?: boolean } = {},
+): Promise<{ url: string }> {
+  return putHangImage(shareId, paintingId, body, "png", options);
 }
 
 export async function putShareMeta(

@@ -6,7 +6,6 @@ import {
 import {
   artworkEligibility,
   composeInspiredPrompt,
-  openAccessImageUrl,
   type MetArtwork,
 } from "@/components/gallery/metArtworks";
 import { MetApiError, fetchMetObject } from "@/lib/met/metClient";
@@ -17,8 +16,12 @@ export const maxDuration = 120;
 const REVE_CREATE_URL = "https://api.reve.com/v1/image/create/";
 /** Takes `reference_images`; `create` does not. */
 const REVE_REMIX_URL = "https://api.reve.com/v1/image/remix/";
-/** Met's web derivative, ~2-4MB at most, well inside a JSON request body. */
-const MAX_REFERENCE_BYTES = 8 * 1024 * 1024;
+/**
+ * Cap for a single style-reference download. Reve allows up to 40MB per image;
+ * Met masters are usually well under this. Prefer failing over to the small
+ * derivative rather than sending a giant body.
+ */
+const MAX_REFERENCE_BYTES = 25 * 1024 * 1024;
 
 /**
  * Remix and create both use `latest`. Remix also exposes `latest-fast`
@@ -32,15 +35,32 @@ const REVE_REMIX_VERSION = "latest";
 /**
  * Ask Reve for WebP bytes instead of the default JSON+PNG base64 payload.
  * Generation time is unchanged; the response drops from ~2–3MB PNG-in-JSON to
- * ~70–160KB WebP — cutting Reve→server and server→client transfer after the
- * image is already ready. Decode-to-texture quality at native Reve resolution
- * is fine; softness came from the remix model tier, not WebP. Share upload
- * re-encodes to PNG for the existing Blob pipeline.
+ * ~70–160KB WebP (larger with 2× upscale, still far under PNG). Decode-to-texture
+ * quality at native Reve resolution is fine; softness came from skipping
+ * `test_time_scaling`, not WebP. Share upload stores the WebP as-is (PNG
+ * re-encode of 2× frames balloons to ~4–5MB and hangs the hang POST).
  */
 const REVE_ACCEPT = "image/webp";
 
 /**
+ * Reve's quality dial. Default is 1; higher spends more credits for better
+ * images without slowing the request. Docs: values above 5 only occasionally
+ * help, so 5 is the practical ceiling for wall hangs.
+ */
+const REVE_TEST_TIME_SCALING = 5;
+
+/**
+ * Post-generation upscale. 2× is sharp enough on the wall without the huge
+ * payloads (and credit burn) of 3×/4×.
+ */
+const REVE_POSTPROCESSING = [{ process: "upscale", upscale_factor: 2 }] as const;
+
+/**
  * The artwork's Open Access image, base64-encoded for Reve's `reference_images`.
+ *
+ * Prefer the full `primaryImage` master over `primaryImageSmall`: the small
+ * derivative is fine for UI tiles but softens brushwork that remix needs to
+ * copy. Falls back to small when the master is missing or over the byte cap.
  *
  * Text alone could not carry style: prompts describing impasto and broken
  * colour still came back as smooth digital illustration. Conditioning on the
@@ -63,23 +83,44 @@ async function fetchReferenceImage(artwork: MetArtwork): Promise<string | null> 
     return null;
   };
 
-  const url = openAccessImageUrl(artwork);
-  if (!url) return downgrade("record has no Open Access image");
-
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
-    if (!res.ok) return downgrade(`image fetch returned ${res.status}`);
-
-    const bytes = await res.arrayBuffer();
-    if (bytes.byteLength === 0) return downgrade("image body was empty");
-    if (bytes.byteLength > MAX_REFERENCE_BYTES) {
-      return downgrade(`image is ${bytes.byteLength} bytes, over the limit`);
-    }
-    // Raw base64, no data: prefix — Reve rejects URLs and prefixed payloads.
-    return Buffer.from(bytes).toString("base64");
-  } catch (err) {
-    return downgrade(err instanceof Error ? err.message : "image fetch failed");
+  const candidates = [
+    artwork.primaryImage,
+    artwork.primaryImageSmall,
+  ].filter((url): url is string => Boolean(url));
+  if (candidates.length === 0) {
+    return downgrade("record has no Open Access image");
   }
+
+  for (const url of candidates) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+      if (!res.ok) {
+        console.warn(
+          `[gallery/generate] style reference fetch ${res.status} for ${url}`,
+        );
+        continue;
+      }
+
+      const bytes = await res.arrayBuffer();
+      if (bytes.byteLength === 0) continue;
+      if (bytes.byteLength > MAX_REFERENCE_BYTES) {
+        console.warn(
+          `[gallery/generate] style reference is ${bytes.byteLength} bytes (cap ${MAX_REFERENCE_BYTES}); trying next candidate`,
+        );
+        continue;
+      }
+      // Raw base64, no data: prefix — Reve rejects URLs and prefixed payloads.
+      return Buffer.from(bytes).toString("base64");
+    } catch (err) {
+      console.warn(
+        `[gallery/generate] style reference fetch failed for ${url}: ${
+          err instanceof Error ? err.message : "unknown"
+        }`,
+      );
+    }
+  }
+
+  return downgrade("all Open Access image candidates failed or were too large");
 }
 
 type GenerateBody = {
@@ -94,17 +135,10 @@ type GenerateBody = {
 };
 
 /**
- * The closest ratio Reve offers to the frame the image is being generated for.
- *
- * The hangs are 1.15 x 1.55 and 1.95 x 1.32, so 0.742 and 1.477. Reve's menu is
- * 16:9, 3:2, 4:3, 1:1, 3:4, 2:3, 9:16, and the nearest members are 3:4 (0.750,
- * 1% out) and 3:2 (1.500, 1.5% out).
- *
- * Portrait used to ask for 2:3, which is 0.667 and a full 11% narrower than the
- * frame — every portrait generation came back stretched sideways once hung.
- * Nothing was cropped, so it read as a subtly wrong picture rather than an
- * obvious bug, which is the worst kind. The scene letterboxes whatever is left
- * over, so these only have to be close, not exact.
+ * Reve aspect for the hang. Aperture sizes in `paintingSize` are exact 3:4 and
+ * 3:2 so generate output matches the paint rect. Portrait used to ask for 2:3
+ * (11% too narrow); the scene now cover-fills and crops baked keylines, but
+ * matching ratios still avoids needless UV crop.
  */
 function aspectForPainting(painting: GalleryPainting): "3:4" | "3:2" {
   return painting.aspect === "portrait" ? "3:4" : "3:2";
@@ -142,7 +176,7 @@ export async function POST(req: NextRequest) {
   if (!prompt) {
     return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
   }
-  if (prompt.length > 2000) {
+  if (prompt.length > 2560) {
     return NextResponse.json({ error: "Prompt is too long" }, { status: 400 });
   }
 
@@ -201,11 +235,10 @@ export async function POST(req: NextRequest) {
   const version = usingRemix ? REVE_REMIX_VERSION : REVE_CREATE_VERSION;
 
   /*
-   * Reve rejects unknown fields with a 400 rather than ignoring them, so this
-   * is the whole recognised set for remix minus `test_time_scaling` (a paid
-   * quality dial that does not reduce latency) and `postprocessing`. There is
-   * no strength or negative-prompt parameter — the frame tag and the prompt
-   * wording are the only style dial.
+   * Reve rejects unknown fields with a 400 rather than ignoring them.
+   * `test_time_scaling` is the quality dial (default 1 is soft); `postprocessing`
+   * 2× upscale sharpens wall hangs. There is still no strength or negative-prompt
+   * parameter — the frame tag and the prompt wording remain the style dial.
    *
    * Exactly one reference is sent, which is what keeps the frame index at 0.
    */
@@ -213,13 +246,15 @@ export async function POST(req: NextRequest) {
     prompt: composed.prompt,
     aspect_ratio,
     version,
+    test_time_scaling: REVE_TEST_TIME_SCALING,
+    postprocessing: [...REVE_POSTPROCESSING],
     ...(referenceImage ? { reference_images: [referenceImage] } : {}),
   };
 
   console.info(
     `[gallery/generate] painting=${painting.id} inspiration=${
       composed.inspiredByObjectID ?? "none"
-    } endpoint=${usingRemix ? "remix" : "create"} version=${version} aspect=${aspect_ratio}\n` +
+    } endpoint=${usingRemix ? "remix" : "create"} version=${version} aspect=${aspect_ratio} tts=${REVE_TEST_TIME_SCALING} upscale=2\n` +
       `[gallery/generate] prompt: ${composed.prompt}`,
   );
 
@@ -245,7 +280,9 @@ export async function POST(req: NextRequest) {
   console.info(
     `[gallery/generate] reve status=${reveRes.status} request-id=${
       reveRes.headers.get("x-reve-request-id") ?? "none"
-    } version=${reveRes.headers.get("x-reve-version") ?? "none"}`,
+    } version=${reveRes.headers.get("x-reve-version") ?? "none"} credits=${
+      reveRes.headers.get("x-reve-credits-used") ?? "none"
+    }`,
   );
 
   if (!reveRes.ok) {

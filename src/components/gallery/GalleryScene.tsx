@@ -24,9 +24,14 @@ import {
 } from "./galleryPaintings";
 import { artPlaneGeometry } from "./artPlaneGeometry";
 import {
-  coverUvTransform,
+  coverUvWithLetterbox,
   frameGeometryForArtwork,
+  NO_LETTERBOX_TRIM,
 } from "./galleryFrameGeometry";
+import {
+  detectDarkLetterboxTrim,
+  readImageRgba,
+} from "./hangImageLetterbox";
 
 type GallerySceneProps = {
   pose: GalleryRoomPose;
@@ -85,14 +90,24 @@ function textureAspect(texture: THREE.Texture | null): number | null {
 /**
  * How the room lights touch paintings that are not focused.
  *
- * A real gallery does not leave side works to ambient bounce alone: there is
- * usually a broad wall wash that keeps pigment readable, with softer contrast
- * than the piece directly in front of you. The albedo term lets the artwork
- * still shade with the room; the source wash keeps color and value from falling
- * into the "switched off" darkness that side canvases had before.
+ * Unfocused hangs must sit in the same lighting path as the walls — no leftover
+ * emissive wash, and tone-mapped like everything else — or they read as bright
+ * cutouts pasted on the room. Focused hangs go fully emissive / un-tonemapped
+ * so the pigment lands at its source values.
+ *
+ * Albedo stays high enough that side hangs read as room-lit pigment, not crushed
+ * grey. A leftover emissive wash made them glow; keep wash at 0.
  */
-const ART_ROOM_LIT_ALBEDO = 0.78;
-const ART_UNFOCUSED_SOURCE_WASH = 0.16;
+const ART_ROOM_LIT_ALBEDO = 0.72;
+/** Unfocused = pure room light. Any leftover wash made side canvases glow. */
+const ART_UNFOCUSED_SOURCE_WASH = 0;
+/**
+ * Blank paper under room light. Always lit (no emissive path) — focus only
+ * lifts albedo toward pure white. Unfocused stays near the wall family so empty
+ * side hangs read as soft paper, not muddy grey slabs (~0xe8 was too dark).
+ */
+const BLANK_FOCUSED_ALBEDO = 1;
+const BLANK_UNFOCUSED_ALBEDO = 0.975;
 /** Exponential-ease time constant for the focus lighting, ~95% in 260ms. */
 const ART_LIGHT_TAU = 0.088;
 /**
@@ -111,6 +126,18 @@ function setArtLighting(material: THREE.MeshStandardMaterial, lit: number) {
     (1 - ART_UNFOCUSED_SOURCE_WASH) * lit;
   const albedo = ART_ROOM_LIT_ALBEDO * (1 - lit);
   material.color.setScalar(albedo);
+  // Side hangs share the room's tone-mapped path; the focused one opts out so
+  // source colours arrive unchanged. Flip mid-ease once emissive already owns
+  // the look, so the switch is not a visible pop.
+  material.toneMapped = lit < 0.5;
+}
+
+/** Blank paper: room-lit at both ends; `lit` only eases how white the sheet is. */
+function setBlankLighting(material: THREE.MeshStandardMaterial, lit: number) {
+  material.color.setScalar(
+    BLANK_UNFOCUSED_ALBEDO +
+      (BLANK_FOCUSED_ALBEDO - BLANK_UNFOCUSED_ALBEDO) * lit,
+  );
 }
 
 /**
@@ -151,7 +178,18 @@ function setFrameTexture(entry: FrameEntry, texture: THREE.Texture | null) {
   if (texture) {
     const apertureAspect =
       entry.maxArtSize.width / entry.maxArtSize.height;
-    const uv = coverUvTransform(apertureAspect, aspect);
+    // Reve (and similar) sometimes bake a thin black keyline into the image.
+    // Crop it in UV space so the white mat meets paint, not a dark pad.
+    const image = texture.image as
+      | (CanvasImageSource & { width: number; height: number })
+      | undefined;
+    const sampled = image ? readImageRgba(image) : null;
+    const trim = sampled
+      ? detectDarkLetterboxTrim(sampled.width, sampled.height, sampled.data)
+      : NO_LETTERBOX_TRIM;
+    const uv = coverUvWithLetterbox(apertureAspect, aspect, trim);
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
     texture.offset.set(uv.offsetX, uv.offsetY);
     texture.repeat.set(uv.repeatX, uv.repeatY);
   }
@@ -660,7 +698,7 @@ function buildFrames(
     group.add(matte);
 
     const blankMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
+      color: new THREE.Color().setScalar(BLANK_UNFOCUSED_ALBEDO),
       roughness: 0.9,
       metalness: 0,
     });
@@ -827,7 +865,9 @@ export default function GalleryScene({
       const entry = frames.get(painting.id);
       if (!entry) continue;
       const url = painting.imageUrl;
-      new THREE.TextureLoader().load(url, (tex) => {
+      const loader = new THREE.TextureLoader();
+      loader.setCrossOrigin("anonymous");
+      loader.load(url, (tex) => {
         if (cancelled) {
           tex.dispose();
           return;
@@ -925,6 +965,10 @@ export default function GalleryScene({
           // (cover), so artFit is 1 unless a future contain hang lands here.
           const fit = surface === entry.artMaterial ? entry.artFit : null;
           entry.mesh.scale.set(fit?.x ?? 1, fit?.y ?? 1, 1);
+        } else if (isGenerating) {
+          // Keep the shader hot — some drivers skip redrawing a material that
+          // only mutates uniforms if they think the mesh is static.
+          entry.shimmerMaterial.uniformsNeedUpdate = true;
         }
 
         // Approaching a painting lights it: the focused one renders unlit at its
@@ -939,7 +983,9 @@ export default function GalleryScene({
         setArtLighting(entry.artMaterial, entry.artLit);
 
         if (!entry.texture) {
-          entry.blankMaterial.color.set(isFocused ? 0xffffff : 0xf3f3f3);
+          // Same ease as hung art: empty paper stays room-lit soft white when
+          // off-axis, and only the focused sheet lifts to pure white.
+          setBlankLighting(entry.blankMaterial, entry.artLit);
         }
       }
 
@@ -1042,6 +1088,8 @@ export default function GalleryScene({
       if (prev === url) continue;
 
       const loader = new THREE.TextureLoader();
+      // Needed so letterbox detection can sample pixels on Blob CDN hangs.
+      loader.setCrossOrigin("anonymous");
       loader.load(url, (tex) => {
         if (cancelled) {
           tex.dispose();

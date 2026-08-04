@@ -4,12 +4,17 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
+  type CSSProperties,
   type FormEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
 } from "react";
 import {
   AnimatePresence,
+  LayoutGroup,
   motion,
   useReducedMotion,
   type Transition,
@@ -21,9 +26,13 @@ import {
   RotatingLoadingText,
 } from "@/components/RotatingLoadingText";
 import Tooltip from "@/components/shared/Tooltip";
-import { iconSize } from "@/components/shared/iconSizes";
 import { PlusIcon, SquarePenIcon } from "@/components/library/icons";
 import MetArtworkPicker from "./MetArtworkPicker";
+import {
+  COMPOSER_MORPH_MS,
+  COMPOSER_MORPH_STYLE,
+  type ComposerPanelId,
+} from "./composerMorphStyles";
 import { isGalleryDialogOpen } from "./galleryDialog";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { stopGalleryKeys } from "./galleryInputGuards";
@@ -35,6 +44,27 @@ import {
 } from "./metArtworks";
 import { metImageTrimScale, metImageTrimStyle } from "./metImageMat";
 import { useMetSearch } from "./useMetSearch";
+
+/**
+ * Resting one-line height matches prod’s single-line `<input>` chrome:
+ * `leading-6` (24) + `py-2` (8+8) under `box-border`.
+ */
+const PROMPT_MIN_HEIGHT_PX = 40;
+/** Cap wrapped prompt height (~7 lines at text-base / leading-6). */
+const PROMPT_MAX_HEIGHT_PX = 168;
+/** Ignore sub-pixel scrollHeight noise so empty/short text stays one line. */
+const PROMPT_WRAP_SLACK_PX = 2;
+/**
+ * Ignore cols-sized / pre-layout widths when caching the single-line text slot.
+ * A ~40px field makes the empty placeholder wrap and inflate scrollHeight,
+ * which would falsely lock the stacked multiline layout.
+ */
+const PROMPT_MIN_SLOT_WIDTH_PX = 120;
+/**
+ * Multiline prompt: inset text to the + glyph (size-10 button, 15px icon with
+ * viewBox padding) — a few px past the button’s geometric left edge.
+ */
+const PROMPT_MULTILINE_PL = "pl-[14px]";
 
 /** Last successful generate for a canvas — restores the composer on edit. */
 export type PaintingGenerationContext = {
@@ -87,10 +117,10 @@ export const KEEP_BAR_OPEN_ATTR = "data-gallery-keep-bar-open";
  * gave us fewer than three works to show.
  */
 const STACK_CARDS = [
-  { rotate: 15, x: 54, y: 14, hoverY: -6, hoverRotate: 20 },
-  { rotate: 6, x: 27, y: 8, hoverY: -9, hoverRotate: 3 },
-  // Slight CCW tip so the front tile’s bottom-right lifts toward NE
-  { rotate: -3, x: 0, y: 0, hoverY: -12, hoverRotate: -6 },
+  { rotate: 15, x: 54, y: 14, hoverY: -4, hoverRotate: 20 },
+  { rotate: 6, x: 27, y: 8, hoverY: -6, hoverRotate: 3 },
+  // Front tile: CCW tip angles the top edge left (bottom-right lifts NE).
+  { rotate: -6, x: 0, y: 0, hoverY: -8, hoverRotate: -9 },
 ];
 
 type GalleryActionBarProps = {
@@ -102,6 +132,8 @@ type GalleryActionBarProps = {
   openSignal?: number;
   onDownload?: () => void;
   onGenerate: (prompt: string, inspiration?: MetArtwork) => Promise<void>;
+  /** True while the maximized composer shell is showing (not pen / generating pill). */
+  onExpandedChange?: (expanded: boolean) => void;
 };
 
 export default function GalleryActionBar({
@@ -112,13 +144,25 @@ export default function GalleryActionBar({
   openSignal = 0,
   onDownload,
   onGenerate,
+  onExpandedChange,
 }: GalleryActionBarProps) {
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [inspiration, setInspiration] = useState<MetArtwork | null>(null);
   const [expanded, setExpanded] = useState(true);
   const [pickerOpen, setPickerOpen] = useState(false);
+  // True while the pointer is over + or the revealed Met stack (or while + is
+  // :focus-visible). Gates stack roll-up + Met tooltip — not composer expand.
   const [addHovering, setAddHovering] = useState(false);
+  // After a pointer (or programmatic) expand, + can mount under a stationary
+  // cursor and would fire enter as if hovered — flashing the stack/tooltip.
+  // Hold until the pointer actually moves; keyboard focus-visible stays allowed.
+  const [metHoverArmed, setMetHoverArmed] = useState(true);
+  // Bridges the gap between + (inside the shell) and the fan (above it) so the
+  // stack doesn't roll down the instant the pointer leaves the + hit target.
+  const metChromeLeaveTimer = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   // Flips true in submit before awaiting parent `onGenerate`, so the resting
   // Met chip cannot linger for a frame while `generating` catches up.
   const [submitPending, setSubmitPending] = useState(false);
@@ -135,12 +179,29 @@ export default function GalleryActionBar({
   const barId = useId();
   const pickerId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
+  const morphRef = useRef<HTMLDivElement>(null);
+  const promptRef = useRef<HTMLTextAreaElement>(null);
+  const panelRefs = useRef(new Map<ComposerPanelId, HTMLDivElement>());
+  const morphSettled = useRef(false);
   const pickerToggleRef = useRef<HTMLButtonElement>(null);
   const pendingFocus = useRef<"bar" | "pen" | null>(null);
   const focusedIdRef = useRef(focusedId);
   const generationContextRef = useRef(generationContext);
   generationContextRef.current = generationContext;
   const reduceMotion = useReducedMotion();
+  const [morphSize, setMorphSize] = useState<{ w: number; h: number } | null>(
+    null,
+  );
+  const [morphInstant, setMorphInstant] = useState(true);
+  const [morphSettledFlag, setMorphSettledFlag] = useState(true);
+  /** Soft radius only once the prompt actually wraps past one line. */
+  const [promptMultiline, setPromptMultiline] = useState(false);
+  /** Brief shell height ease for the single ↔ multiline layout switch. */
+  const [multilineMorphing, setMultilineMorphing] = useState(false);
+  /** Text width available in the single-line `+ | text | Generate` row. */
+  const singleLineSlotWidthRef = useRef(0);
+  const promptMultilineRef = useRef(false);
+  promptMultilineRef.current = promptMultiline;
 
   // Drop a previous canvas's in-flight submit latch as soon as focus moves, so
   // `submitPending` from canvas A cannot paint "Generating…" on canvas B for a
@@ -156,41 +217,185 @@ export default function GalleryActionBar({
   const isGenerating = generating || submitPending;
   const isGeneratingRef = useRef(isGenerating);
   isGeneratingRef.current = isGenerating;
+
+  // Generating must never paint the expanded composer shell — including when
+  // navigating onto a hang mid-run, when `generating` flips true while open,
+  // or if expand somehow races submit. Force the minimized Generating pill.
+  if (isGenerating && expanded) {
+    setExpanded(false);
+    setPickerOpen(false);
+    if (pendingFocus.current === "bar") pendingFocus.current = null;
+  }
+
   const addDisabled = isGenerating || inspiration !== null;
   const addTooltip = isGenerating
     ? "Generating artwork"
     : inspiration
       ? "Remove artwork to add another"
       : "Get inspired by The Met";
-  // Fan + empty "Find inspiration" chip — never while generating or while the
-  // curated Met set is still hydrating (empty artworks would otherwise flash
-  // the top-right text pill above Generate).
-  const showRestingStack =
+
+  /** Grow the prompt with wrapped lines; stay one line until content needs more. */
+  const resizePromptField = useCallback(() => {
+    const el = promptRef.current;
+    if (!el) return;
+    // Floor at the prod single-line height. Avoid `height: 0` — that inflates
+    // scrollHeight via padding and leaves the empty field too tall.
+    // Measure only after layout has a real flex width; a cols-sized intrinsic
+    // width underestimates wrap and leaves bottom-heavy empty space.
+    el.style.height = `${PROMPT_MIN_HEIGHT_PX}px`;
+    // Force a layout read so scrollHeight matches the current used width.
+    void el.offsetWidth;
+
+    const value = el.value;
+    // Cache only a plausible single-line text slot (ignore cols=1 intrinsic).
+    if (
+      !promptMultilineRef.current &&
+      el.clientWidth >= PROMPT_MIN_SLOT_WIDTH_PX
+    ) {
+      singleLineSlotWidthRef.current = el.clientWidth;
+    }
+
+    // Placeholder-only must stay the one-line `+ | prompt | Generate` row.
+    // Empty scrollHeight still reflects a wrapping placeholder when the field
+    // is briefly narrow — that must never flip us into the stacked layout.
+    if (!value) {
+      el.style.height = `${PROMPT_MIN_HEIGHT_PX}px`;
+      el.style.overflowY = "hidden";
+      setPromptMultiline(false);
+      return;
+    }
+
+    // Wrap detection must use the single-line row's text slot — full-width
+    // multiline layout is wider and would unwrap, oscillating the mode.
+    const slotW = singleLineSlotWidthRef.current;
+    const hasNewline = value.includes("\n");
+    let wrapped = hasNewline;
+    if (!wrapped) {
+      const measureW =
+        slotW >= PROMPT_MIN_SLOT_WIDTH_PX
+          ? slotW
+          : el.clientWidth >= PROMPT_MIN_SLOT_WIDTH_PX
+            ? el.clientWidth
+            : 0;
+      if (measureW > 0) {
+        const prevWidth = el.style.width;
+        el.style.width = `${measureW}px`;
+        void el.offsetWidth;
+        wrapped =
+          el.scrollHeight > PROMPT_MIN_HEIGHT_PX + PROMPT_WRAP_SLACK_PX;
+        el.style.width = prevWidth;
+        void el.offsetWidth;
+      }
+      // Layout not ready — stay single-line rather than false-positive.
+    }
+
+    const scroll = el.scrollHeight;
+    const next = wrapped
+      ? Math.min(scroll, PROMPT_MAX_HEIGHT_PX)
+      : PROMPT_MIN_HEIGHT_PX;
+    el.style.height = `${next}px`;
+    el.style.overflowY = scroll > PROMPT_MAX_HEIGHT_PX ? "auto" : "hidden";
+    setPromptMultiline(wrapped);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!expanded) {
+      setPromptMultiline(false);
+      setMultilineMorphing(false);
+      return;
+    }
+    // Measure at the expanded target width (--composer-expanded-w), not the
+    // animating shell width, so wrap/height stay stable for the whole morph.
+    resizePromptField();
+    const el = promptRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    let prevW = el.clientWidth;
+    const ro = new ResizeObserver(() => {
+      const w = el.clientWidth;
+      if (w === prevW) return;
+      prevW = w;
+      resizePromptField();
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [expanded, prompt, promptMultiline, resizePromptField]);
+
+  // Ease shell height when crossing the single ↔ multiline layout threshold.
+  // Per-line growth while already multiline stays instant (data-settled).
+  const prevPromptMultiline = useRef(promptMultiline);
+  useLayoutEffect(() => {
+    if (prevPromptMultiline.current === promptMultiline) return;
+    prevPromptMultiline.current = promptMultiline;
+    if (!expanded || reduceMotion || morphInstant) return;
+    setMultilineMorphing(true);
+    setMorphSettledFlag(false);
+    const ms = 300;
+    const t = window.setTimeout(() => setMultilineMorphing(false), ms);
+    return () => window.clearTimeout(t);
+  }, [promptMultiline, expanded, reduceMotion, morphInstant]);
+
+  const onPromptKeyDown = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
+    stopGalleryKeys(e);
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (!isGenerating && prompt.trim() && !blocked) {
+        e.currentTarget.form?.requestSubmit();
+      }
+    }
+  };
+
+  // Fan stays mounted (tucked below the clip) while eligible — never while
+  // generating or while curated Met data is still hydrating. Roll-up reveal
+  // is gated on addHovering (+ hover / :focus-visible), not on expand alone.
+  const canShowRestingStack =
     expanded &&
     !pickerOpen &&
     !inspiration &&
     !isGenerating &&
     !search.curatedLoading;
 
+  const clearMetChromeLeave = useCallback(() => {
+    if (metChromeLeaveTimer.current == null) return;
+    clearTimeout(metChromeLeaveTimer.current);
+    metChromeLeaveTimer.current = null;
+  }, []);
+
+  const enterMetChrome = useCallback(() => {
+    clearMetChromeLeave();
+    if (metHoverArmed) setAddHovering(true);
+  }, [clearMetChromeLeave, metHoverArmed]);
+
+  const leaveMetChrome = useCallback(() => {
+    clearMetChromeLeave();
+    metChromeLeaveTimer.current = setTimeout(() => {
+      setAddHovering(false);
+      metChromeLeaveTimer.current = null;
+    }, 140);
+  }, [clearMetChromeLeave]);
+
+  useEffect(() => () => clearMetChromeLeave(), [clearMetChromeLeave]);
+
   /**
-   * Focus follows the toggle into whichever control just appeared, so keyboard
-   * users are never dropped back onto `<body>`.
+   * Focus follows the toggle into whichever panel just became active.
    *
-   * Applied from the ref callback rather than an effect keyed on `expanded`.
-   * Enter/exit shells share one centered grid cell and crossfade, so by the
-   * time an effect keyed on `expanded` could run the incoming control may not
-   * be mounted yet — focus stayed on `<body>`, and the next Escape went past
-   * the bar to the room's own handler and walked the visitor out of the gallery.
+   * Panels stay mounted (Drawesome-style), so a ref-on-mount callback would
+   * never re-fire on expand/collapse. Drive focus from `activePanel` instead.
+   *
+   * "bar" lands on the prompt (no chrome ring — textarea opts out of the
+   * gallery focus treatment). Never focus the + toggle on expand: that painted
+   * a focus-visible ring and force-opened the Met tooltip as if the visitor
+   * had tabbed there.
    */
-  const focusOnMount = useCallback(
-    (target: "bar" | "pen") => (node: HTMLButtonElement | null) => {
-      if (node && pendingFocus.current === target) {
-        pendingFocus.current = null;
-        node.focus();
-      }
-    },
-    [],
-  );
+  const focusComposerTarget = useCallback((target: "bar" | "pen") => {
+    if (target === "bar") {
+      promptRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    const panel = panelRefs.current.get(
+      isGeneratingRef.current ? "generating" : "actions",
+    );
+    panel?.querySelector("button")?.focus();
+  }, []);
 
   /**
    * Fold the bar away to the pen.
@@ -212,9 +417,8 @@ export default function GalleryActionBar({
    * Inspiration stays selected across collapse; only the composer shell folds
    * to the pen / Generating / download pill. Re-expanding restores the full
    * SelectedInspirationCard when a work is still chosen — there is no
-   * intermediate artwork-peek state. Generation no longer holds the bar open
-   * — submit auto-collapses to the Generating pill, and outside click /
-   * Escape can fold an expanded bar while a run is in flight.
+   * intermediate artwork-peek state. Generation always uses the minimized
+   * pill (never an expanded shell mid-run).
    */
   const dismissComposer = useCallback(
     (moveFocus: boolean) => {
@@ -232,6 +436,18 @@ export default function GalleryActionBar({
     setInspiration(artwork);
     if (artwork) setPickerOpen(false);
   };
+
+  const openInspirationPicker = useCallback(() => {
+    search.refreshCurated();
+    setPickerOpen(true);
+  }, [search.refreshCurated]);
+
+  const toggleInspirationPicker = useCallback(() => {
+    setPickerOpen((open) => {
+      if (!open) search.refreshCurated();
+      return !open;
+    });
+  }, [search.refreshCurated]);
 
   /**
    * Apply the last successful generate for a canvas (or blank if none).
@@ -251,45 +467,67 @@ export default function GalleryActionBar({
     [],
   );
 
-  const expandBar = () => {
-    pendingFocus.current = "bar";
-    // Skip while a run is in flight — local draft is the prompt being
-    // generated; stored context is still the previous success (or empty).
-    if (!isGeneratingRef.current) {
-      applyGenerationContext(generationContextRef.current);
+  const expandBar = (e?: { detail?: number }) => {
+    // Stay on the Generating pill while a run is in flight — never reopen
+    // the full composer shell mid-generate.
+    if (isGeneratingRef.current) return;
+    // Pointer expand must not steal focus onto + / the prompt — that painted a
+    // focus-visible ring (and opened the Met tooltip via addHovering) as if the
+    // visitor had tabbed in. Keyboard activation still needs a landing place
+    // once the pen goes inert; the prompt has no chrome ring.
+    const fromKeyboard = e != null && e.detail === 0;
+    pendingFocus.current = fromKeyboard ? "bar" : null;
+    if (!fromKeyboard && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
     }
+    // Clear any leftover reveal, and (for pointer expand) disarm Met hover so
+    // chrome that morphs under the cursor cannot auto-open the stack / tooltip.
+    clearMetChromeLeave();
+    setAddHovering(false);
+    if (!fromKeyboard) setMetHoverArmed(false);
+    applyGenerationContext(generationContextRef.current);
     setExpanded(true);
   };
-
-  // Generation ending on the collapsed pill unmounts that control — hand focus
-  // to the pen in the same render so keyboard users are not dropped on <body>.
-  const wasGeneratingRef = useRef(false);
-  if (wasGeneratingRef.current && !isGenerating && !expanded) {
-    pendingFocus.current = "pen";
-  }
-  wasGeneratingRef.current = isGenerating;
 
   useEffect(() => {
     if (openSignal === 0) return;
     pendingFocus.current = null;
+    clearMetChromeLeave();
+    setAddHovering(false);
+    setMetHoverArmed(false);
     // Only keyed on openSignal — generationContext updates after a successful
     // generate must not re-expand the bar we just folded to the Generating pill.
-    if (!isGeneratingRef.current) {
-      applyGenerationContext(generationContextRef.current);
+    // Mid-run: stay collapsed on the Generating pill (never expand).
+    if (isGeneratingRef.current) {
+      setExpanded(false);
+      setPickerOpen(false);
+      return;
     }
+    applyGenerationContext(generationContextRef.current);
     setExpanded(true);
-  }, [openSignal, applyGenerationContext]);
+  }, [openSignal, applyGenerationContext, clearMetChromeLeave]);
+
+  // Re-arm Met hover chrome after the first real pointer move post-expand.
+  useEffect(() => {
+    if (metHoverArmed) return;
+    const arm = () => setMetHoverArmed(true);
+    window.addEventListener("pointermove", arm, { once: true });
+    return () => window.removeEventListener("pointermove", arm);
+  }, [metHoverArmed]);
 
   useEffect(() => {
     if (focusedIdRef.current === focusedId) return;
     focusedIdRef.current = focusedId;
     // Drop the previous hang's draft; load this hang's stored generate if any.
-    // Keep `expanded` as the visitor left it — minimized stays the Generating /
-    // pen pill across canvas switches; maximized stays the composer shell
-    // (disabled + Generating label when the new hang is mid-run).
+    // Preserve expand/collapse across switches only when the incoming hang is
+    // idle — a generating hang always forces the minimized Generating pill.
     setError(null);
     setPickerOpen(false);
     applyGenerationContext(generationContextRef.current);
+    if (isGeneratingRef.current) {
+      setExpanded(false);
+      if (pendingFocus.current === "bar") pendingFocus.current = null;
+    }
   }, [focusedId, applyGenerationContext]);
 
   /**
@@ -304,8 +542,8 @@ export default function GalleryActionBar({
     if (!expanded) return;
     const onPointerDown = (e: PointerEvent) => {
       if (isGalleryDialogOpen()) return;
-      const target = e.target as Element | null;
-      if (!target) return;
+      const target = e.target;
+      if (!(target instanceof Element)) return;
       if (rootRef.current?.contains(target)) return;
       if (target.closest(`[${KEEP_BAR_OPEN_ATTR}]`)) return;
       dismissComposer(false);
@@ -355,7 +593,7 @@ export default function GalleryActionBar({
     // outside click, so the room stays clear while the canvas shimmers.
     // Don't move focus onto the pill: that paints a focus-visible ring flash
     // right as "Generating…" appears. Blur instead; keyboard users can Tab
-    // to the pill later, and generation-end still hands focus to the pen.
+    // to the pill later.
     collapseBar(false);
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
@@ -379,55 +617,166 @@ export default function GalleryActionBar({
     }
   };
 
+  // Generating wins over expanded — the full shell must never be the active
+  // panel while a run is in flight (render-time force-collapse is the primary
+  // guard; this is defense in depth for one-frame races).
+  const activePanel: ComposerPanelId = isGenerating
+    ? "generating"
+    : expanded
+      ? "expanded"
+      : "actions";
+
+  const composerMaximized = activePanel === "expanded";
+  useEffect(() => {
+    onExpandedChange?.(composerMaximized);
+  }, [composerMaximized, onExpandedChange]);
+
   /* ─────────────────────────────────────────────────────────
-   * COMPOSER MORPH STORYBOARD
+   * COMPOSER MORPH (Drawesome MorphBar)
    *
-   *    0ms   shells share one centered grid cell
-   *  280ms   outgoing shell scales 1 → 0.92 + fades (origin: center)
-   *  280ms   incoming shell scales 0.92 → 1 + fades in (origin: center)
+   * One continuous shell animates width/height to the active panel's
+   * measured size. Panels stay mounted, stack in the clip, and cross-fade
+   * with blur + scale. Swapping two differently-sized shells (old approach)
+   * read as a double-exposure; this is one object changing shape.
    *
-   * The expanded prompt shell must not leave the focused input under a
-   * compositor layer at rest: no residual scale, no backdrop-filter, no
-   * nested opacity wrapper. Those make the native caret short and uneven.
-   * `transformTemplate` drops scale when it hits 1; the shell is solid white
-   * (blur was decorative-only on an opaque fill); contents are not wrapped in
-   * a second opacity motion node.
+   * After the size settle, the expanded panel drops filter/scale so the
+   * native caret isn't painted through a compositor layer.
    * ───────────────────────────────────────────────────────── */
   const shellTransition = reduceMotion
     ? { duration: 0 }
-    : { duration: 0.28, ease: [0.4, 0, 0.2, 1] as const };
-
-  /**
-   * Uniform scale from center — never width/height layout morph — so fields
-   * keep their shape. Both shells stack in one grid cell so growth reads as
-   * expanding from the midpoint, not from the right edge.
-   */
-  const shellMotion = reduceMotion
-    ? {
-        initial: false as const,
-        animate: { opacity: 1, scale: 1 },
-        exit: { opacity: 0 },
-        transition: shellTransition,
-      }
     : {
-        initial: { opacity: 0, scale: 0.92 },
-        animate: { opacity: 1, scale: 1 },
-        exit: { opacity: 0, scale: 0.92 },
-        transition: shellTransition,
+        duration: COMPOSER_MORPH_MS.expand / 1000,
+        ease: [0.22, 0.9, 0.16, 1] as const,
       };
 
-  /**
-   * While scale is exactly 1, emit no transform so the prompt caret paints on
-   * the device pixel grid. Any non-1 scale (enter/exit morph) keeps the matrix.
-   */
-  const shellTransformTemplate = (
-    { scale }: { scale?: number | string },
-    generated: string,
-  ) => {
-    const s = typeof scale === "number" ? scale : Number(scale);
-    if (!Number.isFinite(s) || Math.abs(s - 1) < 0.001) return "none";
-    return generated;
-  };
+  useLayoutEffect(() => {
+    const measure = () => {
+      const panel = panelRefs.current.get(activePanel);
+      const root = rootRef.current;
+      if (!panel || !root) return;
+      const expandedW = root.clientWidth;
+      if (activePanel === "expanded") {
+        setMorphSize({ w: expandedW, h: panel.scrollHeight });
+      } else {
+        setMorphSize({ w: panel.scrollWidth, h: panel.scrollHeight });
+      }
+    };
+
+    measure();
+    const armId = requestAnimationFrame(() => {
+      morphSettled.current = true;
+      setMorphInstant(false);
+    });
+
+    const panel = panelRefs.current.get(activePanel);
+    const root = rootRef.current;
+    if (!panel || typeof ResizeObserver === "undefined") {
+      return () => cancelAnimationFrame(armId);
+    }
+    const ro = new ResizeObserver(measure);
+    ro.observe(panel);
+    if (root) ro.observe(root);
+    return () => {
+      cancelAnimationFrame(armId);
+      ro.disconnect();
+    };
+  }, [activePanel, canDownload, error, inspiration, isGenerating, prompt, promptMultiline]);
+
+  // When the active panel flips, drop settled in the same render pass so the
+  // first painted frame never applies caret-safe `transition: none` to the
+  // incoming expanded panel (that froze opacity/scale at 1 and skipped the
+  // blur cross-fade).
+  const [settledForPanel, setSettledForPanel] = useState(activePanel);
+  if (settledForPanel !== activePanel) {
+    setSettledForPanel(activePanel);
+    if (!reduceMotion && !morphInstant) {
+      setMorphSettledFlag(false);
+    }
+  }
+
+  // Restore caret-safe styles after the width/height transition settles.
+  useEffect(() => {
+    if (reduceMotion || morphInstant || morphSettledFlag) {
+      if (reduceMotion || morphInstant) setMorphSettledFlag(true);
+      return;
+    }
+    const shell = morphRef.current;
+    if (!shell) {
+      setMorphSettledFlag(true);
+      return;
+    }
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      setMorphSettledFlag(true);
+    };
+    const onEnd = (e: TransitionEvent) => {
+      if (e.target !== shell) return;
+      if (e.propertyName !== "width" && e.propertyName !== "height") return;
+      finish();
+    };
+    shell.addEventListener("transitionend", onEnd);
+    const fallbackMs =
+      activePanel === "expanded"
+        ? COMPOSER_MORPH_MS.expand + 40
+        : COMPOSER_MORPH_MS.collapse + 40;
+    const fallback = window.setTimeout(finish, fallbackMs);
+    return () => {
+      shell.removeEventListener("transitionend", onEnd);
+      window.clearTimeout(fallback);
+    };
+  }, [activePanel, morphInstant, morphSettledFlag, reduceMotion]);
+
+  const setPanelRef = useCallback(
+    (id: ComposerPanelId) => (node: HTMLDivElement | null) => {
+      if (node) panelRefs.current.set(id, node);
+      else panelRefs.current.delete(id);
+    },
+    [],
+  );
+
+  useLayoutEffect(() => {
+    for (const [id, el] of panelRefs.current) {
+      if (id === activePanel) el.removeAttribute("inert");
+      else el.setAttribute("inert", "");
+    }
+  }, [activePanel]);
+
+  // Panels are always mounted — move focus after the active one flips.
+  useLayoutEffect(() => {
+    const target = pendingFocus.current;
+    if (!target) return;
+    pendingFocus.current = null;
+    focusComposerTarget(target);
+  }, [activePanel, focusComposerTarget]);
+
+  const expandedSoftRadius =
+    activePanel === "expanded" && promptMultiline;
+  // Target width for the expanded panel — fixed for the whole morph so the
+  // prompt lays out at final size while the shell unfurls around it.
+  const expandedWidth = rootRef.current?.clientWidth ?? morphSize?.w ?? 0;
+  // Stack clip must match the shell's bottom corners (stadium or soft 28)
+  // or cards/shadows paint in the crescent under the rounded edge.
+  const composerClipRadius = expandedSoftRadius
+    ? 28
+    : morphSize
+      ? morphSize.h / 2
+      : 29;
+  const morphStyle: CSSProperties =
+    morphSize === null
+      ? { visibility: "hidden", borderRadius: 9999 }
+      : {
+          width: morphSize.w,
+          height: morphSize.h,
+          // Stadium like prod while one line; soft radius only when wrapped.
+          borderRadius: expandedSoftRadius ? 28 : 9999,
+          ["--composer-expanded-w" as string]: `${expandedWidth || morphSize.w}px`,
+          transition:
+            reduceMotion || morphInstant || !morphSettled.current
+              ? "none"
+              : undefined,
+        };
 
   return (
     <div
@@ -439,20 +788,27 @@ export default function GalleryActionBar({
       // Positioning belongs to the bottom stack in `GalleryPage`; this only
       // caps its own width so the bar stays a panel rather than a full-width
       // band, and anchors the resting stack below.
-      className={`pointer-events-auto relative flex w-full justify-center ${
-        inspiration ? "max-w-[720px]" : "max-w-[590px]"
-      }`}
+      className="pointer-events-auto relative flex w-full max-w-[590px] justify-center"
+      style={
+        {
+          ["--composer-clip-radius" as string]: `${composerClipRadius}px`,
+        } as CSSProperties
+      }
     >
       <style>{FILM_DOT_STYLE}</style>
+      <style>{COMPOSER_MORPH_STYLE}</style>
       {/* A sibling of the panel rather than a child of it, because a child
           cannot be painted behind its own parent's background. */}
       <AnimatePresence initial={false}>
-        {showRestingStack && (
-          // Instant exit: a timed fade left the empty "Find inspiration" chip
-          // (and the fan) visible over Generating…. Duration 0 clears it on the
-          // same frame `showRestingStack` flips false.
+        {canShowRestingStack && (
+          // Keep the fan mounted while eligible so leave can roll down instead
+          // of popping off. Instant unmount when eligibility ends (generate /
+          // picker / inspiration) so it never lingers over Generating….
+          // z-0 under the opaque morph (z-10) so the pill body covers the fan;
+          // RestingStack's rounded clip kills the corner-crescent leak.
           <motion.div
             key="stack"
+            className="pointer-events-none absolute inset-0 z-0"
             initial={false}
             exit={{ opacity: 0 }}
             transition={{ duration: 0 }}
@@ -460,9 +816,12 @@ export default function GalleryActionBar({
             <RestingStack
               artworks={search.artworks}
               controls={pickerId}
-              transition={shellTransition}
-              lifted={addHovering}
-              onOpen={() => setPickerOpen(true)}
+              revealed={addHovering}
+              tooltipArmed={metHoverArmed}
+              reduceMotion={Boolean(reduceMotion)}
+              onOpen={openInspirationPicker}
+              onPointerEnter={enterMetChrome}
+              onPointerLeave={leaveMetChrome}
             />
           </motion.div>
         )}
@@ -515,151 +874,251 @@ export default function GalleryActionBar({
           <SelectedInspirationCard
             key="selected-inspiration"
             artwork={inspiration}
-            onChangeInspiration={() => setPickerOpen(true)}
-            onCollapse={() => collapseBar(false)}
+            onChangeInspiration={openInspirationPicker}
+            onClearInspiration={() => setInspiration(null)}
             transition={shellTransition}
           />
         )}
       </AnimatePresence>
       {/*
-       * Separate shells stacked on one centered grid cell. Morphing one
-       * element between those aspect ratios creates a stretched lens; scale
-       * from center keeps each shell at its final size while the midpoint
-       * stays put (unlike a right-anchored width morph).
+       * One shell, measured size, clipped panels — Drawesome MorphBar.
+       * Content cross-fades inside; the chrome never swaps for a second pill.
        */}
-      <div className="relative z-10 grid w-full place-items-center">
-        <AnimatePresence initial={false}>
-          {expanded ? (
-            <motion.div
-              key="panel"
-              {...shellMotion}
-              transformTemplate={shellTransformTemplate}
-              style={{ transformOrigin: "center center" }}
-              // Solid fill — no backdrop-blur. Blur on this node promotes a
-              // compositor layer and shrinks/unevens the native caret.
-              className="col-start-1 row-start-1 flex w-full flex-col gap-2 rounded-full border border-black/5 bg-white px-2.5 py-[9px] shadow-soft"
-            >
-              <form onSubmit={submit} className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <Tooltip label={addTooltip} position="top" offset={10}>
-                    <button
-                      ref={(node) => {
-                        pickerToggleRef.current = node;
-                        focusOnMount("bar")(node);
-                      }}
-                      type="button"
-                      onPointerEnter={() => {
-                        if (!addDisabled) setAddHovering(true);
-                      }}
-                      onPointerLeave={() => setAddHovering(false)}
-                      onFocus={(e) => {
-                        if (
-                          !addDisabled &&
-                          e.currentTarget.matches(":focus-visible")
-                        ) {
-                          setAddHovering(true);
-                        }
-                      }}
-                      onBlur={() => setAddHovering(false)}
-                      onClick={() => {
-                        if (addDisabled) return;
-                        setPickerOpen((open) => !open);
-                      }}
-                      aria-expanded={pickerOpen}
-                      aria-controls={pickerId}
-                      aria-label={
-                        pickerOpen
-                          ? "Hide inspiration picker"
-                          : "Get inspired by The Met"
-                      }
-                      disabled={addDisabled}
-                      className={`grid size-10 shrink-0 place-items-center rounded-full transition-colors ${
-                        addDisabled
-                          ? "cursor-not-allowed bg-zinc-100/70 text-zinc-300"
-                          : "cursor-pointer text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
-                      } ${GALLERY_FOCUS_RING}`}
-                    >
-                      <PlusIcon className="size-[15px]" strokeWidth={1.25} />
-                    </button>
-                  </Tooltip>
-                  <input
-                    type="text"
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    onKeyDown={stopGalleryKeys}
-                    placeholder="Describe your artwork…"
-                    disabled={isGenerating}
-                    // No inner focus ring — the outer composer pill is the
-                    // surface. `gallery-focus` opts out of the unlayered
-                    // global outline. Caret follows text metrics; even stroke
-                    // needs no scaled/blurred/opacity ancestors at rest.
-                    className="gallery-focus min-w-0 flex-1 rounded-full border-0 bg-transparent px-0 py-2 text-base leading-6 text-zinc-900 caret-zinc-900 outline-none ring-0 placeholder:text-zinc-300 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 disabled:opacity-60"
-                    aria-label="Artwork prompt"
-                  />
-                  <motion.button
-                    type="submit"
+      <div
+        ref={morphRef}
+        className="gallery-composer-morph relative z-10 rounded-full"
+        data-reduce-motion={reduceMotion || undefined}
+        data-instant={morphInstant || undefined}
+        data-settled={morphSettledFlag && !multilineMorphing ? "" : undefined}
+        data-morph-to={activePanel}
+        data-multiline={
+          activePanel === "expanded" && promptMultiline ? "" : undefined
+        }
+        data-multiline-morph={multilineMorphing ? "" : undefined}
+        style={morphStyle}
+      >
+        <div className="gallery-composer-morph__clip">
+          <ComposerMorphPanel
+            id="expanded"
+            active={activePanel === "expanded"}
+            setRef={setPanelRef}
+          >
+            <form onSubmit={submit} className="flex flex-col">
+              {/*
+                Single-line: + | prompt | Generate (one row).
+                Multiline: prompt full-width on top (left-aligned with +);
+                footer row keeps + left / Generate right (ChatGPT-style).
+                Grid keeps the textarea mounted across the mode switch.
+              */}
+              <LayoutGroup id="gallery-composer-prompt">
+                <div
+                  className={`grid px-2.5 py-[9px] ${
+                    promptMultiline
+                      ? "grid-cols-[auto_1fr_auto] grid-rows-[auto_auto] items-end gap-x-2 gap-y-1"
+                      : "grid-cols-[auto_1fr_auto] items-center gap-x-1"
+                  }`}
+                >
+                  <motion.div
                     layout={!reduceMotion}
-                    disabled={isGenerating || !prompt.trim() || blocked}
+                    className={
+                      promptMultiline
+                        ? "col-start-1 row-start-2"
+                        : "col-start-1 row-start-1"
+                    }
                     transition={
                       reduceMotion
                         ? { duration: 0 }
-                        : { layout: { duration: 0.28, ease: [0.4, 0, 0.2, 1] } }
+                        : {
+                            duration: 0.28,
+                            ease: [0.19, 1, 0.22, 1],
+                          }
                     }
-                    className={`shrink-0 rounded-full bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
                   >
-                    {isGenerating ? (
-                      <GeneratingLabel reduceMotion={Boolean(reduceMotion)} />
+                    {canShowRestingStack ? (
+                      // Met tip lives on RestingStack (portaled above the fan);
+                      // overflow:hidden on the morph shell would clip it here.
+                      <button
+                        ref={pickerToggleRef}
+                        type="button"
+                        onPointerEnter={enterMetChrome}
+                        onPointerLeave={leaveMetChrome}
+                        onFocus={(e) => {
+                          if (e.currentTarget.matches(":focus-visible")) {
+                            clearMetChromeLeave();
+                            setAddHovering(true);
+                          }
+                        }}
+                        onBlur={() => {
+                          clearMetChromeLeave();
+                          setAddHovering(false);
+                        }}
+                        onClick={toggleInspirationPicker}
+                        aria-expanded={pickerOpen}
+                        aria-controls={pickerId}
+                        aria-label={
+                          pickerOpen
+                            ? "Hide inspiration picker"
+                            : "Get inspired by The Met"
+                        }
+                        className={`grid size-10 shrink-0 cursor-pointer place-items-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
+                      >
+                        <PlusIcon className="size-[15px]" strokeWidth={1.25} />
+                      </button>
                     ) : (
-                      "Generate"
+                      <Tooltip
+                        label={addTooltip}
+                        position="top"
+                        offset={10}
+                        portal
+                        disabled={!metHoverArmed}
+                      >
+                        <button
+                          ref={pickerToggleRef}
+                          type="button"
+                          onPointerEnter={() => {
+                            if (metHoverArmed && !addDisabled) enterMetChrome();
+                          }}
+                          onPointerLeave={leaveMetChrome}
+                          onFocus={(e) => {
+                            if (
+                              !addDisabled &&
+                              e.currentTarget.matches(":focus-visible")
+                            ) {
+                              clearMetChromeLeave();
+                              setAddHovering(true);
+                            }
+                          }}
+                          onBlur={() => {
+                            clearMetChromeLeave();
+                            setAddHovering(false);
+                          }}
+                          onClick={() => {
+                            if (addDisabled) return;
+                            toggleInspirationPicker();
+                          }}
+                          aria-expanded={pickerOpen}
+                          aria-controls={pickerId}
+                          aria-label={
+                            pickerOpen
+                              ? "Hide inspiration picker"
+                              : "Get inspired by The Met"
+                          }
+                          disabled={addDisabled}
+                          className={`grid size-10 shrink-0 place-items-center rounded-full bg-transparent transition-colors ${
+                            addDisabled
+                              ? "cursor-not-allowed text-zinc-300"
+                              : "cursor-pointer text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
+                          } ${GALLERY_FOCUS_RING}`}
+                        >
+                          <PlusIcon
+                            className="size-[15px]"
+                            strokeWidth={1.25}
+                          />
+                        </button>
+                      </Tooltip>
                     )}
-                  </motion.button>
+                  </motion.div>
+                  {/*
+                    Wrapper owns grid growth. Textareas keep a cols-based
+                    intrinsic size that can refuse to fill the row; the wrapper
+                    + w-full forces wrap at the real + → Generate gap (single)
+                    or full composer width (multiline).
+                  */}
+                  <div
+                    className={
+                      promptMultiline
+                        ? "col-span-3 row-start-1 min-w-0"
+                        : "col-start-2 row-start-1 min-w-0"
+                    }
+                  >
+                    <textarea
+                      ref={promptRef}
+                      rows={1}
+                      cols={1}
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      onKeyDown={onPromptKeyDown}
+                      onWheel={(e) => e.stopPropagation()}
+                      placeholder="Describe your artwork…"
+                      disabled={isGenerating}
+                      // No inner focus ring — the outer composer pill is the
+                      // surface. Single-row with + / Generate until content wraps;
+                      // resizePromptField grows height only then. Enter submits.
+                      className={`gallery-focus box-border block min-h-10 w-full resize-none overflow-hidden break-words border-0 bg-transparent py-2 text-base leading-6 text-zinc-900 caret-zinc-900 outline-none ring-0 placeholder:text-zinc-300 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 disabled:opacity-60 [overflow-wrap:anywhere] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
+                        promptMultiline
+                          ? `${PROMPT_MULTILINE_PL} pr-0`
+                          : "px-0"
+                      }`}
+                      aria-label="Artwork prompt"
+                    />
+                  </div>
+                  <motion.div
+                    layout={!reduceMotion}
+                    className={
+                      promptMultiline
+                        ? "col-start-3 row-start-2"
+                        : "col-start-3 row-start-1"
+                    }
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : {
+                            duration: 0.28,
+                            ease: [0.19, 1, 0.22, 1],
+                          }
+                    }
+                  >
+                    <button
+                      type="submit"
+                      disabled={isGenerating || !prompt.trim() || blocked}
+                      className={`shrink-0 rounded-full bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
+                    >
+                      {isGenerating ? (
+                        <GeneratingLabel
+                          reduceMotion={Boolean(reduceMotion)}
+                        />
+                      ) : (
+                        "Generate"
+                      )}
+                    </button>
+                  </motion.div>
                 </div>
-                <p aria-live="polite" className="sr-only">
-                  {isGenerating ? "Generating your image…" : ""}
+              </LayoutGroup>
+              <p aria-live="polite" className="sr-only">
+                {isGenerating ? "Generating your image…" : ""}
+              </p>
+              {error && (
+                <p className="px-3 pb-2 text-base text-red-600" role="alert">
+                  {error}
                 </p>
-                {error && (
-                  <p className="px-1 text-base text-red-600" role="alert">
-                    {error}
-                  </p>
-                )}
-              </form>
-            </motion.div>
-          ) : isGenerating ? (
-            <motion.div
-              key="collapsed-generating"
-              layout={!reduceMotion}
-              {...shellMotion}
-              style={{ transformOrigin: "center center" }}
-              className="col-start-1 row-start-1 inline-flex items-center gap-1 rounded-full border border-black/5 bg-white p-1 text-zinc-700 shadow-soft"
-              transition={{
-                ...shellTransition,
-                layout: reduceMotion
-                  ? { duration: 0 }
-                  : { duration: 0.28, ease: [0.4, 0, 0.2, 1] },
-              }}
-            >
-              <button
-                ref={focusOnMount("pen")}
-                type="button"
-                onClick={expandBar}
-                aria-expanded={false}
-                aria-controls={barId}
-                aria-label="Generating artwork. Open prompt bar"
-                className={`cursor-pointer rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-zinc-50 ${GALLERY_FOCUS_RING}`}
+              )}
+            </form>
+          </ComposerMorphPanel>
+
+          <ComposerMorphPanel
+            id="generating"
+            active={activePanel === "generating"}
+            setRef={setPanelRef}
+          >
+            <div className="inline-flex items-center gap-1 p-1 text-zinc-700">
+              <div
+                role="status"
+                aria-live="polite"
+                className="rounded-full px-4 py-2 text-sm font-medium"
               >
                 <GeneratingLabel reduceMotion={Boolean(reduceMotion)} />
-              </button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="collapsed-actions"
-              {...shellMotion}
-              style={{ transformOrigin: "center center" }}
-              className="col-start-1 row-start-1 inline-flex items-center gap-1 rounded-full border border-black/5 bg-white/90 p-1 text-zinc-500 shadow-soft backdrop-blur-md"
-            >
-              <Tooltip label="Open prompt" position="top" offset={10}>
+              </div>
+            </div>
+          </ComposerMorphPanel>
+
+          <ComposerMorphPanel
+            id="actions"
+            active={activePanel === "actions"}
+            setRef={setPanelRef}
+          >
+            <div className="flex items-center gap-1 p-1 leading-none text-zinc-500">
+              <Tooltip label="Open prompt" position="top" offset={10} portal>
                 <button
-                  ref={focusOnMount("pen")}
                   type="button"
                   onClick={expandBar}
                   aria-expanded={false}
@@ -671,7 +1130,7 @@ export default function GalleryActionBar({
                 </button>
               </Tooltip>
               {canDownload && onDownload && (
-                <Tooltip label="Download image" position="top" offset={10}>
+                <Tooltip label="Download image" position="top" offset={10} portal>
                   <button
                     type="button"
                     onClick={onDownload}
@@ -682,10 +1141,34 @@ export default function GalleryActionBar({
                   </button>
                 </Tooltip>
               )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </ComposerMorphPanel>
+        </div>
       </div>
+    </div>
+  );
+}
+
+function ComposerMorphPanel({
+  id,
+  active,
+  setRef,
+  children,
+}: {
+  id: ComposerPanelId;
+  active: boolean;
+  setRef: (id: ComposerPanelId) => (node: HTMLDivElement | null) => void;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      ref={setRef(id)}
+      data-kind={id}
+      data-active={active || undefined}
+      aria-hidden={active ? undefined : true}
+      className="gallery-composer-morph__panel"
+    >
+      {children}
     </div>
   );
 }
@@ -704,12 +1187,12 @@ function GeneratingLabel({ reduceMotion }: { reduceMotion: boolean }) {
 function SelectedInspirationCard({
   artwork,
   onChangeInspiration,
-  onCollapse,
+  onClearInspiration,
   transition,
 }: {
   artwork: MetArtwork;
   onChangeInspiration: () => void;
-  onCollapse: () => void;
+  onClearInspiration: () => void;
   transition: Transition;
 }) {
   const src = openAccessImageUrl(artwork);
@@ -746,7 +1229,7 @@ function SelectedInspirationCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 6, scale: 0.985 }}
       transition={transition}
-      className={`absolute bottom-[calc(100%-14px)] left-1/2 z-0 flex w-[calc(100%-38px)] -translate-x-1/2 gap-4 rounded-t-[34px] rounded-b-none border border-black/5 bg-white/95 px-4 pt-4 pb-6 pr-12 text-left shadow-soft backdrop-blur-md ${
+      className={`absolute bottom-[calc(100%-6px)] left-1/2 z-0 flex w-[calc(100%-38px)] -translate-x-1/2 gap-4 rounded-t-[34px] rounded-b-none border border-black/5 bg-white/95 px-4 pt-4 pb-5 pr-12 text-left shadow-soft backdrop-blur-md ${
         titleWraps ? "items-start" : "items-center"
       }`}
     >
@@ -778,43 +1261,50 @@ function SelectedInspirationCard({
           {artwork.title}
         </p>
         {meta && (
-          <p className="mt-0.5 truncate text-base leading-snug text-zinc-500">
+          <p className="truncate text-base leading-snug text-zinc-500">
             {meta}
           </p>
         )}
       </div>
       <button
         type="button"
-        onClick={onCollapse}
-        aria-label="Collapse prompt bar"
+        onClick={onClearInspiration}
+        aria-label="Remove inspiration"
         className={`absolute right-3 top-3 grid size-7 place-items-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 active:bg-zinc-200/70 ${GALLERY_FOCUS_RING}`}
       >
-        <CloseIcon size="14px" />
+        <CloseIcon size="14px" strokeWidth={1.25} />
       </button>
     </motion.div>
   );
 }
 
 /**
- * The inspiration strip, put away.
+ * The inspiration strip, put away — a fan that rolls up from behind the
+ * composer when the + is hovered / :focus-visible.
  *
- * A few works fanned above the bar's shoulder, half tucked behind it: enough
- * to say what pressing it would open, while giving the prompt row the whole
- * panel. Falls back to a labelled glyph when The Met gave us nothing to show,
- * so the search field is still one press away on a bad network.
+ * Stays mounted while the composer is eligible so leave can roll down; stays
+ * open while the pointer is over the fan so cards remain clickable. Instantly
+ * unmounted when eligibility ends (generate / picker / selection).
  */
 function RestingStack({
   artworks,
   controls,
-  transition,
-  lifted,
+  revealed,
+  tooltipArmed,
+  reduceMotion,
   onOpen,
+  onPointerEnter,
+  onPointerLeave,
 }: {
   artworks: MetArtwork[];
   controls: string;
-  transition: Transition;
-  lifted: boolean;
+  revealed: boolean;
+  /** False while expand-under-cursor would flash the Met tip. */
+  tooltipArmed: boolean;
+  reduceMotion: boolean;
   onOpen: () => void;
+  onPointerEnter: () => void;
+  onPointerLeave: () => void;
 }) {
   const [focused, setFocused] = useState(false);
   const seen = new Set<number>();
@@ -828,117 +1318,141 @@ function RestingStack({
     .slice(0, STACK_CARDS.length);
 
   if (cards.length === 0) {
-    // No top-right "Find inspiration in The Met" text chip. While curated
-    // data is loading or Met returned nothing, the composer's + still opens
-    // the picker — a floating label above Generate only confused loading /
-    // generating states.
+    // While curated data is loading or Met returned nothing, the composer's
+    // + still opens the picker — no empty fan.
     return null;
   }
 
   const fan = STACK_CARDS.slice(STACK_CARDS.length - cards.length);
+  // Short lift — clear the rounded bottom clip; resting y is 0–14.
+  const rollPx = reduceMotion ? 0 : 42;
+  const showMetTip = revealed && tooltipArmed;
 
   return (
     /*
-     * The fan's placement lives on this wrapper and not on the tooltip.
-     *
-     * Passing `absolute …` to `Tooltip`'s `className` looks like it should
-     * work and silently does not: the component composes `clsx('relative
-     * inline-flex', className)`, and since both utilities sit in the same
-     * Tailwind layer it is stylesheet order, not class order, that settles the
-     * tie — `relative` wins. The fan therefore stayed in flow as a 154px flex
-     * item, sitting beside the panel instead of above it and shouldering the
-     * panel 77px off-centre, while `bottom-full` and `right-6` did nothing at
-     * all and the stray `translate-y-8` pushed the cards through the bottom of
-     * the viewport.
-     *
-     * Wrapping instead of overriding also leaves the tooltip the positioning
-     * context it needs: its bubble is absolutely placed against `relative
-     * inline-flex`, so taking that away to make room for our own placement
-     * would have unmoored the bubble in the act of anchoring the cards.
+     * Clip shell matches the composer footprint (`left-0 right-0`) with the
+     * same bottom corner radius as the pill. A flat `overflow-hidden` bottom
+     * left crescents under the stadium curve where cards/shadows could peek;
+     * rounding the clip to `--composer-clip-radius` cuts those crescents.
+     * Headroom (`+9rem`) lets the fan + hover lift paint upward. Fan origin
+     * sits at `left-2.5` with the + inset so lean/shadow stay inside the clip.
+     * Stack stays z-0 under the opaque morph (z-10) for body occlusion.
      */
-    <div className="absolute bottom-[calc(100%-2.95rem)] left-3 overflow-visible">
-      {/* Reuses the site's tooltip rather than growing a gallery-only one.
-          Hover is the component's own; `forceOpen` is how focus gets the same
-          hint, since the shared tooltip has no focus path of its own and this
-          is the seam it offers. Nothing has to dismiss it on expand — the
-          whole fan unmounts at that point, and the tooltip goes with it. */}
+    <div
+      className="pointer-events-none absolute bottom-0 left-0 right-0 h-[calc(100%+9rem)] overflow-hidden"
+      style={{
+        borderBottomLeftRadius: "var(--composer-clip-radius, 1.8125rem)",
+        borderBottomRightRadius: "var(--composer-clip-radius, 1.8125rem)",
+      }}
+    >
       <Tooltip
         label="Get inspired by The Met"
         position="top"
-        // Anchor matches the tile box (`h-25` = `size-25` cards). The tooltip
-        // only appears while hovering, and `group-hover` lifts the front card
-        // by up to 12px (`STACK_CARDS` hoverY), so the gap has to clear that
-        // raised pose — not the resting one — with a little air above.
-        offset={28}
-        forceOpen={focused}
+        // Nudge above the fan a bit more than the default stack gap.
+        offset={16}
+        // forceOpen is otherwise instant; 2× Tooltip hover default (400→800).
+        delay={800}
+        portal
+        // Stack clip + morph shell both overflow:hidden — portal to body.
+        // forceOpen tracks +/fan hover so the tip sits above the images.
+        disabled={!tooltipArmed}
+        forceOpen={showMetTip}
+        className={`absolute bottom-[calc(100%-2.95rem-9rem)] left-2.5 ${
+          revealed ? "pointer-events-auto" : "pointer-events-none"
+        }`}
       >
-        <button
-          type="button"
-          onClick={onOpen}
-          onFocus={(e) => setFocused(e.currentTarget.matches(":focus-visible"))}
-          onBlur={() => setFocused(false)}
-          aria-expanded={false}
-          aria-controls={controls}
-          className={`group relative h-25 w-[154px] overflow-visible rounded-xl ${GALLERY_FOCUS_RING}`}
+        <div
+          onPointerEnter={onPointerEnter}
+          onPointerLeave={onPointerLeave}
         >
-          <span className="sr-only">Find inspiration in The Met</span>
-          <span className="absolute inset-0 block overflow-visible">
-            {/* Painted back to front, so the first work in the strip — the most
-              recognisable one — is the square card on top of the pile. */}
-            {[...cards].reverse().map(({ artwork, src }, i) => {
-              const { rotate, x, y, hoverY, hoverRotate } = fan[i]!;
-              const trimScale = metImageTrimScale(artwork.objectID);
-              // Rotate/lift the clip box itself. Putting overflow-hidden on a
-              // non-rotated parent (with rotate on the img) axis-aligned the
-              // clip and sliced the fan tops into a hard horizontal edge.
-              const restTransform = "rotate(var(--rest-rotate))";
-              const hoverTransform =
-                "translateY(var(--hover-y)) rotate(var(--hover-rotate))";
-              return (
-                <motion.span
-                  // The same id the strip tile carries, so this card and that
-                  // tile are one node to framer-motion and it moves between the
-                  // two layouts instead of one fading out as the other fades in.
-                  layoutId={tileLayoutId(artwork.objectID)}
-                  key={artwork.objectID}
-                  transition={transition}
-                  style={{ x, y }}
-                  className="absolute bottom-0 left-0 block overflow-visible"
-                >
-                  <span
-                    style={
-                      {
-                        "--rest-rotate": `${rotate}deg`,
-                        "--hover-rotate": `${hoverRotate}deg`,
-                        "--hover-y": `${hoverY}px`,
-                        "--rest-transform": restTransform,
-                        "--hover-transform": hoverTransform,
-                      } as React.CSSProperties
+          <button
+            type="button"
+            onClick={onOpen}
+            onFocus={(e) =>
+              setFocused(e.currentTarget.matches(":focus-visible"))
+            }
+            onBlur={() => setFocused(false)}
+            aria-expanded={false}
+            aria-controls={controls}
+            aria-hidden={!revealed && !focused}
+            tabIndex={revealed ? 0 : -1}
+            className={`group relative h-25 w-[154px] overflow-visible rounded-xl ${GALLERY_FOCUS_RING}`}
+          >
+            <span className="sr-only">Find inspiration in The Met</span>
+            <span className="absolute inset-0 block overflow-visible">
+              {/* Painted back to front, so the first work in the strip — the most
+                recognisable one — is the square card on top of the pile. */}
+              {[...cards].reverse().map(({ artwork, src }, i) => {
+                const { rotate, x, y, hoverY, hoverRotate } = fan[i]!;
+                const trimScale = metImageTrimScale(artwork.objectID);
+                // Hover lift stays on the clip box; fan angle is on motion so
+                // enter can rotate from a flat stack into the resting fan.
+                // Overflow-hidden must ride the rotated ancestor (motion.span)
+                // or axis-aligned clipping shears the fan tops.
+                const hoverDelta = hoverRotate - rotate;
+                // Near-zero stagger — one cohesive fan, not a cascade.
+                const stagger = 0.008 * (revealed ? i : fan.length - 1 - i);
+                return (
+                  <motion.span
+                    // The same id the strip tile carries, so this card and that
+                    // tile are one node to framer-motion and it moves between the
+                    // two layouts instead of one fading out as the other fades in.
+                    layoutId={tileLayoutId(artwork.objectID)}
+                    key={artwork.objectID}
+                    initial={false}
+                    animate={{
+                      x,
+                      y: revealed ? y : y + rollPx,
+                      rotate: revealed ? rotate : 0,
+                      opacity: revealed ? 1 : 0,
+                    }}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : {
+                            duration: 0.18,
+                            ease: [0.22, 0.9, 0.16, 1],
+                            delay: stagger,
+                          }
                     }
-                    className={`block overflow-hidden border-2 border-white/20 bg-white shadow-lg transition-transform duration-200 ease-out ${
-                      lifted
-                        ? "[transform:var(--hover-transform)]"
-                        : "[transform:var(--rest-transform)]"
-                    } group-hover:[transform:var(--hover-transform)] group-focus-visible:[transform:var(--hover-transform)] motion-reduce:transition-none motion-reduce:[transform:var(--rest-transform)] ${TILE_SHAPE}`}
+                    className="absolute bottom-0 left-0 block overflow-visible"
                   >
-                    <img
-                      src={src}
-                      alt=""
-                      aria-hidden
-                      decoding="async"
+                    <span
                       style={
-                        trimScale > 1
-                          ? { transform: `scale(${trimScale})` }
-                          : undefined
+                        {
+                          "--hover-y": `${hoverY}px`,
+                          "--hover-delta": `${hoverDelta}deg`,
+                          // Lift only while revealed so motion can own fan rotate-in.
+                          "--lift-transform": "translateY(var(--hover-y))",
+                          "--hover-transform":
+                            "translateY(var(--hover-y)) rotate(var(--hover-delta))",
+                        } as CSSProperties
                       }
-                      className="size-full object-cover"
-                    />
-                  </span>
-                </motion.span>
-              );
-            })}
-          </span>
-        </button>
+                      className={`block overflow-hidden border-2 border-white/20 bg-white shadow-lg transition-transform duration-200 ease-out ${
+                        revealed
+                          ? "[transform:var(--lift-transform)]"
+                          : "[transform:none]"
+                      } group-hover:[transform:var(--hover-transform)] group-focus-visible:[transform:var(--hover-transform)] motion-reduce:transition-none motion-reduce:[transform:none] ${TILE_SHAPE}`}
+                    >
+                      <img
+                        src={src}
+                        alt=""
+                        aria-hidden
+                        decoding="async"
+                        style={
+                          trimScale > 1
+                            ? { transform: `scale(${trimScale})` }
+                            : undefined
+                        }
+                        className="size-full object-cover"
+                      />
+                    </span>
+                  </motion.span>
+                );
+              })}
+            </span>
+          </button>
+        </div>
       </Tooltip>
     </div>
   );

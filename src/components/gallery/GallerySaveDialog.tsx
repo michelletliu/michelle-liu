@@ -8,11 +8,14 @@ import {
   useState,
   useSyncExternalStore,
   type FormEvent,
+  type RefObject,
 } from "react";
 import { createPortal } from "react-dom";
 import { useReducedMotion } from "framer-motion";
 import { Copy } from "lucide-react";
 import { CloseIcon } from "@/components/icons/Close";
+import { FieldInput, FieldShell } from "@/components/shared/FieldInput";
+import { FloatingPanel } from "@/components/shared/FloatingPanel";
 import { ghostIconButtonClass } from "@/components/shared/ghostIconButton";
 import { useScrollLock } from "@/utils/useScrollLock";
 import { GALLERY_DIALOG_ATTR, useGalleryDialogKeys } from "./galleryDialog";
@@ -24,10 +27,21 @@ import {
   writeLastShare,
   type LastShareRecord,
 } from "./sharedGallery";
-import { saveGalleryShare, type SaveGalleryHangInput } from "./saveGalleryShare";
+import {
+  saveGalleryShare,
+  type SaveGalleryHangInput,
+} from "./saveGalleryShare";
 
 /** Same keyframes / class as Film + the design-system Loading dots specimen. */
 const FILM_DOT_STYLE = `@keyframes film-dot-pulse{0%,80%,100%{opacity:.15}40%{opacity:1}}.film-dot{animation:film-dot-pulse 1.4s ease-in-out infinite;opacity:.15}`;
+
+/** Matches ExperimentModal / Library info popover offset under the trigger. */
+const POPOVER_OFFSET_PX = 6;
+/**
+ * Pull the panel past the trigger’s right edge so padded content lines up with
+ * the icon button’s right padding (same idea as Library’s -mr on the trigger).
+ */
+const POPOVER_RIGHT_NUDGE_PX = 10;
 
 function FilmLoadingDots({ reduceMotion }: { reduceMotion: boolean }) {
   if (reduceMotion) {
@@ -80,20 +94,21 @@ function ShareUrlField({
   }, [url]);
 
   return (
-    <div className="relative">
-      <input
+    // muted shell defaults to px-1 (icon gutters); link field has no leading
+    // icon — match horizontal pad to py-2 so the URL isn’t flush left.
+    <FieldShell tone="muted" className="min-h-10 !px-2">
+      <FieldInput
         ref={inputRef}
-        type="text"
         readOnly
         value={url}
         aria-label="Share link"
         onFocus={(e) => e.currentTarget.select()}
         onScroll={updateFade}
-        className={`w-full overflow-x-auto rounded-2xl border border-zinc-100 bg-zinc-50 py-2.5 pl-3 pr-10 text-sm leading-relaxed text-zinc-700 outline-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${GALLERY_FOCUS_RING}`}
+        className={`overflow-x-auto pr-8 text-sm text-zinc-700 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${GALLERY_FOCUS_RING}`}
       />
       <div
         aria-hidden
-        className={`pointer-events-none absolute inset-y-0 right-8 z-[1] w-10 bg-gradient-to-l from-zinc-50 to-transparent transition-opacity duration-150 ease-out motion-reduce:transition-none ${
+        className={`pointer-events-none absolute inset-y-0 right-8 z-[1] w-10 bg-gradient-to-l from-zinc-100 to-transparent transition-opacity duration-150 ease-out motion-reduce:transition-none ${
           showRightFade ? "opacity-100" : "opacity-0"
         }`}
       />
@@ -105,49 +120,80 @@ function ShareUrlField({
       >
         <Copy size={14} strokeWidth={1.5} aria-hidden />
       </button>
-    </div>
+    </FieldShell>
   );
 }
 
 type SaveMode = "create" | "update";
 
+function subscribeDesktop(onStoreChange: () => void) {
+  const mq = window.matchMedia("(min-width: 768px)");
+  mq.addEventListener("change", onStoreChange);
+  return () => mq.removeEventListener("change", onStoreChange);
+}
+
+function getDesktopSnapshot() {
+  return window.matchMedia("(min-width: 768px)").matches;
+}
+
+function getDesktopServerSnapshot() {
+  return false;
+}
+
 type GallerySaveDialogProps = {
   open: boolean;
   hangs: SaveGalleryHangInput[];
   onClose: () => void;
+  /** Share trigger — desktop popover anchors under this control. */
+  anchorRef: RefObject<HTMLElement | null>;
 };
 
 export default function GallerySaveDialog({
   open,
   hangs,
   onClose,
+  anchorRef,
 }: GallerySaveDialogProps) {
   const titleId = useId();
   const nameId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const morphInnerRef = useRef<HTMLDivElement>(null);
   const reduceMotion = !!useReducedMotion();
+  const isDesktop = useSyncExternalStore(
+    subscribeDesktop,
+    getDesktopSnapshot,
+    getDesktopServerSnapshot,
+  );
 
   const [visible, setVisible] = useState(false);
   const [name, setName] = useState("");
   const [lastShare, setLastShare] = useState<LastShareRecord | null>(null);
   const [mode, setMode] = useState<SaveMode>("create");
   const [saving, setSaving] = useState(false);
+  /** 0…1 while saving — drives the button progress pill. */
+  const [saveProgress, setSaveProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [popoverPos, setPopoverPos] = useState<{ top: number; right: number } | null>(
+    null,
+  );
+  const [morphHeight, setMorphHeight] = useState<number | null>(null);
   const isClient = useSyncExternalStore(
     () => () => {},
     () => true,
     () => false,
   );
 
-  useScrollLock(open);
+  // Overlay modal scrolls the room away on mobile; desktop popover does not.
+  useScrollLock(open && !isDesktop);
 
   useEffect(() => {
     if (!open) {
       setVisible(false);
+      setMorphHeight(null);
       return;
     }
     const prior = readLastShare();
@@ -158,21 +204,107 @@ export default function GallerySaveDialog({
     setResultUrl(null);
     setCopied(false);
     setSaving(false);
-    const frame = requestAnimationFrame(() => {
-      setVisible(true);
-      nameRef.current?.focus();
-    });
+    setSaveProgress(0);
+    const frame = requestAnimationFrame(() => setVisible(true));
     return () => cancelAnimationFrame(frame);
   }, [open]);
 
+  // Pin the popover under the share control (Library info dropdown pattern).
+  useLayoutEffect(() => {
+    if (!open || !isDesktop) {
+      setPopoverPos(null);
+      return;
+    }
+    const update = () => {
+      const el = anchorRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      setPopoverPos({
+        top: rect.bottom + POPOVER_OFFSET_PX,
+        right: window.innerWidth - rect.right - POPOVER_RIGHT_NUDGE_PX,
+      });
+    };
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [open, isDesktop, anchorRef]);
+
+  // Focus after the panel is actually mounted (desktop waits on popoverPos).
+  useEffect(() => {
+    if (!open) return;
+    if (isDesktop && !popoverPos) return;
+    const frame = requestAnimationFrame(() => nameRef.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [open, isDesktop, popoverPos]);
+
+  // Morph panel height as form ↔ link-ready content changes.
+  // Measure the shell at height:auto so padding/borders aren't under-reported
+  // when a prior fixed height + overflow-hidden is already clipping the body.
+  useLayoutEffect(() => {
+    if (!open || !isDesktop) {
+      setMorphHeight(null);
+      return;
+    }
+    const measure = () => {
+      const shell = dialogRef.current;
+      const body = morphInnerRef.current;
+      if (!shell || !body) return;
+      const prevHeight = shell.style.height;
+      const prevTransition = shell.style.transition;
+      shell.style.transition = "none";
+      shell.style.height = "auto";
+      const next = Math.ceil(shell.getBoundingClientRect().height);
+      shell.style.height = prevHeight;
+      void shell.offsetHeight;
+      shell.style.transition = prevTransition;
+      setMorphHeight((prev) => (prev === next ? prev : next));
+    };
+    const inner = morphInnerRef.current;
+    if (!inner) return;
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(inner);
+    return () => ro.disconnect();
+  }, [open, isDesktop, resultUrl, lastShare, saving, error, mode, name, copied]);
+
+  // Click-outside dismiss — same as ExperimentModal InfoPopover (Library).
+  useEffect(() => {
+    if (!open || !isDesktop) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (anchorRef.current?.contains(target)) return;
+      if (dialogRef.current?.contains(target)) return;
+      if (!saving) {
+        setVisible(false);
+        onClose();
+        anchorRef.current?.focus();
+      }
+    };
+    const timer = window.setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+    }, 10);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open, isDesktop, onClose, saving, anchorRef]);
+
   useGalleryDialogKeys(open, dialogRef, () => {
-    if (!saving) onClose();
+    if (saving) return;
+    setVisible(false);
+    onClose();
+    anchorRef.current?.focus();
   });
 
   const close = () => {
     if (saving) return;
     setVisible(false);
     onClose();
+    anchorRef.current?.focus();
   };
 
   const submit = async (e: FormEvent) => {
@@ -194,6 +326,7 @@ export default function GallerySaveDialog({
     }
 
     setSaving(true);
+    setSaveProgress(0.06);
     setError(null);
     try {
       const result = await saveGalleryShare(
@@ -210,7 +343,15 @@ export default function GallerySaveDialog({
               name: cleaned,
               hangs,
             },
+        {
+          onProgress: ({ completed, total }) => {
+            setSaveProgress(
+              total <= 0 ? 1 : Math.min(1, Math.max(0.06, completed / total)),
+            );
+          },
+        },
       );
+      setSaveProgress(1);
       const record = {
         shareId: result.shareId,
         name: result.name,
@@ -223,6 +364,7 @@ export default function GallerySaveDialog({
       setError(err instanceof Error ? err.message : "Save failed.");
     } finally {
       setSaving(false);
+      setSaveProgress(0);
     }
   };
 
@@ -239,6 +381,182 @@ export default function GallerySaveDialog({
 
   if (!open || !isClient) return null;
 
+  const body = (
+    <>
+      <style>{FILM_DOT_STYLE}</style>
+
+      {resultUrl ? (
+        <div className="flex flex-col gap-4">
+          <p className="text-base leading-relaxed text-zinc-500">
+            Send this link to a friend. They can walk the room and download
+            artworks.
+          </p>
+          <ShareUrlField url={resultUrl} onCopy={() => void copyLink()} />
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <a
+              href={resultUrl}
+              target="_blank"
+              rel="noreferrer"
+              className={`rounded-full border border-zinc-200 px-4 py-2.5 text-base font-medium text-zinc-700 transition-colors hover:bg-zinc-50 ${GALLERY_FOCUS_RING}`}
+            >
+              Preview
+            </a>
+            <button
+              type="button"
+              onClick={() => void copyLink()}
+              className={`rounded-full bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-opacity hover:opacity-90 ${GALLERY_FOCUS_RING}`}
+            >
+              {copied ? "Copied!" : "Copy link"}
+            </button>
+          </div>
+          {error && (
+            <p className="text-base text-red-600" role="alert">
+              {error}
+            </p>
+          )}
+        </div>
+      ) : (
+        <form className="flex flex-col gap-3" onSubmit={(e) => void submit(e)}>
+          <FieldShell tone="muted">
+            <FieldInput
+              ref={nameRef}
+              id={nameId}
+              type="text"
+              value={name}
+              maxLength={MAX_GALLERY_NAME_LENGTH}
+              disabled={saving}
+              placeholder="Name this gallery"
+              aria-label="Gallery name"
+              className="px-3.5"
+              onChange={(e) => setName(e.target.value)}
+            />
+          </FieldShell>
+
+          {lastShare && (
+            <fieldset
+              className="flex flex-col gap-4"
+              aria-label="Update existing gallery or create a new link"
+            >
+              <label className="flex cursor-pointer items-center gap-3 text-base text-zinc-700">
+                <input
+                  type="radio"
+                  name="save-mode"
+                  className="size-4 shrink-0 appearance-none rounded-full border border-zinc-300 bg-white checked:border-blue-600 checked:bg-blue-600 checked:[background-image:radial-gradient(circle,white_35%,transparent_36%)]"
+                  checked={mode === "update"}
+                  disabled={saving}
+                  onChange={() => setMode("update")}
+                />
+                <span>
+                  Update existing gallery
+                  <span className="mt-0.5 block text-sm text-zinc-400">
+                    Refreshes same link
+                  </span>
+                </span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-3 text-base text-zinc-700">
+                <input
+                  type="radio"
+                  name="save-mode"
+                  className="size-4 shrink-0 appearance-none rounded-full border border-zinc-300 bg-white checked:border-blue-600 checked:bg-blue-600 checked:[background-image:radial-gradient(circle,white_35%,transparent_36%)]"
+                  checked={mode === "create"}
+                  disabled={saving}
+                  onChange={() => setMode("create")}
+                />
+                <span>
+                  Create new link
+                  <span className="mt-0.5 block text-sm text-zinc-400">
+                    Leaves the previous link unchanged
+                  </span>
+                </span>
+              </label>
+            </fieldset>
+          )}
+
+          {error && (
+            <p className="text-base text-red-600" role="alert">
+              {error}
+            </p>
+          )}
+
+          <div className="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={close}
+              disabled={saving}
+              className={`rounded-full px-4 py-2.5 text-base text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-700 ${GALLERY_FOCUS_RING}`}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving || !name.trim()}
+              aria-busy={saving || undefined}
+              className={`relative overflow-hidden rounded-full bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-opacity hover:opacity-90 ${
+                saving
+                  ? "cursor-wait opacity-100"
+                  : "disabled:cursor-not-allowed disabled:opacity-40"
+              } ${GALLERY_FOCUS_RING}`}
+            >
+              <span className={`relative z-[1] ${saving ? "pb-1" : ""}`}>
+                {saving ? (
+                  <span aria-label="Saving">
+                    Saving
+                    <FilmLoadingDots reduceMotion={reduceMotion} />
+                  </span>
+                ) : mode === "update" ? (
+                  "Update link"
+                ) : (
+                  "Create link"
+                )}
+              </span>
+              {saving ? (
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-2.5 bottom-1.5 h-1 overflow-hidden rounded-full bg-white/20"
+                >
+                  <span
+                    className="block h-full rounded-full bg-blue-400 transition-[width] duration-200 ease-out motion-reduce:transition-none"
+                    style={{
+                      width: `${Math.round(Math.min(1, Math.max(0.08, saveProgress)) * 100)}%`,
+                    }}
+                  />
+                </span>
+              ) : null}
+            </button>
+          </div>
+        </form>
+      )}
+    </>
+  );
+
+  if (isDesktop) {
+    if (!popoverPos) return null;
+    return createPortal(
+      <FloatingPanel
+        ref={dialogRef}
+        variant="popover"
+        bodyRef={morphInnerRef}
+        {...{ [GALLERY_DIALOG_ATTR]: "gallery-save" }}
+        role="dialog"
+        aria-modal="false"
+        aria-labelledby={titleId}
+        data-gallery-share-popover
+        className="fixed z-[100] transition-[height] duration-200 ease-out motion-reduce:transition-none"
+        style={{
+          top: popoverPos.top,
+          right: popoverPos.right,
+          height: morphHeight ?? undefined,
+        }}
+      >
+        <h2 id={titleId} className="text-base text-zinc-900">
+          {resultUrl ? "Link ready!" : "Save gallery"}
+        </h2>
+        {body}
+      </FloatingPanel>,
+      document.body,
+    );
+  }
+
   return createPortal(
     <div
       {...{ [GALLERY_DIALOG_ATTR]: "gallery-save" }}
@@ -250,18 +568,19 @@ export default function GallerySaveDialog({
         }`}
         onClick={close}
       />
-      <div
+      <FloatingPanel
         ref={dialogRef}
+        variant="sheet"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`relative w-full max-w-[420px] rounded-3xl bg-white p-6 shadow-[0_24px_64px_rgba(0,0,0,0.16)] transition-all duration-300 ease-out max-md:max-w-[95%] ${
+        className={`relative transition-all duration-300 ease-out ${
           visible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
         }`}
       >
         <div className="flex items-start justify-between gap-3">
           <h2 id={titleId} className="text-base text-zinc-900">
-            {resultUrl ? "Link ready" : "Save gallery"}
+            {resultUrl ? "Link ready!" : "Save gallery"}
           </h2>
           <button
             ref={closeRef}
@@ -277,131 +596,8 @@ export default function GallerySaveDialog({
             <CloseIcon size="16px" />
           </button>
         </div>
-
-        <style>{FILM_DOT_STYLE}</style>
-
-        {resultUrl ? (
-          <div className="mt-4 flex flex-col gap-5">
-            <p className="text-base leading-relaxed text-zinc-500">
-              Send this link to a friend. They can walk the room and download
-              artworks.
-            </p>
-            <ShareUrlField url={resultUrl} onCopy={() => void copyLink()} />
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <a
-                href={resultUrl}
-                target="_blank"
-                rel="noreferrer"
-                className={`rounded-full border border-zinc-200 px-4 py-2.5 text-base font-medium text-zinc-700 transition-colors hover:bg-zinc-50 ${GALLERY_FOCUS_RING}`}
-              >
-                Preview
-              </a>
-              <button
-                type="button"
-                onClick={() => void copyLink()}
-                className={`rounded-full bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-opacity hover:opacity-90 ${GALLERY_FOCUS_RING}`}
-              >
-                {copied ? "Copied" : "Copy link"}
-              </button>
-            </div>
-            {error && (
-              <p className="text-base text-red-600" role="alert">
-                {error}
-              </p>
-            )}
-          </div>
-        ) : (
-          <form className="mt-4 flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
-            <div className="flex flex-col gap-1.5">
-              <input
-                ref={nameRef}
-                id={nameId}
-                type="text"
-                value={name}
-                maxLength={MAX_GALLERY_NAME_LENGTH}
-                disabled={saving}
-                placeholder="Name this gallery"
-                aria-label="Gallery name"
-                onChange={(e) => setName(e.target.value)}
-                className={`rounded-2xl border border-zinc-200 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none placeholder:text-zinc-300 focus:border-zinc-400 ${GALLERY_FOCUS_RING}`}
-              />
-            </div>
-
-            {lastShare && (
-              <fieldset
-                className="flex flex-col gap-4"
-                aria-label="Update existing gallery or create a new link"
-              >
-                <label className="flex cursor-pointer items-start gap-2.5 text-base text-zinc-700">
-                  <input
-                    type="radio"
-                    name="save-mode"
-                    className="mt-1"
-                    checked={mode === "update"}
-                    disabled={saving}
-                    onChange={() => setMode("update")}
-                  />
-                  <span>
-                    Update existing gallery
-                    <span className="mt-0.5 block text-sm text-zinc-500">
-                      Refreshes same link
-                    </span>
-                  </span>
-                </label>
-                <label className="flex cursor-pointer items-start gap-2.5 text-base text-zinc-700">
-                  <input
-                    type="radio"
-                    name="save-mode"
-                    className="mt-1"
-                    checked={mode === "create"}
-                    disabled={saving}
-                    onChange={() => setMode("create")}
-                  />
-                  <span>
-                    Create new link
-                    <span className="mt-0.5 block text-sm text-zinc-500">
-                      Leaves the previous link unchanged
-                    </span>
-                  </span>
-                </label>
-              </fieldset>
-            )}
-
-            {error && (
-              <p className="text-base text-red-600" role="alert">
-                {error}
-              </p>
-            )}
-
-            <div className="flex items-center justify-end gap-2 pt-1">
-              <button
-                type="button"
-                onClick={close}
-                disabled={saving}
-                className={`rounded-full px-4 py-2.5 text-base text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-700 ${GALLERY_FOCUS_RING}`}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={saving || !name.trim()}
-                className={`rounded-full bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
-              >
-                {saving ? (
-                  <span aria-label="Saving">
-                    Saving
-                    <FilmLoadingDots reduceMotion={reduceMotion} />
-                  </span>
-                ) : mode === "update" ? (
-                  "Update link"
-                ) : (
-                  "Create link"
-                )}
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
+        {body}
+      </FloatingPanel>
     </div>,
     document.body,
   );

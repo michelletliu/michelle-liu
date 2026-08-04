@@ -5,6 +5,8 @@ import {
   useRef,
   useState,
   type FormEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -35,6 +37,7 @@ import {
   openAccessImageUrl,
   type MetArtwork,
 } from "./metArtworks";
+import { curatedFirstOpenObjectIds, curatedImageSize } from "./metCurated";
 import { metImageTrimStyle } from "./metImageMat";
 import type { MetSearchController } from "./useMetSearch";
 
@@ -87,6 +90,9 @@ const PANEL_INNER_GAP = 28;
 const PANEL_OUTER_GAP = 24;
 const PANEL_WHEEL_STEP = 45;
 const PANEL_WHEEL_COOLDOWN_MS = 260;
+/** Horizontal finger / pointer travel before a pan steps the carousel. */
+const PANEL_SWIPE_STEP = 48;
+const PANEL_SWIPE_DEADZONE = 12;
 
 type MetArtworkPickerProps = {
   search: MetSearchController;
@@ -121,6 +127,7 @@ export default function MetArtworkPicker({
 }: MetArtworkPickerProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [apiInfoOpen, setApiInfoOpen] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const {
     status,
@@ -180,11 +187,33 @@ export default function MetArtworkPicker({
   }, [artworks, selected]);
 
   const movePanelCarousel = (delta: number) => {
-    if (artworks.length === 0) return;
-    const next = (activeIndex + delta + artworks.length) % artworks.length;
-    if (next === activeIndex) return;
-    setActiveIndex(next);
+    if (artworks.length < 2) return;
+    setActiveIndex(
+      (index) => (index + delta + artworks.length) % artworks.length,
+    );
   };
+
+  /*
+   * Popup carousel: ←/→ step artworks. Capture on window so the room's hang-
+   * stepping arrows never see the key. Skip while the search field (or any
+   * text control) owns focus — caret movement stays with the input.
+   */
+  useEffect(() => {
+    if (!panel || disabled || artworks.length < 2) return;
+    const length = artworks.length;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest?.("input, textarea, [contenteditable=true]")) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.repeat) return;
+      const delta = e.key === "ArrowRight" ? 1 : -1;
+      setActiveIndex((index) => (index + delta + length) % length);
+    };
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
+  }, [panel, disabled, artworks.length]);
 
   return (
     <div
@@ -197,6 +226,7 @@ export default function MetArtworkPicker({
       <form onSubmit={onSubmit} className="flex items-center gap-2">
         {panel ? (
           // DS FieldShell — pill + focus-within zinc border (system Inputs matrix).
+          // Trailing control: clear (X) only while focused with text; info otherwise.
           <div className="relative min-w-0 flex-1">
             <FieldShell tone="muted" className="gap-2.5">
               <FieldLeadingIcon>
@@ -206,6 +236,8 @@ export default function MetArtworkPicker({
                 type="search"
                 value={queryText}
                 onChange={(e) => setQuery(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
                 onKeyDown={stopGalleryKeys}
                 placeholder="Search The Met API for inspiration…"
                 disabled={disabled}
@@ -214,29 +246,44 @@ export default function MetArtworkPicker({
                 autoCorrect="off"
                 spellCheck={false}
                 // WebKit paints a heavy native clear glyph on type=search;
-                // suppress it so the trailing ⓘ stays the only right affordance.
+                // suppress it so the trailing control stays the only right affordance.
                 // `gallery-focus` opts the bare input out of the global
                 // `*:focus-visible` outline so FieldShell's focus-within
                 // zinc border is the only focus treatment (DS Inputs matrix).
                 className="gallery-focus pr-1 [&::-webkit-search-cancel-button]:appearance-none"
               />
-              <button
-                type="button"
-                aria-label="About The Met API"
-                aria-expanded={apiInfoOpen}
-                onClick={() => setApiInfoOpen((open) => !open)}
-                className={`${fieldIconSlotClassName} mr-1.5 text-zinc-400 transition-colors hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
-              >
-                <Info size="15px" />
-              </button>
+              {searchFocused && queryText.trim().length > 0 ? (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  disabled={disabled}
+                  // Prevent blur-before-click so the clear action fires while
+                  // the X is still mounted (focus would otherwise flip to info).
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={clearQuery}
+                  className={`${fieldIconSlotClassName} mr-1.5 text-zinc-400 transition-colors hover:text-zinc-600 disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
+                >
+                  <CloseIcon size="15px" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  aria-label="About The Met API"
+                  aria-expanded={apiInfoOpen}
+                  onClick={() => setApiInfoOpen((open) => !open)}
+                  className={`${fieldIconSlotClassName} mr-1.5 text-zinc-400 transition-colors hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
+                >
+                  <Info size="15px" />
+                </button>
+              )}
             </FieldShell>
             {apiInfoOpen && (
               <div
                 role="tooltip"
-                className="absolute right-0 top-[calc(100%+8px)] z-40 w-80 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm leading-snug text-zinc-500 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+                className="absolute right-0 top-[calc(100%+8px)] z-40 max-w-[200px] rounded-xl border border-black/10 bg-white py-2 pl-3 pr-2.5 text-sm leading-snug text-zinc-500 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
               >
-                Searches The Met Collection API for public-domain Open Access
-                artworks.
+                Search The Met Collection API for public-domain Open Access
+                artworks
               </div>
             )}
           </div>
@@ -294,7 +341,11 @@ export default function MetArtworkPicker({
         }`}
       >
         {showSkeletons &&
-          (panel ? <PanelCarouselSkeleton /> : <ThumbnailSkeletons />)}
+          (panel ? (
+            <PanelCarouselSkeleton predictCurated={mode === "curated"} />
+          ) : (
+            <ThumbnailSkeletons />
+          ))}
         {showSkeletons && panel && (
           <div aria-hidden className={`shrink-0 ${PANEL_CAPTION_HEIGHT}`} />
         )}
@@ -545,20 +596,51 @@ function ThumbnailSkeletons() {
   );
 }
 
-function PanelCarouselSkeleton() {
-  const activeSize = {
-    width: PANEL_TILE[0].maxWidth,
-    height: PANEL_TILE[0].height,
-  };
+function PanelCarouselSkeleton({
+  predictCurated = false,
+}: {
+  /** Use first-open curated aspects so the hand does not jump when images arrive. */
+  predictCurated?: boolean;
+}) {
+  const firstOpen = predictCurated ? curatedFirstOpenObjectIds() : null;
+  const activeSize = firstOpen
+    ? panelArtworkSizeFromNatural(
+        curatedImageSize(firstOpen[2]!),
+        PANEL_TILE[0],
+      )
+    : {
+        width: PANEL_TILE[0].maxWidth,
+        height: PANEL_TILE[0].height,
+      };
   const sizes: Record<
     (typeof PANEL_OFFSETS)[number],
     { width: number; height: number }
   > = {
-    [-2]: { width: 52, height: PANEL_TILE[-2].height },
-    [-1]: { width: 128, height: PANEL_TILE[-1].height },
+    [-2]: firstOpen
+      ? panelArtworkSizeFromNatural(
+          curatedImageSize(firstOpen[0]!),
+          PANEL_TILE[-2],
+        )
+      : { width: 52, height: PANEL_TILE[-2].height },
+    [-1]: firstOpen
+      ? panelArtworkSizeFromNatural(
+          curatedImageSize(firstOpen[1]!),
+          PANEL_TILE[-1],
+        )
+      : { width: 128, height: PANEL_TILE[-1].height },
     0: activeSize,
-    1: { width: 88, height: PANEL_TILE[1].height },
-    2: { width: 66, height: PANEL_TILE[2].height },
+    1: firstOpen
+      ? panelArtworkSizeFromNatural(
+          curatedImageSize(firstOpen[3]!),
+          PANEL_TILE[1],
+        )
+      : { width: 88, height: PANEL_TILE[1].height },
+    2: firstOpen
+      ? panelArtworkSizeFromNatural(
+          curatedImageSize(firstOpen[4]!),
+          PANEL_TILE[2],
+        )
+      : { width: 66, height: PANEL_TILE[2].height },
   };
 
   return (
@@ -598,12 +680,10 @@ function PanelCarouselSkeleton() {
   );
 }
 
-function panelArtworkSize(
-  artwork: MetArtwork,
-  dimensions: Record<number, { width: number; height: number }>,
+function panelArtworkSizeFromNatural(
+  natural: { width: number; height: number } | undefined,
   slot: (typeof PANEL_TILE)[(typeof PANEL_OFFSETS)[number]],
 ) {
-  const natural = dimensions[artwork.objectID];
   const fallbackAspect = slot.maxWidth / slot.height;
   const aspect =
     natural && natural.height > 0 ? natural.width / natural.height : fallbackAspect;
@@ -612,6 +692,19 @@ function panelArtworkSize(
     return { width, height: width / aspect };
   }
   return { width: slot.height * aspect, height: slot.height };
+}
+
+function panelArtworkSize(
+  artwork: MetArtwork,
+  dimensions: Record<number, { width: number; height: number }>,
+  slot: (typeof PANEL_TILE)[(typeof PANEL_OFFSETS)[number]],
+) {
+  // Prefer a live measure, then curated `primaryImageSmall` sizes so the
+  // first-open hand (Monet Family at −1, etc.) does not open on the slot's
+  // maxWidth/height ratio and morph when the JPEG arrives.
+  const natural =
+    dimensions[artwork.objectID] ?? curatedImageSize(artwork.objectID);
+  return panelArtworkSizeFromNatural(natural, slot);
 }
 
 function panelIndex(index: number, length: number): number {
@@ -675,8 +768,21 @@ function PanelArtworkCarousel({
   onPick: (artwork: MetArtwork, index: number) => void;
 }) {
   const reduceMotion = useReducedMotion();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const onMoveRef = useRef(onMove);
+  onMoveRef.current = onMove;
   const wheelRemainderRef = useRef(0);
   const wheelLockedUntilRef = useRef(0);
+  const swipeRemainderRef = useRef(0);
+  const swipeLockedUntilRef = useRef(0);
+  const pointerRef = useRef<{
+    id: number;
+    startX: number;
+    startY: number;
+    lastX: number;
+    armed: boolean;
+  } | null>(null);
+  const suppressClickRef = useRef(false);
   const [dimensions, setDimensions] = useState<
     Record<number, { width: number; height: number }>
   >({});
@@ -707,25 +813,114 @@ function PanelArtworkCarousel({
     ? { duration: 0 }
     : { duration: 0.28, ease: PANEL_MORPH_EASE };
 
-  const onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    if (artworks.length < 2) return;
+  /*
+   * Native non-passive wheel so preventDefault / stopPropagation beat the
+   * room root's hang-stepping listener (React's onWheel runs too late).
+   */
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || artworks.length < 2 || disabled) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const delta =
+        Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      const now = performance.now();
+      if (now < wheelLockedUntilRef.current) return;
+      wheelRemainderRef.current += delta;
+      if (Math.abs(wheelRemainderRef.current) < PANEL_WHEEL_STEP) return;
+      const direction = wheelRemainderRef.current > 0 ? 1 : -1;
+      wheelRemainderRef.current = 0;
+      wheelLockedUntilRef.current = now + PANEL_WHEEL_COOLDOWN_MS;
+      onMoveRef.current(direction);
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [artworks.length, disabled]);
+
+  const endPointer = (el: HTMLDivElement, pointerId: number) => {
+    const session = pointerRef.current;
+    if (session?.id === pointerId && session.armed) {
+      suppressClickRef.current = true;
+    }
+    pointerRef.current = null;
+    swipeRemainderRef.current = 0;
+    try {
+      if (el.hasPointerCapture(pointerId)) el.releasePointerCapture(pointerId);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (disabled || artworks.length < 2) return;
+    // Chevrons own their clicks; don't turn a press on them into a pan.
+    if ((e.target as Element | null)?.closest?.("[data-panel-chevron]")) return;
+    pointerRef.current = {
+      id: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      lastX: e.clientX,
+      armed: false,
+    };
+  };
+
+  const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const session = pointerRef.current;
+    if (!session || session.id !== e.pointerId) return;
+
+    if (!session.armed) {
+      const dx = e.clientX - session.startX;
+      const dy = e.clientY - session.startY;
+      if (Math.hypot(dx, dy) < PANEL_SWIPE_DEADZONE) return;
+      // Vertical-dominant pans leave the carousel alone.
+      if (Math.abs(dy) > Math.abs(dx)) {
+        pointerRef.current = null;
+        return;
+      }
+      session.armed = true;
+      session.lastX = e.clientX;
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
+
+    const delta = session.lastX - e.clientX;
+    session.lastX = e.clientX;
+    const now = performance.now();
+    if (now < swipeLockedUntilRef.current) return;
+    swipeRemainderRef.current += delta;
+    if (Math.abs(swipeRemainderRef.current) < PANEL_SWIPE_STEP) return;
+    const direction = swipeRemainderRef.current > 0 ? 1 : -1;
+    swipeRemainderRef.current = 0;
+    swipeLockedUntilRef.current = now + PANEL_WHEEL_COOLDOWN_MS;
+    onMoveRef.current(direction);
+  };
+
+  const onPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (pointerRef.current?.id !== e.pointerId) return;
+    endPointer(e.currentTarget, e.pointerId);
+  };
+
+  const onPointerCancel = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (pointerRef.current?.id !== e.pointerId) return;
+    endPointer(e.currentTarget, e.pointerId);
+  };
+
+  const onClickCapture = (e: ReactMouseEvent<HTMLDivElement>) => {
+    if (!suppressClickRef.current) return;
+    suppressClickRef.current = false;
     e.preventDefault();
     e.stopPropagation();
-    const now = performance.now();
-    if (now < wheelLockedUntilRef.current) return;
-    wheelRemainderRef.current +=
-      Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    if (Math.abs(wheelRemainderRef.current) < PANEL_WHEEL_STEP) return;
-    const direction = wheelRemainderRef.current > 0 ? 1 : -1;
-    wheelRemainderRef.current = 0;
-    wheelLockedUntilRef.current = now + PANEL_WHEEL_COOLDOWN_MS;
-    onMove(direction);
   };
 
   return (
     <div
+      ref={rootRef}
       className={`relative flex ${PANEL_CAROUSEL_HEIGHT} items-center justify-center overflow-x-hidden overflow-y-visible`}
-      onWheel={onWheel}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerCancel}
+      onClickCapture={onClickCapture}
     >
       <div
         aria-hidden
@@ -737,6 +932,7 @@ function PanelArtworkCarousel({
       />
       <button
         type="button"
+        data-panel-chevron
         onClick={() => onMove(-1)}
         disabled={disabled || artworks.length < 2}
         aria-label="Previous inspiration"
@@ -813,8 +1009,11 @@ function PanelArtworkCarousel({
                 <img
                   src={src}
                   alt={artworkLabel(artwork)}
-                  loading="lazy"
+                  // Visible carousel slots are all on-screen; lazy deferral left
+                  // Monet Family as a white max-aspect box until decode.
+                  loading="eager"
                   decoding="async"
+                  fetchPriority={Math.abs(distance) <= 1 ? "high" : "auto"}
                   onLoad={(e) => {
                     const img = e.currentTarget;
                     setDimensions((current) =>
@@ -840,6 +1039,7 @@ function PanelArtworkCarousel({
       </div>
       <button
         type="button"
+        data-panel-chevron
         onClick={() => onMove(1)}
         disabled={disabled || artworks.length < 2}
         aria-label="Next inspiration"

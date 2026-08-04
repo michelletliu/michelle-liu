@@ -19,7 +19,7 @@ import { GALLERY_INFO_TEXT } from "./metArtworks";
 const CLOSE_ANIMATION_MS = 300;
 
 const GALLERY_INFO_MUX_PLAYBACK_ID =
-  "nGFOTP8WV7KPkAVlX6cXWoR1lDZRrtqcT6uyGtGm2F4";
+  "t2gAjutGf202eNq15sczNsA9MmmxcGnmJ7cl8LFHuMZg";
 const GALLERY_INFO_IMAGE_SRC = `https://image.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}/thumbnail.png?width=1920`;
 const GALLERY_INFO_VIDEO_SRC = `https://stream.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}.m3u8`;
 
@@ -33,13 +33,13 @@ const GALLERY_INFO_VIDEO_SRC = `https://stream.mux.com/${GALLERY_INFO_MUX_PLAYBA
  * copy about this component.
  */
 const GALLERY_CONTROLS_TEXT =
-  "Use the arrow keys to move between paintings, + and − to zoom, and 0 to reset the view. The stick on the right does the same by dragging.";
+  "Use the arrow keys to move between paintings, + and − to zoom, and 0 to reset the view.";
 
 const GALLERY_STACK_METADATA = [
   { label: "Interface", tools: ["Next.js", "React"] },
   { label: "Scene", tools: ["Three.js"] },
   { label: "Data", tools: ["The Met API", "Open Access"] },
-  { label: "Generation", tools: ["Reve Image"] },
+  { label: "Motion", tools: ["Framer Motion"] },
 ];
 
 function GalleryStackMetadata() {

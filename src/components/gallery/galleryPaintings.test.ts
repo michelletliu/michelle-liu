@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   FRAMING_BREATHING_PX,
   FRAMING_HEADROOM_SHARE,
+  FRAMING_LATERAL_BIAS,
   GALLERY_PAINTINGS,
   GALLERY_ROOM,
   GALLERY_ZOOM_DEFAULT,
@@ -39,10 +40,6 @@ const WALLS: GalleryWall[] = ["left", "right", "back", "front"];
 
 const ZOOM_LEVELS = [GALLERY_ZOOM_MIN, GALLERY_ZOOM_DEFAULT, GALLERY_ZOOM_MAX];
 
-/** The axis that runs along a hang's wall — the one centering happens on. */
-const lateralAxis = (wall: GalleryWall): "x" | "z" =>
-  wall === "left" || wall === "right" ? "z" : "x";
-
 /**
  * Share of the viewport a framed hang covers when viewed from its own pose,
  * on the narrowest viewport the framing plans for.
@@ -52,10 +49,7 @@ const frameShare = (id: string, zoom: number) => {
   const painting = GALLERY_PAINTINGS.find((p) => p.id === id)!;
   const layout = paintingLayout(painting);
   const pose = roomPoseForPainting(id, zoom);
-  const distance = Math.hypot(
-    pose.x - layout.position.x,
-    pose.z - layout.position.z,
-  );
+  const distance = Math.hypot(pose.x - pose.lookX, pose.z - pose.lookZ);
   // The scene's frame lip stands proud of the canvas on every side.
   const lip = 0.12;
   const viewH = 2 * distance * Math.tan((fovForZoom(zoom) * Math.PI) / 360);
@@ -442,23 +436,29 @@ test("roomPoseForPainting stands in front of each hang facing its wall", () => {
 /**
  * The regression this guards: the end walls used to park the eye on the room's
  * centerline for a one-point view, which centers only the middle hang of a
- * wall and leaves its neighbours off by the full hang spacing.
+ * wall and leaves its neighbours off by the full hang spacing. With
+ * `FRAMING_LATERAL_BIAS` at zero the framed view sits square on each hang —
+ * never the wall midpoint.
  */
-test("the eye lines up with each hang's own center, not its wall's", () => {
+test("the eye tracks each hang square on its center", () => {
   for (const zoom of ZOOM_LEVELS) {
     for (const p of GALLERY_PAINTINGS) {
       const pose = roomPoseForPainting(p.id, zoom);
       const art = positionOf(p.id);
-      const axis = lateralAxis(p.wall);
-      const offset = axis === "z" ? pose.z - art.z : pose.x - art.x;
+      const travel = WALL_TRAVEL[p.wall];
+      const expected = FRAMING_LATERAL_BIAS * travel.sign;
+      const offset =
+        travel.axis === "z" ? pose.z - art.z : pose.x - art.x;
       assert.ok(
-        Math.abs(offset) < 1e-9,
-        `${p.id} eye sits ${offset.toFixed(2)} off its own center along ${axis} at zoom ${zoom}`,
+        Math.abs(offset - expected) < 1e-9,
+        `${p.id} eye sits ${offset.toFixed(2)} off hang (want ${expected}) along ${travel.axis} at zoom ${zoom}`,
       );
 
-      // Aimed at that canvas too, not at a point pulled toward the wall's middle.
-      assert.equal(pose.lookX, art.x, `${p.id} look x`);
-      assert.equal(pose.lookZ, art.z, `${p.id} look z`);
+      // Aimed at the hang center (or shared lateral bias if non-zero).
+      const expectX = art.x + (travel.axis === "x" ? expected : 0);
+      const expectZ = art.z + (travel.axis === "z" ? expected : 0);
+      assert.equal(pose.lookX, expectX, `${p.id} look x`);
+      assert.equal(pose.lookZ, expectZ, `${p.id} look z`);
     }
   }
 });
@@ -547,12 +547,14 @@ test("no zoom value, however broken, puts the eye through a wall", () => {
         `${p.id} eye left the room at zoom ${zoom}`,
       );
 
-      // Still square with the canvas, so a clamp can never cost the centering.
-      const axis = lateralAxis(p.wall);
-      const offset = axis === "z" ? pose.z - art.z : pose.x - art.x;
+      // Still square on the wall with lateral framing intact (bias may be zero).
+      const travel = WALL_TRAVEL[p.wall];
+      const expected = FRAMING_LATERAL_BIAS * travel.sign;
+      const offset =
+        travel.axis === "z" ? pose.z - art.z : pose.x - art.x;
       assert.ok(
-        Math.abs(offset) < 1e-9,
-        `${p.id} lost its centering at zoom ${zoom}`,
+        Math.abs(offset - expected) < 1e-9,
+        `${p.id} lost its framing alignment at zoom ${zoom}`,
       );
     }
   }
@@ -587,10 +589,9 @@ test("standOffForPainting frames both aspects from the same lens", () => {
 const frameEdgesPx = (id: string, zoom: number, framing: GalleryFraming) => {
   const layout = paintingLayout(GALLERY_PAINTINGS.find((p) => p.id === id)!);
   const pose = framedRoomPose(id, zoom, framing);
-  const distance = Math.hypot(
-    pose.x - layout.position.x,
-    pose.z - layout.position.z,
-  );
+  // Depth to the wall plane (look target), not the art center — a lateral
+  // framing bias offsets the eye along the wall without changing stand-off.
+  const distance = Math.hypot(pose.x - pose.lookX, pose.z - pose.lookZ);
   const viewH = framing.viewportHeightPx;
   const worldPerPx =
     (2 * distance * Math.tan((fovForZoom(zoom) * Math.PI) / 360)) / viewH;

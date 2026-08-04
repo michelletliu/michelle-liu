@@ -14,6 +14,7 @@ import Tooltip from '../shared/Tooltip';
 import Footer from '../layout/Footer';
 import { Chevron } from '../icons/Chevron';
 import { ghostIconButtonClass } from '../shared/ghostIconButton';
+import { FloatingPanel } from '../shared/FloatingPanel';
 
 // Lazy per experiment — don't download all five pages when this modal chunk loads.
 const PolaroidPage = lazy(() => import('../polaroid/PolaroidPage'));
@@ -929,20 +930,11 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
   }, [onClose, isMobile]);
 
   return (
-    <div 
+    <FloatingPanel
       ref={popoverRef}
-      className={clsx(
-        "bg-white flex flex-col shadow-elevated border border-zinc-100 overflow-hidden transition-all duration-200 ease-out animate-[popoverIn_150ms_ease-out]",
-        isMobile ? "rounded-2xl w-full max-h-[85vh] overflow-auto" 
-          : isFullscreen ? "rounded-3xl w-[50vw] max-w-[700px]" 
-          : "rounded-2xl w-[420px] max-h-[70vh] overflow-auto"
-      )}
+      variant={isMobile ? "sheet" : isFullscreen ? "roomy" : "popover"}
+      bodyClassName="items-start"
     >
-      {/* Content area with padding */}
-      <div className={clsx(
-        "content-stretch flex flex-col items-start relative shrink-0 w-full",
-        isFullscreen ? "gap-4 px-8 pt-6 pb-8" : "gap-3 px-5 pt-4 pb-5"
-      )}>
         {/* Left: title + description stacked.
             Right: View on X — centered with title in popup; top-aligned when description shows. */}
         <div className={clsx(
@@ -1031,8 +1023,7 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
             />
           )}
         </div>
-      </div>
-    </div>
+    </FloatingPanel>
   );
 }
 

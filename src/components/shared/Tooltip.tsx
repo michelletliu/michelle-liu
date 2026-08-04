@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import clsx from 'clsx';
 
 type TooltipProps = {
@@ -8,13 +9,25 @@ type TooltipProps = {
   position?: 'top' | 'bottom';
   /** Offset from the element in pixels */
   offset?: number;
+  /**
+   * ms before showing. Hover default is 400. With `forceOpen`, omit (or 0) for
+   * instant open; pass an explicit value to delay forced opens too.
+   */
+  delay?: number;
   /** Force-hide and skip hover show (e.g. while a click popover is open) */
   disabled?: boolean;
   /** Keep tooltip permanently visible (e.g. design-system specimens) */
   forceOpen?: boolean;
   /** Extra classes on the outer wrapper (merged with base) */
   className?: string;
+  /**
+   * Render in document.body with fixed coords so overflow:hidden ancestors
+   * (composer morph shell, stack clips, etc.) cannot crop the tip.
+   */
+  portal?: boolean;
 };
+
+const DEFAULT_HOVER_DELAY = 400;
 
 // Tooltip warmup state - tracks if any tooltip is currently open
 // This allows subsequent tooltips to open instantly without delay or animation
@@ -58,14 +71,23 @@ export default function Tooltip({
   children, 
   position = 'bottom',
   offset = 6,
+  delay,
   disabled = false,
   forceOpen = false,
   className,
+  portal = false,
 }: TooltipProps) {
+  // Hover tips default to 400ms; forceOpen stays instant unless delay is set.
+  const showDelay = delay ?? (forceOpen ? 0 : DEFAULT_HOVER_DELAY);
   const [isVisible, setIsVisible] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const [isInstant, setIsInstant] = useState(false);
+  const [forceRevealed, setForceRevealed] = useState(false);
+  const [coords, setCoords] = useState<{ top: number; left: number } | null>(
+    null,
+  );
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   const hideImmediately = () => {
     if (hoverTimeoutRef.current) {
@@ -82,6 +104,21 @@ export default function Tooltip({
   useEffect(() => {
     if (disabled) hideImmediately();
   }, [disabled]);
+
+  // Delayed forceOpen (e.g. Met tip): wait showDelay, then reveal.
+  useEffect(() => {
+    if (!forceOpen || disabled) {
+      setForceRevealed(false);
+      return;
+    }
+    if (showDelay <= 0) {
+      setForceRevealed(true);
+      return;
+    }
+    setForceRevealed(false);
+    const id = window.setTimeout(() => setForceRevealed(true), showDelay);
+    return () => window.clearTimeout(id);
+  }, [forceOpen, disabled, showDelay]);
 
   // Force-hide on any touch anywhere — defensive cleanup in case a tooltip
   // got stuck open from a synthetic mouseenter on tap.
@@ -108,12 +145,11 @@ export default function Tooltip({
       setIsVisible(true);
       setTooltipWarmup(true);
     } else {
-      // Show tooltip after 400ms delay
       setIsInstant(false);
       hoverTimeoutRef.current = setTimeout(() => {
         setIsVisible(true);
         setTooltipWarmup(true);
-      }, 400);
+      }, showDelay);
     }
   };
 
@@ -150,30 +186,104 @@ export default function Tooltip({
     hideImmediately();
   };
 
-  const showTooltip = forceOpen || (isVisible && !disabled);
+  const showTooltip = forceRevealed || (isVisible && !disabled);
 
-  const positionStyles = position === 'bottom' 
-    ? { top: `calc(100% + ${offset}px)`, '--transform-origin': 'center top' as string }
-    : { bottom: `calc(100% + ${offset}px)`, '--transform-origin': 'center bottom' as string };
+  useLayoutEffect(() => {
+    if (!portal || !showTooltip) {
+      setCoords(null);
+      return;
+    }
+    const update = () => {
+      const el = wrapRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      setCoords({
+        left: r.left + r.width / 2,
+        top: position === 'top' ? r.top - offset : r.bottom + offset,
+      });
+    };
+    update();
+    window.addEventListener('scroll', update, true);
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update, true);
+      window.removeEventListener('resize', update);
+    };
+  }, [portal, showTooltip, position, offset, label, forceOpen]);
+
+  const tipClassName = clsx(
+    'tooltip px-2 py-1 bg-zinc-800 text-white text-sm font-medium rounded-lg whitespace-nowrap pointer-events-none z-[9999]',
+    !portal && 'absolute left-1/2 -translate-x-1/2',
+  );
+
+  const tipProps = {
+    className: tipClassName,
+    'data-ending-style': !forceOpen && isEnding ? '' : undefined,
+    'data-instant': forceOpen || isInstant ? '' : undefined,
+  } as const;
+
+  const inlinePositionStyles =
+    position === 'bottom'
+      ? {
+          top: `calc(100% + ${offset}px)`,
+          '--transform-origin': 'center top' as string,
+        }
+      : {
+          bottom: `calc(100% + ${offset}px)`,
+          '--transform-origin': 'center bottom' as string,
+        };
+
+  const tip = showTooltip ? (
+    portal && coords ? (
+      createPortal(
+        // Outer node owns fixed placement + centering; inner keeps scale
+        // animation so transform doesn't fight translate(-50%, …).
+        <div
+          className="pointer-events-none fixed z-[9999]"
+          style={{
+            left: coords.left,
+            top: coords.top,
+            transform:
+              position === 'top' ? 'translate(-50%, -100%)' : 'translate(-50%, 0)',
+          }}
+        >
+          <div
+            {...tipProps}
+            style={
+              {
+                '--transform-origin':
+                  position === 'top' ? 'center bottom' : 'center top',
+              } as React.CSSProperties
+            }
+          >
+            {label}
+          </div>
+        </div>,
+        document.body,
+      )
+    ) : !portal ? (
+      <div {...tipProps} style={inlinePositionStyles}>
+        {label}
+      </div>
+    ) : null
+  ) : null;
 
   return (
     <div
-      className={clsx('relative inline-flex', className)}
+      ref={wrapRef}
+      className={clsx(
+        // Allow callers (e.g. RestingStack) to own absolute placement; default
+        // stays relative so inline tooltips still anchor to the trigger.
+        className?.includes('absolute') ? null : 'relative',
+        'inline-flex',
+        className,
+      )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onMouseDown={handleMouseDown}
     >
       {children}
-      {showTooltip && (
-        <div
-          className="tooltip"
-          data-ending-style={!forceOpen && isEnding ? "" : undefined}
-          data-instant={forceOpen || isInstant ? "" : undefined}
-          style={positionStyles}
-        >
-          {label}
-        </div>
-      )}
+      {tip}
     </div>
   );
 }

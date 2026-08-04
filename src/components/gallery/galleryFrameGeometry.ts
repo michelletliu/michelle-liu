@@ -86,3 +86,76 @@ export function coverUvTransform(
   const repeatY = imageAspect / apertureAspect;
   return { offsetX: 0, offsetY: (1 - repeatY) / 2, repeatX: 1, repeatY };
 }
+
+/**
+ * Fractions of the source image to crop away on each side (0–0.5).
+ * Used with {@link coverUvWithLetterbox} to hide baked-in black keylines.
+ * Kept structurally identical to `LetterboxTrim` in `hangImageLetterbox`.
+ */
+export type LetterboxTrim = {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+};
+
+export const NO_LETTERBOX_TRIM: LetterboxTrim = {
+  left: 0,
+  right: 0,
+  top: 0,
+  bottom: 0,
+};
+
+/**
+ * Pixel aspect of the painted content after letterbox trim.
+ * `imageAspect` is full-frame width/height before cropping.
+ */
+export function contentAspectAfterTrim(
+  imageAspect: number,
+  trim: LetterboxTrim,
+): number {
+  const widthScale = 1 - trim.left - trim.right;
+  const heightScale = 1 - trim.top - trim.bottom;
+  if (widthScale <= 0 || heightScale <= 0) return imageAspect;
+  return (imageAspect * widthScale) / heightScale;
+}
+
+/**
+ * Extra cover crop on every hung texture (fraction of the post-letterbox
+ * window). Kills 1px keylines and mipmap/filter bleed of dark edge texels that
+ * detection can miss — paint always meets the white mat.
+ */
+export const COVER_SAFETY_INSET = 0.012;
+
+/**
+ * Cover-fit UVs that also discard a letterbox. Three.js default `flipY` puts
+ * image-top at v=1, so top trim shortens repeat from the high end and bottom
+ * trim raises `offsetY`.
+ *
+ * Always applies {@link COVER_SAFETY_INSET} after the letterbox window so the
+ * aperture never samples the outermost source texels.
+ */
+export function coverUvWithLetterbox(
+  apertureAspect: number,
+  imageAspect: number | null,
+  trim: LetterboxTrim = NO_LETTERBOX_TRIM,
+  safetyInset: number = COVER_SAFETY_INSET,
+): { offsetX: number; offsetY: number; repeatX: number; repeatY: number } {
+  const contentAspect =
+    imageAspect === null
+      ? null
+      : contentAspectAfterTrim(imageAspect, trim);
+  const uv = coverUvTransform(apertureAspect, contentAspect);
+  const widthScale = 1 - trim.left - trim.right;
+  const heightScale = 1 - trim.top - trim.bottom;
+  const inset = Math.min(0.05, Math.max(0, safetyInset));
+  const innerScale = 1 - 2 * inset;
+  const repeatX = uv.repeatX * widthScale * innerScale;
+  const repeatY = uv.repeatY * heightScale * innerScale;
+  return {
+    offsetX: uv.offsetX + uv.repeatX * (trim.left + widthScale * inset),
+    offsetY: uv.offsetY + uv.repeatY * (trim.bottom + heightScale * inset),
+    repeatX,
+    repeatY,
+  };
+}
