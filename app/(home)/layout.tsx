@@ -1,12 +1,7 @@
 "use client";
 
-<<<<<<< HEAD
-import { useParams, usePathname } from "next/navigation";
-import HomePageClient from "@/components/home/HomePageClient";
-=======
 import { useSelectedLayoutSegments } from "next/navigation";
-import HomePageClient from "@/components/HomePageClient";
->>>>>>> origin/main
+import HomePageClient from "@/components/home/HomePageClient";
 
 export default function HomeLayout({
   children,

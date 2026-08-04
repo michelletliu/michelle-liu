@@ -1,13 +1,5 @@
 "use client";
 
-<<<<<<< HEAD
-import { useState, type FormEvent, type ReactNode } from "react";
-import { motion } from "framer-motion";
-import { X } from "lucide-react";
-import { CloseIcon } from "@/components/icons/Close";
-import { Info } from "@/components/icons/Info";
-import { iconSize } from "@/components/shared/iconSizes";
-=======
 import {
   useEffect,
   useRef,
@@ -16,19 +8,18 @@ import {
   type ReactNode,
 } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ChevronLeftIcon, ChevronRightIcon } from "@/components/Chevron";
-import { CloseIcon } from "@/components/Close";
+import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Chevron";
+import { CloseIcon } from "@/components/icons/Close";
 import {
   FieldInput,
   FieldLeadingIcon,
   FieldShell,
   SearchMagnifierIcon,
   fieldIconSlotClassName,
-} from "@/components/FieldInput";
-import { ghostIconButtonClass } from "@/components/ghostIconButton";
-import { Info } from "@/components/Info";
-import { iconSize } from "@/components/iconSizes";
->>>>>>> origin/main
+} from "@/components/shared/FieldInput";
+import { ghostIconButtonClass } from "@/components/shared/ghostIconButton";
+import { Info } from "@/components/icons/Info";
+import { iconSize } from "@/components/shared/iconSizes";
 import MetArtworkDetails from "./MetArtworkDetails";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { stopGalleryKeys, useScrollEdges } from "./galleryInputGuards";

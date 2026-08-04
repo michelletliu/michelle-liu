@@ -1,13 +1,9 @@
-<<<<<<< HEAD:src/components/layout/LogoBackButton.tsx
-import imgLogo from "../../assets/logo.png";
-=======
 "use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import imgLogo from "../assets/logo.png";
-import { warmWorkPage } from "./doorwayWarm";
->>>>>>> origin/main:src/components/LogoBackButton.tsx
+import imgLogo from "../../assets/logo.png";
+import { warmWorkPage } from "../shared/doorwayWarm";
 
 type LogoBackButtonProps = {
   /**

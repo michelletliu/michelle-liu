@@ -2,11 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-<<<<<<< HEAD
-import { ghostIconButtonClass } from "@/components/shared/ghostIconButton";
-import { GALLERY_FOCUS_RING } from "./galleryFocus";
-=======
->>>>>>> origin/main
 import { createWoodgrainTexture, scaleBoxUvsToWorld } from "./frameWoodgrain";
 import {
   createShimmerMaterial,

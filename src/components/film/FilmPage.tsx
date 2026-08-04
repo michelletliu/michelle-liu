@@ -19,16 +19,12 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import imgLogo from '../../assets/logo.png';
-<<<<<<< HEAD
 import InfoButton from '../shared/InfoButton';
-=======
-import InfoButton from '../InfoButton';
 import {
   FILM_DOT_STYLE,
   FILM_LOADING_PHRASES,
   RotatingLoadingText,
 } from '../RotatingLoadingText';
->>>>>>> origin/main
 import { useExperimentProject } from '../../hooks/useExperimentProject';
 import type { FilmPhoto } from './film-data';
 import {

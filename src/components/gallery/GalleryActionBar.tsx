@@ -14,21 +14,16 @@ import {
   useReducedMotion,
   type Transition,
 } from "framer-motion";
-<<<<<<< HEAD
-import { ChevronDown, Images, SquarePen } from "lucide-react";
-import Tooltip from "@/components/shared/Tooltip";
-=======
-import { ChevronDownIcon } from "@/components/Chevron";
-import { CloseIcon } from "@/components/Close";
+import { ChevronDownIcon } from "@/components/icons/Chevron";
+import { CloseIcon } from "@/components/icons/Close";
 import {
   FILM_DOT_STYLE,
   GALLERY_LOADING_PHRASES,
   RotatingLoadingText,
 } from "@/components/RotatingLoadingText";
-import Tooltip from "@/components/Tooltip";
-import { iconSize } from "@/components/iconSizes";
+import Tooltip from "@/components/shared/Tooltip";
+import { iconSize } from "@/components/shared/iconSizes";
 import { PlusIcon, SquarePenIcon } from "@/components/library/icons";
->>>>>>> origin/main
 import MetArtworkPicker from "./MetArtworkPicker";
 import { isGalleryDialogOpen } from "./galleryDialog";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
