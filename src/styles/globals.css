@@ -292,6 +292,8 @@
     max-width: 11.5rem;
     border-radius: 9999px;
     corner-shape: round;
+    /* Force stadium paint even if global squircle wins the cascade */
+    clip-path: inset(0 round 9999px);
   }
 
   .field-shell.input-sample .field-icon-slot {
