@@ -3,8 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import LogoBackButton from "@/components/LogoBackButton";
 import { warmWorkPage } from "@/components/doorwayWarm";
-import { ghostIconButtonClass } from "@/components/ghostIconButton";
-import { iconSize } from "@/components/iconSizes";
 import GalleryActionBar, { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import GalleryInfoButton from "./GalleryInfoButton";
 import GalleryRoom from "./GalleryRoom";
@@ -56,41 +54,6 @@ function GalleryDownloadIcon({ className = "" }: { className?: string }) {
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
-  );
-}
-
-function GallerySaveIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className={className}
-      aria-hidden
-      width={iconSize("md")}
-      height={iconSize("md")}
-    >
-      <path
-        d="M8 4H16L19 7V19C19 19.5523 18.5523 20 18 20H6C5.44772 20 5 19.5523 5 19V5C5 4.44772 5.44772 4 6 4H8Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
-      <path
-        d="M9 4V8H15V4"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
-      <path
-        d="M8 13H16V20H8V13Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
       />
     </svg>
@@ -261,32 +224,51 @@ export default function GalleryPage({
   return (
     <div
       ref={ref}
-      className="fixed inset-0 touch-none overflow-hidden bg-[#e4e4e4] text-zinc-900"
+      // z-50: above site-wide body::before top gradient (globals.css z-40).
+      // Without this, the fixed+overflow shell composites as one layer under
+      // the fade, so even z-50 chrome (Save / info / seal) looks washed out.
+      className="fixed inset-0 z-50 touch-none overflow-hidden bg-[#e4e4e4] text-zinc-900"
       {...pointerBindProps}
     >
-      <div data-gallery-no-drag className="relative z-40">
+      {/*
+        body::before is now under this shell, so recreate the same desktop
+        vignette here: above the room (z-10), below chrome (z-50).
+      */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 z-20 hidden h-32 md:block"
+        style={{
+          background:
+            "linear-gradient(180deg, hsla(0,0%,100%,.5) 0%, hsla(0,0%,100%,.369) 19%, hsla(0,0%,100%,.271) 34%, hsla(0,0%,100%,.191) 47%, hsla(0,0%,100%,.139) 56.5%, hsla(0,0%,100%,.097) 65%, hsla(0,0%,100%,.063) 73%, hsla(0,0%,100%,.038) 80.2%, hsla(0,0%,100%,.021) 86.1%, hsla(0,0%,100%,.011) 91%, hsla(0,0%,100%,.004) 95.2%, hsla(0,0%,100%,.001) 98.2%, hsla(0,0%,100%,0) 100%)",
+        }}
+      />
+      <div data-gallery-no-drag className="relative z-50">
         <LogoBackButton />
       </div>
       <div
         data-gallery-no-drag
-        className="fixed top-8 right-6 z-50 flex items-center gap-1 md:right-16"
+        className="fixed top-8 right-6 z-50 flex items-center gap-2 md:right-16"
       >
         {canSave ? (
           <button
             type="button"
             onClick={() => setSaveOpen(true)}
-            aria-label="Save and share this gallery"
+            aria-label="Share"
             // Persistent room furniture: must not fold the composer away.
             {...{ [KEEP_BAR_OPEN_ATTR]: "" }}
-            className={ghostIconButtonClass(
-              "md",
-              `text-zinc-400 ${GALLERY_FOCUS_RING}`,
-            )}
+            // Site CTA ink (Generate / Save dialog): zinc-900 fill, white
+            // label. h-10 matches ghostIconButtonClass("md") info control.
+            className={`inline-flex h-10 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-zinc-900 px-4 py-1.5 font-['Michelle',sans-serif] text-base font-medium text-white transition-opacity duration-200 hover:opacity-90 motion-reduce:transition-none ${GALLERY_FOCUS_RING}`}
           >
-            <GallerySaveIcon />
+            Share
           </button>
         ) : null}
-        <GalleryInfoButton />
+        {isView && galleryName ? (
+          <p className="max-w-[min(50vw,16rem)] truncate text-base text-gray-500">
+            {galleryName}
+          </p>
+        ) : null}
+        <GalleryInfoButton viewOnly={isView} />
       </div>
       <GalleryRoom
         pose={pose}
@@ -309,23 +291,16 @@ export default function GalleryPage({
         className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex flex-col items-center px-4 pb-6 md:pb-8"
       >
         {isView ? (
-          <div className="pointer-events-auto flex flex-col items-center gap-3">
-            {canDownload && (
-              <button
-                type="button"
-                onClick={onDownload}
-                aria-label="Download the artwork on this canvas"
-                className={`grid size-10 place-items-center rounded-full border border-black/10 bg-white/90 text-zinc-500 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-md transition-colors hover:bg-white hover:text-zinc-700 ${GALLERY_FOCUS_RING}`}
-              >
-                <GalleryDownloadIcon className="size-[18px]" />
-              </button>
-            )}
-            {galleryName ? (
-              <p className="max-w-[min(90vw,28rem)] truncate text-center text-base text-gray-500">
-                {galleryName}
-              </p>
-            ) : null}
-          </div>
+          canDownload ? (
+            <button
+              type="button"
+              onClick={onDownload}
+              aria-label="Download the artwork on this canvas"
+              className={`pointer-events-auto grid size-10 place-items-center rounded-full border border-black/10 bg-white/90 text-zinc-500 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-md transition-colors hover:bg-white hover:text-zinc-700 ${GALLERY_FOCUS_RING}`}
+            >
+              <GalleryDownloadIcon className="size-[18px]" />
+            </button>
+          ) : null
         ) : (
           <GalleryActionBar
             generating={generatingId !== null}

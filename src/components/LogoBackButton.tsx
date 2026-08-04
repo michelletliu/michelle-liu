@@ -72,7 +72,8 @@ export default function LogoBackButton({
       data-logo-back=""
       onFocus={warmHome}
       onPointerDown={warmHome}
-      className={`fixed top-8 left-6 md:left-16 z-40 cursor-pointer transition-all duration-300 ease-out hover:opacity-80 ${
+      // z-50: above site body::before white top gradient (z-40 in globals.css)
+      className={`fixed top-8 left-6 md:left-16 z-50 cursor-pointer transition-all duration-300 ease-out hover:opacity-80 ${
         isEntering ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
       } ${className}`}
       aria-label="Go back to home"

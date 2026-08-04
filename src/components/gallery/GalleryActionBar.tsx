@@ -16,6 +16,11 @@ import {
 } from "framer-motion";
 import { ChevronDownIcon } from "@/components/Chevron";
 import { CloseIcon } from "@/components/Close";
+import {
+  FILM_DOT_STYLE,
+  GALLERY_LOADING_PHRASES,
+  RotatingLoadingText,
+} from "@/components/RotatingLoadingText";
 import Tooltip from "@/components/Tooltip";
 import { iconSize } from "@/components/iconSizes";
 import { PlusIcon, SquarePenIcon } from "@/components/library/icons";
@@ -585,9 +590,15 @@ export default function GalleryActionBar({
                     className="gallery-focus min-w-0 flex-1 rounded-full border-0 bg-transparent px-0 py-2 text-base leading-6 text-zinc-900 caret-zinc-900 outline-none ring-0 placeholder:text-zinc-300 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 disabled:opacity-60"
                     aria-label="Artwork prompt"
                   />
-                  <button
+                  <motion.button
                     type="submit"
+                    layout={!reduceMotion}
                     disabled={isGenerating || !prompt.trim() || blocked}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : { layout: { duration: 0.28, ease: [0.4, 0, 0.2, 1] } }
+                    }
                     className={`shrink-0 rounded-full bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 ${GALLERY_FOCUS_RING}`}
                   >
                     {isGenerating ? (
@@ -595,7 +606,7 @@ export default function GalleryActionBar({
                     ) : (
                       "Generate"
                     )}
-                  </button>
+                  </motion.button>
                 </div>
                 <p aria-live="polite" className="sr-only">
                   {isGenerating ? "Generating your image…" : ""}
@@ -610,9 +621,16 @@ export default function GalleryActionBar({
           ) : isGenerating ? (
             <motion.div
               key="collapsed-generating"
+              layout={!reduceMotion}
               {...shellMotion}
               style={{ transformOrigin: "center center" }}
               className="col-start-1 row-start-1 inline-flex items-center gap-1 rounded-full border border-black/5 bg-white p-1 text-zinc-700 shadow-soft"
+              transition={{
+                ...shellTransition,
+                layout: reduceMotion
+                  ? { duration: 0 }
+                  : { duration: 0.28, ease: [0.4, 0, 0.2, 1] },
+              }}
             >
               <button
                 ref={focusOnMount("pen")}
@@ -678,35 +696,14 @@ export default function GalleryActionBar({
   );
 }
 
-/** Same keyframes / class as Film + the design-system Loading dots specimen. */
-const FILM_DOT_STYLE = `@keyframes film-dot-pulse{0%,80%,100%{opacity:.15}40%{opacity:1}}.film-dot{animation:film-dot-pulse 1.4s ease-in-out infinite;opacity:.15}`;
-
-function FilmLoadingDots({ reduceMotion }: { reduceMotion: boolean }) {
-  if (reduceMotion) {
-    return <span aria-hidden>…</span>;
-  }
-  return (
-    <span aria-hidden>
-      <span className="film-dot" style={{ animationDelay: "0s" }}>
-        .
-      </span>
-      <span className="film-dot" style={{ animationDelay: "0.2s" }}>
-        .
-      </span>
-      <span className="film-dot" style={{ animationDelay: "0.4s" }}>
-        .
-      </span>
-    </span>
-  );
-}
-
-/** Trailing ellipsis on the Generating label — DS film-dot-pulse, not a custom cycle. */
+/** Rotating quirky phrases + DS film-dot-pulse — same cadence as Film. */
 function GeneratingLabel({ reduceMotion }: { reduceMotion: boolean }) {
   return (
-    <span aria-label="Generating">
-      Generating
-      <FilmLoadingDots reduceMotion={reduceMotion} />
-    </span>
+    <RotatingLoadingText
+      phrases={GALLERY_LOADING_PHRASES}
+      reduceMotion={reduceMotion}
+      aria-label="Generating"
+    />
   );
 }
 

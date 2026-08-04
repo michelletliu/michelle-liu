@@ -21,6 +21,7 @@ import {
   type GalleryPainting,
   type GalleryRoomPose,
 } from "./galleryPaintings";
+import { artPlaneGeometry } from "./artPlaneGeometry";
 import {
   coverUvTransform,
   frameGeometryForArtwork,
@@ -87,37 +88,6 @@ const ART_ROOM_LIT_ALBEDO = 0.78;
 const ART_UNFOCUSED_SOURCE_WASH = 0.16;
 /** Exponential-ease time constant for the focus lighting, ~95% in 260ms. */
 const ART_LIGHT_TAU = 0.088;
-/**
- * Soften the art plane's corners where they meet the white mat.
- *
- * ~1 CSS px at focused viewing: the mat ridge is `MAT_WIDTH` (0.03) and reads
- * as roughly a dozen pixels, so one pixel is ~0.0025 world units. Small enough
- * not to read as a bevel; just enough to kill the hard 90° against the mat.
- */
-const ART_CORNER_RADIUS = 0.0025;
-
-/**
- * Flat art / blank-canvas plane with slightly rounded corners so the white mat
- * shows through at the join. Shared by generated hangs and empty canvases.
- */
-function artPlaneGeometry(width: number, height: number): THREE.ShapeGeometry {
-  const w = width / 2;
-  const h = height / 2;
-  const r = Math.min(ART_CORNER_RADIUS, w, h);
-  const shape = new THREE.Shape();
-  shape.moveTo(-w + r, -h);
-  shape.lineTo(w - r, -h);
-  shape.absarc(w - r, -h + r, r, -Math.PI / 2, 0, false);
-  shape.lineTo(w, h - r);
-  shape.absarc(w - r, h - r, r, 0, Math.PI / 2, false);
-  shape.lineTo(-w + r, h);
-  shape.absarc(-w + r, h - r, r, Math.PI / 2, Math.PI, false);
-  shape.lineTo(-w, -h + r);
-  shape.absarc(-w + r, -h + r, r, Math.PI, Math.PI * 1.5, false);
-  // Few segments — the radius is ~1px; 4 is plenty for a smooth quarter-circle.
-  return new THREE.ShapeGeometry(shape, 4);
-}
-
 /**
  * Light a hung image according to how focused it is: 1 renders it unlit at
  * exactly its source values, 0 hands it entirely to the room's lights.

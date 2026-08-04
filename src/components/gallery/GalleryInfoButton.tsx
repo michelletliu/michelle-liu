@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CloseIcon } from "@/components/Close";
@@ -70,12 +71,20 @@ function GalleryStackMetadata() {
   );
 }
 
-export default function GalleryInfoButton() {
+type GalleryInfoButtonProps = {
+  /** Shared / view-only room: CTA to `/gallery` instead of an X close. */
+  viewOnly?: boolean;
+};
+
+export default function GalleryInfoButton({
+  viewOnly = false,
+}: GalleryInfoButtonProps) {
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
   const titleId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const createOwnRef = useRef<HTMLAnchorElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -84,9 +93,10 @@ export default function GalleryInfoButton() {
   useEffect(() => {
     if (!open) return;
     const frame = requestAnimationFrame(() => setVisible(true));
-    closeRef.current?.focus();
+    if (viewOnly) createOwnRef.current?.focus();
+    else closeRef.current?.focus();
     return () => cancelAnimationFrame(frame);
-  }, [open]);
+  }, [open, viewOnly]);
 
   useEffect(() => () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -109,7 +119,8 @@ export default function GalleryInfoButton() {
     setOpen(true);
     if (interrupting) {
       setVisible(true);
-      closeRef.current?.focus();
+      if (viewOnly) createOwnRef.current?.focus();
+      else closeRef.current?.focus();
     }
   };
 
@@ -186,18 +197,28 @@ export default function GalleryInfoButton() {
                       An interactive art gallery to visualize your ideas.
                     </p>
                   </div>
-                  <button
-                    ref={closeRef}
-                    type="button"
-                    onClick={close}
-                    aria-label="Close gallery information"
-                    className={ghostIconButtonClass(
-                      "sm",
-                      `-mr-3 -mt-1 text-zinc-400 ${GALLERY_FOCUS_RING}`,
-                    )}
-                  >
-                    <CloseIcon size="16px" />
-                  </button>
+                  {viewOnly ? (
+                    <Link
+                      ref={createOwnRef}
+                      href="/gallery"
+                      className={`inline-flex shrink-0 items-center justify-center rounded-full bg-zinc-900 px-4 py-2.5 font-['Michelle',sans-serif] text-base font-medium text-white transition-opacity hover:opacity-90 ${GALLERY_FOCUS_RING}`}
+                    >
+                      Create your own
+                    </Link>
+                  ) : (
+                    <button
+                      ref={closeRef}
+                      type="button"
+                      onClick={close}
+                      aria-label="Close gallery information"
+                      className={ghostIconButtonClass(
+                        "sm",
+                        `-mr-3 -mt-1 text-zinc-400 ${GALLERY_FOCUS_RING}`,
+                      )}
+                    >
+                      <CloseIcon size="16px" />
+                    </button>
+                  )}
                 </div>
                 <GalleryStackMetadata />
                 <div
