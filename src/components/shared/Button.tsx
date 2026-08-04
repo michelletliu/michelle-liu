@@ -51,6 +51,12 @@ export function buttonClassName({
   className,
 }: ButtonClassNameOptions): string {
   return clsx(
+    // Stable semantic hooks for DevTools / design-system inspection.
+    "button",
+    `button-${variant}`,
+    `button-${size}`,
+    icon && "button-icon",
+    radius === "rectangular" && "button-rectangular",
     "inline-flex shrink-0 cursor-pointer items-center justify-center transition-[border-radius,background-color,border-color,color] duration-200 ease-in-out motion-reduce:transition-none",
     BUTTON_RADIUS_CLASS[radius],
     BUTTON_VARIANT_CLASS[variant],
