@@ -29,6 +29,8 @@ type TooltipProps = {
   forceOpen?: boolean;
   /** Extra classes on the outer wrapper (merged with base) */
   className?: string;
+  /** Extra classes on the tooltip surface */
+  contentClassName?: string;
   /**
    * Render in document.body with fixed coords so overflow:hidden ancestors
    * (composer morph shell, stack clips, modal chrome, etc.) cannot crop the tip.
@@ -86,6 +88,7 @@ export default function Tooltip({
   disabled = false,
   forceOpen = false,
   className,
+  contentClassName,
   portal = false,
 }: TooltipProps) {
   // Hover tips default to 400ms; forceOpen stays instant unless delay is set.
@@ -248,8 +251,10 @@ export default function Tooltip({
   // `left-1/2 -translate-x-1/2` here — in Tailwind v4 those set the
   // independent `translate` property, which stacks with CSS
   // `transform: translateX(-50%)` and shifts every tip left by ~50% width.
-  const tipClassName =
-    'tooltip px-2 py-1 bg-zinc-800 text-white text-sm font-medium rounded-lg whitespace-nowrap pointer-events-none z-[9999]';
+  const tipClassName = clsx(
+    'tooltip px-2 py-1 bg-zinc-800 text-white text-sm font-medium rounded-lg whitespace-nowrap pointer-events-none z-[9999]',
+    contentClassName,
+  );
 
   const tipProps = {
     className: tipClassName,
