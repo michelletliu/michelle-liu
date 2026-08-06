@@ -137,6 +137,7 @@ export default function MetArtworkPicker({
 }: MetArtworkPickerProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [apiInfoOpen, setApiInfoOpen] = useState(false);
+  const [apiInfoHovered, setApiInfoHovered] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const {
@@ -173,6 +174,7 @@ export default function MetArtworkPicker({
   const showSkeletons =
     status === "loading" || (mode === "curated" && curatedLoading);
   const showStrip = !showSkeletons && artworks.length > 0;
+  const showApiInfo = apiInfoOpen || apiInfoHovered;
   /*
    * The strip is the only place a selection can be lifted, and a search can
    * replace it with works that do not include what is already chosen. Without
@@ -281,18 +283,27 @@ export default function MetArtworkPicker({
                 <button
                   type="button"
                   aria-label="About The Met API"
-                  aria-expanded={apiInfoOpen}
+                  aria-expanded={showApiInfo}
+                  // The button lives inside FieldShell, whose `:focus-within`
+                  // paints the pill's focus border — taking focus on click
+                  // would make the info tap read as a search focus. Keyboard
+                  // tabbing still focuses it (and still shows the border).
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setApiInfoOpen((open) => !open)}
+                  onMouseEnter={() => setApiInfoHovered(true)}
+                  onMouseLeave={() => setApiInfoHovered(false)}
+                  onFocus={() => setApiInfoHovered(true)}
+                  onBlur={() => setApiInfoHovered(false)}
                   className={`${fieldIconSlotClassName} mr-1.5 text-zinc-400 transition-colors hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
                 >
                   <Info size="15px" />
                 </button>
               )}
             </FieldShell>
-            {apiInfoOpen && (
+            {showApiInfo && (
               <div
                 role="tooltip"
-                className="absolute right-0 top-[calc(100%+8px)] z-40 max-w-[200px] rounded-xl border border-black/10 bg-white py-2 pl-3 pr-2.5 text-sm leading-snug text-zinc-500 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+                className="pointer-events-none absolute right-0 top-[calc(100%+8px)] z-40 max-w-[200px] rounded-xl border border-black/10 bg-white py-2 pl-3 pr-2.5 text-sm leading-snug text-zinc-500 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
               >
                 Search The Met Collection API for public-domain Open Access
                 artworks
