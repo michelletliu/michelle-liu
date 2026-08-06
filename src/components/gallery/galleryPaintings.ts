@@ -255,7 +255,17 @@ const REST_FILL = 0.3;
  * control that hangs under it off screen.
  */
 const MAX_FILL = 0.85;
-/** Narrowest viewport planned for; a wide hang must still fit across it. */
+/**
+ * Narrowest viewport planned for; a wide hang must still fit across it.
+ *
+ * A floor on the assumed aspect, not a substitute for it. Standing back far
+ * enough to fit a landscape hang across a 1.3 viewport is the right answer on
+ * a 1.3 viewport and too far back on anything wider, where the width the room
+ * is being framed against is width the viewport actually has. Held as a floor
+ * rather than dropped because a viewport narrower than this — a phone held
+ * upright — wants the eye further back still, and pushing it there is a
+ * different framing question than this one.
+ */
 const MIN_VIEWPORT_ASPECT = 1.3;
 /**
  * Floor on the dolly, whatever a zoom or a canvas size asks for. The scene's
@@ -273,14 +283,26 @@ const MIN_STAND_OFF = 0.6;
 export function standOffForPainting(
   aspect: GalleryPainting["aspect"],
   zoom: number = GALLERY_ZOOM_DEFAULT,
+  viewportAspect: number = MIN_VIEWPORT_ASPECT,
 ): number {
   const size = paintingSize(aspect);
   const fill = Math.min(MAX_FILL, REST_FILL * clampGalleryZoom(zoom));
   const halfFrame = Math.tan((fovForZoom(zoom) * Math.PI) / 360);
   const byHeight = (size.height + FRAME_LIP) / (2 * fill * halfFrame);
   const byWidth =
-    (size.width + FRAME_LIP) / (2 * fill * halfFrame * MIN_VIEWPORT_ASPECT);
+    (size.width + FRAME_LIP) /
+    (2 * fill * halfFrame * planningAspect(viewportAspect));
   return Math.max(byHeight, byWidth, MIN_STAND_OFF);
+}
+
+/**
+ * The aspect the width fit is solved against: the viewport's own, once it is
+ * known to be a usable number, and never narrower than the viewport this was
+ * planned for.
+ */
+export function planningAspect(viewportAspect: number): number {
+  if (!Number.isFinite(viewportAspect)) return MIN_VIEWPORT_ASPECT;
+  return Math.max(MIN_VIEWPORT_ASPECT, viewportAspect);
 }
 
 /** World-space camera eye + look-at target. */
@@ -314,6 +336,7 @@ export function roomPoseForPainting(
   id: string,
   zoom: number = GALLERY_ZOOM_DEFAULT,
   paintings: GalleryPainting[] = GALLERY_PAINTINGS,
+  viewportAspect: number = MIN_VIEWPORT_ASPECT,
 ): GalleryRoomPose {
   const painting = paintings.find((p) => p.id === id) ?? paintings[0]!;
   const layout = paintingLayout(painting);
@@ -335,7 +358,10 @@ export function roomPoseForPainting(
   const margin = 1.1;
   const acrossRoom = layout.normal.x !== 0 ? width : depth;
   const standOff = Math.min(
-    Math.max(standOffForPainting(painting.aspect, zoom), MIN_STAND_OFF),
+    Math.max(
+      standOffForPainting(painting.aspect, zoom, viewportAspect),
+      MIN_STAND_OFF,
+    ),
     acrossRoom - frameInset - margin,
   );
 
@@ -380,11 +406,33 @@ export const FRAMING_HEADROOM_SHARE = 0.5;
  */
 const FRAMING_EYE_MARGIN = 0.5;
 
-/** The viewport, and the UI band covering the bottom of it. Both CSS px. */
+/** The viewport, and the UI band covering the bottom of it. All CSS px. */
 export type GalleryFraming = {
   viewportHeightPx: number;
   occlusionPx: number;
+  /**
+   * Optional so a caller that only cares about the bottom band does not have
+   * to measure across as well; without it the stand-off falls back to planning
+   * for `MIN_VIEWPORT_ASPECT`, which is what it did before it could ask.
+   */
+  viewportWidthPx?: number;
 };
+
+/**
+ * Viewport aspect to frame against, or `MIN_VIEWPORT_ASPECT` until both sides
+ * of it have been measured.
+ */
+export function framingViewportAspect(
+  framing: GalleryFraming | null,
+): number {
+  if (!framing) return MIN_VIEWPORT_ASPECT;
+  const { viewportWidthPx: w, viewportHeightPx: h } = framing;
+  if (typeof w !== "number" || !Number.isFinite(w) || w <= 0) {
+    return MIN_VIEWPORT_ASPECT;
+  }
+  if (!Number.isFinite(h) || h <= 0) return MIN_VIEWPORT_ASPECT;
+  return planningAspect(w / h);
+}
 
 /**
  * Bound on the vertical framing offset, in world units. Signed, so a future
@@ -481,7 +529,12 @@ export function framedRoomPose(
   framing: GalleryFraming | null = null,
   paintings: GalleryPainting[] = GALLERY_PAINTINGS,
 ): GalleryRoomPose {
-  const pose = roomPoseForPainting(id, zoom, paintings);
+  const pose = roomPoseForPainting(
+    id,
+    zoom,
+    paintings,
+    framingViewportAspect(framing),
+  );
   if (!framing) return pose;
 
   const painting = paintings.find((p) => p.id === id) ?? paintings[0]!;
