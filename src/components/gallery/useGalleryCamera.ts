@@ -149,6 +149,7 @@ export function useGalleryCamera({
   const [zoom, setZoomState] = useState(GALLERY_ZOOM_DEFAULT);
   const [rootNode, setRootNode] = useState<HTMLDivElement | null>(null);
   const [viewportHeight, setViewportHeight] = useState(0);
+  const [viewportWidth, setViewportWidth] = useState(0);
 
   const focusedIdRef = useRef(focusedId);
   const poseRef = useRef(pose);
@@ -167,13 +168,22 @@ export function useGalleryCamera({
   poseRef.current = pose;
   zoomRef.current = zoom;
   /*
-   * Both halves have to be real before any of this means anything: the offset
-   * is a share of the viewport, so without a measured viewport there is no
-   * scale to read the panel's pixels against.
+   * A measured viewport is what makes any of this mean anything: the offset is
+   * a share of the viewport, so without one there is no scale to read the
+   * panel's pixels against, and no shape to frame the room to.
+   *
+   * The bar is allowed to be zero here. It once had to be real too, back when
+   * the bottom offset was all this carried and a zero bar made the whole
+   * object moot; the stand-off now frames against the viewport's shape as
+   * well, and that is worth knowing whether or not anything covers it.
    */
   framingRef.current =
-    viewportHeight > 0 && bottomOcclusionPx > 0
-      ? { viewportHeightPx: viewportHeight, occlusionPx: bottomOcclusionPx }
+    viewportHeight > 0
+      ? {
+          viewportHeightPx: viewportHeight,
+          viewportWidthPx: viewportWidth,
+          occlusionPx: bottomOcclusionPx,
+        }
       : null;
 
   const setRootRef = useCallback<RefCallback<HTMLDivElement>>((node) => {
@@ -362,11 +372,14 @@ export function useGalleryCamera({
     return () => el.removeEventListener("wheel", onWheel);
   }, [accumulateSwitch, rootNode, zoomBy]);
 
-  /** The room fills this element, so its height is the viewport's. */
+  /** The room fills this element, so its box is the viewport's. */
   useEffect(() => {
     const el = rootNode;
     if (!el) return;
-    const measure = () => setViewportHeight(el.clientHeight);
+    const measure = () => {
+      setViewportHeight(el.clientHeight);
+      setViewportWidth(el.clientWidth);
+    };
     measure();
     if (typeof ResizeObserver === "undefined") {
       window.addEventListener("resize", measure);
@@ -396,7 +409,7 @@ export function useGalleryCamera({
       prefersReducedMotion() ? 0 : FRAMING_EASE_MS,
       easeWithPanel,
     );
-  }, [bottomOcclusionPx, viewportHeight, easePoseTo]);
+  }, [bottomOcclusionPx, viewportHeight, viewportWidth, easePoseTo]);
 
   useEffect(() => {
     return () => cancelEase();

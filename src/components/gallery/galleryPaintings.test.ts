@@ -20,6 +20,7 @@ import {
   focusedPaintingId,
   fovForZoom,
   framedRoomPose,
+  framingViewportAspect,
   lerpRoomPose,
   paintingLayout,
   paintingsByDepth,
@@ -579,6 +580,145 @@ test("standOffForPainting frames both aspects from the same lens", () => {
     standOffForPainting("portrait", GALLERY_ZOOM_MAX + 5),
     standOffForPainting("portrait", GALLERY_ZOOM_MAX),
   );
+});
+
+/**
+ * Height a framed hang covers, as a share of a viewport of the given shape,
+ * from the stand-off that shape asks for.
+ */
+const heightShareOn = (
+  aspect: "portrait" | "landscape",
+  viewportAspect: number,
+  zoom = GALLERY_ZOOM_DEFAULT,
+) => {
+  const lip = 0.12;
+  const size = aspect === "portrait" ? 1.55 : 1.32;
+  const standOff = standOffForPainting(aspect, zoom, viewportAspect);
+  return (
+    (size + lip) /
+    (2 * standOff * Math.tan((fovForZoom(zoom) * Math.PI) / 360))
+  );
+};
+
+test("a wider viewport is framed against its own width, not the narrowest one", () => {
+  for (const aspect of ["portrait", "landscape"] as const) {
+    const planned = standOffForPainting(aspect, GALLERY_ZOOM_DEFAULT);
+
+    // Every viewport wider than the one planned for gets an eye no further
+    // back than the plan's, and a wider one gets a nearer eye still.
+    let previous = planned;
+    for (const viewportAspect of [1.3, 1.5, 1.78, 2.1]) {
+      const at = standOffForPainting(aspect, GALLERY_ZOOM_DEFAULT, viewportAspect);
+      assert.ok(
+        at <= previous + 1e-9,
+        `${aspect} on ${viewportAspect} stood ${at} back, further than ${previous}`,
+      );
+      previous = at;
+    }
+  }
+
+  // A short, wide window is the case this exists for: the landscape hang the
+  // width fit was holding back now covers what the height fill asks of it.
+  assert.ok(
+    heightShareOn("landscape", 1024 / 559) >
+      heightShareOn("landscape", NARROWEST_VIEWPORT_ASPECT) * 1.1,
+    "a 1024x559 window did not recover the width fit's headroom",
+  );
+});
+
+test("the height fill is the ceiling on how close a wide viewport comes", () => {
+  // Whatever the width fit stops asking for, the hang still covers only the
+  // share of the viewport's height the room frames every hang to.
+  for (const aspect of ["portrait", "landscape"] as const) {
+    for (const viewportAspect of [1.3, 1.6, 2.1, 3.2, 12]) {
+      const share = heightShareOn(aspect, viewportAspect);
+      assert.ok(
+        share <= 0.3 + 1e-9,
+        `${aspect} covered ${share} of a ${viewportAspect} viewport`,
+      );
+    }
+  }
+});
+
+test("a viewport narrower than the plan is framed as it always was", () => {
+  // Phones are upright, and backing the eye off far enough to fit a landscape
+  // hang across a 0.46 viewport is a different question than this one.
+  for (const aspect of ["portrait", "landscape"] as const) {
+    for (const viewportAspect of [390 / 844, 0.9, 1.29, 1.3]) {
+      assert.equal(
+        standOffForPainting(aspect, GALLERY_ZOOM_DEFAULT, viewportAspect),
+        standOffForPainting(aspect, GALLERY_ZOOM_DEFAULT),
+        `${aspect} on ${viewportAspect} left the planned framing`,
+      );
+    }
+  }
+});
+
+test("framingViewportAspect falls back until both sides are measured", () => {
+  assert.equal(framingViewportAspect(null), NARROWEST_VIEWPORT_ASPECT);
+  for (const framing of [
+    { viewportHeightPx: 559, occlusionPx: 86 },
+    { viewportHeightPx: 559, occlusionPx: 86, viewportWidthPx: 0 },
+    { viewportHeightPx: 559, occlusionPx: 86, viewportWidthPx: -1024 },
+    { viewportHeightPx: 559, occlusionPx: 86, viewportWidthPx: Number.NaN },
+    {
+      viewportHeightPx: 559,
+      occlusionPx: 86,
+      viewportWidthPx: Number.POSITIVE_INFINITY,
+    },
+    { viewportHeightPx: 0, occlusionPx: 86, viewportWidthPx: 1024 },
+    { viewportHeightPx: Number.NaN, occlusionPx: 86, viewportWidthPx: 1024 },
+  ] satisfies GalleryFraming[]) {
+    assert.equal(
+      framingViewportAspect(framing),
+      NARROWEST_VIEWPORT_ASPECT,
+      `${JSON.stringify(framing)} was read as a real viewport`,
+    );
+  }
+
+  assert.equal(
+    framingViewportAspect({
+      viewportHeightPx: 559,
+      occlusionPx: 86,
+      viewportWidthPx: 1024,
+    }),
+    1024 / 559,
+  );
+});
+
+test("a measured width brings the framed pose in, and keeps it in the room", () => {
+  const measured: GalleryFraming = {
+    viewportHeightPx: 559,
+    occlusionPx: 86,
+    viewportWidthPx: 1024,
+  };
+  const unmeasured: GalleryFraming = {
+    viewportHeightPx: 559,
+    occlusionPx: 86,
+  };
+
+  for (const zoom of ZOOM_LEVELS) {
+    for (const p of GALLERY_PAINTINGS) {
+      const near = framedRoomPose(p.id, zoom, measured);
+      const far = framedRoomPose(p.id, zoom, unmeasured);
+      const nearOff = Math.hypot(near.x - near.lookX, near.z - near.lookZ);
+      const farOff = Math.hypot(far.x - far.lookX, far.z - far.lookZ);
+      assert.ok(
+        nearOff <= farOff + 1e-9,
+        `${p.id} at zoom ${zoom} backed off once the width was known`,
+      );
+
+      // The dolly still runs the wall normal and still stops inside the box.
+      const { width, depth, height } = GALLERY_ROOM;
+      assert.ok(Math.abs(near.x) < width / 2, `${p.id} eye x left the room`);
+      assert.ok(Math.abs(near.z) < depth / 2, `${p.id} eye z left the room`);
+      assert.ok(
+        near.y > 0 && near.y < height,
+        `${p.id} eye y left the room`,
+      );
+      assert.ok(nearOff >= 0.6 - 1e-9, `${p.id} closed onto the near plane`);
+    }
+  }
 });
 
 /**
