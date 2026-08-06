@@ -89,7 +89,7 @@ const experimentProjects = [
     title: 'Gallery',
     year: '2026',
     description: 'An interactive art gallery to visualize your ideas.',
-    muxPlaybackId: 't2gAjutGf202eNq15sczNsA9MmmxcGnmJ7cl8LFHuMZg',
+    muxPlaybackId: 'UBPHbQ7lhjoY6bt3d8OXMRNBV3FRhr2au00FALYZ02zn4',
     tryItOutHref: '/gallery',
     toolCategories: [
       { _type: 'toolCategory', _key: 'interface', label: 'Interface', tools: ['Next.js', 'React'] },

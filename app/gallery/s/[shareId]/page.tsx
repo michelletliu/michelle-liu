@@ -29,9 +29,36 @@ export async function generateMetadata({
     ? `${formatGalleryAttribution(meta.name, meta.creator)} · gallery`
     : "gallery";
 
+  const description = meta?.name
+    ? `${formatGalleryAttribution(meta.name, meta.creator)} — a shared gallery on michelle liu.`
+    : "An interactive art gallery to visualize your ideas.";
+
+  const ogImage = {
+    url: "https://www.liumichelle.com/gallery-og.png?v=4",
+    width: 1200,
+    height: 630,
+    alt: title,
+  };
+
   return {
     title,
+    description,
     robots: { index: false, follow: false },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `https://www.liumichelle.com/gallery/s/${shareId}`,
+      images: [ogImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      site: "@michelletliu",
+      creator: "@michelletliu",
+      title,
+      description,
+      images: [ogImage.url],
+    },
   };
 }
 

@@ -20,8 +20,8 @@ import { GALLERY_INFO_TEXT } from "./metArtworks";
 const CLOSE_ANIMATION_MS = 300;
 
 const GALLERY_INFO_MUX_PLAYBACK_ID =
-  "t2gAjutGf202eNq15sczNsA9MmmxcGnmJ7cl8LFHuMZg";
-const GALLERY_INFO_IMAGE_SRC = `https://image.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}/thumbnail.png?time=0&width=1920`;
+  "UBPHbQ7lhjoY6bt3d8OXMRNBV3FRhr2au00FALYZ02zn4";
+const GALLERY_INFO_IMAGE_SRC = `https://image.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}/thumbnail.png?width=1920`;
 const GALLERY_INFO_VIDEO_SRC = `https://stream.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}.m3u8`;
 
 /**
