@@ -16,6 +16,7 @@ import {
   AnimatePresence,
   LayoutGroup,
   motion,
+  useIsPresent,
   useReducedMotion,
   type Transition,
 } from "framer-motion";
@@ -120,7 +121,7 @@ const STACK_CARDS = [
   { rotate: 15, x: 54, y: 14, hoverY: -4, hoverRotate: 20 },
   { rotate: 6, x: 27, y: 8, hoverY: -6, hoverRotate: 3 },
   // Front tile: CCW tip angles the top edge left (bottom-right lifts NE).
-  { rotate: -6, x: 0, y: 0, hoverY: -8, hoverRotate: -9 },
+  { rotate: -8, x: 0, y: 0, hoverY: -8, hoverRotate: -11 },
 ];
 
 type GalleryActionBarProps = {
@@ -756,13 +757,6 @@ export default function GalleryActionBar({
   // Target width for the expanded panel — fixed for the whole morph so the
   // prompt lays out at final size while the shell unfurls around it.
   const expandedWidth = rootRef.current?.clientWidth ?? morphSize?.w ?? 0;
-  // Stack clip must match the shell's bottom corners (stadium or soft 28)
-  // or cards/shadows paint in the crescent under the rounded edge.
-  const composerClipRadius = expandedSoftRadius
-    ? 28
-    : morphSize
-      ? morphSize.h / 2
-      : 29;
   const morphStyle: CSSProperties =
     morphSize === null
       ? { visibility: "hidden", borderRadius: 9999 }
@@ -789,11 +783,6 @@ export default function GalleryActionBar({
       // caps its own width so the bar stays a panel rather than a full-width
       // band, and anchors the resting stack below.
       className="pointer-events-auto relative flex w-full max-w-[590px] justify-center"
-      style={
-        {
-          ["--composer-clip-radius" as string]: `${composerClipRadius}px`,
-        } as CSSProperties
-      }
     >
       <style>{FILM_DOT_STYLE}</style>
       <style>{COMPOSER_MORPH_STYLE}</style>
@@ -802,28 +791,22 @@ export default function GalleryActionBar({
       <AnimatePresence initial={false}>
         {canShowRestingStack && (
           // Keep the fan mounted while eligible so leave can roll down instead
-          // of popping off. Instant unmount when eligibility ends (generate /
-          // picker / inspiration) so it never lingers over Generating….
-          // z-0 under the opaque morph (z-10) so the pill body covers the fan;
-          // RestingStack's rounded clip kills the corner-crescent leak.
-          <motion.div
+          // of popping off. Eligibility exits are short and fade while tucking,
+          // so picker / generation state wins without an abrupt disappearance.
+          // z-0 under the opaque morph (z-10) so the pill body covers the fan.
+          // RestingStack clips at the bar's midpoint, which is well inside that
+          // cover, so the tuck reads as sliding behind the composer.
+          <RestingStack
             key="stack"
-            className="pointer-events-none absolute inset-0 z-0"
-            initial={false}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0 }}
-          >
-            <RestingStack
-              artworks={search.artworks}
-              controls={pickerId}
-              revealed={addHovering}
-              tooltipArmed={metHoverArmed}
-              reduceMotion={Boolean(reduceMotion)}
-              onOpen={openInspirationPicker}
-              onPointerEnter={enterMetChrome}
-              onPointerLeave={leaveMetChrome}
-            />
-          </motion.div>
+            artworks={search.artworks}
+            controls={pickerId}
+            revealed={addHovering}
+            tooltipArmed={metHoverArmed}
+            reduceMotion={Boolean(reduceMotion)}
+            onOpen={openInspirationPicker}
+            onPointerEnter={enterMetChrome}
+            onPointerLeave={leaveMetChrome}
+          />
         )}
       </AnimatePresence>
       <AnimatePresence initial={false}>
@@ -919,10 +902,10 @@ export default function GalleryActionBar({
               */}
               <LayoutGroup id="gallery-composer-prompt">
                 <div
-                  className={`grid px-2.5 py-[9px] ${
+                  className={`grid px-2.5 ${
                     promptMultiline
-                      ? "grid-cols-[auto_1fr_auto] grid-rows-[auto_auto] items-end gap-x-2 gap-y-1"
-                      : "grid-cols-[auto_1fr_auto] items-center gap-x-1"
+                      ? "grid-cols-[auto_1fr_auto] grid-rows-[auto_auto] items-end gap-x-2 gap-y-1 pt-1.5 pb-2.5"
+                      : "grid-cols-[auto_1fr_auto] items-center gap-x-1 py-[9px]"
                   }`}
                 >
                   <motion.div
@@ -1053,7 +1036,7 @@ export default function GalleryActionBar({
                       // resizePromptField grows height only then. Enter submits.
                       className={`gallery-focus box-border block min-h-10 w-full resize-none overflow-hidden break-words border-0 bg-transparent py-2 text-base leading-6 text-zinc-900 caret-zinc-900 outline-none ring-0 placeholder:text-zinc-300 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 disabled:opacity-60 [overflow-wrap:anywhere] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
                         promptMultiline
-                          ? `${PROMPT_MULTILINE_PL} pr-0`
+                          ? `${PROMPT_MULTILINE_PL} pr-4`
                           : "px-0"
                       }`}
                       aria-label="Artwork prompt"
@@ -1290,8 +1273,8 @@ function SelectedInspirationCard({
  * composer when the + is hovered / :focus-visible.
  *
  * Stays mounted while the composer is eligible so leave can roll down; stays
- * open while the pointer is over the fan so cards remain clickable. Instantly
- * unmounted when eligibility ends (generate / picker / selection).
+ * open while the pointer is over the fan so cards remain clickable. Eligibility
+ * exits briefly tuck the cards behind the composer before unmounting.
  */
 function RestingStack({
   artworks,
@@ -1314,6 +1297,7 @@ function RestingStack({
   onPointerLeave: () => void;
 }) {
   const [focused, setFocused] = useState(false);
+  const isPresent = useIsPresent();
   const seen = new Set<number>();
   const cards = artworks
     .map((artwork) => ({ artwork, src: openAccessImageUrl(artwork) }))
@@ -1333,39 +1317,43 @@ function RestingStack({
   const fan = STACK_CARDS.slice(STACK_CARDS.length - cards.length);
   // Short lift — clear the rounded bottom clip; resting y is 0–14.
   const rollPx = reduceMotion ? 0 : 42;
-  const showMetTip = revealed && tooltipArmed;
+  const staggerSeconds = 0.012;
+  const stackRevealed = revealed && isPresent;
+  const showMetTip = stackRevealed && tooltipArmed;
 
   return (
-    /*
-     * Clip shell matches the composer footprint (`left-0 right-0`) with the
-     * same bottom corner radius as the pill. A flat `overflow-hidden` bottom
-     * left crescents under the stadium curve where cards/shadows could peek;
-     * rounding the clip to `--composer-clip-radius` cuts those crescents.
-     * Headroom (`+9rem`) lets the fan + hover lift paint upward. Fan origin
-     * sits at `left-2.5` with the + inset so lean/shadow stay inside the clip.
-     * Stack stays z-0 under the opaque morph (z-10) for body occlusion.
-     */
-    <div
-      className="pointer-events-none absolute bottom-0 left-0 right-0 h-[calc(100%+9rem)] overflow-hidden"
-      style={{
-        borderBottomLeftRadius: "var(--composer-clip-radius, 1.8125rem)",
-        borderBottomRightRadius: "var(--composer-clip-radius, 1.8125rem)",
+    <motion.div
+      className="pointer-events-none absolute bottom-1/2 -left-2 right-0 z-0 h-[calc(9rem+50%)] overflow-hidden"
+      initial={false}
+      exit={{ opacity: 0 }}
+      transition={{
+        duration: reduceMotion ? 0 : 0.17,
+        ease: "easeOut",
       }}
     >
+      {/*
+       * The fan paints above the white shell but below its controls. Clip at the
+       * composer's midpoint: artwork may occupy the upper half of the bar, while
+       * its lower half remains clear. The calculated height keeps the clip's top
+       * fixed as the one-line composer changes height.
+       */}
       <Tooltip
         label="Get inspired by The Met"
         position="top"
+        contentClassName="border !border-black/5 !rounded-[12px] !bg-white !text-gray-500 !duration-200 shadow-xs"
         // Clear rotated/hover-lifted fan tops; keep a tight gap above the cards.
         offset={26}
-        // forceOpen is otherwise instant; 2× Tooltip hover default (400→800).
-        delay={800}
+        // Match Tooltip's 400ms hover default for this delayed force-open.
+        delay={400}
         portal
         // Stack clip + morph shell both overflow:hidden — portal to body.
         // forceOpen tracks +/fan hover so the tip sits above the images.
         disabled={!tooltipArmed}
         forceOpen={showMetTip}
-        className={`absolute bottom-[calc(100%-2.95rem-9rem)] left-2.5 ${
-          revealed ? "pointer-events-auto" : "pointer-events-none"
+        // Anchor from the fixed clip top; the slight downward inset keeps the
+        // fan's resting peek compact without changing its reveal animation.
+        className={`absolute top-[88px] left-3 ${
+          stackRevealed ? "pointer-events-auto" : "pointer-events-none"
         }`}
       >
         <div
@@ -1381,8 +1369,8 @@ function RestingStack({
             onBlur={() => setFocused(false)}
             aria-expanded={false}
             aria-controls={controls}
-            aria-hidden={!revealed && !focused}
-            tabIndex={revealed ? 0 : -1}
+            aria-hidden={!stackRevealed && !focused}
+            tabIndex={stackRevealed ? 0 : -1}
             className={`group relative h-25 w-[154px] overflow-visible rounded-xl ${GALLERY_FOCUS_RING}`}
           >
             <span className="sr-only">Find inspiration in The Met</span>
@@ -1397,8 +1385,11 @@ function RestingStack({
                 // Overflow-hidden must ride the rotated ancestor (motion.span)
                 // or axis-aligned clipping shears the fan tops.
                 const hoverDelta = hoverRotate - rotate;
-                // Near-zero stagger — one cohesive fan, not a cascade.
-                const stagger = 0.008 * (revealed ? i : fan.length - 1 - i);
+                // Back-to-front on reveal, front-to-back on tuck: cohesive,
+                // but enough separation to read as three cards.
+                const stagger =
+                  staggerSeconds *
+                  (stackRevealed ? i : fan.length - 1 - i);
                 return (
                   <motion.span
                     // The same id the strip tile carries, so this card and that
@@ -1409,15 +1400,15 @@ function RestingStack({
                     initial={false}
                     animate={{
                       x,
-                      y: revealed ? y : y + rollPx,
-                      rotate: revealed ? rotate : 0,
-                      opacity: revealed ? 1 : 0,
+                      y: stackRevealed ? y : y + rollPx,
+                      rotate: stackRevealed ? rotate : 0,
+                      opacity: stackRevealed ? 1 : 0,
                     }}
                     transition={
                       reduceMotion
                         ? { duration: 0 }
                         : {
-                            duration: 0.18,
+                            duration: isPresent ? 0.18 : 0.14,
                             ease: [0.22, 0.9, 0.16, 1],
                             delay: stagger,
                           }
@@ -1436,7 +1427,7 @@ function RestingStack({
                         } as CSSProperties
                       }
                       className={`block overflow-hidden border-2 border-white/20 bg-white shadow-lg transition-transform duration-200 ease-out ${
-                        revealed
+                        stackRevealed
                           ? "[transform:var(--lift-transform)]"
                           : "[transform:none]"
                       } group-hover:[transform:var(--hover-transform)] group-focus-visible:[transform:var(--hover-transform)] motion-reduce:transition-none motion-reduce:[transform:none] ${TILE_SHAPE}`}
@@ -1461,6 +1452,6 @@ function RestingStack({
           </button>
         </div>
       </Tooltip>
-    </div>
+    </motion.div>
   );
 }
