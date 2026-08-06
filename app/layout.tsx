@@ -6,7 +6,15 @@ import "@/styles/globals.css";
 const siteDescription =
   "Designing products to spark moments of delight & human connection. Previously at Apple, Roblox, & NASA.";
 
+const siteOgImage = {
+  url: "https://www.liumichelle.com/og-image.jpg?v=6",
+  width: 1200,
+  height: 628,
+  alt: "Michelle Liu",
+};
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.liumichelle.com"),
   title: "michelle liu",
   description: siteDescription,
   keywords:
@@ -17,13 +25,7 @@ export const metadata: Metadata = {
     description: siteDescription,
     type: "website",
     url: "https://www.liumichelle.com",
-    images: [
-      {
-        url: "https://www.liumichelle.com/og-image.png?v=5",
-        width: 1200,
-        height: 628,
-      },
-    ],
+    images: [siteOgImage],
   },
   twitter: {
     card: "summary_large_image",
@@ -31,7 +33,7 @@ export const metadata: Metadata = {
     creator: "@michelletliu",
     title: "michelle liu",
     description: siteDescription,
-    images: ["https://www.liumichelle.com/og-image.png?v=5"],
+    images: [siteOgImage.url],
   },
   icons: {
     icon: "/logo.png",
