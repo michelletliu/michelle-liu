@@ -1,6 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useCallback,
+} from "react";
+import {
+  consumeHomeScrollReturn,
+  rememberHomeScrollForReturn,
+} from "@/components/shared/homeScrollReturn";
 import dynamic from "next/dynamic";
 import { useNavigate } from "@/lib/navigation";
 import {
@@ -407,11 +417,15 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
       !experimentLink.external &&
       DIRECT_NAV_EXPERIMENT_IDS.includes(project.id)
     ) {
+      rememberHomeScrollForReturn();
       window.location.href = experimentLink.href;
       return;
     }
     
     if (experimentLink && !experimentLink.external && !isDesktop) {
+      if (DIRECT_NAV_EXPERIMENT_IDS.includes(project.id)) {
+        rememberHomeScrollForReturn();
+      }
       window.location.href = experimentLink.href;
     } else {
       onProjectClick(project.id);
@@ -923,6 +937,21 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     preloadLikelyPages();
   }, []);
 
+  /*
+   * Fallback for the reload route out of Gallery (extra history entries, so
+   * back was not available). Never touch `history.scrollRestoration` here —
+   * that is per-entry state, and forcing it to manual would stop the browser
+   * restoring this page on the back route, which is the no-flash path.
+   */
+  useLayoutEffect(() => {
+    const y = consumeHomeScrollReturn();
+    if (y == null) return;
+    window.scrollTo(0, y);
+    // Cards settle as media resolves; re-assert once after that first layout.
+    const id = window.requestAnimationFrame(() => window.scrollTo(0, y));
+    return () => window.cancelAnimationFrame(id);
+  }, []);
+
   // Local slug for instant modal open — set immediately on click, URL syncs in background
   const [localSlug, setLocalSlug] = useState(slug);
 
@@ -971,7 +1000,13 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     return () => window.removeEventListener("popstate", onPopState);
   }, [localSlug]);
 
-  // Deep links to /project/gallery should land on the real page, not a preview modal.
+  /*
+   * Deep links to /project/gallery should land on the real page, not a preview
+   * modal. No scroll is recorded for the trip: this replaces the entry instead
+   * of pushing, so whatever sits behind it is not this page, and the seal must
+   * not try to reach it with back. Card clicks never reach here — they are
+   * intercepted for direct nav before the slug can be set.
+   */
   useEffect(() => {
     if (slug === "gallery" || localSlug === "gallery") {
       window.location.replace("/gallery");
@@ -991,6 +1026,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
             view_mode: "direct",
           });
         }
+        rememberHomeScrollForReturn();
         window.location.href = link.href;
         return;
       }
