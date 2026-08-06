@@ -5,6 +5,7 @@ import LogoBackButton from "@/components/layout/LogoBackButton";
 import { ghostIconButtonClass } from "@/components/shared/ghostIconButton";
 import { SendIcon } from "@/components/library/icons";
 import { warmWorkPage } from "@/components/shared/doorwayWarm";
+import { navigateHomeWithScrollReturn } from "@/components/shared/homeScrollReturn";
 import GalleryActionBar, { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import GalleryInfoButton from "./GalleryInfoButton";
 import GalleryRoom from "./GalleryRoom";
@@ -71,10 +72,10 @@ export default function GalleryPage({
   galleryName,
   galleryCreator,
 }: GalleryPageProps) {
-  /** Hard-assign home — soft push waits on WebGL dispose and feels broken. */
+  /** Hard nav home — soft push waits on WebGL dispose and feels broken. */
   const goHome = useCallback(() => {
     warmWorkPage();
-    window.location.assign("/");
+    navigateHomeWithScrollReturn("/");
   }, []);
   const isView = mode === "view";
   /*

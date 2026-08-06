@@ -1,12 +1,21 @@
 import type { Metadata } from "next";
 import Providers from "@/components/layout/Providers";
+import { HOME_SCROLL_RESTORE_SCRIPT } from "@/components/shared/homeScrollReturn";
 import "@/index.css";
 import "@/styles/globals.css";
 
 const siteDescription =
   "Designing products to spark moments of delight & human connection. Previously at Apple, Roblox, & NASA.";
 
+const siteOgImage = {
+  url: "https://www.liumichelle.com/og-image.jpg?v=6",
+  width: 1200,
+  height: 628,
+  alt: "Michelle Liu",
+};
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.liumichelle.com"),
   title: "michelle liu",
   description: siteDescription,
   keywords:
@@ -17,13 +26,7 @@ export const metadata: Metadata = {
     description: siteDescription,
     type: "website",
     url: "https://www.liumichelle.com",
-    images: [
-      {
-        url: "https://www.liumichelle.com/og-image.png?v=5",
-        width: 1200,
-        height: 628,
-      },
-    ],
+    images: [siteOgImage],
   },
   twitter: {
     card: "summary_large_image",
@@ -31,7 +34,7 @@ export const metadata: Metadata = {
     creator: "@michelletliu",
     title: "michelle liu",
     description: siteDescription,
-    images: ["https://www.liumichelle.com/og-image.png?v=5"],
+    images: [siteOgImage.url],
   },
   icons: {
     icon: "/logo.png",
@@ -58,6 +61,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preload" as="image" href="/logo.png" fetchPriority="high" />
+        {/* Must stay blocking and ahead of the body to beat the first paint. */}
+        <script dangerouslySetInnerHTML={{ __html: HOME_SCROLL_RESTORE_SCRIPT }} />
       </head>
       <body suppressHydrationWarning>
         <div hidden dangerouslySetInnerHTML={{ __html: devtoolsComment }} />

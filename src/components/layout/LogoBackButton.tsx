@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import imgLogo from "../../assets/logo.png";
 import { warmWorkPage } from "../shared/doorwayWarm";
+import { navigateHomeWithScrollReturn } from "../shared/homeScrollReturn";
 
 type LogoBackButtonProps = {
   /**
@@ -56,9 +57,16 @@ export default function LogoBackButton({
       e.preventDefault();
       e.stopPropagation();
       warmHome();
+      const next = a.getAttribute("href") || href;
+      // Home gets the back route when this session came from there, so the
+      // browser restores the Work scroll as part of the navigation.
+      if (next === "/" || next.startsWith("/?")) {
+        navigateHomeWithScrollReturn(next);
+        return;
+      }
       // Hard assign: router.push waits for gallery Three.js dispose +
       // forceContextLoss on the main thread before painting home.
-      window.location.assign(a.getAttribute("href") || href);
+      window.location.assign(next);
     };
 
     document.addEventListener("click", onClick, true);

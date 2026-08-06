@@ -1,12 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useRef, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type Ref,
+} from "react";
 import { createPortal } from "react-dom";
-import { CloseIcon } from "@/components/icons/Close";
+import { ArrowUpRight } from "@/components/icons/ArrowUpRight";
+import { Info } from "@/components/icons/Info";
+import { buttonClassName } from "@/components/shared/Button";
 import { ghostIconButtonClass } from "@/components/shared/ghostIconButton";
 import { HorizontalLine } from "@/components/shared/HorizontalLine";
-import { Info } from "@/components/icons/Info";
 import { iconSize } from "@/components/shared/iconSizes";
 import ShimmerImage from "@/components/shared/ShimmerImage";
 import ShimmerVideo from "@/components/shared/ShimmerVideo";
@@ -20,9 +27,50 @@ import { GALLERY_INFO_TEXT } from "./metArtworks";
 const CLOSE_ANIMATION_MS = 300;
 
 const GALLERY_INFO_MUX_PLAYBACK_ID =
-  "t2gAjutGf202eNq15sczNsA9MmmxcGnmJ7cl8LFHuMZg";
-const GALLERY_INFO_IMAGE_SRC = `https://image.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}/thumbnail.png?time=0&width=1920`;
+  "UBPHbQ7lhjoY6bt3d8OXMRNBV3FRhr2au00FALYZ02zn4";
+const GALLERY_INFO_IMAGE_SRC = `https://image.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}/thumbnail.png?width=1920`;
 const GALLERY_INFO_VIDEO_SRC = `https://stream.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}.m3u8`;
+const GALLERY_X_LINK =
+  "https://x.com/michelletliu/status/2084772214164148607";
+
+// Same path as InfoButton / ExperimentModal "View on X".
+const xLogoPath =
+  "M10.6862 7.6055L17.3844 0H15.8002L9.97941 6.60311L5.36277 0H0.178833L7.19548 9.9737L0.178833 17.9454H1.76308L7.90171 10.9761L12.7696 17.9454H17.9536L10.6858 7.6055H10.6862ZM8.7057 10.0639L7.99222 9.06869L2.33673 1.16544H4.60063L9.33802 7.5516L10.0515 8.54678L15.8011 16.8348H13.5372L8.7057 10.0643V10.0639Z";
+
+function ViewOnXButton({
+  className,
+  linkRef,
+}: {
+  className?: string;
+  linkRef?: Ref<HTMLAnchorElement>;
+}) {
+  return (
+    <a
+      ref={linkRef}
+      href={GALLERY_X_LINK}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={buttonClassName({
+        variant: "primary",
+        size: "sm",
+        className: `!rounded-full [corner-shape:round] ${className ?? ""}`,
+      })}
+    >
+      <span className="leading-normal relative shrink-0 whitespace-nowrap">
+        View on
+      </span>
+      <svg
+        className="block h-[12px] w-[12px] fill-white"
+        viewBox="0 0 19 18"
+      >
+        <path d={xLogoPath} />
+      </svg>
+      <span className="inline-flex items-center text-white">
+        <ArrowUpRight size="12px" />
+      </span>
+    </a>
+  );
+}
 
 /**
  * The room's controls, written down somewhere.
@@ -39,7 +87,7 @@ const GALLERY_CONTROLS_TEXT =
 const GALLERY_STACK_METADATA = [
   { label: "Interface", tools: ["Next.js", "React"] },
   { label: "Scene", tools: ["Three.js"] },
-  { label: "Data", tools: ["The Met API", "Open Access"] },
+  { label: "Data", tools: ["The Met API"] },
   { label: "Motion", tools: ["Framer Motion"] },
 ];
 
@@ -80,7 +128,7 @@ function GalleryStackMetadata() {
 }
 
 type GalleryInfoButtonProps = {
-  /** Shared / view-only room: CTA to `/gallery` instead of an X close. */
+  /** Shared / view-only room: CTA to `/gallery` instead of View on X. */
   viewOnly?: boolean;
 };
 
@@ -92,12 +140,20 @@ export default function GalleryInfoButton({
   const [videoReady, setVideoReady] = useState(false);
   const titleId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
+  const xLinkRef = useRef<HTMLAnchorElement>(null);
   const createOwnRef = useRef<HTMLAnchorElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useScrollLock(open);
+
+  const focusPrimaryAction = () => {
+    if (viewOnly) {
+      createOwnRef.current?.focus();
+      return;
+    }
+    xLinkRef.current?.focus();
+  };
 
   // Warm HLS + poster so opening the dialog does not wait on a cold Mux fetch.
   useEffect(() => {
@@ -126,8 +182,7 @@ export default function GalleryInfoButton({
       return;
     }
     const frame = requestAnimationFrame(() => setVisible(true));
-    if (viewOnly) createOwnRef.current?.focus();
-    else closeRef.current?.focus();
+    focusPrimaryAction();
     // Let the dialog fade in before mounting HLS — same cadence as InfoButton.
     const videoTimer = setTimeout(() => setVideoReady(true), 350);
     return () => {
@@ -157,8 +212,7 @@ export default function GalleryInfoButton({
     setOpen(true);
     if (interrupting) {
       setVisible(true);
-      if (viewOnly) createOwnRef.current?.focus();
-      else closeRef.current?.focus();
+      focusPrimaryAction();
     }
   };
 
@@ -223,42 +277,44 @@ export default function GalleryInfoButton({
               <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-6 bg-gradient-to-b from-white to-transparent" />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-8 bg-gradient-to-t from-white to-transparent" />
               <div className="flex max-h-[calc(100vh-48px)] w-full flex-col gap-4 overflow-y-auto px-7 pb-8 pt-6 max-md:gap-3 max-md:px-7 max-md:py-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex min-w-0 flex-col gap-1">
-                    <div className="flex items-center gap-[6px]">
-                      <h2 id={titleId} className="text-base text-zinc-900">
-                        Gallery
-                      </h2>
-                      <span className="text-base font-normal leading-snug text-[#a1a1aa]">
-                        •
-                      </span>
-                      <span className="text-base text-[#a1a1aa]">2026</span>
-                    </div>
-                    <p className="text-sm leading-relaxed text-[#71717a] md:text-base">
-                      An interactive art gallery to visualize your ideas.
-                    </p>
+                <div className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 md:items-start md:gap-y-1">
+                  <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-[6px]">
+                    <h2 id={titleId} className="text-base text-zinc-900">
+                      Gallery
+                    </h2>
+                    <span className="text-base font-normal leading-snug text-[#a1a1aa]">
+                      •
+                    </span>
+                    <span className="text-base text-[#a1a1aa]">2026</span>
                   </div>
+                  <p className="col-span-2 row-start-2 text-sm leading-6 text-[#71717a] md:col-span-1 md:text-base">
+                    An interactive art gallery to visualize your ideas.
+                    <span className="md:hidden">{" "}</span>
+                    <br className="hidden md:block" />
+                    Thanks to my friends at{" "}
+                    <a
+                      href="https://www.reve.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-zinc-600 no-underline transition-colors hover:text-blue-500"
+                    >
+                      Reve
+                    </a>{" "}
+                    for asking me to experiment with this!
+                  </p>
                   {viewOnly ? (
                     <Link
                       ref={createOwnRef}
                       href="/gallery"
-                      className={`inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-solid border-blue-400 bg-blue-500 px-4 py-1.5 font-['Michelle',sans-serif] text-sm font-semibold text-white transition-colors duration-200 ease-out hover:border-blue-300 hover:bg-blue-400 ${GALLERY_FOCUS_RING}`}
+                      className={`col-start-2 row-start-1 inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-solid border-blue-400 bg-blue-500 px-4 py-1.5 font-['Michelle',sans-serif] text-sm font-semibold text-white transition-colors duration-200 ease-out hover:border-blue-300 hover:bg-blue-400 ${GALLERY_FOCUS_RING}`}
                     >
                       Create your own
                     </Link>
                   ) : (
-                    <button
-                      ref={closeRef}
-                      type="button"
-                      onClick={close}
-                      aria-label="Close gallery information"
-                      className={ghostIconButtonClass(
-                        "sm",
-                        `-mr-3 -mt-1 text-zinc-400 ${GALLERY_FOCUS_RING}`,
-                      )}
-                    >
-                      <CloseIcon size="16px" />
-                    </button>
+                    <ViewOnXButton
+                      linkRef={xLinkRef}
+                      className="relative col-start-2 row-start-1 whitespace-nowrap"
+                    />
                   )}
                 </div>
                 <GalleryStackMetadata />
