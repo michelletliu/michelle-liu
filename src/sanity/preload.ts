@@ -4,6 +4,7 @@
  * when users navigate to likely pages (Apple, Roblox, Adobe, NASA, Art, About)
  */
 
+import { muxPosterUrl } from "../lib/muxPoster";
 import { client, urlFor } from "./client";
 import {
   ART_PIECES_QUERY,
@@ -43,6 +44,7 @@ type WorkSanityProject = {
 };
 
 type WorkExperimentProject = {
+  projectId?: string;
   muxPlaybackIdClip?: string;
   muxPlaybackId?: string;
 };
@@ -340,8 +342,12 @@ function warmWorkMedia(
       const playbackId =
         experiment.muxPlaybackIdClip || experiment.muxPlaybackId;
       if (playbackId) {
+        // Must match the card's poster URL exactly or the warm request is wasted.
         warmImage(
-          `https://image.mux.com/${playbackId}/thumbnail.png?width=1920`,
+          muxPosterUrl(playbackId, {
+            projectId: experiment.projectId,
+            width: 1920,
+          }),
         );
       }
     }
