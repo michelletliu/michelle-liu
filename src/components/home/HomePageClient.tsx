@@ -45,6 +45,7 @@ import { useScrollLock } from "../../utils/useScrollLock";
 import ContactBadge from "../shared/ContactBadge";
 import NavigationTabs from "../layout/NavigationTabs";
 import { HorizontalLine } from "../shared/HorizontalLine";
+import { muxPosterUrl } from "../../lib/muxPoster";
 import { posthog, posthogEnabled } from "../../lib/posthog";
 import { useHeroAnimation } from "../../hooks/useHeroAnimation";
 import { fadeUpStyles } from "../../styles/animations";
@@ -78,9 +79,9 @@ type Project = {
   toolCategories?: ToolCategory[];
 };
 
-function getMuxUrls(playbackId: string) {
+function getMuxUrls(playbackId: string, projectId?: string) {
   return {
-    imageSrc: `https://image.mux.com/${playbackId}/thumbnail.png?width=1920`,
+    imageSrc: muxPosterUrl(playbackId, { projectId, width: 1920 }),
     videoSrc: `https://stream.mux.com/${playbackId}.m3u8`,
   };
 }
@@ -202,7 +203,7 @@ const staticProjects: Project[] = [
     title: "Gallery",
     year: "2026",
     description: "An interactive art gallery to visualize your ideas.",
-    imageSrc: "https://image.mux.com/UBPHbQ7lhjoY6bt3d8OXMRNBV3FRhr2au00FALYZ02zn4/thumbnail.png?width=1920",
+    imageSrc: "https://image.mux.com/UBPHbQ7lhjoY6bt3d8OXMRNBV3FRhr2au00FALYZ02zn4/thumbnail.png?width=1920&time=0",
     videoSrc: "https://stream.mux.com/UBPHbQ7lhjoY6bt3d8OXMRNBV3FRhr2au00FALYZ02zn4.m3u8",
     backgroundColor: "#ffffff",
     toolCategories: [
@@ -845,7 +846,7 @@ function mergeWorkProjects(
         const clipPlaybackId =
           experimentData.muxPlaybackIdClip || experimentData.muxPlaybackId;
         const muxUrls = clipPlaybackId
-          ? getMuxUrls(clipPlaybackId)
+          ? getMuxUrls(clipPlaybackId, project.id)
           : { imageSrc: project.imageSrc, videoSrc: project.videoSrc };
         const fallbackUrl = experimentData.fallbackThumbnail
           ? urlFor(experimentData.fallbackThumbnail).width(1920).url()

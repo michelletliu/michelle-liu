@@ -18,6 +18,7 @@ import { iconSize } from "@/components/shared/iconSizes";
 import ShimmerImage from "@/components/shared/ShimmerImage";
 import ShimmerVideo from "@/components/shared/ShimmerVideo";
 import Tooltip from "@/components/shared/Tooltip";
+import { muxPosterUrl } from "@/lib/muxPoster";
 import { useScrollLock } from "@/utils/useScrollLock";
 import { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import { GALLERY_DIALOG_ATTR, useGalleryDialogKeys } from "./galleryDialog";
@@ -28,7 +29,10 @@ const CLOSE_ANIMATION_MS = 300;
 
 const GALLERY_INFO_MUX_PLAYBACK_ID =
   "UBPHbQ7lhjoY6bt3d8OXMRNBV3FRhr2au00FALYZ02zn4";
-const GALLERY_INFO_IMAGE_SRC = `https://image.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}/thumbnail.png?width=1920`;
+const GALLERY_INFO_IMAGE_SRC = muxPosterUrl(GALLERY_INFO_MUX_PLAYBACK_ID, {
+  projectId: "gallery",
+  width: 1920,
+});
 const GALLERY_INFO_VIDEO_SRC = `https://stream.mux.com/${GALLERY_INFO_MUX_PLAYBACK_ID}.m3u8`;
 const GALLERY_X_LINK =
   "https://x.com/michelletliu/status/2084772214164148607";
