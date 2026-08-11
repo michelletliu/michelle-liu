@@ -19,6 +19,9 @@ type SegmentedPillProps<T extends string = string> = {
 /**
  * Two-option segmented pill (Screen Time Receipt Daily / Weekly).
  * Fully-rounded gray track with a sliding white selected indicator.
+ *
+ * The indicator is sized to match the filter pill's active chip (32px), so the
+ * track is that height plus its 4px inset on each side.
  */
 export function SegmentedPill<T extends string>({
   options,
@@ -35,7 +38,7 @@ export function SegmentedPill<T extends string>({
       role="group"
       aria-label={ariaLabel}
       className={clsx(
-        "relative flex h-8 w-[209px] shrink-0 items-center justify-center overflow-clip rounded-full bg-[rgba(118,118,128,0.12)] px-[5px] py-1",
+        "relative flex h-10 w-[209px] shrink-0 items-center justify-center overflow-clip rounded-full bg-[rgba(118,118,128,0.12)] px-[5px] py-1",
         className,
       )}
     >
