@@ -910,21 +910,6 @@ input[type="button"]:hover,
   }
 }
 
-/* Debug helper - add 'debug-cursor' class to body to test */
-.debug-cursor body::after {
-  content: 'Cursor: ' attr(data-cursor-status);
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  z-index: 10000;
-  pointer-events: none;
-}
-
 /**
  * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
  */

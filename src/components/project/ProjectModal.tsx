@@ -455,6 +455,28 @@ declare global {
   }
 }
 
+/** Section roots that close on py-10 (40px). */
+const PY10_ROOT_SECTIONS = new Set([
+  "videoSection",
+  "phoneVideoSection",
+  "overlayImageSection",
+  "imageSection",
+  "learningsSection",
+]);
+
+/**
+ * A chapter title opens on py-16 (64px), so the section above it is topped up
+ * to close on 64px too and the seam reads as symmetric. Feature sections carry
+ * their own py-16/py-20 rhythm, so they are left alone.
+ */
+function titleSeamTopUp(section: ContentSection): string | undefined {
+  if (section._type === "textSection") {
+    // two-col closes on py-14 (56px); the other layouts on py-10 (40px).
+    return section.layout === "two-col" ? "pb-2" : "pb-6";
+  }
+  return PY10_ROOT_SECTIONS.has(section._type) ? "pb-6" : undefined;
+}
+
 // Expand icon — inline SVG so strokeWidth 1.5 matches ExperimentModal / DS Icons
 const BackArrowIcon = () => (
   <svg className="block size-full" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -1239,8 +1261,15 @@ export default function ProjectModal({
               </div>
             </div>
           )}
+          {/*
+            left-16 / top-28 mirrors the /system TOC rail so both share one left
+            edge with the page gutter (px-16). The rail runs to 204px, so it only
+            appears from xl up — the same breakpoint that puts body copy on 8 of
+            12 columns and opens a 213px+ gutter for it. Below that the gutter is
+            8% (~68px) and the rail would sit on top of the content.
+          */}
           {isFullscreen && !isMobile && navItems.length > 0 && (
-            <div className="pointer-events-none fixed top-28 left-8 md:left-[8%] xl:left-[40px] z-20 hidden md:block">
+            <div className="pointer-events-none fixed top-28 left-16 z-20 hidden xl:block">
               <div className="pointer-events-auto max-w-[140px]">
                 <ProjectCaseStudySidebar
                   items={navItems}
@@ -1277,7 +1306,16 @@ export default function ProjectModal({
               {/* Project Hero Header - hidden on mobile when unlocked (NASA is allowed) */}
               {!(isUnlocked && isMobile && projectId !== 'nasa') && (
               <>
-              <div ref={heroRef} className="content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] pt-32 pb-16 relative shrink-0 w-full">
+              <div
+                ref={heroRef}
+                className={clsx(
+                  "content-stretch flex flex-col gap-8 items-start justify-center px-8 md:px-[8%] xl:px-[175px] pb-16 relative shrink-0 w-full",
+                  // Fullscreen already spends height on the sticky header, so the
+                  // hero opens just below it and lands level with the nav rail at
+                  // top-28. Popups have no header to clear, so they keep pt-32.
+                  isFullscreen ? "pt-1" : "pt-32",
+                )}
+              >
                 {/* Logo - skip animation for Apple on mobile since logo is visible from homepage */}
                 {project.logo && (
                   projectId === 'apple' && isMobile ? (
@@ -1397,10 +1435,14 @@ export default function ProjectModal({
               </div>
 
               {/* Dynamic Content Sections */}
-              {visibleSections.map((section) => {
+              {visibleSections.map((section, index) => {
                   const sectionNumber =
                     section._type === "sectionTitleSection" ? section.number : undefined;
                   const sectionHeading = getSectionAnchorHeading(section);
+                  const seamTopUp =
+                    visibleSections[index + 1]?._type === "sectionTitleSection"
+                      ? titleSeamTopUp(section)
+                      : undefined;
 
                   return (
                   // Testimonials have interactive expand/collapse - skip ScrollReveal
@@ -1429,6 +1471,7 @@ export default function ProjectModal({
                       data-section-key={section._key}
                       data-section-number={sectionNumber}
                       data-section-heading={sectionHeading}
+                      className={seamTopUp}
                     >
                       <ScrollReveal>
                         <ContentBlock 

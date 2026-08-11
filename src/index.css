@@ -486,6 +486,19 @@ video {
   margin-bottom: 0;
 }
 
+/*
+  Fullscreen case studies sit their body copy on 8 of 12 columns, so the outer
+  2 columns each side stay clear for the fixed section nav (left-16). Popups
+  keep the flat 175px gutter, hence the .fullscreen scope. Matches the shared
+  section gutter in ProjectModal — keep the two in sync if that class changes.
+*/
+@media (min-width: 1280px) {
+  .modal-scroll-container.fullscreen [class*="xl:px-[175px]"] {
+    padding-left: 16.6667%;
+    padding-right: 16.6667%;
+  }
+}
+
 /* Sundays mobile popup: no scrollbar gutter (content fits without scrolling) */
 .experiment-modal-embed:has(.sundays-mobile-embed) {
   scrollbar-gutter: auto !important;
