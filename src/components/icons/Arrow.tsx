@@ -1,3 +1,5 @@
+import { ICON_STROKE_WIDTH } from "../shared/iconSizes";
+
 type ArrowDirection = "right" | "down" | "left" | "up";
 
 const DIRECTION_DEG: Record<ArrowDirection, number> = {
@@ -42,7 +44,7 @@ export function Arrow({
         <path
           d="M4 12h16M14 6l6 6-6 6"
           stroke="currentColor"
-          strokeWidth={strokeWidth ?? 1.5}
+          strokeWidth={strokeWidth ?? ICON_STROKE_WIDTH}
           strokeLinecap="round"
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"

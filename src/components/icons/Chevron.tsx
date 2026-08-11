@@ -1,3 +1,5 @@
+import { ICON_STROKE_WIDTH } from "../shared/iconSizes";
+
 type ChevronDirection = "right" | "down" | "left" | "up";
 
 const DIRECTION_DEG: Record<ChevronDirection, number> = {
@@ -42,7 +44,7 @@ export function Chevron({
         <path
           d="M9 18L15 12L9 6"
           stroke="currentColor"
-          strokeWidth={strokeWidth ?? 1.5}
+          strokeWidth={strokeWidth ?? ICON_STROKE_WIDTH}
           strokeLinecap="round"
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"

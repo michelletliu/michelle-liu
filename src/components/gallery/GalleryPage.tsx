@@ -13,6 +13,7 @@ import GallerySaveDialog from "./GallerySaveDialog";
 import GalleryThumbstick from "./GalleryThumbstick";
 import { downloadImage, generatedImageFilename } from "./downloadImage";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
+import { ICON_STROKE_WIDTH } from "@/components/shared/iconSizes";
 import { GALLERY_PAINTINGS } from "./galleryPaintings";
 import type { MetArtwork } from "./metArtworks";
 import { resolveShimmerHues, type ShimmerHues } from "./shimmerPalette";
@@ -49,7 +50,7 @@ function GalleryDownloadIcon({ className = "" }: { className?: string }) {
       <path
         d="M12 4V15M7 10L12 15L17 10"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
@@ -57,7 +58,7 @@ function GalleryDownloadIcon({ className = "" }: { className?: string }) {
       <path
         d="M5 20H19"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
       />

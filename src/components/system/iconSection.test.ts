@@ -123,6 +123,6 @@ test("stroke icons include Search in alphabetical order", () => {
   );
   assert.match(
     section,
-    /function SearchIcon\(\) \{[\s\S]*?<svg className="size-5"[\s\S]*?strokeWidth="1\.5"/,
+    /function SearchIcon\(\) \{[\s\S]*?<svg className="size-5"[\s\S]*?strokeWidth=\{ICON_STROKE_WIDTH\}/,
   );
 });

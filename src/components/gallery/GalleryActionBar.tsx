@@ -28,6 +28,7 @@ import {
 } from "@/components/RotatingLoadingText";
 import Tooltip from "@/components/shared/Tooltip";
 import { PlusIcon, SquarePenIcon } from "@/components/library/icons";
+import { ICON_STROKE_WIDTH } from "@/components/shared/iconSizes";
 import MetArtworkPicker from "./MetArtworkPicker";
 import {
   COMPOSER_MORPH_MS,
@@ -84,7 +85,7 @@ function GalleryDownloadIcon({ className = "" }: { className?: string }) {
       <path
         d="M12 4V15M7 10L12 15L17 10"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
@@ -92,7 +93,7 @@ function GalleryDownloadIcon({ className = "" }: { className?: string }) {
       <path
         d="M5 20H19"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
       />
@@ -952,7 +953,7 @@ export default function GalleryActionBar({
                         }
                         className={`grid size-10 shrink-0 cursor-pointer place-items-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
                       >
-                        <PlusIcon className="size-[15px]" strokeWidth={1.25} />
+                        <PlusIcon className="size-[15px]" />
                       </button>
                     ) : (
                       <Tooltip
@@ -1000,10 +1001,7 @@ export default function GalleryActionBar({
                               : "cursor-pointer text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
                           } ${GALLERY_FOCUS_RING}`}
                         >
-                          <PlusIcon
-                            className="size-[15px]"
-                            strokeWidth={1.25}
-                          />
+                          <PlusIcon className="size-[15px]" />
                         </button>
                       </Tooltip>
                     )}
@@ -1262,7 +1260,7 @@ function SelectedInspirationCard({
         aria-label="Remove inspiration"
         className={`absolute right-3 top-3 grid size-7 place-items-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 active:bg-zinc-200/70 ${GALLERY_FOCUS_RING}`}
       >
-        <CloseIcon size="14px" strokeWidth={1.25} />
+        <CloseIcon size="14px" />
       </button>
     </motion.div>
   );

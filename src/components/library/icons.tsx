@@ -1,7 +1,9 @@
 // Library page icons as SVG components
-// Stroke standard: strokeWidth 1.5 + vectorEffect non-scaling-stroke
-// so optical weight stays 1.5 CSS px at any display size.
+// Stroke standard: strokeWidth ICON_STROKE_WIDTH + vectorEffect non-scaling-stroke
+// so optical weight stays the house weight (see iconSizes.ts) at any display size.
 // Chevron → ../Chevron.tsx · Close → ../Close.tsx · Arrow → ../Arrow.tsx
+
+import { ICON_STROKE_WIDTH } from "../shared/iconSizes";
 
 export { ArrowRightIcon, ArrowDownIcon } from "../icons/Arrow";
 export { ChevronDownIcon } from "../icons/Chevron";
@@ -13,7 +15,7 @@ interface IconProps {
 }
 
 // Plus icon for add book button
-export function PlusIcon({ className = "", strokeWidth = 1.5 }: IconProps) {
+export function PlusIcon({ className = "", strokeWidth = ICON_STROKE_WIDTH }: IconProps) {
   return (
     <svg
       className={className}
@@ -48,7 +50,7 @@ export function SquarePenIcon({ className = "" }: IconProps) {
       <path
         d="M12 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V12"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
@@ -56,7 +58,7 @@ export function SquarePenIcon({ className = "" }: IconProps) {
       <path
         d="M18.375 2.625C19.2034 1.79657 20.5466 1.79657 21.375 2.625C22.2034 3.45343 22.2034 4.79657 21.375 5.625L12.362 14.638C12.1156 14.8844 11.8122 15.0663 11.478 15.168L8.606 16.04C8.21687 16.1582 7.84178 15.7831 7.96 15.394L8.832 12.522C8.93372 12.1878 9.11562 11.8844 9.362 11.638L18.375 2.625Z"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
@@ -79,7 +81,7 @@ export function SendIcon({ className = "" }: IconProps) {
       <path
         d="M22.2 1.8L10.8 13.2M22.2 1.8L15 22.2L10.8 13.2M22.2 1.8L1.8 9L10.8 13.2"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
@@ -104,7 +106,7 @@ export function SmileyIcon({ className = "" }: IconProps) {
         cy="12"
         r="10.2"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         vectorEffect="non-scaling-stroke"
       />
       <circle cx="8.4" cy="9.6" r="1.5" fill="currentColor" />
@@ -112,7 +114,7 @@ export function SmileyIcon({ className = "" }: IconProps) {
       <path
         d="M7.8 15C8.4 16.2 9.96 17.4 12 17.4C14.04 17.4 15.6 16.2 16.2 15"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
       />
@@ -139,7 +141,7 @@ export function GridIcon({
         d="M4 4h6v6H4V4ZM14 4h6v6h-6V4ZM4 14h6v6H4v-6ZM14 14h6v6h-6v-6Z"
         fill={filled ? "currentColor" : "none"}
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
       />

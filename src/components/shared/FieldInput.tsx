@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { forwardRef, type ComponentPropsWithoutRef, type ReactNode } from "react";
-import { iconSize } from "./iconSizes";
+import { iconSize, ICON_STROKE_WIDTH } from "./iconSizes";
 
 /**
  * Canonical pill field used by password gates and the library submit-book modal.
@@ -85,6 +85,12 @@ export function FieldTrailingIcon({
 
 /**
  * Magnifier for search/filter FieldShell — stroke matches Chevron / Close.
+ *
+ * The lens fills nearly the whole box on purpose. Next to a filled mark of the
+ * same nominal size (the gallery pill pairs it with `Info`), a small ring in a
+ * roomy box reads as a lighter icon even at an identical stroke, so the lens is
+ * sized to sit within a stroke half-width of the viewBox at the smallest call
+ * site (12px) and the handle reaches the corner from there.
  */
 export function SearchMagnifierIcon({
   size = iconSize("md"),
@@ -101,17 +107,17 @@ export function SearchMagnifierIcon({
       aria-hidden
     >
       <circle
-        cx="11"
-        cy="11"
-        r="6.25"
+        cx="11.4"
+        cy="11.4"
+        r="6.95"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         vectorEffect="non-scaling-stroke"
       />
       <path
-        d="M16.5 16.5L20 20"
+        d="M16.35 16.35L19.9 19.9"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
       />

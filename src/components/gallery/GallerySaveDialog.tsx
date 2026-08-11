@@ -15,6 +15,7 @@ import { useReducedMotion } from "framer-motion";
 import { Copy } from "lucide-react";
 import { CloseIcon } from "@/components/icons/Close";
 import { FieldInput, FieldShell } from "@/components/shared/FieldInput";
+import { ICON_STROKE_WIDTH } from "@/components/shared/iconSizes";
 import { FloatingPanel } from "@/components/shared/FloatingPanel";
 import { ghostIconButtonClass } from "@/components/shared/ghostIconButton";
 import { useScrollLock } from "@/utils/useScrollLock";
@@ -131,7 +132,8 @@ function ShareUrlField({
         aria-label="Copy link"
         className={`absolute right-1.5 top-1/2 z-[2] grid h-6 w-6 -translate-y-1/2 place-items-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
       >
-        <Copy size={14} strokeWidth={1.5} aria-hidden />
+        {/* lucide lacks non-scaling-stroke, so scale the house weight by its 24 viewBox */}
+        <Copy size={14} strokeWidth={(ICON_STROKE_WIDTH * 24) / 14} aria-hidden />
       </button>
     </FieldShell>
   );

@@ -1,3 +1,5 @@
+import { ICON_STROKE_WIDTH } from "../shared/iconSizes";
+
 type LinkIconProps = {
   className?: string;
   size?: string;
@@ -11,7 +13,7 @@ export function LinkIcon({ className = "", size }: LinkIconProps) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.5}
+      strokeWidth={ICON_STROKE_WIDTH}
       strokeLinecap="round"
       strokeLinejoin="round"
       xmlns="http://www.w3.org/2000/svg"

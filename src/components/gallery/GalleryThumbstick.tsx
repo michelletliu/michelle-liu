@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons/Chevron";
 import { PlusIcon } from "@/components/library/icons";
+import { ICON_STROKE_WIDTH } from "@/components/shared/iconSizes";
 import { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { adjacentPaintingId } from "./galleryPaintings";
@@ -76,7 +77,7 @@ function AxisMinusIcon() {
         // matches the + crossbar optically.
         d="M2 12H22"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
       />

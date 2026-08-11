@@ -1,3 +1,5 @@
+import { ICON_STROKE_WIDTH } from "../shared/iconSizes";
+
 export type CodeProps = {
   className?: string;
   size?: string;
@@ -23,7 +25,7 @@ export function Code({ className = "", size, strokeWidth }: CodeProps) {
       <path
         d="M7 6.5L1.5 12L7 17.5M17 6.5L22.5 12L17 17.5M14 3.5L10 20.5"
         stroke="currentColor"
-        strokeWidth={strokeWidth ?? 1.5}
+        strokeWidth={strokeWidth ?? ICON_STROKE_WIDTH}
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"

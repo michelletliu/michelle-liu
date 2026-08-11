@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { useScrollLock } from "../../utils/useScrollLock";
 import { ghostIconButtonClass } from "../shared/ghostIconButton";
+import { ICON_STROKE_WIDTH } from "../shared/iconSizes";
 
 export type ArtLightboxItem = {
   imageSrc: string;
@@ -115,8 +116,9 @@ export default function ArtLightbox({ item, onClose }: ArtLightboxProps) {
           <path
             d="M1 1L13 13M1 13L13 1"
             stroke="currentColor"
-            strokeWidth="1.5"
+            strokeWidth={ICON_STROKE_WIDTH}
             strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
           />
         </svg>
       </button>
