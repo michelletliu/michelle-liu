@@ -1,0 +1,13 @@
+---
+description: Keep typecheck cheap; avoid concurrent heavy verification
+alwaysApply: true
+---
+
+# Typecheck & verification hygiene
+
+- Prefer `ReadLints` / IDE diagnostics for local edits. Do **not** run `npx tsc --noEmit` after every small UI change.
+- Run full `tsc --noEmit` only when: the user asks, you're about to commit/PR, or you changed shared types / many files.
+- Before starting `tsc`, check for an existing `tsc`/`npx tsc` process. If one is running, wait for it or reuse its result — never start a second.
+- Do not run `tsc` in parallel with Puppeteer, screenshot harnesses, cold Next compiles, or other CPU-heavy jobs.
+- Never `find`/walk `.worktrees`, `.claude`, or `node_modules` for typecheck or "how big is the project."
+- If load average is high or the machine feels thrashing, skip full typecheck and say so; don't pile on.
