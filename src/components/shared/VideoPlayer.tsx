@@ -221,9 +221,14 @@ export default function VideoPlayer({
       if (!hls.levels.length) return;
       const index = Math.min(pickLevelIndex(hls.levels, video), levelCeiling);
       if (index < 0 || index === pinnedLevel) return;
+      const isUpgrade = pinnedLevel !== -1 && index > pinnedLevel;
       pinnedLevel = index;
       if (isInitial) hls.startLevel = index;
-      hls.nextLevel = index;
+      // A short muted loop buffers end to end on the first pass and then replays
+      // from that buffer, so `nextLevel` would queue an upgrade that never
+      // loads. Switching `currentLevel` flushes and refetches at the new size.
+      if (isUpgrade) hls.currentLevel = index;
+      else hls.nextLevel = index;
     };
 
     let resizeObserver: ResizeObserver | undefined;
