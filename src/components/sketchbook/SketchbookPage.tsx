@@ -515,6 +515,29 @@ export default function SketchbookPage() {
     });
   }, [x, slideDistance]);
   
+  // Navigate via the same animation path used by keyboard, wheel, and swipe
+  const goToPrevPage = useCallback(() => {
+    if (currentIndex <= 0) return;
+    setSwipeDirection('right');
+    animateToPrevPage();
+  }, [currentIndex, animateToPrevPage]);
+
+  const goToNextPage = useCallback(() => {
+    if (currentIndex >= entries.length - 1) return;
+    setSwipeDirection('left');
+    animateToNextPage();
+  }, [currentIndex, entries.length, animateToNextPage]);
+
+  // Clicking a side peek centers it, unless the pointer was actually dragging
+  const handlePeekClick = useCallback((direction: 'prev' | 'next') => {
+    if (dragStartedRef.current) return;
+    if (direction === 'prev') {
+      goToPrevPage();
+    } else {
+      goToNextPage();
+    }
+  }, [goToPrevPage, goToNextPage]);
+
   // Reset x position (snap back)
   const resetPosition = useCallback(() => {
     animate(x, 0, {
@@ -586,6 +609,11 @@ export default function SketchbookPage() {
   
   // Handle drag end - swipe to change page with animation
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    // The browser fires `click` immediately after dragend, so clear the flag behind it
+    setTimeout(() => {
+      dragStartedRef.current = false;
+    }, 0);
+
     const threshold = 0; // Any movement triggers swipe
     const velocityThreshold = 0; // Any velocity triggers swipe
     const velocity = info.velocity.x;
@@ -755,6 +783,7 @@ export default function SketchbookPage() {
                   x: farPrevImageX,
                   opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex > 1 ? 0.5 : 0),
                   scale: 0.85,
+                  pointerEvents: 'none',
                 }}
               >
                 {entries[currentIndex - 2] && (
@@ -777,17 +806,25 @@ export default function SketchbookPage() {
                   x: prevImageX,
                   opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex > 0 ? prevImageOpacity : 0),
                   scale: prevImageScale,
+                  pointerEvents: (isTransitioning || isExpandingToFullscreen) ? 'none' : 'auto',
                 }}
               >
                 {entries[currentIndex - 1] && (
-                  <img
-                    src={getImageUrl(entries[currentIndex - 1])}
-                    alt={entries[currentIndex - 1].note || `Sketch`}
-                    className="w-full h-auto object-contain drop-shadow-sm"
-                    style={{ maxHeight: isMobile ? '35vh' : isFullscreen ? '55vh' : '37.5vh', transition: 'max-height 0.3s ease-out' }}
-                    draggable={false}
-                    loading="eager"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => handlePeekClick('prev')}
+                    aria-label="Previous sketchbook page"
+                    className="block w-full cursor-pointer"
+                  >
+                    <img
+                      src={getImageUrl(entries[currentIndex - 1])}
+                      alt={entries[currentIndex - 1].note || `Sketch`}
+                      className="w-full h-auto object-contain drop-shadow-sm"
+                      style={{ maxHeight: isMobile ? '35vh' : isFullscreen ? '55vh' : '37.5vh', transition: 'max-height 0.3s ease-out' }}
+                      draggable={false}
+                      loading="eager"
+                    />
+                  </button>
                 )}
               </motion.div>
               
@@ -821,17 +858,25 @@ export default function SketchbookPage() {
                   x: nextImageX,
                   opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex < entries.length - 1 ? nextImageOpacity : 0),
                   scale: nextImageScale,
+                  pointerEvents: (isTransitioning || isExpandingToFullscreen) ? 'none' : 'auto',
                 }}
               >
                 {entries[currentIndex + 1] && (
-                  <img
-                    src={getImageUrl(entries[currentIndex + 1])}
-                    alt={entries[currentIndex + 1].note || `Sketch`}
-                    className="w-full h-auto object-contain drop-shadow-sm"
-                    style={{ maxHeight: isMobile ? '35vh' : isFullscreen ? '55vh' : '37.5vh', transition: 'max-height 0.3s ease-out' }}
-                    draggable={false}
-                    loading="eager"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => handlePeekClick('next')}
+                    aria-label="Next sketchbook page"
+                    className="block w-full cursor-pointer"
+                  >
+                    <img
+                      src={getImageUrl(entries[currentIndex + 1])}
+                      alt={entries[currentIndex + 1].note || `Sketch`}
+                      className="w-full h-auto object-contain drop-shadow-sm"
+                      style={{ maxHeight: isMobile ? '35vh' : isFullscreen ? '55vh' : '37.5vh', transition: 'max-height 0.3s ease-out' }}
+                      draggable={false}
+                      loading="eager"
+                    />
+                  </button>
                 )}
               </motion.div>
               
@@ -843,6 +888,7 @@ export default function SketchbookPage() {
                   x: farNextImageX,
                   opacity: (isTransitioning || isExpandingToFullscreen) ? 0 : (currentIndex < entries.length - 2 ? 0.5 : 0),
                   scale: 0.85,
+                  pointerEvents: 'none',
                 }}
               >
                 {entries[currentIndex + 2] && (
