@@ -55,15 +55,18 @@ export async function POST(req: NextRequest) {
   const envKey = getPasswordEnvKey(project);
   const expected = process.env[envKey];
 
+  // A missing env var is a deploy problem, not a wrong password. Say so, or the
+  // visitor is told to "try again" against a door that can never open.
   if (!expected) {
-    return NextResponse.json({ success: false });
+    console.error(`Password unlock misconfigured: ${envKey} is not set`);
+    return NextResponse.json({ success: false, error: "unconfigured" }, { status: 500 });
   }
 
   const identity = getClientIdentity(req);
   if (!matchesPassword(password, expected)) {
     const attempt = limiter.recordFailure(identity, project);
     return NextResponse.json(
-      { success: false },
+      { success: false, error: attempt.allowed ? "invalid" : "rate_limited" },
       attempt.allowed
         ? undefined
         : {
@@ -77,10 +80,10 @@ export async function POST(req: NextRequest) {
 
   const sessionSecret = getSessionSecret();
   if (!sessionSecret) {
-    return NextResponse.json(
-      { success: false, error: "Password sessions are not configured" },
-      { status: 500 },
+    console.error(
+      "Password unlock misconfigured: PASSWORD_SESSION_SECRET is not set for this environment",
     );
+    return NextResponse.json({ success: false, error: "unconfigured" }, { status: 500 });
   }
 
   limiter.reset(identity, project);
