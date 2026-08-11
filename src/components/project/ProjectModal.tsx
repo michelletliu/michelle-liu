@@ -752,7 +752,6 @@ export default function ProjectModal({
   const [isClosing, setIsClosing] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isPastHero, setIsPastHero] = useState(false);
-  const [showSkipLink, setShowSkipLink] = useState(false);
   const [project, setProject] = useState<Project | null>(() =>
     getCachedData<Project>(`project:${projectId}`),
   );
@@ -778,8 +777,6 @@ export default function ProjectModal({
   const heroRef = React.useRef<HTMLDivElement>(null);
   const missionRef = React.useRef<HTMLDivElement>(null);
   const tocRef = React.useRef<HTMLDivElement>(null);
-  const skipStartRef = React.useRef<HTMLDivElement>(null);
-  const skipEndRef = React.useRef<HTMLDivElement>(null);
   
   // Fullscreen state is controlled by URL via initialFullscreen prop
   const isFullscreen = initialFullscreen;
@@ -844,11 +841,6 @@ export default function ProjectModal({
   // Lock body scroll when modal is open (popup mode only, flicker-free implementation)
   useScrollLock(!isFullscreen);
 
-  // Reset skip link visibility when transitioning between popup/fullscreen
-  useEffect(() => {
-    setShowSkipLink(false);
-  }, [isFullscreen]);
-
   // Trigger enter animation on mount
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -887,16 +879,6 @@ export default function ProjectModal({
         if (anchorEl) {
           const anchorTop = getOffsetTop(anchorEl, scrollContainer);
           setIsPastHero(scrollTop > anchorTop - 60);
-        }
-
-        // Check if we should show the skip link (between configured start and end sections)
-        if (skipStartRef.current && skipEndRef.current) {
-          const startTop = getOffsetTop(skipStartRef.current, scrollContainer);
-          const endTop = getOffsetTop(skipEndRef.current, scrollContainer);
-          const scrollPosition = scrollTop;
-
-          // Show link if we've scrolled past start section but not yet reached end section
-          setShowSkipLink(scrollPosition >= (startTop - 200) && scrollPosition < (endTop - 200));
         }
       };
 
@@ -1151,31 +1133,6 @@ export default function ProjectModal({
     }
   };
 
-  // Handle skip to final designs
-  const handleSkipToFinalDesigns = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (posthogEnabled) {
-      posthog.capture("skip_to_final_designs_clicked", { project_id: projectId });
-    }
-    if (skipEndRef.current && scrollContainerRef.current) {
-      // Use the same getOffsetTop helper to get correct position
-      const getOffsetTop = (element: HTMLElement, container: HTMLElement): number => {
-        let offsetTop = 0;
-        let currentElement: HTMLElement | null = element;
-        
-        while (currentElement && currentElement !== container) {
-          offsetTop += currentElement.offsetTop;
-          currentElement = currentElement.offsetParent as HTMLElement | null;
-        }
-        
-        return offsetTop;
-      };
-      
-      const skipEndTop = getOffsetTop(skipEndRef.current, scrollContainerRef.current);
-      scrollContainerRef.current.scrollTo({ top: skipEndTop - 20, behavior: 'smooth' });
-    }
-  };
-
   const handleProjectClick = (company: string) => {
     if (onProjectClick) {
       // Navigate immediately - the key prop will ensure
@@ -1236,23 +1193,6 @@ export default function ProjectModal({
               </Tooltip>
             </div>
           )}
-
-          {/* Skip to Final Designs Link */}
-          <a
-            href="#final-designs"
-            onClick={handleSkipToFinalDesigns}
-            className={clsx(
-              "fixed z-[100] font-medium text-zinc-400 hover:text-blue-500 cursor-pointer leading-tight",
-              "transition-all duration-300 ease-in-out",
-              showSkipLink ? "opacity-100" : "opacity-0 pointer-events-none",
-              isFullscreen ? "top-16 left-16 max-md:left-6" : "top-16 left-8"
-            )}
-          >
-            <div className="flex flex-col gap-0.5 items-start">
-              <span className="text-xs">↓ SKIP TO</span>
-              <span className="text-xs">DESIGNS</span>
-            </div>
-          </a>
 
           {/* Scrollable content */}
           <div ref={scrollContainerRef} className={clsx(
@@ -1478,8 +1418,6 @@ export default function ProjectModal({
                         isUnlocked={isUnlocked}
                         onUnlock={handleUnlock}
                         projectId={projectId}
-                        skipStartRef={skipStartRef}
-                        skipEndRef={skipEndRef}
                         scrollContainerRef={scrollContainerRef}
                         missionRef={missionRef}
                         tocRef={tocRef}
@@ -1498,8 +1436,6 @@ export default function ProjectModal({
                           isFullscreen={isFullscreen} 
                           isUnlocked={isUnlocked} 
                           onUnlock={handleUnlock}
-                          skipStartRef={skipStartRef}
-                          skipEndRef={skipEndRef}
                           scrollContainerRef={scrollContainerRef}
                           projectId={projectId}
                           missionRef={missionRef}
@@ -1784,8 +1720,6 @@ function ContentBlock({
   isFullscreen = false, 
   isUnlocked = false, 
   onUnlock,
-  skipStartRef,
-  skipEndRef,
   scrollContainerRef,
   projectId,
   missionRef,
@@ -1795,8 +1729,6 @@ function ContentBlock({
   isFullscreen?: boolean; 
   isUnlocked?: boolean; 
   onUnlock?: (targetSectionId?: string) => void;
-  skipStartRef?: React.RefObject<HTMLDivElement | null>;
-  skipEndRef?: React.RefObject<HTMLDivElement | null>;
   scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
   projectId?: string;
   missionRef?: React.RefObject<HTMLDivElement | null>;
@@ -2759,12 +2691,8 @@ function ContentBlock({
         );
 
       case "sectionTitleSection":
-        // Add refs based on skip link flags
-        const sectionRef = section.isSkipLinkStart ? skipStartRef : section.isSkipLinkEnd ? skipEndRef : undefined;
-        
         return (
           <div 
-            ref={sectionRef}
             data-section-number={section.number}
             className="content-stretch flex flex-col gap-5 items-start justify-center px-8 md:px-[8%] xl:px-[175px] py-16 relative shrink-0 w-full"
           >

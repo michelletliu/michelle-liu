@@ -195,7 +195,7 @@ export const fontFamilies: {
 ];
 
 export const typeScale: TypeToken[] = [
-  { name: "text-xs", className: "text-xs", px: "12px", usage: "Footer clock, film loading, skip-to-designs link, Polaroid stamp / share chrome", tag: "canonical", role: "body" },
+  { name: "text-xs", className: "text-xs", px: "12px", usage: "Footer clock, film loading, Polaroid stamp / share chrome", tag: "canonical", role: "body" },
   { name: "text-sm", className: "text-sm", px: "14px", usage: "Captions, filters, errors, tooltips, contact badge, Polaroid / Screentime labels", tag: "canonical", role: "body" },
   { name: "text-base", className: "text-base", px: "16px", usage: "Default body (--font-size), metadata / tool grids, Screentime CTAs", tag: "canonical", role: "body" },
   { name: "text-lg", className: "text-lg", px: "18px", usage: "Hero subtitle, section subtitles, nav tab labels, Polaroid / Screentime headings", tag: "canonical", role: "body" },
