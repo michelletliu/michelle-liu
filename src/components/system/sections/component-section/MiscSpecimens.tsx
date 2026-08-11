@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FilterDropdown } from "../../../shared/FilterDropdown";
 import { FilterPills } from "../../../shared/FilterPills";
 import { HorizontalLine } from "../../../shared/HorizontalLine";
+import { SegmentedPill } from "../../../shared/SegmentedPill";
 import { SubLabel, TagChip } from "../../primitives";
 import type { Tag } from "../../tokens";
 import {
@@ -18,6 +19,11 @@ const FILTER_PILL_OPTIONS = [
   { value: "2026", label: "2026", count: 10 },
   { value: "2025", label: "2025", count: 13 },
 ];
+
+const SEGMENTED_PILL_OPTIONS = [
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+] as const;
 
 const LIBRARY_OPTIONS = [
   { value: "favorites", label: "favorites", count: 8 },
@@ -162,6 +168,19 @@ function FilterPillDemo() {
   );
 }
 
+function SegmentedPillDemo() {
+  const [period, setPeriod] = useState<"daily" | "weekly">("daily");
+  return (
+    <SegmentedPill
+      aria-label="Period"
+      options={SEGMENTED_PILL_OPTIONS}
+      value={period}
+      onChange={setPeriod}
+      className="segmented-pill-demo"
+    />
+  );
+}
+
 function FilterDropdownDemo() {
   const [active, setActive] = useState("2026");
   return (
@@ -189,6 +208,9 @@ export function PillSpecimens() {
         </Specimen>
         <Specimen label="Filter pill" span={SPAN_WIDE}>
           <FilterPillDemo />
+        </Specimen>
+        <Specimen label="Segmented pill" span={SPAN_WIDE}>
+          <SegmentedPillDemo />
         </Specimen>
         <Specimen label="Filter dropdown" span={SPAN_WIDE}>
           <FilterDropdownDemo />
