@@ -17,6 +17,16 @@
   .rounded-\[100px\],
   .gallery-composer-morph,
   .ghost-icon-button,
+  /* `.button.rectangular` keeps the squircle; only the circular recipe is a pill. */
+  .button:not(.rectangular),
+  .filter-pill,
+  .filter-pill-indicator,
+  /* `globals.css` recipes: their own `corner-shape: round` sits in
+     `@layer components`, so it loses to the unlayered `*` rule above. */
+  .field-shell,
+  .filter-dropdown-trigger,
+  .contact-badge,
+  .loading-spinner-ring,
   [style*="border-radius: 50%"],
   [style*="border-radius:50%"],
   [style*="border-radius: 9999"],
