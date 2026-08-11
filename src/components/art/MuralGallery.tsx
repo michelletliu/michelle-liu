@@ -245,7 +245,7 @@ export default function MuralGallery({
               onClick={() => scroll("left")}
               disabled={!canScrollLeft}
               className={clsx(
-                canScrollLeft ? "text-zinc-500 hover:text-zinc-700" : "text-zinc-300/60 cursor-default"
+                canScrollLeft ? "text-zinc-600 hover:text-zinc-800" : "text-zinc-300/60 cursor-default"
               )}
               aria-label="Scroll left"
             >
@@ -264,7 +264,7 @@ export default function MuralGallery({
               onClick={() => scroll("right")}
               disabled={!canScrollRight}
               className={clsx(
-                canScrollRight ? "text-zinc-500 hover:text-zinc-700" : "text-zinc-300/60 cursor-default"
+                canScrollRight ? "text-zinc-600 hover:text-zinc-800" : "text-zinc-300/60 cursor-default"
               )}
               aria-label="Scroll right"
             >

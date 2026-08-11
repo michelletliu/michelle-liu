@@ -74,9 +74,11 @@ test("only the muted input composition uses the muted shell tone", () => {
     /const shellTone =\s*composition === "muted" \? "muted" : "surface";/,
   );
   assert.match(section, /tone=\{shellTone\}/);
+  // First clsx arg may include extra utilities (e.g. rounded-full); shellComposition
+  // must still be applied on the input sample alongside the input-sample class.
   assert.match(
     section,
-    /className=\{clsx\("input-sample", shellComposition\)\}/,
+    /className=\{clsx\("input-sample[^"]*", shellComposition\)\}/,
   );
   assert.doesNotMatch(
     section,
@@ -109,7 +111,9 @@ test("input matrix specimens do not force medium weight", () => {
   );
 });
 
-test("input matrix icons use the md icon size", () => {
-  assert.match(section, /<ArrowRightIcon size=\{iconSize\("md"\)\}/);
-  assert.doesNotMatch(section, /<ArrowRightIcon size="14px"/);
+test("input matrix icons use the shared icon size scale", () => {
+  assert.match(section, /<ArrowRightIcon size=\{iconSize\("sm"\)\}/);
+  assert.match(section, /<SearchMagnifierIcon size=\{iconSize\("xs"\)\}/);
+  assert.doesNotMatch(section, /<ArrowRightIcon size="\d+px"/);
+  assert.doesNotMatch(section, /<SearchMagnifierIcon size="\d+px"/);
 });
