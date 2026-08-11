@@ -585,6 +585,15 @@ function ExpandableImage({ src, alt = "", caption, className = "", containerClas
   );
 }
 
+type PasswordErrorKind = "invalid" | "rate_limited" | "unconfigured" | "network";
+
+const PASSWORD_ERROR_MESSAGES: Record<PasswordErrorKind, string> = {
+  invalid: "Please try again!",
+  rate_limited: "Too many attempts. Please try again in a few minutes.",
+  unconfigured: "Something's broken on my end, not your password. Please email me!",
+  network: "Couldn't reach the server. Please try again.",
+};
+
 // Password input component - verifies password server-side via /api/password
 function PasswordInput({ 
   projectId, 
@@ -594,16 +603,23 @@ function PasswordInput({
   onUnlock?: () => void;
 }) {
   const [passwordValue, setPasswordValue] = useState("");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<PasswordErrorKind | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // Retained after `error` clears so the message doesn't blank out mid fade-out.
+  const [lastErrorKind, setLastErrorKind] = useState<PasswordErrorKind>("invalid");
+
+  const showError = (kind: PasswordErrorKind) => {
+    setLastErrorKind(kind);
+    setError(kind);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading || !passwordValue.trim()) return;
 
     setIsLoading(true);
-    setError(false);
+    setError(null);
 
     try {
       const response = await fetch('/api/password', {
@@ -621,11 +637,20 @@ function PasswordInput({
         setPasswordValue("");
         onUnlock?.();
         return;
+      }
+
+      if (data.error === "unconfigured" || response.status >= 500) {
+        console.error(
+          `Password unlock is misconfigured for "${projectId}" — check the PASSWORD_* and PASSWORD_SESSION_SECRET env vars for this environment.`,
+        );
+        showError("unconfigured");
+      } else if (data.error === "rate_limited" || response.status === 429) {
+        showError("rate_limited");
       } else {
-        setError(true);
+        showError("invalid");
       }
     } catch {
-      setError(true);
+      showError("network");
     }
     setIsLoading(false);
   };
@@ -633,7 +658,7 @@ function PasswordInput({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswordValue(e.target.value);
     if (error) {
-      setError(false);
+      setError(null);
     }
   };
 
@@ -643,7 +668,7 @@ function PasswordInput({
 
   return (
     <form onSubmit={handleSubmit} className="relative w-full max-w-[313px]">
-      <FieldShell error={error} className="justify-between">
+      <FieldShell error={!!error} className="justify-between">
         <FieldInput
           type={showPassword ? "text" : "password"}
           placeholder="Enter"
@@ -707,8 +732,8 @@ function PasswordInput({
           error ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
         )}
       >
-        <p className="text-[#f87171] text-sm leading-normal px-2 bg-transparent">
-          Please try again!
+        <p role="alert" className="text-[#f87171] text-sm leading-normal px-2 bg-transparent">
+          {PASSWORD_ERROR_MESSAGES[lastErrorKind]}
         </p>
       </div>
     </form>
