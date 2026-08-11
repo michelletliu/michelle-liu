@@ -6,6 +6,7 @@ import { useNavigate } from '@/lib/navigation';
 const loadDomToPng = () => import('modern-screenshot').then(m => m.domToPng);
 import imgLogo from '../../assets/logo.png';
 import InfoButton from '../shared/InfoButton';
+import { SegmentedPill } from '../shared/SegmentedPill';
 import { useExperimentProject } from '../../hooks/useExperimentProject';
 
 
@@ -612,39 +613,15 @@ function GenerateScreen({
         <p>RECEIPT</p>
       </div>
       <div className="flex items-start relative shrink-0">
-        <div className="bg-[rgba(118,118,128,0.12)] flex h-[36px] items-center justify-center overflow-clip px-[5px] py-[4px] relative rounded-full shrink-0 w-[209px]">
-          <div
-            className="absolute inset-y-[4px] left-[5px] w-[calc(50%-5px)] bg-white rounded-full shadow-soft"
-            style={{
-              transform: period === 'weekly' ? 'translateX(100%)' : 'translateX(0)',
-              transition: 'transform 200ms cubic-bezier(0.77, 0, 0.175, 1)',
-            }}
-          />
-          <button
-            onClick={() => onPeriodChange('daily')}
-            className="basis-0 grow h-full min-h-px min-w-px relative rounded-md shrink-0 cursor-pointer"
-          >
-            <div className="flex flex-row items-center justify-center size-full">
-              <div className="flex items-center justify-center px-[10px] py-[2px] relative size-full">
-                <p className={`basis-0 font-mono ${period === 'daily' ? 'font-semibold' : 'font-medium'} grow leading-5 min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-sm text-zinc-900 text-center text-nowrap tracking-[-0.08px]`}>
-                  Daily
-                </p>
-              </div>
-            </div>
-          </button>
-          <button
-            onClick={() => onPeriodChange('weekly')}
-            className="basis-0 grow h-full min-h-px min-w-px relative shrink-0 cursor-pointer"
-          >
-            <div className="flex flex-row items-center justify-center size-full">
-              <div className="flex items-center justify-center px-[10px] py-[3px] relative size-full">
-                <p className={`basis-0 font-mono ${period === 'weekly' ? 'font-semibold' : 'font-medium'} grow leading-5 min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-sm text-zinc-900 text-center text-nowrap`}>
-                  Weekly
-                </p>
-              </div>
-            </div>
-          </button>
-        </div>
+        <SegmentedPill
+          aria-label="Screen time period"
+          options={[
+            { value: 'daily', label: 'Daily' },
+            { value: 'weekly', label: 'Weekly' },
+          ]}
+          value={period}
+          onChange={onPeriodChange}
+        />
       </div>
       <div className="flex flex-col gap-3 py-2">
         <button
@@ -661,7 +638,7 @@ function GenerateScreen({
           className="flex items-center justify-center gap-3.5 px-6 py-2 relative shrink-0 cursor-pointer transition-colors group"
         >
           <img src={uploadIconSvg} alt="" className="h-[15px] w-auto opacity-50 group-hover:opacity-70 transition-opacity" />
-          <p className="font-mono leading-normal font-semibold relative shrink-0 text-base text-center text-nowrap text-zinc-500 group-hover:text-zinc-700 transition-colors">Upload Actual Data</p>
+          <p className="font-mono leading-normal font-semibold relative shrink-0 text-sm text-center text-nowrap text-zinc-500 group-hover:text-zinc-700 transition-colors">Upload Actual Data</p>
         </button>
     </div>
   );
