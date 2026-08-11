@@ -9,6 +9,7 @@ import {
 } from "react";
 import { ArrowUpRight } from "../../../icons/ArrowUpRight";
 import { Chevron } from "../../../icons/Chevron";
+import { ICON_STROKE_WIDTH } from "../../../shared/iconSizes";
 import ContactBadge from "../../../shared/ContactBadge";
 import { INLINE_LINK_CLASS } from "../../../shared/inlineLink";
 import Sidebar, { type SidebarNode } from "../../../layout/Sidebar";
@@ -194,13 +195,13 @@ function InfoIcon() {
         cy="12"
         r="9.25"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         vectorEffect="non-scaling-stroke"
       />
       <path
         d="M12 10.75V16.5M12 7.75V8"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
       />

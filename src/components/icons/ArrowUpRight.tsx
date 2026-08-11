@@ -1,3 +1,5 @@
+import { ICON_STROKE_WIDTH } from "../shared/iconSizes";
+
 /** Prefer `size={iconSize(...)}` from `iconSizes` over CSS `size-*`. */
 export function ArrowUpRight({ className = "", size, strokeWidth }: { className?: string; size?: string; strokeWidth?: number }) {
   return (
@@ -13,7 +15,7 @@ export function ArrowUpRight({ className = "", size, strokeWidth }: { className?
       <path
         d="M5 19L19 5M19 5H8M19 5V16"
         stroke="currentColor"
-        strokeWidth={strokeWidth ?? 1.5}
+        strokeWidth={strokeWidth ?? ICON_STROKE_WIDTH}
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"

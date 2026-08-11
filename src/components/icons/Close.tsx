@@ -1,3 +1,5 @@
+import { ICON_STROKE_WIDTH } from "../shared/iconSizes";
+
 export type CloseProps = {
   className?: string;
   size?: string;
@@ -24,7 +26,7 @@ export function Close({ className = "", size, strokeWidth }: CloseProps) {
       <path
         d="M6 6L18 18M18 6L6 18"
         stroke="currentColor"
-        strokeWidth={strokeWidth ?? 1.5}
+        strokeWidth={strokeWidth ?? ICON_STROKE_WIDTH}
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
       />
