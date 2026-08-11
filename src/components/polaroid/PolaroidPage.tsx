@@ -657,7 +657,7 @@ export default function PolaroidPage() {
             <div 
               className={`absolute content-stretch flex items-center px-[6.5px] md:px-[8px] py-[3.25px] md:py-[4px] ${
                 isPopupMode 
-                  ? 'left-[7px] md:left-[9px] right-[7px] md:right-[9px] top-[182px] md:top-[224px]' 
+                  ? 'left-[5.5px] md:left-[6px] right-[5.5px] md:right-[6px] top-[182px] md:top-[224px]' 
                   : 'left-[10px] md:left-[12.3px] right-[10px] md:right-[12.3px] top-[260.2px] md:top-[320.29px]'
               }`}
             >
@@ -672,7 +672,7 @@ export default function PolaroidPage() {
                 </div>
                 {isEditingCaption && (
                   <div className={`relative shrink-0 animate-blink ${
-                    isPopupMode ? 'h-[16px] md:h-[20px] w-[1.2px] md:w-[1.5px] ml-[1.2px] md:ml-[1.5px]' : 'h-[24.4px] md:h-[30px] w-[1.6px] md:w-[2px] ml-[1.6px] md:ml-[2px]'
+                    isPopupMode ? 'h-[16px] md:h-[20px] w-[1.2px] md:w-[1.5px]' : 'h-[24.4px] md:h-[30px] w-[1.6px] md:w-[2px]'
                   }`}>
                     <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 2 30">
                       <path d="M1 2L1 28" stroke="#0088FF" strokeLinecap="round" strokeWidth="2" />
