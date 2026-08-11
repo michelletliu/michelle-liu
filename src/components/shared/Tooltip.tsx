@@ -1,6 +1,15 @@
 'use client';
 
-import { useState, useRef, useEffect, useLayoutEffect, type CSSProperties, type ReactNode } from 'react';
+import {
+  useState,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  type CSSProperties,
+  type FocusEvent as ReactFocusEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+} from 'react';
 import { createPortal } from 'react-dom';
 import {
   autoUpdate,
@@ -27,6 +36,13 @@ type TooltipProps = {
   disabled?: boolean;
   /** Keep tooltip permanently visible (e.g. design-system specimens) */
   forceOpen?: boolean;
+  /**
+   * Open on click/tap instead of hiding. Stays inside the hover state machine,
+   * so leaving the trigger still fades out — a click can never strand the tip.
+   */
+  showOnClick?: boolean;
+  /** Open on keyboard focus and fade out on blur. */
+  showOnFocus?: boolean;
   /** Extra classes on the outer wrapper (merged with base) */
   className?: string;
   /** Extra classes on the tooltip surface */
@@ -87,6 +103,8 @@ export default function Tooltip({
   delay,
   disabled = false,
   forceOpen = false,
+  showOnClick = false,
+  showOnFocus = false,
   className,
   contentClassName,
   portal = false,
@@ -169,7 +187,22 @@ export default function Tooltip({
     }
   };
 
-  const handleMouseLeave = () => {
+  /** Reveal without waiting out `showDelay` (click / keyboard focus). */
+  const showNow = () => {
+    if (forceOpen || disabled) return;
+
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+
+    setIsEnding(false);
+    setIsInstant(false);
+    setIsVisible(true);
+    setTooltipWarmup(true);
+  };
+
+  const beginHide = () => {
     if (forceOpen) return;
 
     if (hoverTimeoutRef.current) {
@@ -196,10 +229,34 @@ export default function Tooltip({
     }
   };
 
-  // Clicking the trigger should never leave a tooltip open/queued
+  // Clicking the trigger should never leave a tooltip open/queued, unless the
+  // trigger opts into click-to-open (the tip is the content, e.g. an ⓘ mark).
   const handleMouseDown = () => {
     if (forceOpen) return;
+    if (showOnClick) {
+      showNow();
+      return;
+    }
     hideImmediately();
+  };
+
+  // Keyboard reveal only: pointer clicks are handled by hover / mousedown, and
+  // `:focus-visible` keeps a mouse-focused trigger from double-opening.
+  const handleFocus = (event: ReactFocusEvent<HTMLDivElement>) => {
+    if (!showOnFocus) return;
+    const target = event.target as HTMLElement | null;
+    if (!target?.matches?.(':focus-visible')) return;
+    showNow();
+  };
+
+  const handleBlur = () => {
+    if (!showOnFocus) return;
+    beginHide();
+  };
+
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (!showOnFocus || event.key !== 'Escape') return;
+    beginHide();
   };
 
   const instantForceOpen = Boolean(forceOpen && !disabled && showDelay <= 0);
@@ -315,8 +372,11 @@ export default function Tooltip({
         className,
       )}
       onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onMouseLeave={beginHide}
       onMouseDown={handleMouseDown}
+      onFocus={showOnFocus ? handleFocus : undefined}
+      onBlur={showOnFocus ? handleBlur : undefined}
+      onKeyDown={showOnFocus ? handleKeyDown : undefined}
     >
       {children}
       {tip}

@@ -20,6 +20,7 @@ import {
   fieldIconSlotClassName,
 } from "@/components/shared/FieldInput";
 import { ghostIconButtonClass } from "@/components/shared/ghostIconButton";
+import Tooltip from "@/components/shared/Tooltip";
 import { Info } from "@/components/icons/Info";
 import { iconSize } from "@/components/shared/iconSizes";
 import MetArtworkDetails from "./MetArtworkDetails";
@@ -53,6 +54,16 @@ const STRIP_EDGE_FADE = "#ededed";
 
 /** How many placeholder tiles stand in for a page of results. */
 const SKELETON_TILES = 6;
+
+const API_INFO_LABEL =
+  "Search The Met Collection API for public-domain Open Access artworks";
+/**
+ * The pale card this tip has always worn, over `.tooltip`'s dark pill. Every
+ * declaration `.tooltip` also sets needs `!` — that rule is unlayered, so it
+ * outranks plain utilities (same trick as the composer's Met tip).
+ */
+const API_INFO_TIP_SURFACE =
+  "max-w-[200px] border !border-black/10 !whitespace-normal !rounded-xl !bg-white !py-2 !pl-3 !pr-2.5 !font-normal !text-zinc-500 leading-snug shadow-[0_8px_24px_rgba(0,0,0,0.12)]";
 
 /** Compact inset shared by loaded tiles and their loading placeholders. */
 const STRIP_PADDING = "px-4 py-2";
@@ -136,8 +147,6 @@ export default function MetArtworkPicker({
   panel = false,
 }: MetArtworkPickerProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [apiInfoOpen, setApiInfoOpen] = useState(false);
-  const [apiInfoHovered, setApiInfoHovered] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const {
@@ -174,7 +183,6 @@ export default function MetArtworkPicker({
   const showSkeletons =
     status === "loading" || (mode === "curated" && curatedLoading);
   const showStrip = !showSkeletons && artworks.length > 0;
-  const showApiInfo = apiInfoOpen || apiInfoHovered;
   /*
    * The strip is the only place a selection can be lifted, and a search can
    * replace it with works that do not include what is already chosen. Without
@@ -280,35 +288,39 @@ export default function MetArtworkPicker({
                   <CloseIcon size="15px" />
                 </button>
               ) : (
-                <button
-                  type="button"
-                  aria-label="About The Met API"
-                  aria-expanded={showApiInfo}
-                  // The button lives inside FieldShell, whose `:focus-within`
-                  // paints the pill's focus border — taking focus on click
-                  // would make the info tap read as a search focus. Keyboard
-                  // tabbing still focuses it (and still shows the border).
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setApiInfoOpen((open) => !open)}
-                  onMouseEnter={() => setApiInfoHovered(true)}
-                  onMouseLeave={() => setApiInfoHovered(false)}
-                  onFocus={() => setApiInfoHovered(true)}
-                  onBlur={() => setApiInfoHovered(false)}
-                  className={`${fieldIconSlotClassName} mr-1.5 text-zinc-400 transition-colors hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
+                // Shared Tooltip owns show/fade — a one-off panel anchored to
+                // this wrapper sat a full pill-height too low and stayed up
+                // after a click. `top` clears the pill and the tiles below it.
+                <Tooltip
+                  label={API_INFO_LABEL}
+                  position="top"
+                  offset={8}
+                  // Match the previous instant reveal rather than the 400ms
+                  // hover default: this ⓘ is the only route to the copy.
+                  delay={0}
+                  showOnClick
+                  showOnFocus
+                  // Reaches past the panel's own top-right corner, and the
+                  // picker is a transformed overlay — portal so the tip
+                  // collides with the viewport instead of its card.
+                  portal
+                  contentClassName={API_INFO_TIP_SURFACE}
                 >
-                  <Info size="15px" />
-                </button>
+                  <button
+                    type="button"
+                    aria-label="About The Met API"
+                    // The button lives inside FieldShell, whose `:focus-within`
+                    // paints the pill's focus border — taking focus on click
+                    // would make the info tap read as a search focus. Keyboard
+                    // tabbing still focuses it (and still shows the border).
+                    onMouseDown={(e) => e.preventDefault()}
+                    className={`${fieldIconSlotClassName} mr-1.5 text-zinc-400 transition-colors hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
+                  >
+                    <Info size="15px" />
+                  </button>
+                </Tooltip>
               )}
             </FieldShell>
-            {showApiInfo && (
-              <div
-                role="tooltip"
-                className="pointer-events-none absolute right-0 top-[calc(100%+8px)] z-40 max-w-[200px] rounded-xl border border-black/10 bg-white py-2 pl-3 pr-2.5 text-sm leading-snug text-zinc-500 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
-              >
-                Search The Met Collection API for public-domain Open Access
-                artworks
-              </div>
-            )}
           </div>
         ) : (
           <div className="relative min-w-0 flex-1">
