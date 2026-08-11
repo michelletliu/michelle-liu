@@ -603,23 +603,23 @@ function PasswordInput({
   onUnlock?: () => void;
 }) {
   const [passwordValue, setPasswordValue] = useState("");
-  const [error, setError] = useState<PasswordErrorKind | null>(null);
+  // `kind` outlives `visible` so the message doesn't blank out mid fade-out.
+  const [error, setError] = useState<{ kind: PasswordErrorKind; visible: boolean }>({
+    kind: "invalid",
+    visible: false,
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  // Retained after `error` clears so the message doesn't blank out mid fade-out.
-  const [lastErrorKind, setLastErrorKind] = useState<PasswordErrorKind>("invalid");
 
-  const showError = (kind: PasswordErrorKind) => {
-    setLastErrorKind(kind);
-    setError(kind);
-  };
+  const showError = (kind: PasswordErrorKind) => setError({ kind, visible: true });
+  const clearError = () => setError((current) => ({ ...current, visible: false }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading || !passwordValue.trim()) return;
 
     setIsLoading(true);
-    setError(null);
+    clearError();
 
     try {
       const response = await fetch('/api/password', {
@@ -657,8 +657,8 @@ function PasswordInput({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswordValue(e.target.value);
-    if (error) {
-      setError(null);
+    if (error.visible) {
+      clearError();
     }
   };
 
@@ -668,7 +668,7 @@ function PasswordInput({
 
   return (
     <form onSubmit={handleSubmit} className="relative w-full max-w-[313px]">
-      <FieldShell error={!!error} className="justify-between">
+      <FieldShell error={error.visible} className="justify-between">
         <FieldInput
           type={showPassword ? "text" : "password"}
           placeholder="Enter"
@@ -729,11 +729,11 @@ function PasswordInput({
       <div
         className={clsx(
           "absolute left-0 top-full mt-1 w-full pointer-events-none transition-all duration-300 ease-out z-10",
-          error ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
+          error.visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
         )}
       >
         <p role="alert" className="text-[#f87171] text-sm leading-normal px-2 bg-transparent">
-          {PASSWORD_ERROR_MESSAGES[lastErrorKind]}
+          {PASSWORD_ERROR_MESSAGES[error.kind]}
         </p>
       </div>
     </form>
