@@ -5,11 +5,15 @@
  * for most cards that lands somewhere representative. The gallery clip does
  * not: its middle is a half-painted canvas under a "Finding light…" pill, so
  * the card advertised a loading state and then jumped to an empty room the
- * moment the video started. Projects listed here pin the poster to the frame
- * their loop opens on instead.
+ * moment the video started. Design Meetup and Sundays have the same mismatch:
+ * the midpoint is a settled screenshot, so the card would fade from that still
+ * instead of sliding in from the opening frame. Projects listed here pin the
+ * poster to the frame their loop opens on instead.
  */
 const POSTER_TIME_SECONDS_BY_PROJECT_ID: Record<string, number> = {
   gallery: 0,
+  "design-meetup": 0,
+  sundays: 0,
 };
 
 export function posterTimeForProject(projectId?: string): number | undefined {
@@ -30,4 +34,17 @@ export function muxPosterUrl(
 
   const query = params.toString();
   return `https://image.mux.com/${playbackId}/thumbnail.png${query ? `?${query}` : ""}`;
+}
+
+/**
+ * Homepage cards with a pinned Mux poster should not let a Sanity
+ * fallbackThumbnail (often a midpoint screenshot) replace that first frame.
+ */
+export function experimentCardImageSrc(
+  muxImageSrc: string,
+  fallbackUrl: string | undefined,
+  projectId?: string,
+): string {
+  if (posterTimeForProject(projectId) !== undefined) return muxImageSrc;
+  return fallbackUrl || muxImageSrc;
 }

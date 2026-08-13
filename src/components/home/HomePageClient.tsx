@@ -45,7 +45,7 @@ import { useScrollLock } from "../../utils/useScrollLock";
 import ContactBadge from "../shared/ContactBadge";
 import NavigationTabs from "../layout/NavigationTabs";
 import { HorizontalLine } from "../shared/HorizontalLine";
-import { muxPosterUrl } from "../../lib/muxPoster";
+import { experimentCardImageSrc, muxPosterUrl } from "../../lib/muxPoster";
 import { posthog, posthogEnabled } from "../../lib/posthog";
 import { useHeroAnimation } from "../../hooks/useHeroAnimation";
 import { fadeUpStyles } from "../../styles/animations";
@@ -75,6 +75,7 @@ type Project = {
   imageSrc: string;
   videoSrc?: string;
   xLink?: string;
+  tryItOutHref?: string;
   backgroundColor?: string;
   toolCategories?: ToolCategory[];
 };
@@ -120,19 +121,19 @@ const staticProjects: Project[] = [
     videoSrc: "",
   },
   {
-    id: "polaroid",
-    title: "Polaroid Studio",
-    year: "2025",
-    description: "A digital way to customize your own polaroid.",
-    imageSrc: "https://image.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w/thumbnail.png?width=1920",
-    videoSrc: "https://stream.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w.m3u8",
-    xLink: "https://x.com/michelletliu/status/1991201412072734777",
-    backgroundColor: "#eff6ff",
+    id: "design-meetup",
+    title: "Design Meetup",
+    year: "2026",
+    description: "A new site for Design Meetup, a nationwide community I help run for creatives.",
+    imageSrc: "https://image.mux.com/cwG7dhOYn4rCjWNSPxUFuUMSzdh6wv9qFNG00xjHs4pU/thumbnail.png?width=1920&time=0",
+    videoSrc: "https://stream.mux.com/cwG7dhOYn4rCjWNSPxUFuUMSzdh6wv9qFNG00xjHs4pU.m3u8",
+    tryItOutHref: "https://design-meetup-web.vercel.app/",
+    backgroundColor: "#ffffff",
     toolCategories: [
-      { label: 'Design', tools: ['Figma'] },
-      { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
-      { label: 'Styling', tools: ['Tailwind CSS'] },
-      { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+      { label: 'UI & Motion', tools: ['Tailwind CSS', 'Motion'] },
+      { label: 'Frontend', tools: ['Next.js', 'React', 'TypeScript'] },
+      { label: 'Data', tools: ['Supabase'] },
+      { label: 'AI', tools: ['Cursor'] },
     ],
   },
   {
@@ -144,6 +145,22 @@ const staticProjects: Project[] = [
     videoSrc: "https://stream.mux.com/AdZWDHKkfyhXntZy01keNYtPB7Q6w8GxeaUWmP8501SLI.m3u8",
     xLink: "https://x.com/michelletliu/status/2000987498550383032",
     backgroundColor: "#f4f4f5",
+    toolCategories: [
+      { label: 'Design', tools: ['Figma'] },
+      { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
+      { label: 'Styling', tools: ['Tailwind CSS'] },
+      { label: 'AI', tools: ['Figma Make', 'Cursor'] },
+    ],
+  },
+  {
+    id: "polaroid",
+    title: "Polaroid Studio",
+    year: "2025",
+    description: "A digital way to customize your own polaroid.",
+    imageSrc: "https://image.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w/thumbnail.png?width=1920",
+    videoSrc: "https://stream.mux.com/XJFJ1P3u9pKsFYvH9lTtOp4gPRydSpMkRrX9dRmNE5w.m3u8",
+    xLink: "https://x.com/michelletliu/status/1991201412072734777",
+    backgroundColor: "#eff6ff",
     toolCategories: [
       { label: 'Design', tools: ['Figma'] },
       { label: 'Frontend', tools: ['TypeScript', 'React', 'Vite'] },
@@ -213,14 +230,14 @@ const staticProjects: Project[] = [
       { label: 'Motion', tools: ['Framer Motion'] },
     ],
   },
-  // Kept for routes/modal deep-links; filtered from the home grid via HIDDEN_EXPERIMENT_IDS.
   {
     id: "sundays",
     title: "Sundays",
     year: "2026",
     description: "A new site for Sundays, a weekly coworking session I help host for creatives in LA.",
-    imageSrc: "https://image.mux.com/RmmMHG2l02e02I3powzzRYb6qWuW00HwxAAcB7wo41FGo00/thumbnail.png?width=1920",
+    imageSrc: "https://image.mux.com/RmmMHG2l02e02I3powzzRYb6qWuW00HwxAAcB7wo41FGo00/thumbnail.png?width=1920&time=0",
     videoSrc: "https://stream.mux.com/RmmMHG2l02e02I3powzzRYb6qWuW00HwxAAcB7wo41FGo00.m3u8",
+    tryItOutHref: "https://sundays.rsvp",
     xLink: "https://x.com/michelletliu/status/2044470508641784033",
     backgroundColor: "#ffffff",
     toolCategories: [
@@ -381,6 +398,7 @@ function getExperimentLink(projectId: string): { href: string; label: string; ex
     case 'library': return { href: '/library', label: 'Try It Out!', external: false };
     case 'film': return { href: '/film', label: 'Try It Out!', external: false };
     case 'sundays': return { href: 'https://sundays.rsvp', label: 'Visit Site', external: true };
+    case 'design-meetup': return { href: 'https://design-meetup-web.vercel.app/', label: 'Visit Site', external: true };
     case 'gallery': return { href: '/gallery', label: 'Try It Out!', external: false };
     default: return null;
   }
@@ -394,9 +412,9 @@ type ProjectCardProps = {
   index?: number;
 };
 
-const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library", "film", "gallery", "sundays"];
+const SIDE_PROJECT_IDS = ["design-meetup", "screentime", "polaroid", "sketchbook", "library", "film", "gallery", "sundays"];
 /** Experiments kept in data/routes but omitted from the home experiments grid. */
-const HIDDEN_EXPERIMENT_IDS = ["sundays"];
+const HIDDEN_EXPERIMENT_IDS: string[] = [];
 /** Experiments that skip the preview modal and navigate straight to their page. */
 const DIRECT_NAV_EXPERIMENT_IDS = ["gallery"];
 const MAIN_PROJECT_IDS = ["apple", "roblox", "adobe", "nasa"];
@@ -835,18 +853,29 @@ function mergeWorkProjects(
         const fallbackUrl = experimentData.fallbackThumbnail
           ? urlFor(experimentData.fallbackThumbnail).width(1920).url()
           : undefined;
+        // Design Meetup copy (description + AI/Cursor tools) lives in static
+        // until the matching Sanity fields are patched.
+        const preferStaticCopy = project.id === "design-meetup";
         return {
           ...project,
           title: experimentData.title,
           year: experimentData.year,
-          description: experimentData.description,
-          imageSrc: fallbackUrl || muxUrls.imageSrc,
+          description: preferStaticCopy
+            ? project.description || experimentData.description
+            : experimentData.description,
+          imageSrc: experimentCardImageSrc(
+            muxUrls.imageSrc,
+            fallbackUrl,
+            project.id,
+          ),
           videoSrc: muxUrls.videoSrc,
           xLink: experimentData.xLink || project.xLink,
+          tryItOutHref: experimentData.tryItOutHref || project.tryItOutHref,
           backgroundColor:
             experimentData.backgroundColor || project.backgroundColor,
-          toolCategories:
-            experimentData.toolCategories || project.toolCategories,
+          toolCategories: preferStaticCopy
+            ? project.toolCategories || experimentData.toolCategories
+            : experimentData.toolCategories || project.toolCategories,
         };
       }
     }
@@ -1018,7 +1047,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     }
 
     const isMobile = window.innerWidth < 768;
-    const shouldGoFullscreen = projectId === 'film' || (isMobile && projectId !== 'sketchbook' && projectId !== 'sundays');
+    const shouldGoFullscreen = projectId === 'film' || (isMobile && projectId !== 'sketchbook' && projectId !== 'sundays' && projectId !== 'design-meetup');
 
     if (posthogEnabled) {
       posthog.capture("project_opened", {
@@ -1229,7 +1258,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
         SIDE_PROJECT_IDS.includes(selectedProject.id) ? (
           <ExperimentModal 
             key={selectedProject.id}
-            projectId={selectedProject.id as 'polaroid' | 'library' | 'screentime' | 'sketchbook' | 'film' | 'sundays'}
+            projectId={selectedProject.id}
             project={selectedProject} 
             onClose={handleModalClose}
             onExpandToFullscreen={handleExpandExperimentToFullscreen}
