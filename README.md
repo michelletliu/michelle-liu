@@ -2,7 +2,7 @@
 
 # michelle liu
 
-My personal portfolio and digital archive. Designed in Figma and built with Next.js, TypeScript, React, Sanity, Notion, and a few agentic coding friends.
+Welcome to my personal portfolio and digital archive! Designed in Figma and built with Next.js, TypeScript, React, Sanity, Notion, and a few agentic coding friends.
 
 ## Contents
 
