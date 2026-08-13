@@ -10,16 +10,17 @@
 
 /**
  * House stroke weight for every UI stroke icon (Chevron, Close, Arrow,
- * ArrowUpRight, Code, Plus, …), in CSS px. Paired with
+ * ArrowUpRight, Link, Code, Plus, …), in CSS px. Paired with
  * `vectorEffect="non-scaling-stroke"`, so the rendered stroke stays this many
  * CSS px at any glyph size — a 12px icon and a 32px icon share one weight.
  *
  * This is the ONE place to tune icon weight site-wide; every stroke icon reads
- * from it and none hardcode their own. 1.5 then 1.75 both read too thin against
- * the site's type, so the house weight is 3. Change this single number to
- * retune everything at once (2.5 and 2 are the next steps down).
+ * from it and none hardcode their own. 3px is a blob next to 12–16px type
+ * (Visit Site, inline link), so the house weight is 1.5 — a hairline that
+ * matches medium text on retina. Change this single number to retune
+ * everything at once.
  */
-export const ICON_STROKE_WIDTH = 3;
+export const ICON_STROKE_WIDTH = 1.5;
 
 export const iconSizes = {
   /** Dense / meta marks */
