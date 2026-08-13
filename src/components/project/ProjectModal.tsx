@@ -1318,10 +1318,10 @@ export default function ProjectModal({
           )}
 
           {!loading && !error && project && (
-            <div className="flex flex-col pb-16 w-full max-w-[800px] mx-auto">
+            <div className="flex flex-col pb-16 w-full">
               {/* Mobile not available message - shown only after unlocking on mobile (NASA is allowed) */}
               {isUnlocked && isMobile && projectId !== 'nasa' && (
-                <div className="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center">
+                <div className="mx-auto flex w-full max-w-[800px] flex-col items-center justify-center min-h-[60vh] px-8 text-center">
                   <LaptopIcon />
                   <p className="text-[#71717a] text-base leading-normal px-12 mt-4">
                     This page isn't available on mobile yet. You can view it on desktop instead! {";)"}
@@ -1332,6 +1332,7 @@ export default function ProjectModal({
               {/* Project Hero Header - hidden on mobile when unlocked (NASA is allowed) */}
               {!(isUnlocked && isMobile && projectId !== 'nasa') && (
               <>
+              <div className="mx-auto w-full max-w-[800px]">
               <div
                 ref={heroRef}
                 className={clsx(
@@ -1459,8 +1460,10 @@ export default function ProjectModal({
                   </ScrollReveal>
                 ) : null}
               </div>
+              </div>
 
-              {/* Dynamic Content Sections */}
+              {/* Dynamic Content Sections.
+                  TOC / header bars keep a full-bleed bg; everything else stays in the 800px column. */}
               {visibleSections.map((section, index) => {
                   const sectionNumber =
                     section._type === "sectionTitleSection" ? section.number : undefined;
@@ -1469,6 +1472,9 @@ export default function ProjectModal({
                     visibleSections[index + 1]?._type === "sectionTitleSection"
                       ? titleSeamTopUp(section)
                       : undefined;
+                  const fullBleed =
+                    section._type === "tableOfContentsSection" ||
+                    section._type === "sectionHeaderBar";
 
                   return (
                   // Testimonials have interactive expand/collapse - skip ScrollReveal
@@ -1479,6 +1485,7 @@ export default function ProjectModal({
                       data-section-key={section._key}
                       data-section-number={sectionNumber}
                       data-section-heading={sectionHeading}
+                      className="mx-auto w-full max-w-[800px]"
                     >
                       <ContentBlock
                         section={section}
@@ -1497,7 +1504,10 @@ export default function ProjectModal({
                       data-section-key={section._key}
                       data-section-number={sectionNumber}
                       data-section-heading={sectionHeading}
-                      className={seamTopUp}
+                      className={clsx(
+                        seamTopUp,
+                        fullBleed ? "w-full" : "mx-auto w-full max-w-[800px]",
+                      )}
                     >
                       <ScrollReveal>
                         <ContentBlock 
@@ -1518,6 +1528,7 @@ export default function ProjectModal({
 
               {/* Also Check Out Section */}
               {project.relatedProjects && project.relatedProjects.length > 0 && (
+                <div className="mx-auto w-full max-w-[800px]">
                 <ScrollReveal variant="fade">
                   <AlsoCheckOut
                     projects={project.relatedProjects.map((related) => ({
@@ -1537,6 +1548,7 @@ export default function ProjectModal({
                     onViewAll={isFullscreen ? onViewAllProjects : undefined}
                   />
                 </ScrollReveal>
+                </div>
               )}
               </>
               )}
@@ -3117,7 +3129,7 @@ function ContentBlock({
         return (
           <div 
             className={clsx(
-              "content-stretch flex items-center justify-between px-8 relative shrink-0 w-full",
+              "content-stretch flex items-center justify-between px-8 md:px-[8%] xl:px-[175px] relative shrink-0 w-full",
               headerPadding
             )}
             style={{ backgroundColor: headerBgColor }}
@@ -3184,7 +3196,7 @@ function ContentBlock({
         return (
           <div
             ref={tocRef}
-            className="content-stretch flex flex-col items-start gap-6 md:gap-12 px-8 py-10 md:py-16 relative shrink-0 w-full"
+            className="content-stretch flex flex-col items-start gap-6 md:gap-12 px-8 md:px-[8%] xl:px-[175px] py-10 md:py-16 relative shrink-0 w-full"
             style={{ backgroundColor: tocBgColor }}
           >
             {/* Only render header wrapper if there's content */}
