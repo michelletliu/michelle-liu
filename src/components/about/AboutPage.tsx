@@ -786,7 +786,7 @@ export default function AboutPage() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col gap-20 items-start pb-8 min-w-0 w-full">
+        <div className="flex-1 flex flex-col gap-20 items-start pb-8 min-w-0 w-full max-w-[800px] mx-auto">
           {/* HI! Section - Hardcoded */}
           <section ref={hiRef} className="flex flex-col md:flex-row gap-10 md:gap-16 items-center md:items-start w-full max-w-5xl scroll-mt-8">
             {/* Profile Photo */}
