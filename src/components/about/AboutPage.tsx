@@ -785,9 +785,9 @@ export default function AboutPage() {
           />
         </div>
 
-        {/* Main Content — flex-1 fills space beside the sidebar; inner cap centers in that area only */}
-        <div className="flex-1 flex justify-center min-w-0 w-full">
-          <div className="flex flex-col gap-20 items-start pb-8 w-full max-w-[800px]">
+        {/* Main Content — left-aligned like prod on laptop; on large monitors, center an 800px column beside the sidebar */}
+        <div className="flex-1 flex min-w-0 w-full min-[1920px]:justify-center">
+          <div className="flex flex-col gap-20 items-start pb-8 w-full min-[1920px]:max-w-[800px]">
           {/* HI! Section - Hardcoded */}
           <section ref={hiRef} className="flex flex-col md:flex-row gap-10 md:gap-16 items-center md:items-start w-full max-w-5xl scroll-mt-8">
             {/* Profile Photo */}

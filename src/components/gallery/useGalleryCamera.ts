@@ -9,6 +9,7 @@ import {
   type RefCallback,
 } from "react";
 import {
+  GALLERY_PAINTINGS,
   GALLERY_ZOOM_DEFAULT,
   GALLERY_ZOOM_MAX,
   GALLERY_ZOOM_MIN,
@@ -21,6 +22,7 @@ import {
   progressForPainting,
   roomPoseForPainting,
   type GalleryFraming,
+  type GalleryPainting,
   type GalleryRoomPose,
 } from "./galleryPaintings";
 import {
@@ -89,6 +91,12 @@ export type GalleryCameraOptions = {
    * camera drops by however much of the focused frame that band is hiding.
    */
   bottomOcclusionPx?: number;
+  /** Hang list for focus stepping and poses. Defaults to the blank 12-hang room. */
+  paintings?: GalleryPainting[];
+  /** Initial focused hang id. Defaults to the middle back hang. */
+  initialFocusId?: string;
+  /** Initial zoom factor. Clamped; defaults to GALLERY_ZOOM_DEFAULT. */
+  initialZoom?: number;
 };
 
 export type GalleryCameraBindProps = {
@@ -112,6 +120,12 @@ export type GalleryCamera = {
   pose: GalleryRoomPose;
   /** Current zoom factor, always within [GALLERY_ZOOM_MIN, GALLERY_ZOOM_MAX]. */
   zoom: number;
+  /**
+   * True while the camera is easing between hangs after a focus change.
+   * Zoom-only and framing reframes leave this false so UI (e.g. plaques)
+   * can stay put during those moves.
+   */
+  isFocusEasing: boolean;
   /** False once zoom sits at its limit, so a control can dim instead of no-op. */
   canZoomIn: boolean;
   canZoomOut: boolean;
@@ -141,12 +155,34 @@ const DEFAULT_FOCUS = "back-2";
 
 export function useGalleryCamera({
   bottomOcclusionPx = 0,
+  paintings = GALLERY_PAINTINGS,
+  initialFocusId,
+  initialZoom,
 }: GalleryCameraOptions = {}): GalleryCamera {
-  const [focusedId, setFocusedId] = useState(DEFAULT_FOCUS);
-  const [pose, setPose] = useState<GalleryRoomPose>(() =>
-    roomPoseForPainting(DEFAULT_FOCUS, GALLERY_ZOOM_DEFAULT),
+  const paintingsRef = useRef(paintings);
+  paintingsRef.current = paintings;
+
+  const startFocus =
+    initialFocusId && paintings.some((p) => p.id === initialFocusId)
+      ? initialFocusId
+      : paintings.find((p) => p.id === DEFAULT_FOCUS)?.id ??
+        paintings[0]?.id ??
+        DEFAULT_FOCUS;
+
+  const startZoom = clampGalleryZoom(
+    initialZoom ?? GALLERY_ZOOM_DEFAULT,
   );
-  const [zoom, setZoomState] = useState(GALLERY_ZOOM_DEFAULT);
+
+  const [focusedId, setFocusedId] = useState(startFocus);
+  const [pose, setPose] = useState<GalleryRoomPose>(() =>
+    roomPoseForPainting(
+      startFocus,
+      startZoom,
+      paintings,
+    ),
+  );
+  const [zoom, setZoomState] = useState(startZoom);
+  const [isFocusEasing, setIsFocusEasing] = useState(false);
   const [rootNode, setRootNode] = useState<HTMLDivElement | null>(null);
   const [viewportHeight, setViewportHeight] = useState(0);
   const [viewportWidth, setViewportWidth] = useState(0);
@@ -154,6 +190,7 @@ export function useGalleryCamera({
   const focusedIdRef = useRef(focusedId);
   const poseRef = useRef(pose);
   const zoomRef = useRef(zoom);
+  const focusEasingRef = useRef(false);
   const framingRef = useRef<GalleryFraming | null>(null);
   const pendingDrag = useRef(false);
   const dragging = useRef(false);
@@ -197,19 +234,36 @@ export function useGalleryCamera({
     }
   }, []);
 
+  const setFocusEasing = useCallback((next: boolean) => {
+    if (focusEasingRef.current === next) return;
+    focusEasingRef.current = next;
+    setIsFocusEasing(next);
+  }, []);
+
   const easePoseTo = useCallback(
     (
       id: string,
       zoomLevel: number,
       durationMs: number = EASE_MS,
       ease: (t: number) => number = easeOutCubic,
+      options?: { focusChange?: boolean },
     ) => {
       cancelEase();
+      const focusChange = options?.focusChange === true;
+      // Zoom / framing eases clear any in-flight focus transition so plaques
+      // do not stay hidden after a cancelled hang-to-hang move.
+      setFocusEasing(focusChange);
+
       const from = poseRef.current;
       // Every target the camera is ever given already carries the framing
       // offset, so a reframe blends into a focus change or a zoom rather than
       // arriving as a second animation on top of one.
-      const to = framedRoomPose(id, zoomLevel, framingRef.current);
+      const to = framedRoomPose(
+        id,
+        zoomLevel,
+        framingRef.current,
+        paintingsRef.current,
+      );
 
       // Guards the reduced-motion path, where `(now - start) / 0` is Infinity
       // on any later frame but NaN on a frame that lands on the same
@@ -218,6 +272,7 @@ export function useGalleryCamera({
       if (durationMs <= 0) {
         poseRef.current = to;
         setPose(to);
+        if (focusChange) setFocusEasing(false);
         return;
       }
 
@@ -232,11 +287,12 @@ export function useGalleryCamera({
           animFrame.current = requestAnimationFrame(tick);
         } else {
           animFrame.current = null;
+          if (focusChange) setFocusEasing(false);
         }
       };
       animFrame.current = requestAnimationFrame(tick);
     },
-    [cancelEase],
+    [cancelEase, setFocusEasing],
   );
 
   /**
@@ -271,14 +327,20 @@ export function useGalleryCamera({
       focusedIdRef.current = id;
       setFocusedId(id);
       switchAccum.current = 0;
-      easePoseTo(id, zoomRef.current);
+      easePoseTo(id, zoomRef.current, EASE_MS, easeOutCubic, {
+        focusChange: true,
+      });
     },
     [easePoseTo],
   );
 
   const stepFocus = useCallback(
     (direction: -1 | 1) => {
-      const next = adjacentPaintingId(focusedIdRef.current, direction);
+      const next = adjacentPaintingId(
+        focusedIdRef.current,
+        direction,
+        paintingsRef.current,
+      );
       if (next === focusedIdRef.current) return;
       selectPainting(next);
     },
@@ -329,23 +391,39 @@ export function useGalleryCamera({
       }
 
       /*
-       * Bare keys, and nothing is claimed from the browser or the OS.
-       *
-       * These were once ⌘/Ctrl + = / - / 0, which is exactly where the browser
-       * keeps page zoom — so the one page a reader might most need to enlarge
-       * was the one page where they could not. Bailing out on a modifier is
-       * what hands those chords back; shift is allowed through because it is
-       * how "+" and "_" are typed in the first place.
+       * Zoom: bare + / − / 0, and ⌘/Ctrl + = / − / 0. Claiming the modifier
+       * chords stops browser page-zoom from blowing up the HTML chrome
+       * (thumbstick, seal) while the canvas stays the same size — in the
+       * room, those keys mean camera dolly, not document scale.
        */
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.altKey) return;
 
-      if (e.key === "+" || e.key === "=" || e.code === "NumpadAdd") {
+      const withZoomMod = e.metaKey || e.ctrlKey;
+      const zoomIn =
+        e.key === "+" ||
+        e.key === "=" ||
+        e.code === "NumpadAdd" ||
+        (withZoomMod && e.code === "Equal");
+      const zoomOut =
+        e.key === "-" ||
+        e.key === "_" ||
+        e.code === "NumpadSubtract" ||
+        (withZoomMod && e.code === "Minus");
+      const zoomReset =
+        e.key === "0" ||
+        e.code === "Numpad0" ||
+        (withZoomMod && e.code === "Digit0");
+
+      // Ignore unrelated ⌘/Ctrl chords (copy, reload, etc.).
+      if (withZoomMod && !zoomIn && !zoomOut && !zoomReset) return;
+
+      if (zoomIn) {
         e.preventDefault();
         zoomBy(GALLERY_ZOOM_STEP);
-      } else if (e.key === "-" || e.key === "_" || e.code === "NumpadSubtract") {
+      } else if (zoomOut) {
         e.preventDefault();
         zoomBy(-GALLERY_ZOOM_STEP);
-      } else if (e.key === "0" || e.code === "Numpad0") {
+      } else if (zoomReset) {
         e.preventDefault();
         setZoom(GALLERY_ZOOM_DEFAULT);
       }
@@ -466,13 +544,14 @@ export function useGalleryCamera({
     },
   };
 
-  const progress = progressForPainting(focusedId);
+  const progress = progressForPainting(focusedId, paintings);
 
   return {
     progress,
     focusedId,
     pose,
     zoom,
+    isFocusEasing,
     canZoomIn: zoom < GALLERY_ZOOM_MAX - ZOOM_EPSILON,
     canZoomOut: zoom > GALLERY_ZOOM_MIN + ZOOM_EPSILON,
     selectPainting,

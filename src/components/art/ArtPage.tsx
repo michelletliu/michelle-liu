@@ -11,6 +11,7 @@ import { fadeUpStyles } from "../../styles/animations";
 import LoadingSpinner from "../shared/LoadingSpinner";
 import Footer from "../layout/Footer";
 import HeaderBreakpoint from "./HeaderBreakpoint";
+import HeaderBreakpointRuled from "./HeaderBreakpointRuled";
 import ArtGallery from "./ArtGallery";
 import ArtSidebar, { ArtCategory } from "./ArtSidebar";
 import SketchbookGallery from "./SketchbookGallery";
@@ -19,6 +20,7 @@ import type { ArtCardData } from "./ArtCard";
 import type { SketchbookData, SketchbookItem } from "./SketchbookGallery";
 import type { MuralData, MuralImage } from "./MuralGallery";
 import ArtLightbox, { type ArtLightboxItem } from "./ArtLightbox";
+import { TouchIcon } from "../icons/TouchIcon";
 
 // Sanity imports
 import { client, urlFor } from "../../sanity/client";
@@ -466,7 +468,7 @@ export default function ArtPage() {
           {/* Loading State */}
           {isLoading && (
             <div className="flex items-center justify-center w-full py-20">
-              <LoadingSpinner size="md" label="Loading artwork..." />
+              <LoadingSpinner size="md" label="" />
             </div>
           )}
 
@@ -489,9 +491,24 @@ export default function ArtPage() {
           {!isLoading && !error && (
             <>
               {/* Painting Section */}
-              <section ref={paintingRef} className="flex flex-col gap-4 items-start w-full">
+              <section ref={paintingRef} className="flex flex-col gap-3 items-start w-full">
                 <ScrollReveal variant="fade" className="w-full">
-                  <HeaderBreakpoint text="Painting" />
+                  <HeaderBreakpoint
+                    text="Painting"
+                    action={
+                      artPiecesByType.painting.length > 0 ? (
+                        <ScrollReveal delay={400} variant="fade" preserveDelay>
+                          <a
+                            href="/art/gallery"
+                            className="inline-flex shrink-0 items-center gap-1 -my-0.5 -py-0.5 pr-2.5 font-normal text-zinc-500 no-underline transition-colors hover:text-blue-400"
+                          >
+                            3D Gallery
+                            <TouchIcon />
+                          </a>
+                        </ScrollReveal>
+                      ) : null
+                    }
+                  />
                 </ScrollReveal>
                 {artPiecesByType.painting.length > 0 ? (
                   <ScrollReveal delay={120} className="w-full">
@@ -507,7 +524,7 @@ export default function ArtPage() {
               </section>
 
               {/* Conceptual Section */}
-              <section ref={conceptualRef} className="flex flex-col gap-4 items-start w-full">
+              <section ref={conceptualRef} className="flex flex-col gap-3 items-start w-full">
                 <ScrollReveal variant="fade" className="w-full">
                   <HeaderBreakpoint text="Conceptual" />
                 </ScrollReveal>
@@ -525,7 +542,7 @@ export default function ArtPage() {
               </section>
 
               {/* Graphite Section */}
-              <section ref={graphiteRef} className="flex flex-col gap-4 items-start w-full">
+              <section ref={graphiteRef} className="flex flex-col gap-3 items-start w-full">
                 <ScrollReveal variant="fade" className="w-full">
                   <HeaderBreakpoint text="Graphite" />
                 </ScrollReveal>
@@ -542,9 +559,9 @@ export default function ArtPage() {
               </section>
 
               {/* Sketchbook Section */}
-              <section ref={sketchbookRef} className="flex flex-col gap-4 items-start w-full">
+              <section ref={sketchbookRef} className="flex flex-col gap-3 items-start w-full">
                 <ScrollReveal variant="fade" className="w-full">
-                  <HeaderBreakpoint className="-mb-4" text="Sketchbook" />
+                  <HeaderBreakpointRuled className="-mb-4" text="Sketchbook" />
                 </ScrollReveal>
                 {sketchbooks.length > 0 ? (
                   <div className="flex flex-col gap-8 py-8 w-full">
@@ -571,9 +588,9 @@ export default function ArtPage() {
               </section>
 
               {/* Murals Section */}
-              <section ref={muralsRef} className="flex flex-col gap-4 items-start w-full">
+              <section ref={muralsRef} className="flex flex-col gap-3 items-start w-full">
                 <ScrollReveal variant="fade" className="w-full">
-                  <HeaderBreakpoint className="-mb-4" text="Murals" />
+                  <HeaderBreakpointRuled className="-mb-4" text="Murals" />
                 </ScrollReveal>
                 {murals.length > 0 ? (
                   <div className="flex flex-col gap-8 py-8 w-full">

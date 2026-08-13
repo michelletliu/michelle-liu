@@ -527,32 +527,16 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
         <ProjectMedia imageSrc={project.imageSrc} videoSrc={project.videoSrc} />
         <div aria-hidden="true" className="absolute border border-zinc-100 inset-0 pointer-events-none rounded-[26px]" />
       </div>
-      <div className="content-stretch flex font-['Michelle',sans-serif] -mt-1 font-normal items-baseline leading-snug px-[13px] py-0 relative shrink-0 text-base tracking-[0.005em] w-full">
-        <p className="relative text-[#18181b] text-left project-hover-text">
+      <div className="content-stretch flex font-['Michelle',sans-serif] md:-mt-1.5 md:-mb-0.5 font-normal items-start leading-snug px-[13px] py-0 relative shrink-0 text-base tracking-[0.005em] w-full project-hover-text">
+        <p className="relative text-[#18181b] text-left">
           <span>{project.title}</span>
-          {!hasTryItOut && (
-            <span className="text-[#a1a1aa]"> • {project.year}</span>
-          )}
-          {hasTryItOut && (
-            <>
-              <span className="text-[#a1a1aa] md:hidden"> • {project.year}</span>
-              <span className="text-[#a1a1aa] hidden md:inline md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"> • </span>
-              <a
-                href={experimentLink!.href}
-                onClick={(e) => e.stopPropagation()}
-                className="hidden md:inline-flex items-end gap-1 align-baseline leading-none font-medium text-blue-400 hover:text-blue-300 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
-                {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-              >
-                {experimentLink!.label}{experimentLink!.external && <ArrowUpRight />}
-              </a>
-            </>
-          )}
+          <span className="text-[#a1a1aa]"> • {project.year}</span>
         </p>
         {hasTryItOut && (
           <a
             href={experimentLink!.href}
             onClick={(e) => e.stopPropagation()}
-            className="md:hidden inline-flex items-center ml-auto shrink-0 text-zinc-400 hover:text-zinc-500"
+            className="inline-flex items-start ml-auto shrink-0 text-zinc-400 hover:text-zinc-500 md:text-blue-400 md:hover:text-blue-300"
             {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             aria-label={experimentLink!.label}
           >

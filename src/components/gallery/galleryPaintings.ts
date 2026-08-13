@@ -14,6 +14,23 @@ export type GalleryPainting = {
   /** Tour progress in [0, 1], derived from `order`. */
   depth: number;
   aspect: "portrait" | "landscape";
+  /**
+   * Optional hang aperture in world units. When set, layout and camera framing
+   * use this instead of the portrait/landscape presets — for real artworks
+   * whose aspect does not match Reve's 3:4 / 3:2 generate ratios.
+   */
+  size?: { width: number; height: number };
+  /**
+   * How many hangs share this painting's wall. Drives spacing; defaults to
+   * {@link HANGS_PER_WALL}.
+   */
+  wallCount?: number;
+  /**
+   * World-axis center along the wall (`x` on end walls, `z` on side walls).
+   * When set, overrides span/slot placement — Fine Art uses this so corner
+   * clearances match the gaps between variable-width frames.
+   */
+  along?: number;
   imageUrl?: string;
 };
 
@@ -23,7 +40,11 @@ export const GALLERY_ROOM = {
   height: 4.2,
   /** Shorter than a hallway so the closed box reads as a room. */
   depth: 12,
-  eyeY: 1.62,
+  /**
+   * Hang + camera height. Mid-wall so the largest canvases read vertically
+   * centered on the plane (museum “eye level” on a 4.2 wall).
+   */
+  eyeY: 2.1,
   /** Inward offset so frames sit slightly off the wall. */
   frameInset: 0.04,
   /** Span the left/right hangs occupy along Z, leaving corner margins. */
@@ -121,17 +142,94 @@ export function paintingSize(aspect: GalleryPainting["aspect"]): {
     : { width: 1.98, height: 1.32 }; // 3:2
 }
 
+/** Hang aperture for a painting — custom size when present, else aspect preset. */
+export function sizeOfPainting(painting: GalleryPainting): {
+  width: number;
+  height: number;
+} {
+  if (
+    painting.size &&
+    Number.isFinite(painting.size.width) &&
+    Number.isFinite(painting.size.height) &&
+    painting.size.width > 0 &&
+    painting.size.height > 0
+  ) {
+    return painting.size;
+  }
+  return paintingSize(painting.aspect);
+}
+
+/**
+ * Wall span between outermost hang *centers* so that — for uniform frame
+ * widths — the clear gap from frame edge to corner equals the clear gap
+ * between adjacent frames.
+ *
+ * Derivation: corner margin `(L−S)/2 − W/2` equals inter-gap `S/(N−1) − W`
+ * → `S = (L + W) · (N−1) / (N+1)`.
+ */
+export function hangSpanForWall(
+  wall: GalleryWall,
+  count: number = HANGS_PER_WALL,
+): number {
+  if (count <= 1) return 0;
+  const isSide = wall === "left" || wall === "right";
+  const wallLength = isSide ? GALLERY_ROOM.depth : GALLERY_ROOM.width;
+  const aspect: GalleryPainting["aspect"] = isSide ? "portrait" : "landscape";
+  // FRAME_LIP matches the outer pad used by camera framing (mat + lip ≈).
+  const outerW = paintingSize(aspect).width + FRAME_LIP;
+  const span = ((wallLength + outerW) * (count - 1)) / (count + 1);
+  const maxSpan = Math.max(0, wallLength - outerW - 0.2);
+  return Math.min(span, maxSpan);
+}
+
+/**
+ * Hang centers along a wall axis so every clear gap is equal: corner → frame
+ * edges → corner. `outerWidths` are full outer frame widths in travel order
+ * (slot 0 first). `travelSign` matches {@link WALL_TRAVEL}.
+ */
+export function hangCentersEqualGap(
+  outerWidths: readonly number[],
+  wallLength: number,
+  travelSign: 1 | -1,
+): number[] {
+  const n = outerWidths.length;
+  if (n === 0) return [];
+  if (n === 1) return [0];
+
+  const sumW = outerWidths.reduce((a, b) => a + b, 0);
+  const gap = Math.max(0.08, (wallLength - sumW) / (n + 1));
+  const centers: number[] = [];
+
+  if (travelSign === 1) {
+    let edge = -wallLength / 2 + gap;
+    for (const w of outerWidths) {
+      centers.push(edge + w / 2);
+      edge += w + gap;
+    }
+  } else {
+    let edge = wallLength / 2 - gap;
+    for (const w of outerWidths) {
+      centers.push(edge - w / 2);
+      edge -= w + gap;
+    }
+  }
+  return centers;
+}
+
 export function paintingLayout(
   painting: GalleryPainting,
 ): GalleryPaintingLayout {
   const { width: roomW, depth: roomD, eyeY, frameInset } = GALLERY_ROOM;
-  const { sideHangSpan, endHangSpan } = GALLERY_ROOM;
-  const size = paintingSize(painting.aspect);
+  const size = sizeOfPainting(painting);
+  const wallCount = painting.wallCount ?? HANGS_PER_WALL;
 
   // Position along the wall, measured in the direction the tour travels.
   const travel = WALL_TRAVEL[painting.wall];
-  const span = travel.axis === "z" ? sideHangSpan : endHangSpan;
-  const along = travel.sign * hangOffset(painting.slot, span);
+  const span = hangSpanForWall(painting.wall, wallCount);
+  const along =
+    painting.along != null && Number.isFinite(painting.along)
+      ? painting.along
+      : travel.sign * hangOffset(painting.slot, span, wallCount);
 
   if (painting.wall === "left" || painting.wall === "right") {
     const isLeft = painting.wall === "left";
@@ -284,8 +382,9 @@ export function standOffForPainting(
   aspect: GalleryPainting["aspect"],
   zoom: number = GALLERY_ZOOM_DEFAULT,
   viewportAspect: number = MIN_VIEWPORT_ASPECT,
+  sizeOverride?: { width: number; height: number },
 ): number {
-  const size = paintingSize(aspect);
+  const size = sizeOverride ?? paintingSize(aspect);
   const fill = Math.min(MAX_FILL, REST_FILL * clampGalleryZoom(zoom));
   const halfFrame = Math.tan((fovForZoom(zoom) * Math.PI) / 360);
   const byHeight = (size.height + FRAME_LIP) / (2 * fill * halfFrame);
@@ -359,7 +458,12 @@ export function roomPoseForPainting(
   const acrossRoom = layout.normal.x !== 0 ? width : depth;
   const standOff = Math.min(
     Math.max(
-      standOffForPainting(painting.aspect, zoom, viewportAspect),
+      standOffForPainting(
+        painting.aspect,
+        zoom,
+        viewportAspect,
+        sizeOfPainting(painting),
+      ),
       MIN_STAND_OFF,
     ),
     acrossRoom - frameInset - margin,
@@ -482,7 +586,7 @@ export function framingDropForPose(
 
   // The pose aims at the canvas center, so the frame sits vertically centered
   // and the clear band under it is the same height as the one over it.
-  const size = paintingSize(painting.aspect);
+  const size = sizeOfPainting(painting);
   const frameHalfPx = (size.height + FRAME_LIP) / 2 / worldPerPx;
   const clearPx = viewH / 2 - frameHalfPx;
   if (clearPx <= 0) return 0;
