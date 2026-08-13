@@ -509,12 +509,12 @@ video {
   }
 }
 
-/* Sundays mobile popup: no scrollbar gutter (content fits without scrolling) */
-.experiment-modal-embed:has(.sundays-mobile-embed) {
+/* Site-embed mobile popup: no scrollbar gutter (content fits without scrolling) */
+.experiment-modal-embed:has(.site-embed-mobile) {
   scrollbar-gutter: auto !important;
 }
 
-.experiment-modal-embed:has(.sundays-mobile-embed)::-webkit-scrollbar {
+.experiment-modal-embed:has(.site-embed-mobile)::-webkit-scrollbar {
   width: 0;
   display: none;
 }

@@ -3,12 +3,14 @@ import { describe, it } from "node:test";
 import { muxPosterUrl } from "./muxPoster.ts";
 
 describe("muxPosterUrl", () => {
-  it("pins the gallery poster to the first frame", () => {
-    assert.equal(
-      muxPosterUrl("abc123", { projectId: "gallery", width: 1920 }),
-      "https://image.mux.com/abc123/thumbnail.png?width=1920&time=0",
-    );
-  });
+  for (const projectId of ["gallery", "design-meetup", "sundays"]) {
+    it(`pins the ${projectId} poster to the first frame`, () => {
+      assert.equal(
+        muxPosterUrl("abc123", { projectId, width: 1920 }),
+        "https://image.mux.com/abc123/thumbnail.png?width=1920&time=0",
+      );
+    });
+  }
 
   it("leaves other projects on the Mux default frame", () => {
     assert.equal(
@@ -27,6 +29,14 @@ describe("muxPosterUrl", () => {
   it("still pins the first frame without a width", () => {
     assert.equal(
       muxPosterUrl("abc123", { projectId: "gallery" }),
+      "https://image.mux.com/abc123/thumbnail.png?time=0",
+    );
+    assert.equal(
+      muxPosterUrl("abc123", { projectId: "design-meetup" }),
+      "https://image.mux.com/abc123/thumbnail.png?time=0",
+    );
+    assert.equal(
+      muxPosterUrl("abc123", { projectId: "sundays" }),
       "https://image.mux.com/abc123/thumbnail.png?time=0",
     );
   });
