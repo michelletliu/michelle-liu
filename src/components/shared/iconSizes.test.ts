@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { iconSize, iconSizes } from "./iconSizes.ts";
+import { iconSize, iconSizes, ICON_STROKE_WIDTH } from "./iconSizes.ts";
+
+test("house stroke is a 1.5px hairline, not a 3px blob at small sizes", () => {
+  assert.equal(ICON_STROKE_WIDTH, 1.5);
+});
 
 test("icon size tokens use xs/sm/md/lg/xl names", () => {
   assert.deepEqual(Object.keys(iconSizes), ["xs", "sm", "md", "lg", "xl"]);

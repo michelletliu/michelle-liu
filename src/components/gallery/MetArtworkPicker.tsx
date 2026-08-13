@@ -23,7 +23,7 @@ import { ghostIconButtonClass } from "@/components/shared/ghostIconButton";
 import Tooltip from "@/components/shared/Tooltip";
 import { LoadingText } from "@/components/shared/LoadingSpinner";
 import { Info } from "@/components/icons/Info";
-import { iconSize } from "@/components/shared/iconSizes";
+import { iconSize, ICON_STROKE_WIDTH } from "@/components/shared/iconSizes";
 import MetArtworkDetails from "./MetArtworkDetails";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
 import { stopGalleryKeys, useScrollEdges } from "./galleryInputGuards";
@@ -1147,7 +1147,7 @@ function ArtworkThumbnail({
           aria-hidden
           className="absolute right-1.5 top-1.5 grid size-4 place-items-center rounded-full bg-zinc-900 text-white"
         >
-          <CloseIcon size={iconSize("xs")} strokeWidth={3} />
+          <CloseIcon size={iconSize("xs")} strokeWidth={ICON_STROKE_WIDTH} />
         </span>
       )}
     </motion.button>
