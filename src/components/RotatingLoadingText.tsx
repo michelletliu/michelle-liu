@@ -26,6 +26,16 @@ export const GALLERY_LOADING_PHRASES = [
   "Sketching",
 ] as const;
 
+/** Fine Art `/art/gallery` room load — same cadence as Film. */
+export const PAINTING_GALLERY_LOADING_PHRASES = [
+  "hanging the paintings",
+  "leveling the frames",
+  "warming the varnish",
+  "stretching fresh linen",
+  "mixing the pigments",
+  "adjusting the spotlights",
+] as const;
+
 export function FilmLoadingDots({
   reduceMotion = false,
 }: {

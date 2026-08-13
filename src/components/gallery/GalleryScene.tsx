@@ -4,6 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { createWoodgrainTexture, scaleBoxUvsToWorld } from "./frameWoodgrain";
 import {
+  createCanvasWeaveNormalMap,
+  createStretcherContactShadowMap,
+} from "./canvasStretcherMaps";
+import {
   createShimmerMaterial,
   shimmerProgress,
   shimmerTimeStep,
@@ -22,11 +26,21 @@ import {
   type GalleryPainting,
   type GalleryRoomPose,
 } from "./galleryPaintings";
-import { artPlaneGeometry } from "./artPlaneGeometry";
 import {
+  ART_CORNER_RADIUS,
+  ART_CORNER_RADIUS_LIGHT,
+  artPlaneGeometry,
+} from "./artPlaneGeometry";
+import {
+  CANVAS_CORNER_RADIUS,
+  coverUvTransform,
   coverUvWithLetterbox,
+  frameBandsForStyle,
   frameGeometryForArtwork,
+  openFrontRoundedBoxGeometry,
   NO_LETTERBOX_TRIM,
+  type GalleryFrameFit,
+  type GalleryFrameStyle,
 } from "./galleryFrameGeometry";
 import {
   detectDarkLetterboxTrim,
@@ -47,6 +61,18 @@ type GallerySceneProps = {
   shimmerHuesById?: Record<string, ShimmerHues | null>;
   onSelectPainting: (id: string) => void;
   onOpenComposer?: () => void;
+  /**
+   * How hung images fill their apertures. AI gallery and Fine Art canvas both
+   * use `cover` (crop to fill); empty canvases still letterbox via contain.
+   */
+  imageFit?: GalleryFrameFit;
+  /**
+   * Outer frame treatment. Defaults to `dark` (Reve studio woodgrain).
+   * Fine Art passes `canvas` for gallery-wrapped white stretcher (no lip/mat).
+   */
+  frameStyle?: GalleryFrameStyle;
+  /** Fired once a hang's image has decoded and been applied to its mesh. */
+  onHangTextureLoad?: (id: string) => void;
 };
 
 type FrameEntry = {
@@ -61,6 +87,24 @@ type FrameEntry = {
   matte: THREE.Mesh;
   /** Held directly so the focus tint can be eased without a per-frame cast. */
   frameMaterial: THREE.MeshStandardMaterial;
+  /** Mat ridge width used when rebuilding frame geometry after a hang. */
+  matWidth: number;
+  /** Outer lip width used when rebuilding frame geometry after a hang. */
+  lipWidth: number;
+  /** Box depth of the outer frame rail / canvas stretcher. */
+  boxDepth: number;
+  /**
+   * Gallery-wrap stretcher: omit the solid front face so white thickness only
+   * reads on the sides (a closed box front reads as a mat around the art).
+   */
+  openFront: boolean;
+  /** Resting art-plane z (into the room) — just proud of the lip front face. */
+  artZ: number;
+  /** Underlay z, just behind {@link artZ}. */
+  underlayZ: number;
+  /** Unfocused / focused lip albedo for the focus tint ease. */
+  lipColor: number;
+  lipFocusedColor: number;
   /** Lit paper for a blank canvas, so it picks up the room's white. */
   blankMaterial: THREE.MeshStandardMaterial;
   /** A hung image. Unlit when focused, lit by the room when not — see `setArtLighting`. */
@@ -113,9 +157,14 @@ function textureAspect(texture: THREE.Texture | null): number | null {
  * Albedo stays high enough that side hangs read as room-lit pigment, not crushed
  * grey. A leftover emissive wash made them glow; keep wash at 0.
  */
-const ART_ROOM_LIT_ALBEDO = 0.72;
+const ART_ROOM_LIT_ALBEDO = 0.88;
 /** Unfocused = pure room light. Any leftover wash made side canvases glow. */
 const ART_UNFOCUSED_SOURCE_WASH = 0;
+/**
+ * Side hangs sit at this opacity so the white mat shows through and they read
+ * lighter / softer than the focused canvas. Eases to 1 with focus.
+ */
+const ART_UNFOCUSED_OPACITY = 0.72;
 /**
  * Blank paper under room light. Always lit (no emissive path) — focus only
  * lifts albedo toward pure white. Unfocused stays near the wall family so empty
@@ -162,9 +211,9 @@ function setBlankLighting(material: THREE.MeshStandardMaterial, lit: number) {
 }
 
 /**
- * Drive hung-art opacity for the dissolve-in. Below 1 the material is
- * transparent so the underlay (shimmer / blank) reads through; at 1 it returns
- * to the opaque path so depth write and sorting stay clean for settled hangs.
+ * Drive hung-art opacity for dissolve-in and the unfocused fade. Below 1 the
+ * material is transparent so the underlay / white mat reads through; at 1 it
+ * returns to the opaque path so depth write and sorting stay clean.
  */
 function setArtRevealOpacity(
   material: THREE.MeshStandardMaterial,
@@ -180,6 +229,11 @@ function setArtRevealOpacity(
   material.opacity = transparent ? next : 1;
 }
 
+/** Focused = 1; unfocused = `ART_UNFOCUSED_OPACITY`. */
+function focusArtOpacity(lit: number): number {
+  return ART_UNFOCUSED_OPACITY + (1 - ART_UNFOCUSED_OPACITY) * lit;
+}
+
 /**
  * Hang an image, or clear back to a blank canvas.
  *
@@ -193,10 +247,17 @@ function setArtRevealOpacity(
  * on both cover and contain. Met inspiration tiles in the composer are
  * separate DOM and untouched here.
  *
+ * Fine Art canvas wraps also use `cover` so paint fills the stretcher front
+ * with no letterbox mat; apertures are still aspect-sized per work.
+ *
  * New textures start a soft opacity dissolve (`revealActive`); clearing a hang
  * snaps back with no fade.
  */
-function setFrameTexture(entry: FrameEntry, texture: THREE.Texture | null) {
+function setFrameTexture(
+  entry: FrameEntry,
+  texture: THREE.Texture | null,
+  imageFit: GalleryFrameFit = "cover",
+) {
   entry.texture = texture;
   entry.artMaterial.map = texture;
   // Driving both channels off the same texture is what lets emissive stand in
@@ -205,13 +266,14 @@ function setFrameTexture(entry: FrameEntry, texture: THREE.Texture | null) {
   entry.artMaterial.needsUpdate = true;
 
   const aspect = textureAspect(texture);
-  // Hung images fill the aperture via cover UVs; blank canvases letterbox.
-  const fit = texture ? "cover" : "contain";
+  // Hung images default to cover; blank canvases letterbox.
+  const fit: GalleryFrameFit = texture ? imageFit : "contain";
   const geometry = frameGeometryForArtwork(
     entry.maxArtSize.width,
     entry.maxArtSize.height,
     aspect,
     fit,
+    { matWidth: entry.matWidth, lipWidth: entry.lipWidth },
   );
   entry.artFit = {
     x: geometry.art.width / entry.maxArtSize.width,
@@ -219,22 +281,38 @@ function setFrameTexture(entry: FrameEntry, texture: THREE.Texture | null) {
   };
 
   if (texture) {
-    const apertureAspect =
-      entry.maxArtSize.width / entry.maxArtSize.height;
-    // Reve (and similar) sometimes bake a thin black keyline into the image.
-    // Crop it in UV space so the white mat meets paint, not a dark pad.
-    const image = texture.image as
-      | (CanvasImageSource & { width: number; height: number })
-      | undefined;
-    const sampled = image ? readImageRgba(image) : null;
-    const trim = sampled
-      ? detectDarkLetterboxTrim(sampled.width, sampled.height, sampled.data)
-      : NO_LETTERBOX_TRIM;
-    const uv = coverUvWithLetterbox(apertureAspect, aspect, trim);
-    texture.wrapS = THREE.ClampToEdgeWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
-    texture.offset.set(uv.offsetX, uv.offsetY);
-    texture.repeat.set(uv.repeatX, uv.repeatY);
+    if (fit === "cover") {
+      const apertureAspect =
+        entry.maxArtSize.width / entry.maxArtSize.height;
+      // Fine Art gallery-wrap: full-bleed cover, no keyline safety crop — that
+      // inset reads as a hairline mat against the open stretcher. Reve keeps
+      // dark-letterbox detection + COVER_SAFETY_INSET for model keylines.
+      const uv = entry.openFront
+        ? coverUvTransform(apertureAspect, aspect)
+        : (() => {
+            const image = texture.image as
+              | (CanvasImageSource & { width: number; height: number })
+              | undefined;
+            const sampled = image ? readImageRgba(image) : null;
+            const trim = sampled
+              ? detectDarkLetterboxTrim(
+                  sampled.width,
+                  sampled.height,
+                  sampled.data,
+                )
+              : NO_LETTERBOX_TRIM;
+            return coverUvWithLetterbox(apertureAspect, aspect, trim);
+          })();
+      texture.wrapS = THREE.ClampToEdgeWrapping;
+      texture.wrapT = THREE.ClampToEdgeWrapping;
+      texture.offset.set(uv.offsetX, uv.offsetY);
+      texture.repeat.set(uv.repeatX, uv.repeatY);
+    } else {
+      texture.wrapS = THREE.ClampToEdgeWrapping;
+      texture.wrapT = THREE.ClampToEdgeWrapping;
+      texture.offset.set(0, 0);
+      texture.repeat.set(1, 1);
+    }
     // Dissolve in over shimmer/blank; the tick loop owns opacity + underlay.
     // Reduced-motion users skip the crossfade entirely.
     if (
@@ -260,21 +338,34 @@ function setFrameTexture(entry: FrameEntry, texture: THREE.Texture | null) {
   }
 
   const previousFrameGeometry = entry.frame.geometry;
-  const nextFrameGeometry = new THREE.BoxGeometry(
-    geometry.frame.width,
-    geometry.frame.height,
-    0.06,
-  );
-  scaleBoxUvsToWorld(
-    nextFrameGeometry,
-    geometry.frame.width,
-    geometry.frame.height,
-    0.06,
-  );
+  const nextFrameGeometry = entry.openFront
+    ? openFrontRoundedBoxGeometry(
+        geometry.frame.width,
+        geometry.frame.height,
+        entry.boxDepth,
+        CANVAS_CORNER_RADIUS,
+        { openBack: true },
+      )
+    : new THREE.BoxGeometry(
+        geometry.frame.width,
+        geometry.frame.height,
+        entry.boxDepth,
+      );
+  if (!entry.openFront) {
+    scaleBoxUvsToWorld(
+      nextFrameGeometry,
+      geometry.frame.width,
+      geometry.frame.height,
+      entry.boxDepth,
+    );
+  }
   entry.frame.geometry = nextFrameGeometry;
   previousFrameGeometry.dispose();
 
+
   const previousMatteGeometry = entry.matte.geometry;
+  // Canvas paper is a sharp rect behind rounded paint so corner crescents stay
+  // white paper (not wall/AO). Framed modes keep a rectangular mat ridge.
   entry.matte.geometry = new THREE.PlaneGeometry(
     geometry.matte.width,
     geometry.matte.height,
@@ -320,6 +411,21 @@ const FRAME_LIP = 0xc4c4c4;
  * by darkness, and it is far wider than it needs to be to read across a room.
  */
 const FRAME_LIP_FOCUSED = 0x5a5a5a;
+/**
+ * Fine Art light molding — pure white. Dimension comes from room lighting,
+ * contact AO, rabbet, and box side faces — not from a cream / warm tint.
+ */
+const FRAME_LIP_LIGHT = 0xffffff;
+/** Soft focus step for light frames — cool near-white, no cream. */
+const FRAME_LIP_LIGHT_FOCUSED = 0xf5f5f5;
+/**
+ * Gallery-wrap stretcher sides (Fine Art). Room ambient is very bright, so
+ * pure #fff sides blast and read as a fake white mat. Soft cool gray lets
+ * key/point lights carve thickness without a front-face rim.
+ */
+const CANVAS_STRETCHER = 0xcfcfcf;
+/** Focused stretcher — slight lift, still clearly off-white / shadowed. */
+const CANVAS_STRETCHER_FOCUSED = 0xdddddd;
 /**
  * Exponential-ease time constant for the focus tint, ~95% of the way in 180ms.
  * Fast enough to feel like a response to the keypress, slow enough not to snap.
@@ -718,9 +824,40 @@ function disposeSceneGraph(scene: THREE.Scene) {
 function buildFrames(
   paintings: GalleryPainting[],
   root: THREE.Group,
-  woodgrain: THREE.Texture,
+  woodgrain: THREE.Texture | null,
+  frameStyle: GalleryFrameStyle = "dark",
+  canvasWeave: THREE.Texture | null = null,
+  stretcherContactMap: THREE.Texture | null = null,
 ): Map<string, FrameEntry> {
   const frames = new Map<string, FrameEntry>();
+  const { matWidth, lipWidth, boxDepth } = frameBandsForStyle(frameStyle);
+  const isCanvas = frameStyle === "canvas";
+  const isLight = frameStyle === "light";
+  // Light molding stays near-white; canvas stretcher uses a softer gray so
+  // side faces read as shadowed thickness. Dark uses woodgrain.
+  const isWhiteBody = isCanvas || isLight;
+  const lipColor = isCanvas
+    ? CANVAS_STRETCHER
+    : isLight
+      ? FRAME_LIP_LIGHT
+      : FRAME_LIP;
+  const lipFocusedColor = isCanvas
+    ? CANVAS_STRETCHER_FOCUSED
+    : isLight
+      ? FRAME_LIP_LIGHT_FOCUSED
+      : FRAME_LIP_FOCUSED;
+  // Frame / canvas box centered at this z. Mat + art sit just proud of the
+  // lip front — the rail is a solid box (no hole), so anything behind
+  // frameFrontZ is occluded. Keep the proud offset tiny so off-axis views do
+  // not read the canvas as stuck on top of the molding (the old 0.055/0.08
+  // lifts did). Gallery-wrap art sits nearly flush with the stretcher face.
+  const frameCenterZ = 0.01;
+  const frameFrontZ = frameCenterZ + boxDepth / 2;
+  // Canvas: paper backing just behind paint (no solid box front). Framed: mat
+  // ridge sits between lip front and art.
+  const matteZ = frameFrontZ + (isCanvas ? 0.001 : 0.002);
+  const underlayZ = frameFrontZ + (isCanvas ? 0.0015 : 0.003);
+  const artZ = frameFrontZ + (isCanvas ? 0.002 : 0.004);
 
   for (const painting of paintings) {
     const layout = paintingLayout(painting);
@@ -728,6 +865,8 @@ function buildFrames(
       layout.width,
       layout.height,
       null,
+      "contain",
+      { matWidth, lipWidth },
     );
     const group = new THREE.Group();
     group.position.set(layout.position.x, layout.position.y, layout.position.z);
@@ -735,32 +874,168 @@ function buildFrames(
     else if (painting.wall === "right") group.rotation.y = -Math.PI / 2;
     else if (painting.wall === "front") group.rotation.y = Math.PI;
 
-    // Outer frame lip — light gray so hangs still read on white walls
+    // Outer body — dark woodgrain lip (studio), light molding, or gallery-wrap
+    // stretcher (Fine Art canvas). Canvas sides are matte off-white so room
+    // lights carve thickness; pure #fff + strong ambient read as a fake mat.
+    // Vertex colours bake the corner tuck; weave normal is cloth relief only.
     const frameMaterial = new THREE.MeshStandardMaterial({
-      color: FRAME_LIP,
-      roughness: 0.45,
-      metalness: 0.08,
-      // Relief only — see `frameWoodgrain` for why not roughness or bump. The
-      // frame's colour is left entirely to the focus tint.
-      normalMap: woodgrain,
+      color: lipColor,
+      roughness: isCanvas ? 0.92 : isLight ? 0.62 : 0.45,
+      metalness: isWhiteBody ? 0 : 0.08,
+      vertexColors: isCanvas,
+      // Relief only on dark frames — woodgrain reads muddy on near-white.
+      ...(woodgrain && !isWhiteBody ? { normalMap: woodgrain } : {}),
+      ...(isCanvas && canvasWeave
+        ? { normalMap: canvasWeave, normalScale: new THREE.Vector2(0.55, 0.55) }
+        : {}),
     });
     const frameWidth = geometry.frame.width;
     const frameHeight = geometry.frame.height;
-    const frameGeometry = new THREE.BoxGeometry(frameWidth, frameHeight, 0.06);
-    scaleBoxUvsToWorld(frameGeometry, frameWidth, frameHeight, 0.06);
+    const frameGeometry = isCanvas
+      ? openFrontRoundedBoxGeometry(
+          frameWidth,
+          frameHeight,
+          boxDepth,
+          CANVAS_CORNER_RADIUS,
+          { openBack: true },
+        )
+      : new THREE.BoxGeometry(frameWidth, frameHeight, boxDepth);
+    if (!isCanvas) {
+      scaleBoxUvsToWorld(frameGeometry, frameWidth, frameHeight, boxDepth);
+    }
     const frame = new THREE.Mesh(frameGeometry, frameMaterial);
-    frame.position.z = 0.01;
+    frame.position.z = frameCenterZ;
     group.add(frame);
 
+    // Soft wall contact. Light molding uses oversized planes; canvas uses an
+    // exact-footprint map with inward falloff so AO cannot read as a rim.
+    if (isLight) {
+      const wallBackZ = frameCenterZ - boxDepth / 2 - 0.002;
+      // Tight core under the rail + softer outer falloff (real contact AO).
+      const contactCore = new THREE.Mesh(
+        new THREE.PlaneGeometry(frameWidth * 1.01, frameHeight * 1.01),
+        new THREE.MeshBasicMaterial({
+          color: 0x000000,
+          transparent: true,
+          opacity: 0.07,
+          depthWrite: false,
+        }),
+      );
+      contactCore.position.z = wallBackZ;
+      contactCore.raycast = () => {};
+      group.add(contactCore);
+      const contactVeil = new THREE.Mesh(
+        new THREE.PlaneGeometry(frameWidth * 1.045, frameHeight * 1.045),
+        new THREE.MeshBasicMaterial({
+          color: 0x000000,
+          transparent: true,
+          opacity: 0.035,
+          depthWrite: false,
+        }),
+      );
+      contactVeil.position.z = wallBackZ - 0.001;
+      contactVeil.raycast = () => {};
+      group.add(contactVeil);
+    } else if (isCanvas && stretcherContactMap) {
+      const wallBackZ = frameCenterZ - boxDepth / 2 - 0.0015;
+      // Tiny oversize + map falloff: enough for a grazing contact hint without
+      // the old 1.045× veil that read as a light-gray rectangular frame.
+      const contact = new THREE.Mesh(
+        new THREE.PlaneGeometry(frameWidth * 1.006, frameHeight * 1.006),
+        new THREE.MeshBasicMaterial({
+          map: stretcherContactMap,
+          transparent: true,
+          opacity: 0.09,
+          depthWrite: false,
+        }),
+      );
+      contact.position.z = wallBackZ;
+      contact.raycast = () => {};
+      group.add(contact);
+    }
+
+    // Inner rabbet + outer edge darkening — light molding only (not canvas).
+    if (isLight) {
+      // Inner rabbet: thin dark band where molding meets the mat — the soft
+      // self-shadow of a real lip edge. Fixed value (not focus-tinted).
+      const rabbet = Math.min(lipWidth * 0.28, 0.008);
+      const rabbetMat = new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        transparent: true,
+        opacity: 0.1,
+        depthWrite: false,
+      });
+      const rabbetZ = frameFrontZ + 0.0008;
+      const matteW = geometry.matte.width;
+      const matteH = geometry.matte.height;
+      const addRabbet = (
+        w: number,
+        h: number,
+        x: number,
+        y: number,
+      ) => {
+        const strip = new THREE.Mesh(new THREE.PlaneGeometry(w, h), rabbetMat);
+        strip.position.set(x, y, rabbetZ);
+        strip.raycast = () => {};
+        group.add(strip);
+      };
+      addRabbet(matteW + rabbet * 2, rabbet, 0, matteH / 2 + rabbet / 2);
+      addRabbet(matteW + rabbet * 2, rabbet, 0, -(matteH / 2 + rabbet / 2));
+      addRabbet(rabbet, matteH, matteW / 2 + rabbet / 2, 0);
+      addRabbet(rabbet, matteH, -(matteW / 2 + rabbet / 2), 0);
+
+      // Outer front-face edge darkening — subtle chamfer so the rail perimeter
+      // separates from the wall wash without darkening the whole lip.
+      const outerEdge = Math.min(lipWidth * 0.18, 0.005);
+      const edgeMat = new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        transparent: true,
+        opacity: 0.055,
+        depthWrite: false,
+      });
+      const edgeZ = frameFrontZ + 0.0005;
+      const addOuterEdge = (
+        w: number,
+        h: number,
+        x: number,
+        y: number,
+      ) => {
+        const strip = new THREE.Mesh(new THREE.PlaneGeometry(w, h), edgeMat);
+        strip.position.set(x, y, edgeZ);
+        strip.raycast = () => {};
+        group.add(strip);
+      };
+      addOuterEdge(frameWidth, outerEdge, 0, frameHeight / 2 - outerEdge / 2);
+      addOuterEdge(frameWidth, outerEdge, 0, -(frameHeight / 2 - outerEdge / 2));
+      addOuterEdge(
+        outerEdge,
+        frameHeight - outerEdge * 2,
+        frameWidth / 2 - outerEdge / 2,
+        0,
+      );
+      addOuterEdge(
+        outerEdge,
+        frameHeight - outerEdge * 2,
+        -(frameWidth / 2 - outerEdge / 2),
+        0,
+      );
+    }
+
+    // Always a sharp rect. Canvas: fills rounded-paint corner crescents with
+    // paper so the open stretcher never shows wall as a rim. Framed: mat ridge.
     const matte = new THREE.Mesh(
       new THREE.PlaneGeometry(geometry.matte.width, geometry.matte.height),
       new THREE.MeshStandardMaterial({
+        // Flat paper mat / canvas face — slightly higher roughness than the lip.
         color: FRAME,
-        roughness: 0.7,
+        roughness: isWhiteBody ? 0.88 : 0.7,
         metalness: 0,
       }),
     );
-    matte.position.z = 0.045;
+    matte.position.z = matteZ;
+    // Framed modes: white mat ridge between lip and art. Canvas: flush paper
+    // behind the paint (same footprint as art) — never a larger mat border.
+    matte.visible = true;
     group.add(matte);
 
     const blankMaterial = new THREE.MeshStandardMaterial({
@@ -778,14 +1053,18 @@ function buildFrames(
       toneMapped: false,
     });
     setArtLighting(artMaterial, 0);
-    const artGeometry = artPlaneGeometry(layout.width, layout.height);
+    const artGeometry = artPlaneGeometry(
+      layout.width,
+      layout.height,
+      isWhiteBody ? ART_CORNER_RADIUS_LIGHT : ART_CORNER_RADIUS,
+    );
     const underlay = new THREE.Mesh(artGeometry.clone(), blankMaterial);
     // Just behind the art plane so a transparent dissolve reads the underlay.
-    underlay.position.z = 0.053;
+    underlay.position.z = underlayZ;
     underlay.visible = false;
     underlay.raycast = () => {};
     const mesh = new THREE.Mesh(artGeometry, blankMaterial);
-    mesh.position.z = 0.055;
+    mesh.position.z = artZ;
     frame.userData.paintingId = painting.id;
     matte.userData.paintingId = painting.id;
     mesh.userData.paintingId = painting.id;
@@ -801,6 +1080,14 @@ function buildFrames(
       frame,
       matte,
       frameMaterial,
+      matWidth,
+      lipWidth,
+      boxDepth,
+      openFront: isCanvas,
+      artZ,
+      underlayZ,
+      lipColor,
+      lipFocusedColor,
       blankMaterial,
       artMaterial,
       shimmerMaterial: createShimmerMaterial(),
@@ -827,6 +1114,9 @@ export default function GalleryScene({
   shimmerHuesById,
   onSelectPainting,
   onOpenComposer,
+  imageFit = "cover",
+  frameStyle = "dark",
+  onHangTextureLoad,
 }: GallerySceneProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const poseRef = useRef(pose);
@@ -839,8 +1129,11 @@ export default function GalleryScene({
     shimmerHuesById ?? {},
   );
   const paintingsRef = useRef(paintings);
+  const imageFitRef = useRef(imageFit);
+  const frameStyleRef = useRef(frameStyle);
   const onSelectRef = useRef(onSelectPainting);
   const onOpenComposerRef = useRef(onOpenComposer);
+  const onHangTextureLoadRef = useRef(onHangTextureLoad);
   const framesRef = useRef<Map<string, FrameEntry> | null>(null);
   // Scene is imported with ssr: false, so reading matchMedia here is safe.
   const [reduceMotion] = useState(
@@ -853,8 +1146,11 @@ export default function GalleryScene({
   generatingIdsRef.current = generatingIds ?? EMPTY_GENERATING_IDS;
   shimmerHuesByIdRef.current = shimmerHuesById ?? {};
   paintingsRef.current = paintings;
+  imageFitRef.current = imageFit;
+  frameStyleRef.current = frameStyle;
   onSelectRef.current = onSelectPainting;
   onOpenComposerRef.current = onOpenComposer;
+  onHangTextureLoadRef.current = onHangTextureLoad;
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -917,12 +1213,30 @@ export default function GalleryScene({
 
     const framesRoot = new THREE.Group();
     scene.add(framesRoot);
-    // One grain for all twelve frames. Generating it per frame would be twelve
-    // 512x512 canvases and twelve textures to lose track of, which is the leak
-    // that used to blank the room; per-frame UVs give the variety instead.
-    const woodgrain = createWoodgrainTexture();
-    woodgrain.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    const frames = buildFrames(paintingsRef.current, framesRoot, woodgrain);
+    // One grain for all studio frames. Skip for Fine Art light molding —
+    // woodgrain normals muddy near-white rails. Generating per frame would
+    // be N 512x512 canvases; per-frame UVs give the variety instead.
+    const style = frameStyleRef.current;
+    const woodgrain = style === "dark" ? createWoodgrainTexture() : null;
+    if (woodgrain) {
+      woodgrain.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    }
+    // Fine Art gallery-wrap: shared weave normal + soft contact map.
+    const canvasWeave =
+      style === "canvas" ? createCanvasWeaveNormalMap() : null;
+    if (canvasWeave) {
+      canvasWeave.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    }
+    const stretcherContactMap =
+      style === "canvas" ? createStretcherContactShadowMap() : null;
+    const frames = buildFrames(
+      paintingsRef.current,
+      framesRoot,
+      woodgrain,
+      style,
+      canvasWeave,
+      stretcherContactMap,
+    );
     framesRef.current = frames;
 
     /*
@@ -948,7 +1262,8 @@ export default function GalleryScene({
         }
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.userData.url = url;
-        setFrameTexture(entry, tex);
+        setFrameTexture(entry, tex, imageFitRef.current);
+        onHangTextureLoadRef.current?.(painting.id);
       });
     }
 
@@ -991,8 +1306,10 @@ export default function GalleryScene({
         const hungUrl = entry.texture?.userData.url as string | undefined;
         const desiredUrl = imageUrlById.get(id);
         const awaitingTexture = Boolean(desiredUrl && desiredUrl !== hungUrl);
-        entry.mesh.position.z = isFocused ? 0.08 : 0.055;
-        entry.underlay.position.z = isFocused ? 0.078 : 0.053;
+        // Seat art on the computed proud-of-lip z — never the old absolute
+        // 0.055/0.08 lifts that sat far past thin Fine Art molding.
+        entry.mesh.position.z = entry.artZ;
+        entry.underlay.position.z = entry.underlayZ;
 
         if (isGenerating) {
           entry.holdShimmerForReveal = true;
@@ -1000,7 +1317,6 @@ export default function GalleryScene({
           if (entry.revealActive) {
             entry.revealActive = false;
             entry.underlay.visible = false;
-            setArtRevealOpacity(entry.artMaterial, 1);
           }
           // Clock starts on the first frame of each generation and is cleared
           // below, so a second run begins pale again rather than resuming at the
@@ -1052,7 +1368,9 @@ export default function GalleryScene({
 
         // Selection is colour only. The frame's geometry is identical in both
         // states, so stepping along a wall never resizes anything.
-        tintTarget.set(isFocused ? FRAME_LIP_FOCUSED : FRAME_LIP);
+        tintTarget.set(
+          isFocused ? entry.lipFocusedColor : entry.lipColor,
+        );
         if (reduceMotion) {
           entry.frameMaterial.color.copy(tintTarget);
         } else {
@@ -1069,7 +1387,6 @@ export default function GalleryScene({
                 1,
                 entry.revealProgress + delta / ART_REVEAL_DURATION_S,
               );
-          setArtRevealOpacity(entry.artMaterial, entry.revealProgress);
           entry.underlay.visible = entry.revealProgress < 0.999;
           entry.underlay.material = entry.holdShimmerForReveal
             ? entry.shimmerMaterial
@@ -1085,7 +1402,6 @@ export default function GalleryScene({
             entry.revealProgress = 1;
             entry.holdShimmerForReveal = false;
             entry.underlay.visible = false;
-            setArtRevealOpacity(entry.artMaterial, 1);
           }
         } else if (!entry.revealActive) {
           entry.underlay.visible = false;
@@ -1126,10 +1442,26 @@ export default function GalleryScene({
             (litTarget - entry.artLit) * (1 - Math.exp(-delta / ART_LIGHT_TAU));
         setArtLighting(entry.artMaterial, entry.artLit);
 
+        // Neighbors at ART_UNFOCUSED_OPACITY let the white mat read through
+        // (Reve). Canvas wraps have no mat — keep paint fully opaque so a
+        // rectangular paper backer never reads as a front-face rim.
+        const focusOpacity = entry.openFront
+          ? 1
+          : focusArtOpacity(entry.artLit);
+        const revealFactor =
+          entry.revealActive && entry.texture && !isGenerating
+            ? entry.revealProgress
+            : 1;
+        setArtRevealOpacity(entry.artMaterial, revealFactor * focusOpacity);
+
         if (!entry.texture) {
           // Same ease as hung art: empty paper stays room-lit soft white when
           // off-axis, and only the focused sheet lifts to pure white.
           setBlankLighting(entry.blankMaterial, entry.artLit);
+          setArtRevealOpacity(
+            entry.blankMaterial,
+            entry.openFront ? 1 : focusOpacity,
+          );
         }
       }
 
@@ -1174,8 +1506,10 @@ export default function GalleryScene({
       renderer.domElement.removeEventListener("click", onClick);
       renderer.domElement.removeEventListener("dblclick", onDoubleClick);
       // Materials do not own their maps, so disposing the frame materials
-      // leaves this behind. It is shared by all twelve, hence disposed here.
-      woodgrain.dispose();
+      // leaves this behind. It is shared by all studio frames, hence disposed here.
+      woodgrain?.dispose();
+      canvasWeave?.dispose();
+      stretcherContactMap?.dispose();
       for (const entry of frames.values()) {
         entry.texture?.dispose();
         entry.blankMaterial.dispose();
@@ -1223,7 +1557,7 @@ export default function GalleryScene({
       if (!url) {
         if (entry.texture) {
           entry.texture.dispose();
-          setFrameTexture(entry, null);
+          setFrameTexture(entry, null, imageFit);
         }
         continue;
       }
@@ -1242,14 +1576,15 @@ export default function GalleryScene({
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.userData.url = url;
         entry.texture?.dispose();
-        setFrameTexture(entry, tex);
+        setFrameTexture(entry, tex, imageFit);
+        onHangTextureLoadRef.current?.(painting.id);
       });
     }
 
     return () => {
       cancelled = true;
     };
-  }, [paintings]);
+  }, [paintings, imageFit]);
 
   return (
     <div className="absolute inset-0 z-10 h-full w-full">

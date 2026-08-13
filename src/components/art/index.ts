@@ -1,5 +1,6 @@
 export { default as ArtPage } from "./ArtPage";
 export { default as HeaderBreakpoint } from "./HeaderBreakpoint";
+export { default as HeaderBreakpointRuled } from "./HeaderBreakpointRuled";
 export { default as ArtCard } from "./ArtCard";
 export type { ArtCardData } from "./ArtCard";
 export { default as ArtGallery } from "./ArtGallery";

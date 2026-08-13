@@ -25,15 +25,17 @@ export default function LoadingSpinner({
   size = "sm",
   className,
 }: LoadingSpinnerProps) {
-  const text = stripTrailingDots(label) || "Loading";
+  const text = label === "" ? null : stripTrailingDots(label) || "Loading";
 
   return (
     <div className={clsx("loading-spinner", size, className)}>
       <div className="loading-spinner-ring" />
-      <span className="loading-spinner-label">
-        {text}
-        <FilmLoadingDots />
-      </span>
+      {text !== null && (
+        <span className="loading-spinner-label">
+          {text}
+          <FilmLoadingDots />
+        </span>
+      )}
     </div>
   );
 }
