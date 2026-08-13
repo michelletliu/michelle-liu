@@ -1210,7 +1210,7 @@ export default function ProjectModal({
           "relative bg-white flex flex-col overflow-hidden transition-all duration-400 ease-out",
           isFullscreen
             ? "w-full h-full rounded-none"
-            : "rounded-[26px] w-[calc(100%*10/12)] max-w-[800px] max-md:w-full min-h-[80vh] sm:min-h-[90vh] max-h-[80vh] sm:max-h-[90vh]",
+            : "rounded-[26px] w-[calc(100%*10/12)] max-md:w-full min-h-[80vh] sm:min-h-[90vh] max-h-[80vh] sm:max-h-[90vh]",
           isVisible
             ? "opacity-100 translate-y-0"
             : isClosing
