@@ -147,10 +147,12 @@ export default function NavigationLoadingShell({
             <div className="h-4 w-16 animate-pulse rounded bg-zinc-50" />
           </div>
         </div>
-        <div
-          className={`flex-1 flex flex-col ${activeTab === "about" ? "gap-20" : "gap-12"} items-start pb-8 min-w-0 w-full`}
-        >
-          {activeTab === "art" ? <ArtContentSkeleton /> : <AboutContentSkeleton />}
+        <div className="flex-1 flex justify-center min-w-0 w-full">
+          <div
+            className={`flex flex-col ${activeTab === "about" ? "gap-20 max-w-[800px]" : "gap-12"} items-start pb-8 w-full`}
+          >
+            {activeTab === "art" ? <ArtContentSkeleton /> : <AboutContentSkeleton />}
+          </div>
         </div>
       </div>
     </div>

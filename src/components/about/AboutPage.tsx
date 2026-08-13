@@ -785,8 +785,9 @@ export default function AboutPage() {
           />
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col gap-20 items-start pb-8 min-w-0 w-full max-w-[800px] mx-auto">
+        {/* Main Content — flex-1 fills space beside the sidebar; inner cap centers in that area only */}
+        <div className="flex-1 flex justify-center min-w-0 w-full">
+          <div className="flex flex-col gap-20 items-start pb-8 w-full max-w-[800px]">
           {/* HI! Section - Hardcoded */}
           <section ref={hiRef} className="flex flex-col md:flex-row gap-10 md:gap-16 items-center md:items-start w-full max-w-5xl scroll-mt-8">
             {/* Profile Photo */}
@@ -1056,6 +1057,7 @@ export default function AboutPage() {
               <p className="text-zinc-400 text-sm py-4">Add lore items in Sanity Studio.</p>
             )}
           </section>
+          </div>
         </div>
       </div>
 
