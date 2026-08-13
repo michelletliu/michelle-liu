@@ -6,8 +6,13 @@ import * as THREE from "three";
  * ~1 CSS px at focused viewing: the mat ridge is `MAT_WIDTH` (0.03) and reads
  * as roughly a dozen pixels, so one pixel is ~0.0025 world units. Small enough
  * not to read as a bevel; just enough to kill the hard 90° against the mat.
+ *
+ * Fine Art canvas wraps use `ART_CORNER_RADIUS_LIGHT` (~5–6 CSS px) so gallery-
+ * wrapped hangs read softer without changing Reve's tighter studio radius.
  */
 export const ART_CORNER_RADIUS = 0.0025;
+/** Fine Art / canvas hang — softer rounded corners than the studio default. */
+export const ART_CORNER_RADIUS_LIGHT = 0.014;
 
 /**
  * Flat art / blank-canvas plane with slightly rounded corners so the white mat
@@ -22,10 +27,11 @@ export const ART_CORNER_RADIUS = 0.0025;
 export function artPlaneGeometry(
   width: number,
   height: number,
+  cornerRadius: number = ART_CORNER_RADIUS,
 ): THREE.ShapeGeometry {
   const w = width / 2;
   const h = height / 2;
-  const r = Math.min(ART_CORNER_RADIUS, w, h);
+  const r = Math.min(cornerRadius, w, h);
   const shape = new THREE.Shape();
   shape.moveTo(-w + r, -h);
   shape.lineTo(w - r, -h);
@@ -36,8 +42,9 @@ export function artPlaneGeometry(
   shape.absarc(-w + r, h - r, r, Math.PI / 2, Math.PI, false);
   shape.lineTo(-w, -h + r);
   shape.absarc(-w + r, -h + r, r, Math.PI, Math.PI * 1.5, false);
-  // Few segments — the radius is ~1px; 4 is plenty for a smooth quarter-circle.
-  const geometry = new THREE.ShapeGeometry(shape, 4);
+  // More segments for Fine Art's larger radius; Reve's ~1px radius is fine at 4.
+  const curveSegments = cornerRadius >= 0.008 ? 8 : 4;
+  const geometry = new THREE.ShapeGeometry(shape, curveSegments);
   remapShapeUvsToUnitSquare(geometry, width, height);
   return geometry;
 }

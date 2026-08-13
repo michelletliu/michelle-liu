@@ -16,6 +16,7 @@ import Footer from '../layout/Footer';
 import { Chevron } from '../icons/Chevron';
 import { ghostIconButtonClass } from '../shared/ghostIconButton';
 import { FloatingPanel } from '../shared/FloatingPanel';
+import LoadingSpinner from "../shared/LoadingSpinner";
 
 // Lazy per experiment — don't download all five pages when this modal chunk loads.
 const PolaroidPage = lazy(() => import('../polaroid/PolaroidPage'));
@@ -45,11 +46,11 @@ function InfoIcon() {
   );
 }
 
-// Loading spinner
-function LoadingSpinner() {
+// Loading — DS film-dot ellipsis (shared LoadingSpinner)
+function ExperimentLoading() {
   return (
     <div className="flex items-center justify-center w-full h-full min-h-[400px]">
-      <div className="w-8 h-8 border-2 border-zinc-200 border-t-zinc-400 rounded-full animate-spin" />
+      <LoadingSpinner size="md" label="Loading" />
     </div>
   );
 }
@@ -852,7 +853,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
 
         {/* Embedded experiment content */}
         <div ref={scrollContainerRef} className="flex-1 overflow-hidden transition-all duration-500 ease-out">
-          <Suspense fallback={<LoadingSpinner />}>
+          <Suspense fallback={<ExperimentLoading />}>
             <div 
               className={clsx(
                 "w-full h-full experiment-modal-embed modal-scroll-container relative transition-all duration-500 ease-out overflow-auto",

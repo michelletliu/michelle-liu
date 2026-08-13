@@ -12,6 +12,12 @@ type ScrollRevealProps = {
   fast?: boolean;
   /** Delay in milliseconds before animation starts */
   delay?: number;
+  /**
+   * Keep `delay` even when the element is above the fold.
+   * By default above-fold delays are cleared so section content animates together;
+   * set this when a specific element must intentionally appear after siblings.
+   */
+  preserveDelay?: boolean;
   /** Threshold for intersection observer (0-1) */
   threshold?: number;
   /** Root margin for earlier/later trigger */
@@ -47,6 +53,7 @@ export function ScrollReveal({
   variant = "slide",
   fast = false,
   delay = 0,
+  preserveDelay = false,
   threshold = 0.15,
   rootMargin = "0px 0px -40px 0px",
   as: Component = "div",
@@ -87,7 +94,8 @@ export function ScrollReveal({
       wasAboveFoldRef.current = isInViewport();
       
       // Clear delay for above-fold elements so they all animate together
-      if (wasAboveFoldRef.current && delay > 0) {
+      // (unless preserveDelay — e.g. a link that must appear after sibling content)
+      if (wasAboveFoldRef.current && delay > 0 && !preserveDelay) {
         element.style.transitionDelay = "0ms";
       }
     }
@@ -131,7 +139,7 @@ export function ScrollReveal({
     return () => {
       observer.disconnect();
     };
-  }, [threshold, rootMargin, disabled, delay]);
+  }, [threshold, rootMargin, disabled, delay, preserveDelay]);
 
   // Get the appropriate class based on variant
   const variantClass = {

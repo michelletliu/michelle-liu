@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-/** Same keyframes / class as Film + the design-system Loading dots specimen. */
+/** Same keyframes / class as Film + the design-system Loading dots specimen (see globals.css). */
 export const FILM_DOT_STYLE = `@keyframes film-dot-pulse{0%,80%,100%{opacity:.15}40%{opacity:1}}.film-dot{animation:film-dot-pulse 1.4s ease-in-out infinite;opacity:.15}`;
 
 export const FILM_LOADING_PHRASES = [
@@ -24,6 +24,16 @@ export const GALLERY_LOADING_PHRASES = [
   "Warming varnish",
   "Composing",
   "Sketching",
+] as const;
+
+/** Fine Art `/art/gallery` room load — same cadence as Film. */
+export const PAINTING_GALLERY_LOADING_PHRASES = [
+  "hanging the paintings",
+  "leveling the frames",
+  "warming the varnish",
+  "stretching fresh linen",
+  "mixing the pigments",
+  "adjusting the spotlights",
 ] as const;
 
 export function FilmLoadingDots({

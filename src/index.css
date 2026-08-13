@@ -586,31 +586,55 @@ video {
   display: none !important;
 }
 
-/* Library grid - use fixed columns in popup mode only (fullscreen should use page's default grid) */
-.experiment-modal-embed:not(.fullscreen) .library-book-grid {
-  grid-template-columns: repeat(6, auto) !important;
-  justify-content: space-between !important;
-  gap: 40px 0 !important;
-}
+/*
+  Library popup: compact book sizing on typical screens only.
+  On huge monitors the popup (~10/12 viewport) is wide enough to use the same
+  book size / gap behavior as /library/full on a laptop — skip the downscale.
+*/
+@media (max-width: 1919px) {
+  /* Fixed columns in popup mode only (fullscreen uses the page's default grid) */
+  .experiment-modal-embed:not(.fullscreen) .library-book-grid {
+    grid-template-columns: repeat(6, auto) !important;
+    justify-content: space-between !important;
+    gap: 40px 0 !important;
+  }
 
-/* Scale down book cards in popup mode */
-.experiment-modal-embed:not(.fullscreen) .library-book-grid > button {
-  width: 100px !important;
-  height: 200px !important;
-  transition: all 500ms ease-out !important;
-}
+  /* Scale down book cards in popup mode */
+  .experiment-modal-embed:not(.fullscreen) .library-book-grid > button {
+    width: 100px !important;
+    height: 200px !important;
+    transition: all 500ms ease-out !important;
+  }
 
-.experiment-modal-embed:not(.fullscreen) .library-book-grid > button > div:first-child {
-  width: 100px !important;
-  height: 154px !important;
-  background: transparent !important;
-  transition: all 500ms ease-out !important;
-}
+  .experiment-modal-embed:not(.fullscreen) .library-book-grid > button > div:first-child {
+    width: 100px !important;
+    height: 154px !important;
+    background: transparent !important;
+    transition: all 500ms ease-out !important;
+  }
 
-.experiment-modal-embed:not(.fullscreen) .library-book-grid > button > div:first-child img {
-  width: 100px !important;
-  height: 154px !important;
-  transition: all 500ms ease-out !important;
+  .experiment-modal-embed:not(.fullscreen) .library-book-grid > button > div:first-child img {
+    width: 100px !important;
+    height: 154px !important;
+    transition: all 500ms ease-out !important;
+  }
+
+  /* Scale down hover text in popup mode */
+  .experiment-modal-embed:not(.fullscreen) .library-book-grid > button > div:last-child {
+    top: 155px !important;
+    width: 100px !important;
+    font-size: 12px !important;
+  }
+
+  /* Reduce book cover hover movement in popup mode */
+  .experiment-modal-embed:not(.fullscreen) .library-book-grid > button:hover > div:first-child {
+    top: -8px !important;
+  }
+
+  .experiment-modal-embed:not(.fullscreen) .library-book-grid > button > div:last-child p {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+  }
 }
 
 /* Ensure smooth transition for fullscreen mode too */
@@ -624,23 +648,6 @@ video {
 
 .library-book-grid > button > div:first-child img {
   transition: all 500ms ease-out;
-}
-
-/* Scale down hover text in popup mode */
-.experiment-modal-embed:not(.fullscreen) .library-book-grid > button > div:last-child {
-  top: 155px !important;
-  width: 100px !important;
-  font-size: 12px !important;
-}
-
-/* Reduce book cover hover movement in popup mode */
-.experiment-modal-embed:not(.fullscreen) .library-book-grid > button:hover > div:first-child {
-  top: -8px !important;
-}
-
-.experiment-modal-embed:not(.fullscreen) .library-book-grid > button > div:last-child p {
-  font-size: 12px !important;
-  line-height: 1.3 !important;
 }
 
 /* Popover animation - smooth scale and fade */

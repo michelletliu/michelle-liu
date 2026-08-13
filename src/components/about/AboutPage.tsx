@@ -785,8 +785,9 @@ export default function AboutPage() {
           />
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col gap-20 items-start pb-8 min-w-0 w-full">
+        {/* Main Content — left-aligned like prod on laptop; on large monitors, center an 800px column beside the sidebar */}
+        <div className="flex-1 flex min-w-0 w-full min-[1920px]:justify-center">
+          <div className="flex flex-col gap-20 items-start pb-8 w-full min-[1920px]:max-w-[800px]">
           {/* HI! Section - Hardcoded */}
           <section ref={hiRef} className="flex flex-col md:flex-row gap-10 md:gap-16 items-center md:items-start w-full max-w-5xl scroll-mt-8">
             {/* Profile Photo */}
@@ -812,7 +813,7 @@ export default function AboutPage() {
             </ScrollReveal>
 
             {/* Bio Content */}
-            <div className="flex flex-col pt-8 gap-6 flex-1">
+            <div className="flex flex-col pt-8 gap-6 flex-1 max-w-xl">
               <ScrollReveal variant="fade" delay={150}>
                 <h2 className="font-['Michelle',sans-serif] font-medium text-zinc-600 text-3xl md:text-3xl">
                   Hi, I'm Michelle!
@@ -1056,6 +1057,7 @@ export default function AboutPage() {
               <p className="text-zinc-400 text-sm py-4">Add lore items in Sanity Studio.</p>
             )}
           </section>
+          </div>
         </div>
       </div>
 

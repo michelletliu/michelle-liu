@@ -6,7 +6,11 @@ import { PlusIcon } from "@/components/library/icons";
 import { ICON_STROKE_WIDTH } from "@/components/shared/iconSizes";
 import { KEEP_BAR_OPEN_ATTR } from "./GalleryActionBar";
 import { GALLERY_FOCUS_RING } from "./galleryFocus";
-import { adjacentPaintingId } from "./galleryPaintings";
+import {
+  GALLERY_PAINTINGS,
+  adjacentPaintingId,
+  type GalleryPainting,
+} from "./galleryPaintings";
 import {
   NAV_REPEAT_IDLE,
   ZOOM_STEP,
@@ -38,6 +42,8 @@ type GalleryThumbstickProps = {
    * Desktop (`md+`) stays visible.
    */
   hideOnMobile?: boolean;
+  /** Hang list for left/right stepping. Defaults to the blank 12-hang room. */
+  paintings?: GalleryPainting[];
 };
 
 /**
@@ -213,6 +219,7 @@ export default function GalleryThumbstick({
   onSelect,
   onZoomBy,
   hideOnMobile = false,
+  paintings = GALLERY_PAINTINGS,
 }: GalleryThumbstickProps) {
   const baseRef = useRef<HTMLDivElement>(null);
   const knobRef = useRef<HTMLDivElement>(null);
@@ -231,6 +238,8 @@ export default function GalleryThumbstick({
 
   const focusedIdRef = useRef(focusedId);
   focusedIdRef.current = focusedId;
+  const paintingsRef = useRef(paintings);
+  paintingsRef.current = paintings;
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
   const onZoomByRef = useRef(onZoomBy);
@@ -293,7 +302,9 @@ export default function GalleryThumbstick({
     const { state, step } = advanceNavRepeat(navRef.current, x, deltaMs);
     navRef.current = state;
     if (step !== 0) {
-      onSelectRef.current(adjacentPaintingId(focusedIdRef.current, step));
+      onSelectRef.current(
+        adjacentPaintingId(focusedIdRef.current, step, paintingsRef.current),
+      );
     }
 
     frameRef.current = requestAnimationFrame(tick);
@@ -414,14 +425,18 @@ export default function GalleryThumbstick({
         <AxisButton
           axis="left"
           label="Previous painting"
-          onPress={() => onSelect(adjacentPaintingId(focusedId, -1))}
+          onPress={() =>
+            onSelect(adjacentPaintingId(focusedId, -1, paintings))
+          }
         >
           <ChevronLeftIcon size={CHEVRON_SIZE} />
         </AxisButton>
         <AxisButton
           axis="right"
           label="Next painting"
-          onPress={() => onSelect(adjacentPaintingId(focusedId, 1))}
+          onPress={() =>
+            onSelect(adjacentPaintingId(focusedId, 1, paintings))
+          }
         >
           <ChevronRightIcon size={CHEVRON_SIZE} />
         </AxisButton>
