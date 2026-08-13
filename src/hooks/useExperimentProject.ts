@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { client, urlFor } from '../sanity/client';
 import { EXPERIMENT_PROJECT_BY_ID_QUERY } from '../sanity/queries';
 import type { ToolCategory } from '../components/shared/InfoButton';
-import { muxPosterUrl } from '../lib/muxPoster';
+import { muxPosterUrl, posterTimeForProject } from '../lib/muxPoster';
 import type { SanityImage } from '../sanity/types';
 
 // Type for the Sanity experiment project data
@@ -66,9 +66,11 @@ export function useExperimentProject(
             ? getMuxUrls(data.muxPlaybackId, data.projectId)
             : { imageSrc: defaultProject.imageSrc, videoSrc: defaultProject.videoSrc };
 
-          const fallbackUrl = data.fallbackThumbnail
-            ? urlFor(data.fallbackThumbnail).width(1920).url()
-            : undefined;
+          const fallbackUrl =
+            data.fallbackThumbnail &&
+            posterTimeForProject(data.projectId) === undefined
+              ? urlFor(data.fallbackThumbnail).width(1920).url()
+              : undefined;
 
           setProject({
             id: data.projectId,

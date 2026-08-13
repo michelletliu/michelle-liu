@@ -45,7 +45,7 @@ import { useScrollLock } from "../../utils/useScrollLock";
 import ContactBadge from "../shared/ContactBadge";
 import NavigationTabs from "../layout/NavigationTabs";
 import { HorizontalLine } from "../shared/HorizontalLine";
-import { muxPosterUrl } from "../../lib/muxPoster";
+import { muxPosterUrl, posterTimeForProject } from "../../lib/muxPoster";
 import { posthog, posthogEnabled } from "../../lib/posthog";
 import { useHeroAnimation } from "../../hooks/useHeroAnimation";
 import { fadeUpStyles } from "../../styles/animations";
@@ -75,6 +75,7 @@ type Project = {
   imageSrc: string;
   videoSrc?: string;
   xLink?: string;
+  tryItOutHref?: string;
   backgroundColor?: string;
   toolCategories?: ToolCategory[];
 };
@@ -118,6 +119,21 @@ const staticProjects: Project[] = [
     description: "Daring (& designing) mighty things at NASA's in-house DesignLab.",
     imageSrc: "",
     videoSrc: "",
+  },
+  {
+    id: "design-meetup",
+    title: "Design Meetup",
+    year: "2026",
+    description: "A new site for Design Meetup, a nationwide community for early-career creatives.",
+    imageSrc: "https://image.mux.com/cwG7dhOYn4rCjWNSPxUFuUMSzdh6wv9qFNG00xjHs4pU/thumbnail.png?width=1920&time=0",
+    videoSrc: "https://stream.mux.com/cwG7dhOYn4rCjWNSPxUFuUMSzdh6wv9qFNG00xjHs4pU.m3u8",
+    tryItOutHref: "https://design-meetup-web.vercel.app/",
+    backgroundColor: "#ffffff",
+    toolCategories: [
+      { label: "UI & Motion", tools: ["Tailwind CSS", "Motion"] },
+      { label: "Frontend", tools: ["Next.js", "React", "TypeScript"] },
+      { label: "Data", tools: ["Supabase"] },
+    ],
   },
   {
     id: "polaroid",
@@ -213,13 +229,12 @@ const staticProjects: Project[] = [
       { label: 'Motion', tools: ['Framer Motion'] },
     ],
   },
-  // Kept for routes/modal deep-links; filtered from the home grid via HIDDEN_EXPERIMENT_IDS.
   {
     id: "sundays",
     title: "Sundays",
     year: "2026",
     description: "A new site for Sundays, a weekly coworking session I help host for creatives in LA.",
-    imageSrc: "https://image.mux.com/RmmMHG2l02e02I3powzzRYb6qWuW00HwxAAcB7wo41FGo00/thumbnail.png?width=1920",
+    imageSrc: "https://image.mux.com/RmmMHG2l02e02I3powzzRYb6qWuW00HwxAAcB7wo41FGo00/thumbnail.png?width=1920&time=0",
     videoSrc: "https://stream.mux.com/RmmMHG2l02e02I3powzzRYb6qWuW00HwxAAcB7wo41FGo00.m3u8",
     xLink: "https://x.com/michelletliu/status/2044470508641784033",
     backgroundColor: "#ffffff",
@@ -381,6 +396,7 @@ function getExperimentLink(projectId: string): { href: string; label: string; ex
     case 'library': return { href: '/library', label: 'Try It Out!', external: false };
     case 'film': return { href: '/film', label: 'Try It Out!', external: false };
     case 'sundays': return { href: 'https://sundays.rsvp', label: 'Visit Site', external: true };
+    case 'design-meetup': return { href: 'https://design-meetup-web.vercel.app/', label: 'Visit Site', external: true };
     case 'gallery': return { href: '/gallery', label: 'Try It Out!', external: false };
     default: return null;
   }
@@ -394,9 +410,9 @@ type ProjectCardProps = {
   index?: number;
 };
 
-const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library", "film", "gallery", "sundays"];
+const SIDE_PROJECT_IDS = ["polaroid", "screentime", "sketchbook", "library", "film", "gallery", "design-meetup", "sundays"];
 /** Experiments kept in data/routes but omitted from the home experiments grid. */
-const HIDDEN_EXPERIMENT_IDS = ["sundays"];
+const HIDDEN_EXPERIMENT_IDS: string[] = [];
 /** Experiments that skip the preview modal and navigate straight to their page. */
 const DIRECT_NAV_EXPERIMENT_IDS = ["gallery"];
 const MAIN_PROJECT_IDS = ["apple", "roblox", "adobe", "nasa"];
@@ -832,9 +848,13 @@ function mergeWorkProjects(
         const muxUrls = clipPlaybackId
           ? getMuxUrls(clipPlaybackId, project.id)
           : { imageSrc: project.imageSrc, videoSrc: project.videoSrc };
-        const fallbackUrl = experimentData.fallbackThumbnail
-          ? urlFor(experimentData.fallbackThumbnail).width(1920).url()
-          : undefined;
+        // Pinned t=0 posters must win over a settled-state fallback screenshot,
+        // otherwise ProjectMedia crossfades the assembled UI out as the clip starts.
+        const fallbackUrl =
+          experimentData.fallbackThumbnail &&
+          posterTimeForProject(project.id) === undefined
+            ? urlFor(experimentData.fallbackThumbnail).width(1920).url()
+            : undefined;
         return {
           ...project,
           title: experimentData.title,
@@ -843,6 +863,7 @@ function mergeWorkProjects(
           imageSrc: fallbackUrl || muxUrls.imageSrc,
           videoSrc: muxUrls.videoSrc,
           xLink: experimentData.xLink || project.xLink,
+          tryItOutHref: experimentData.tryItOutHref || project.tryItOutHref,
           backgroundColor:
             experimentData.backgroundColor || project.backgroundColor,
           toolCategories:
@@ -1018,7 +1039,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
     }
 
     const isMobile = window.innerWidth < 768;
-    const shouldGoFullscreen = projectId === 'film' || (isMobile && projectId !== 'sketchbook' && projectId !== 'sundays');
+    const shouldGoFullscreen = projectId === 'film' || (isMobile && projectId !== 'sketchbook' && projectId !== 'sundays' && projectId !== 'design-meetup');
 
     if (posthogEnabled) {
       posthog.capture("project_opened", {
@@ -1229,7 +1250,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
         SIDE_PROJECT_IDS.includes(selectedProject.id) ? (
           <ExperimentModal 
             key={selectedProject.id}
-            projectId={selectedProject.id as 'polaroid' | 'library' | 'screentime' | 'sketchbook' | 'film' | 'sundays'}
+            projectId={selectedProject.id as 'polaroid' | 'library' | 'screentime' | 'sketchbook' | 'film' | 'sundays' | 'design-meetup'}
             project={selectedProject} 
             onClose={handleModalClose}
             onExpandToFullscreen={handleExpandExperimentToFullscreen}

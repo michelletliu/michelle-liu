@@ -30,4 +30,15 @@ describe("muxPosterUrl", () => {
       "https://image.mux.com/abc123/thumbnail.png?time=0",
     );
   });
+
+  it("pins design-meetup and sundays posters to the first frame", () => {
+    assert.equal(
+      muxPosterUrl("abc123", { projectId: "design-meetup", width: 1920 }),
+      "https://image.mux.com/abc123/thumbnail.png?width=1920&time=0",
+    );
+    assert.equal(
+      muxPosterUrl("abc123", { projectId: "sundays" }),
+      "https://image.mux.com/abc123/thumbnail.png?time=0",
+    );
+  });
 });
