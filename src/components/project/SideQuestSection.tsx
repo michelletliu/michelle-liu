@@ -97,7 +97,7 @@ export default function SideQuestSection({
   }, [isExpanded, handleClose]);
 
   return (
-    <div className="px-8 md:px-[8%] xl:px-[175px] py-16 w-full">
+    <div className="px-8 py-16 w-full">
       <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_2fr] gap-12 md:gap-0">
         {/* Left side: Label, Title, Subtitle, Image */}
         <div className="flex flex-col gap-12 md:col-start-1">
