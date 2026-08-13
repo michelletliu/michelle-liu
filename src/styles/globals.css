@@ -823,6 +823,30 @@
     font-size: 0.875rem;
   }
 
+  /* DS loading ellipsis — same cadence as Film / MiscSpecimens "Loading dots" */
+  @keyframes film-dot-pulse {
+    0%,
+    80%,
+    100% {
+      opacity: 0.15;
+    }
+    40% {
+      opacity: 1;
+    }
+  }
+
+  .film-dot {
+    animation: film-dot-pulse 1.4s ease-in-out infinite;
+    opacity: 0.15;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .film-dot {
+      animation: none;
+      opacity: 1;
+    }
+  }
+
   @keyframes spin {
     to {
       transform: rotate(360deg);

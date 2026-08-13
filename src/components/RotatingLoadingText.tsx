@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-/** Same keyframes / class as Film + the design-system Loading dots specimen. */
+/** Same keyframes / class as Film + the design-system Loading dots specimen (see globals.css). */
 export const FILM_DOT_STYLE = `@keyframes film-dot-pulse{0%,80%,100%{opacity:.15}40%{opacity:1}}.film-dot{animation:film-dot-pulse 1.4s ease-in-out infinite;opacity:.15}`;
 
 export const FILM_LOADING_PHRASES = [

@@ -99,7 +99,6 @@ export function LoaderSpecimens() {
         </Specimen>
 
         <Specimen label="Loading dots" span={SPAN_MID}>
-          <style>{`@keyframes film-dot-pulse{0%,80%,100%{opacity:.15}40%{opacity:1}}.film-dot{animation:film-dot-pulse 1.4s ease-in-out infinite;opacity:.15}`}</style>
           <p className="loading-dots-demo text-sm text-zinc-600">
             Loading
             <span className="film-dot" style={{ animationDelay: "0s" }}>.</span>

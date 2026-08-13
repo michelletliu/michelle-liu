@@ -21,6 +21,7 @@ import {
 } from "@/components/shared/FieldInput";
 import { ghostIconButtonClass } from "@/components/shared/ghostIconButton";
 import Tooltip from "@/components/shared/Tooltip";
+import { LoadingText } from "@/components/shared/LoadingSpinner";
 import { Info } from "@/components/icons/Info";
 import { iconSize } from "@/components/shared/iconSizes";
 import MetArtworkDetails from "./MetArtworkDetails";
@@ -464,7 +465,7 @@ export default function MetArtworkPicker({
                   disabled={disabled || loadingMore}
                   className={`shrink-0 border border-dashed border-zinc-300 text-base leading-tight text-zinc-500 transition-colors hover:bg-white/60 disabled:opacity-40 ${TILE_SHAPE} ${GALLERY_FOCUS_RING}`}
                 >
-                  {loadingMore ? "Loading…" : "Load more"}
+                  {loadingMore ? <LoadingText /> : "Load more"}
                 </button>
               )}
             </div>

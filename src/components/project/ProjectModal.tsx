@@ -11,6 +11,7 @@ import {
 } from "../../sanity/preload";
 import type { Project, ContentSection } from "../../sanity/types";
 import { ICON_STROKE_WIDTH } from "../shared/iconSizes";
+import { LoadingText } from "../shared/LoadingSpinner";
 
 /** Resolve breadcrumb label with correct CMS casing — never invent sentence case from the slug. */
 function getBreadcrumbProjectName(projectId: string, project: Project | null): string {
@@ -1307,7 +1308,9 @@ export default function ProjectModal({
           )}
           {loading && (
             <div className="flex items-center justify-center min-h-[80vh] sm:min-h-[90vh]">
-              <div className="text-zinc-400">Loading...</div>
+              <div className="text-zinc-400">
+                <LoadingText />
+              </div>
             </div>
           )}
 
