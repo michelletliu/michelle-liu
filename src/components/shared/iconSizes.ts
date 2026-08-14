@@ -9,18 +9,21 @@
  */
 
 /**
- * House stroke weight for every UI stroke icon (Chevron, Close, Arrow,
- * ArrowUpRight, Expand, Link, Code, Plus, …), in CSS px. Paired with
- * `vectorEffect="non-scaling-stroke"`, so the rendered stroke stays this many
- * CSS px at any glyph size — a 12px icon and a 32px icon share one weight.
+ * House stroke for UI stroke icons (Chevron, Close, Arrow, ArrowUpRight,
+ * Expand, Link, Code, Plus, …). Paired with `vectorEffect="non-scaling-stroke"`
+ * so weight is CSS px, not viewBox units.
  *
- * This is the ONE place to tune icon weight site-wide; every stroke icon reads
- * from it and none hardcode their own. 3px is a blob next to 12–16px type
- * (Visit Site, inline link), so the house weight is 1.5 — a hairline that
- * matches medium text on retina. Change this single number to retune
- * everything at once.
+ * Mobile stays 1.5px so 12–16px Visit Site marks don't blob. Desktop (768px+)
+ * is 2.5px: 2px still reads as a hairline on the ~14px ↗ in Visit Site.
+ *
+ * Pass `ICON_STROKE_WIDTH` to SVG `strokeWidth`. globals.css also sets
+ * `stroke-width` as a CSS property so the var paints even when SVG
+ * presentation attributes fail to resolve `var()`. Numeric px are MOBILE /
+ * DESKTOP for tests. Social brand marks are filled, not this stroke.
  */
-export const ICON_STROKE_WIDTH = 1.5;
+export const ICON_STROKE_WIDTH_MOBILE = 1.5;
+export const ICON_STROKE_WIDTH_DESKTOP = 2.5;
+export const ICON_STROKE_WIDTH: number | string = "var(--icon-stroke-width)";
 
 export const iconSizes = {
   /** Dense / meta marks */

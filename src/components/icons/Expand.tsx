@@ -3,7 +3,7 @@ import { ICON_STROKE_WIDTH } from "../shared/iconSizes";
 export type ExpandProps = {
   className?: string;
   size?: string;
-  strokeWidth?: number;
+  strokeWidth?: number | string;
 };
 
 /**
