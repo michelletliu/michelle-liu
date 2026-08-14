@@ -6,6 +6,7 @@ import { useScrollLock } from '../../utils/useScrollLock';
 import ShimmerImage from '../shared/ShimmerImage';
 import ShimmerVideo from '../shared/ShimmerVideo';
 import { ArrowUpRight } from '../icons/ArrowUpRight';
+import { LinkIcon } from '../icons/LinkIcon';
 import { ICON_STROKE_WIDTH } from '../shared/iconSizes';
 import type { ToolCategory } from '../shared/InfoButton';
 import { buttonClassName } from '../shared/Button';
@@ -67,13 +68,6 @@ const SUNDAYS_HREF = 'https://sundays.rsvp';
 
 function isSiteEmbedProject(projectId: string) {
   return projectId === 'sundays' || projectId === 'design-meetup';
-}
-
-function siteEmbedHref(projectId: string, project: ExperimentProject) {
-  const fromProject = project.tryItOutHref?.trim();
-  if (fromProject) return fromProject;
-  if (projectId === 'design-meetup') return DESIGN_MEETUP_HREF;
-  return SUNDAYS_HREF;
 }
 
 export type ExperimentProject = {
@@ -283,6 +277,84 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
   );
 }
 
+function DesignMeetupSiteIconLink() {
+  return (
+    <Tooltip label="designmeetup.info" position="bottom">
+      <a
+        href={DESIGN_MEETUP_HREF}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group inline-flex items-center justify-center p-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
+        aria-label="designmeetup.info"
+      >
+        <LinkIcon size="18px" className="text-zinc-500 group-hover:text-blue-500 transition-colors duration-200" />
+      </a>
+    </Tooltip>
+  );
+}
+
+function DesignMeetupSiteTextLink() {
+  return (
+    <a
+      href={DESIGN_MEETUP_HREF}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
+    >
+      <span className="font-['Michelle',sans-serif] font-medium leading-normal text-sm text-zinc-500 group-hover:text-blue-500 whitespace-nowrap">
+        designmeetup.info
+      </span>
+      <span className="text-zinc-500 group-hover:text-blue-500 inline-flex items-center">
+        <ArrowUpRight size="12px" />
+      </span>
+    </a>
+  );
+}
+
+function DesignMeetupEmbed({ project, isFullscreen = false, isScrolled = false, isPastHero = false, onCollapse }: { project: ExperimentProject; isFullscreen?: boolean; isScrolled?: boolean; isPastHero?: boolean; onCollapse?: () => void }) {
+  return (
+    <ExperimentSiteEmbed
+      project={project}
+      siteHref={DESIGN_MEETUP_HREF}
+      siteLabel="designmeetup.info"
+      isFullscreen={isFullscreen}
+      isScrolled={isScrolled}
+      isPastHero={isPastHero}
+      onCollapse={onCollapse}
+      headerActions={
+        <>
+          <DesignMeetupSiteIconLink />
+          {project.xLink ? <ViewOnXButton href={project.xLink} /> : null}
+        </>
+      }
+      compactActions={
+        <>
+          {project.xLink ? <ViewOnXButton href={project.xLink} /> : null}
+          <DesignMeetupSiteTextLink />
+        </>
+      }
+    />
+  );
+}
+
+function DesignMeetupMobileEmbed({ project }: { project: ExperimentProject }) {
+  return (
+    <ExperimentSiteMobileEmbed
+      project={project}
+      siteHref={DESIGN_MEETUP_HREF}
+      siteLabel="designmeetup.info"
+      footerActions={
+        <>
+          <DesignMeetupSiteTextLink />
+          {project.xLink ? (
+            <ViewOnXButton href={project.xLink} className="relative self-start" />
+          ) : null}
+        </>
+      }
+    />
+  );
+}
+
 
 export default function ExperimentModal({ projectId, project, onClose, onExpandToFullscreen, onCollapseFromFullscreen, onBookSlugChange, bookSlug, initialFullscreen = false }: ExperimentModalProps) {
   const navigate = useNavigate();
@@ -479,25 +551,9 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
         return <SundaysEmbed project={project} isFullscreen={isFullscreen} isScrolled={isScrolled} isPastHero={isPastHero} onCollapse={handleCollapse} />;
       case 'design-meetup':
         if (isMobile && !isFullscreen) {
-          return (
-            <ExperimentSiteMobileEmbed
-              project={project}
-              siteHref={siteEmbedHref(projectId, project)}
-              siteLabel="Visit Site"
-            />
-          );
+          return <DesignMeetupMobileEmbed project={project} />;
         }
-        return (
-          <ExperimentSiteEmbed
-            project={project}
-            siteHref={siteEmbedHref(projectId, project)}
-            siteLabel="Visit Site"
-            isFullscreen={isFullscreen}
-            isScrolled={isScrolled}
-            isPastHero={isPastHero}
-            onCollapse={handleCollapse}
-          />
-        );
+        return <DesignMeetupEmbed project={project} isFullscreen={isFullscreen} isScrolled={isScrolled} isPastHero={isPastHero} onCollapse={handleCollapse} />;
       default:
         return <GenericExperimentEmbed project={project} />;
     }
