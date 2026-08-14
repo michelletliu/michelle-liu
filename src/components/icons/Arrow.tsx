@@ -12,7 +12,7 @@ const DIRECTION_DEG: Record<ArrowDirection, number> = {
 export type ArrowProps = {
   className?: string;
   size?: string;
-  strokeWidth?: number;
+  strokeWidth?: number | string;
   direction?: ArrowDirection;
 };
 

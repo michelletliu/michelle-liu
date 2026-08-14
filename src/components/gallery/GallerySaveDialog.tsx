@@ -132,8 +132,8 @@ function ShareUrlField({
         aria-label="Copy link"
         className={`absolute right-1.5 top-1/2 z-[2] grid h-6 w-6 -translate-y-1/2 place-items-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 ${GALLERY_FOCUS_RING}`}
       >
-        {/* lucide lacks non-scaling-stroke, so scale the house weight by its 24 viewBox */}
-        <Copy size={14} strokeWidth={(ICON_STROKE_WIDTH * 24) / 14} aria-hidden />
+        {/* CSS px via --icon-stroke-width; Lucide will paint that as a CSS length. */}
+        <Copy size={14} strokeWidth={ICON_STROKE_WIDTH} aria-hidden />
       </button>
     </FieldShell>
   );
