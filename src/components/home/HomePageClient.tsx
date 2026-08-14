@@ -154,6 +154,7 @@ const staticProjects: Project[] = [
     popupImageSrc: designMeetupFull.imageSrc,
     popupVideoSrc: designMeetupFull.videoSrc,
     tryItOutHref: "https://designmeetup.info",
+    xLink: "https://x.com/michelletliu/status/2087998088409653321?s=20",
     backgroundColor: "#ffffff",
     toolCategories: [
       { label: 'UI & Motion', tools: ['Tailwind CSS', 'Motion'] },
@@ -448,6 +449,20 @@ function isVisibleOnHomeGrid(project: Project): boolean {
   return !HIDDEN_EXPERIMENT_IDS.includes(project.id);
 }
 
+/** Library before sketchbook on small screens, without a non-transitive sort. */
+function projectsForMobileHomeGrid(projects: Project[]): Project[] {
+  const visible = projects.filter(isVisibleOnHomeGrid);
+  const sketchIndex = visible.findIndex((project) => project.id === "sketchbook");
+  const libraryIndex = visible.findIndex((project) => project.id === "library");
+  if (sketchIndex === -1 || libraryIndex === -1 || libraryIndex < sketchIndex) {
+    return visible;
+  }
+  const ordered = visible.slice();
+  const [library] = ordered.splice(libraryIndex, 1);
+  ordered.splice(sketchIndex, 0, library);
+  return ordered;
+}
+
 const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, featured = false, index = 0 }: ProjectCardProps) {
   const experimentLink = getExperimentLink(project.id);
   const hasTryItOut = experimentLink !== null;
@@ -545,7 +560,11 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                 aria-label={experimentLink!.label}
                 {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
-                {experimentLink!.external ? <LinkIcon /> : <TouchIcon />}
+                {experimentLink!.external ? (
+                  <LinkIcon className="text-zinc-500" />
+                ) : (
+                  <TouchIcon />
+                )}
               </a>
             )}
           </div>
@@ -584,7 +603,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
             aria-label={experimentLink!.label}
           >
             {experimentLink!.external ? (
-              <LinkIcon />
+              <LinkIcon className="text-zinc-500 md:text-inherit" />
             ) : (
               <TouchIcon />
             )}
@@ -915,15 +934,6 @@ function mergeWorkProjects(
   });
 }
 
-function readCachedWorkProjects(): Project[] | null {
-  const sanityProjects = getCachedData<SanityProject[]>(WORK_SANITY_PROJECTS_KEY);
-  const experimentProjects = getCachedData<SanityExperimentProject[]>(
-    WORK_EXPERIMENT_PROJECTS_KEY,
-  );
-  if (!sanityProjects || !experimentProjects) return null;
-  return mergeWorkProjects(sanityProjects, experimentProjects);
-}
-
 type HomePageClientProps = {
   slug?: string;
   mode?: string;
@@ -934,9 +944,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
   const navigate = useNavigate();
   const [isContactBadgeExpanded, setIsContactBadgeExpanded] = useState(false);
 
-  const [projects, setProjects] = useState<Project[]>(
-    () => readCachedWorkProjects() ?? staticProjects,
-  );
+  const [projects, setProjects] = useState<Project[]>(staticProjects);
 
   const heroAnimationPlayed = useHeroAnimation();
 
@@ -1263,15 +1271,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
         </div>
 
         <div className="md:hidden flex flex-col gap-8 px-6 py-4 relative shrink-0 w-full">
-          {projects
-            .filter(isVisibleOnHomeGrid)
-            .map((p, i) => ({ project: p, originalIndex: i }))
-            .sort((a, b) => {
-              if (a.project.id === 'sketchbook' && b.project.id === 'library') return 1;
-              if (a.project.id === 'library' && b.project.id === 'sketchbook') return -1;
-              return a.originalIndex - b.originalIndex;
-            })
-            .map(({ project }, index) => (
+          {projectsForMobileHomeGrid(projects).map((project, index) => (
             <ProjectCard
               key={project.id}
               project={project}
