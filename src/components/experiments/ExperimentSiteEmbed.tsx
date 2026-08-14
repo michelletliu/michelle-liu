@@ -4,14 +4,16 @@ import { useNavigate } from '@/lib/navigation';
 import ShimmerImage from '../shared/ShimmerImage';
 import ShimmerVideo from '../shared/ShimmerVideo';
 import { ArrowUpRight } from '../icons/ArrowUpRight';
+import { Chevron } from '../icons/Chevron';
+import { LinkIcon } from '../icons/LinkIcon';
+import { XLogo } from '../icons/XLogo';
 import type { ToolCategory } from '../shared/InfoButton';
 import { buttonClassName } from '../shared/Button';
 import { HorizontalLine } from '../shared/HorizontalLine';
 import Footer from '../layout/Footer';
-import { Chevron } from '../icons/Chevron';
+import Tooltip from '../shared/Tooltip';
 
 const MUX_ENV_KEY = 'e4cc19a78gcf0tbtfmu4m7ruf';
-const xLogoPath = "M10.6862 7.6055L17.3844 0H15.8002L9.97941 6.60311L5.36277 0H0.178833L7.19548 9.9737L0.178833 17.9454H1.76308L7.90171 10.9761L12.7696 17.9454H17.9536L10.6858 7.6055H10.6862ZM8.7057 10.0639L7.99222 9.06869L2.33673 1.16544H4.60063L9.33802 7.5516L10.0515 8.54678L15.8011 16.8348H13.5372L8.7057 10.0643V10.0639Z";
 
 const DESIGN_MEETUP_MEDIA_ASPECT = 'aspect-[3248/2160]';
 
@@ -100,10 +102,42 @@ export function ViewOnXButton({ href, className }: { href: string; className?: s
       <span className="font-['Michelle',sans-serif] font-medium leading-normal text-sm text-white whitespace-nowrap">
         View on
       </span>
-      <svg className="block w-[12px] h-[12px] fill-white" viewBox="0 0 19 18">
-        <path d={xLogoPath} />
-      </svg>
+      <XLogo size="12px" className="text-white" />
       <span className="text-white inline-flex items-center">
+        <ArrowUpRight size="12px" />
+      </span>
+    </a>
+  );
+}
+
+export function SiteIconLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Tooltip label={label} position="bottom">
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group inline-flex items-center justify-center p-1 rounded-full shrink-0 cursor-pointer text-zinc-400 hover:text-blue-500 transition-colors duration-200 ease-out"
+        aria-label={label}
+      >
+        <LinkIcon size="18px" className="text-zinc-400 group-hover:text-blue-500 transition-colors duration-200" />
+      </a>
+    </Tooltip>
+  );
+}
+
+export function SiteTextLink({ href, label }: { href: string; label: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
+    >
+      <span className="font-['Michelle',sans-serif] font-medium leading-normal text-sm text-zinc-500 group-hover:text-blue-500 whitespace-nowrap">
+        {label}
+      </span>
+      <span className="text-zinc-500 group-hover:text-blue-500 inline-flex items-center">
         <ArrowUpRight size="12px" />
       </span>
     </a>

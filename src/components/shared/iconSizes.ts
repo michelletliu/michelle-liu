@@ -10,7 +10,7 @@
 
 /**
  * House stroke weight for every UI stroke icon (Chevron, Close, Arrow,
- * ArrowUpRight, Link, Code, Plus, …), in CSS px. Paired with
+ * ArrowUpRight, Expand, Link, Code, Plus, …), in CSS px. Paired with
  * `vectorEffect="non-scaling-stroke"`, so the rendered stroke stays this many
  * CSS px at any glyph size — a 12px icon and a 32px icon share one weight.
  *

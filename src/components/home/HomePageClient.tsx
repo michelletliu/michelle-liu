@@ -18,8 +18,11 @@ import {
   pushPathPreservingSearch,
   replacePathPreservingSearch,
 } from "@/lib/shallowPath";
-import svgPaths from "../icons/figma/svg-2tsxp86msm";
 import clsx from "clsx";
+import { ArrowUpRight } from "../icons/ArrowUpRight";
+import { TouchIcon } from "../icons/TouchIcon";
+import { LinkIcon } from "../icons/LinkIcon";
+import { XLogo } from "../icons/XLogo";
 import VideoPlayer from "../shared/VideoPlayer";
 import ShimmerImage from "../shared/ShimmerImage";
 import ShimmerVideo from "../shared/ShimmerVideo";
@@ -38,9 +41,6 @@ import PageHeader from "../layout/PageHeader";
 import { client, urlFor } from "../../sanity/client";
 import { PROJECTS_QUERY, EXPERIMENT_PROJECTS_QUERY } from "../../sanity/queries";
 import type { SanityImage } from "../../sanity/types";
-import { ArrowUpRight } from "../icons/ArrowUpRight";
-import { TouchIcon } from "../icons/TouchIcon";
-import { LinkIcon } from "../icons/LinkIcon";
 import { useScrollLock } from "../../utils/useScrollLock";
 import ContactBadge from "../shared/ContactBadge";
 import NavigationTabs from "../layout/NavigationTabs";
@@ -788,12 +788,7 @@ function SimpleProjectModal({ project, onClose }: ProjectModalProps) {
               <span className="relative shrink-0 leading-normal tracking-[0.005em] whitespace-nowrap">
                 View on
               </span>
-              <svg
-                className="block h-[14px] w-[14px] fill-white"
-                viewBox="0 0 19 18"
-              >
-                <path d={svgPaths.p16308a80} />
-              </svg>
+              <XLogo size="14px" className="text-white" />
               <span className="inline-flex items-center text-white">
                 <ArrowUpRight size="14px" />
               </span>

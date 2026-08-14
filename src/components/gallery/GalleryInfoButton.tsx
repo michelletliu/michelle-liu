@@ -11,6 +11,7 @@ import {
 import { createPortal } from "react-dom";
 import { ArrowUpRight } from "@/components/icons/ArrowUpRight";
 import { Info } from "@/components/icons/Info";
+import { XLogo } from "@/components/icons/XLogo";
 import { buttonClassName } from "@/components/shared/Button";
 import { ghostIconButtonClass } from "@/components/shared/ghostIconButton";
 import { HorizontalLine } from "@/components/shared/HorizontalLine";
@@ -37,10 +38,6 @@ const GALLERY_INFO_VIDEO_SRC = `https://stream.mux.com/${GALLERY_INFO_MUX_PLAYBA
 const GALLERY_X_LINK =
   "https://x.com/michelletliu/status/2084772214164148607";
 
-// Same path as InfoButton / ExperimentModal "View on X".
-const xLogoPath =
-  "M10.6862 7.6055L17.3844 0H15.8002L9.97941 6.60311L5.36277 0H0.178833L7.19548 9.9737L0.178833 17.9454H1.76308L7.90171 10.9761L12.7696 17.9454H17.9536L10.6858 7.6055H10.6862ZM8.7057 10.0639L7.99222 9.06869L2.33673 1.16544H4.60063L9.33802 7.5516L10.0515 8.54678L15.8011 16.8348H13.5372L8.7057 10.0643V10.0639Z";
-
 function ViewOnXButton({
   className,
   linkRef,
@@ -63,12 +60,7 @@ function ViewOnXButton({
       <span className="leading-normal relative shrink-0 whitespace-nowrap">
         View on
       </span>
-      <svg
-        className="block h-[12px] w-[12px] fill-white"
-        viewBox="0 0 19 18"
-      >
-        <path d={xLogoPath} />
-      </svg>
+      <XLogo size="12px" className="text-white" />
       <span className="inline-flex items-center text-white">
         <ArrowUpRight size="12px" />
       </span>
