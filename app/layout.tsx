@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Providers from "@/components/layout/Providers";
-import { HOME_SCROLL_RESTORE_SCRIPT } from "@/components/shared/homeScrollReturn";
+import HomeScrollRestoreScript from "@/components/shared/HomeScrollRestoreScript";
 import "@/index.css";
 import "@/styles/globals.css";
 
@@ -62,7 +62,7 @@ export default function RootLayout({
       <head>
         <link rel="preload" as="image" href="/logo.png" fetchPriority="high" />
         {/* Must stay blocking and ahead of the body to beat the first paint. */}
-        <script dangerouslySetInnerHTML={{ __html: HOME_SCROLL_RESTORE_SCRIPT }} />
+        <HomeScrollRestoreScript />
       </head>
       <body suppressHydrationWarning>
         <div hidden dangerouslySetInnerHTML={{ __html: devtoolsComment }} />
