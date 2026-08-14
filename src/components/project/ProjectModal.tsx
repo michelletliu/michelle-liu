@@ -54,6 +54,7 @@ import { FieldInput, FieldShell, fieldIconSlotClassName } from "../shared/FieldI
 import { Chevron } from "../icons/Chevron";
 import { Close } from "../icons/Close";
 import { ArrowRightIcon } from "../icons/Arrow";
+import { Expand } from "../icons/Expand";
 import { iconSize } from "../shared/iconSizes";
 import { HorizontalLine } from "../shared/HorizontalLine";
 import { ghostIconButtonClass } from "../shared/ghostIconButton";
@@ -479,17 +480,6 @@ function titleSeamTopUp(section: ContentSection): string | undefined {
   return PY10_ROOT_SECTIONS.has(section._type) ? "pb-6" : undefined;
 }
 
-// Expand icon — inline SVG so strokeWidth matches ExperimentModal / DS Icons (house weight)
-const BackArrowIcon = () => (
-  <svg className="block size-full" viewBox="0 0 24 24" fill="none" aria-hidden>
-    <path d="M10 4H4V10" stroke="currentColor" strokeWidth={ICON_STROKE_WIDTH} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-    <path d="M4 4L10 10" stroke="currentColor" strokeWidth={ICON_STROKE_WIDTH} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-    <path d="M14 20H20V14" stroke="currentColor" strokeWidth={ICON_STROKE_WIDTH} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-    <path d="M20 20L14 14" stroke="currentColor" strokeWidth={ICON_STROKE_WIDTH} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-  </svg>
-);
-
-// Eye icon for showing password (zinc-400 to match arrow)
 const EyeIcon = () => (
   <svg className="block size-full" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M12 5.25C4.5 5.25 1.5 12 1.5 12C1.5 12 4.5 18.75 12 18.75C19.5 18.75 22.5 12 22.5 12C22.5 12 19.5 5.25 12 5.25Z" stroke="currentColor" strokeWidth={ICON_STROKE_WIDTH} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
@@ -1235,8 +1225,8 @@ export default function ProjectModal({
                   onClick={handleExpandToFullscreen}
                   className="content-stretch flex items-center justify-center relative shrink-0 size-6 cursor-pointer rounded-lg hover:bg-zinc-200 transition-colors duration-200 ease-out text-[#a1a1aa]"
                 >
-                  <div className="relative shrink-0 size-[18px]">
-                    <BackArrowIcon />
+                  <div className="relative shrink-0 size-[18px] flex items-center justify-center">
+                    <Expand size="18px" />
                   </div>
                 </button>
               </Tooltip>

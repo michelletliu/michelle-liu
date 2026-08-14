@@ -9,9 +9,9 @@
  */
 
 /**
- * House stroke for UI stroke icons (Chevron, Close, Arrow, ArrowUpRight, …).
- * Paired with `vectorEffect="non-scaling-stroke"` so weight is CSS px, not
- * viewBox units.
+ * House stroke for UI stroke icons (Chevron, Close, Arrow, ArrowUpRight,
+ * Expand, Link, Code, Plus, …). Paired with `vectorEffect="non-scaling-stroke"`
+ * so weight is CSS px, not viewBox units.
  *
  * Mobile stays 1.5px so 12–16px Visit Site marks don't blob. Desktop (768px+)
  * is 2.5px: 2px still reads as a hairline on the ~14px ↗ in Visit Site.

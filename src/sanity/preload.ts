@@ -356,7 +356,7 @@ function warmWorkMedia(
 
 /**
  * Preload Work tab Sanity lists (+ warm first card thumbs).
- * HomePageClient reads these keys synchronously on mount.
+ * HomePageClient hydrates from these keys after mount.
  */
 export async function preloadWorkPage(): Promise<void> {
   const cachedProjects = getCachedData<WorkSanityProject[]>(

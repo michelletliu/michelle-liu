@@ -6,7 +6,8 @@ import { useScrollLock } from '../../utils/useScrollLock';
 import ShimmerImage from '../shared/ShimmerImage';
 import ShimmerVideo from '../shared/ShimmerVideo';
 import { ArrowUpRight } from '../icons/ArrowUpRight';
-import { ICON_STROKE_WIDTH } from '../shared/iconSizes';
+import { Expand } from '../icons/Expand';
+import { Info } from '../icons/Info';
 import type { ToolCategory } from '../shared/InfoButton';
 import { buttonClassName } from '../shared/Button';
 import { HorizontalLine } from '../shared/HorizontalLine';
@@ -18,6 +19,8 @@ import LoadingSpinner from "../shared/LoadingSpinner";
 import {
   ExperimentSiteEmbed,
   ExperimentSiteMobileEmbed,
+  SiteIconLink,
+  SiteTextLink,
   ToolsSection,
   ViewOnXButton,
 } from './ExperimentSiteEmbed';
@@ -29,27 +32,6 @@ const ScreentimePage = lazy(() => import('../screentime/ScreentimePage'));
 const SketchbookPage = lazy(() => import('../sketchbook/SketchbookPage'));
 const FilmPage = lazy(() => import('../film/FilmPage'));
 
-// Expand icon SVG - matches src/assets/Expand.svg (used by main project modals)
-function ExpandIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 4H4V10" stroke="currentColor" strokeWidth={ICON_STROKE_WIDTH} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
-      <path d="M4 4L10 10" stroke="currentColor" strokeWidth={ICON_STROKE_WIDTH} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
-      <path d="M14 20H20V14" stroke="currentColor" strokeWidth={ICON_STROKE_WIDTH} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
-      <path d="M20 20L14 14" stroke="currentColor" strokeWidth={ICON_STROKE_WIDTH} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
-    </svg>
-  );
-}
-
-// Info icon SVG
-function InfoIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12.4512 24.9023C10.734 24.9023 9.12272 24.5768 7.61719 23.9258C6.11165 23.2829 4.78923 22.3918 3.6499 21.2524C2.51058 20.1131 1.6154 18.7907 0.964355 17.2852C0.321452 15.7796 0 14.1683 0 12.4512C0 10.734 0.321452 9.12272 0.964355 7.61719C1.6154 6.11165 2.51058 4.78923 3.6499 3.6499C4.78923 2.50244 6.11165 1.60726 7.61719 0.964355C9.12272 0.321452 10.734 0 12.4512 0C14.1683 0 15.7796 0.321452 17.2852 0.964355C18.7907 1.60726 20.1131 2.50244 21.2524 3.6499C22.3918 4.78923 23.2829 6.11165 23.9258 7.61719C24.5768 9.12272 24.9023 10.734 24.9023 12.4512C24.9023 14.1683 24.5768 15.7796 23.9258 17.2852C23.2829 18.7907 22.3918 20.1131 21.2524 21.2524C20.1131 22.3918 18.7907 23.2829 17.2852 23.9258C15.7796 24.5768 14.1683 24.9023 12.4512 24.9023ZM12.4512 22.8271C13.8835 22.8271 15.2262 22.5586 16.4795 22.0215C17.7327 21.4844 18.8354 20.7397 19.7876 19.7876C20.7397 18.8354 21.4844 17.7327 22.0215 16.4795C22.5586 15.2262 22.8271 13.8835 22.8271 12.4512C22.8271 11.0189 22.5586 9.67611 22.0215 8.42285C21.4844 7.16146 20.7397 6.05876 19.7876 5.11475C18.8354 4.1626 17.7327 3.41797 16.4795 2.88086C15.2262 2.34375 13.8835 2.0752 12.4512 2.0752C11.0189 2.0752 9.67611 2.34375 8.42285 2.88086C7.1696 3.41797 6.06689 4.1626 5.11475 5.11475C4.1626 6.05876 3.41797 7.16146 2.88086 8.42285C2.34375 9.67611 2.0752 11.0189 2.0752 12.4512C2.0752 13.8835 2.34375 15.2262 2.88086 16.4795C3.41797 17.7327 4.1626 18.8354 5.11475 19.7876C6.06689 20.7397 7.1696 21.4844 8.42285 22.0215C9.67611 22.5586 11.0189 22.8271 12.4512 22.8271ZM10.3149 19.2749C10.0627 19.2749 9.85107 19.1935 9.68018 19.0308C9.50928 18.868 9.42383 18.6646 9.42383 18.4204C9.42383 18.1763 9.50928 17.9728 9.68018 17.8101C9.85107 17.6473 10.0627 17.5659 10.3149 17.5659H11.8286V11.9629H10.5225C10.2702 11.9629 10.0586 11.8815 9.8877 11.7188C9.7168 11.556 9.63135 11.3525 9.63135 11.1084C9.63135 10.8643 9.7168 10.6608 9.8877 10.498C10.0586 10.3353 10.2702 10.2539 10.5225 10.2539H12.8174C13.1266 10.2539 13.3626 10.3556 13.5254 10.5591C13.6963 10.7625 13.7817 11.0107 13.7817 11.3037V17.5659H14.5874C14.8396 17.5659 15.0513 17.6473 15.2222 17.8101C15.3931 17.9728 15.4785 18.1763 15.4785 18.4204C15.4785 18.6646 15.3931 18.868 15.2222 19.0308C15.0513 19.1935 14.8396 19.2749 14.5874 19.2749H10.3149ZM12.4512 8.42285C12.0117 8.42285 11.6357 8.27637 11.3232 7.98339C11.0189 7.68229 10.8667 7.31445 10.8667 6.87988C10.8667 6.4209 11.0189 6.04492 11.3232 5.75195C11.6357 5.45898 12.0117 5.3125 12.4512 5.3125C12.8906 5.3125 13.2625 5.45898 13.5669 5.75195C13.8794 6.04492 14.0356 6.4209 14.0356 6.87988C14.0356 7.31445 13.8794 7.68229 13.5669 7.98339C13.2625 8.27637 12.8906 8.42285 12.4512 8.42285Z" fill="currentColor"/>
-    </svg>
-  );
-}
-
 // Loading — DS film-dot ellipsis (shared LoadingSpinner)
 function ExperimentLoading() {
   return (
@@ -59,21 +41,11 @@ function ExperimentLoading() {
   );
 }
 
-// X logo path for View on X button
-const xLogoPath = "M10.6862 7.6055L17.3844 0H15.8002L9.97941 6.60311L5.36277 0H0.178833L7.19548 9.9737L0.178833 17.9454H1.76308L7.90171 10.9761L12.7696 17.9454H17.9536L10.6858 7.6055H10.6862ZM8.7057 10.0639L7.99222 9.06869L2.33673 1.16544H4.60063L9.33802 7.5516L10.0515 8.54678L15.8011 16.8348H13.5372L8.7057 10.0643V10.0639Z";
-
 const DESIGN_MEETUP_HREF = 'https://designmeetup.info';
 const SUNDAYS_HREF = 'https://sundays.rsvp';
 
 function isSiteEmbedProject(projectId: string) {
   return projectId === 'sundays' || projectId === 'design-meetup';
-}
-
-function siteEmbedHref(projectId: string, project: ExperimentProject) {
-  const fromProject = project.tryItOutHref?.trim();
-  if (fromProject) return fromProject;
-  if (projectId === 'design-meetup') return DESIGN_MEETUP_HREF;
-  return SUNDAYS_HREF;
 }
 
 export type ExperimentProject = {
@@ -204,41 +176,6 @@ function GenericExperimentEmbed({ project }: { project: ExperimentProject }) {
   );
 }
 
-function SundaysRsvpIconLink() {
-  return (
-    <Tooltip label="sundays.rsvp" position="bottom">
-      <a
-        href={SUNDAYS_HREF}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group inline-flex items-center justify-center p-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
-      >
-        <svg className="w-[18px] h-[18px] text-zinc-500 group-hover:text-blue-500 transition-colors duration-200" viewBox="0 0 311 312" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <path d="M157.178 95.3252C166.553 96.9853 174.365 99.4267 180.615 102.649C186.865 105.774 192.285 109.681 196.875 114.368C208.789 126.185 216.699 139.222 220.605 153.479C224.512 167.64 224.463 181.8 220.459 195.96C216.553 210.12 208.74 223.06 197.021 234.778L146.924 285.022C135.303 296.644 122.412 304.407 108.252 308.313C94.0918 312.317 79.8828 312.366 65.625 308.46C51.4648 304.554 38.4277 296.644 26.5137 284.729C14.6973 272.913 6.83594 259.925 2.92969 245.765C-0.976562 231.507 -0.976562 217.298 2.92969 203.138C6.93359 188.978 14.7461 176.038 26.3672 164.319L69.4336 121.399C68.6523 126.185 68.5059 131.214 68.9941 136.487C69.5801 141.663 70.8984 146.546 72.9492 151.136L44.2383 179.847C35.7422 188.343 30.0781 197.718 27.2461 207.972C24.4141 218.226 24.4141 228.528 27.2461 238.88C30.0781 249.134 35.7422 258.558 44.2383 267.151C52.7344 275.647 62.1094 281.263 72.3633 283.997C82.7148 286.829 93.0176 286.829 103.271 283.997C113.525 281.165 122.9 275.501 131.396 267.005L179.297 219.251C187.793 210.755 193.408 201.38 196.143 191.126C198.975 180.872 198.975 170.618 196.143 160.364C193.311 150.013 187.646 140.54 179.15 131.946C174.365 127.161 168.652 123.353 162.012 120.52C155.469 117.688 147.363 115.882 137.695 115.101L157.178 95.3252ZM153.516 216.028C144.141 214.368 136.328 211.976 130.078 208.851C123.828 205.628 118.408 201.673 113.818 196.985C101.904 185.169 93.9941 172.181 90.0879 158.02C86.1816 143.763 86.1816 129.554 90.0879 115.394C94.0918 101.233 101.953 88.2939 113.672 76.5752L163.623 26.4775C175.342 14.7588 188.281 6.94625 202.441 3.04C216.602 -0.963903 230.762 -1.01273 244.922 2.89352C259.18 6.79977 272.266 14.7099 284.18 26.624C295.996 38.4404 303.857 51.4775 307.764 65.7353C311.67 79.8955 311.621 94.0556 307.617 108.216C303.711 122.376 295.947 135.315 284.326 147.034L241.26 189.954C242.041 185.169 242.139 180.188 241.553 175.013C241.064 169.837 239.795 164.905 237.744 160.218L266.455 131.507C274.951 123.011 280.615 113.636 283.447 103.382C286.279 93.1279 286.279 82.8252 283.447 72.4736C280.615 62.2197 274.951 52.8447 266.455 44.3486C257.959 35.7549 248.584 30.0908 238.33 27.2588C228.076 24.4268 217.773 24.4268 207.422 27.2588C197.168 30.0908 187.793 35.7549 179.297 44.251L131.396 92.1025C122.9 100.599 117.236 109.974 114.404 120.228C111.572 130.482 111.572 140.784 114.404 151.136C117.236 161.39 122.9 170.813 131.396 179.407C136.182 184.192 141.943 188.001 148.682 190.833C155.42 193.665 160.547 195.374 164.062 195.96L153.516 216.028Z" />
-        </svg>
-      </a>
-    </Tooltip>
-  );
-}
-
-function SundaysRsvpTextLink() {
-  return (
-    <a
-      href={SUNDAYS_HREF}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group inline-flex gap-1 items-center justify-center px-3 py-1 rounded-full shrink-0 cursor-pointer transition-colors duration-200 ease-out"
-    >
-      <span className="font-['Michelle',sans-serif] font-medium leading-normal text-sm text-zinc-500 group-hover:text-blue-500 whitespace-nowrap">
-        sundays.rsvp
-      </span>
-      <span className="text-zinc-500 group-hover:text-blue-500 inline-flex items-center">
-        <ArrowUpRight size="12px" />
-      </span>
-    </a>
-  );
-}
-
 function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPastHero = false, onCollapse }: { project: ExperimentProject; isFullscreen?: boolean; isScrolled?: boolean; isPastHero?: boolean; onCollapse?: () => void }) {
   return (
     <ExperimentSiteEmbed
@@ -251,14 +188,14 @@ function SundaysEmbed({ project, isFullscreen = false, isScrolled = false, isPas
       onCollapse={onCollapse}
       headerActions={
         <>
-          <SundaysRsvpIconLink />
+          <SiteIconLink href={SUNDAYS_HREF} label="sundays.rsvp" />
           {project.xLink ? <ViewOnXButton href={project.xLink} /> : null}
         </>
       }
       compactActions={
         <>
           {project.xLink ? <ViewOnXButton href={project.xLink} /> : null}
-          <SundaysRsvpTextLink />
+          <SiteTextLink href={SUNDAYS_HREF} label="sundays.rsvp" />
         </>
       }
     />
@@ -273,7 +210,51 @@ function SundaysMobileEmbed({ project }: { project: ExperimentProject }) {
       siteLabel="sundays.rsvp"
       footerActions={
         <>
-          <SundaysRsvpTextLink />
+          <SiteTextLink href={SUNDAYS_HREF} label="sundays.rsvp" />
+          {project.xLink ? (
+            <ViewOnXButton href={project.xLink} className="relative self-start" />
+          ) : null}
+        </>
+      }
+    />
+  );
+}
+
+function DesignMeetupEmbed({ project, isFullscreen = false, isScrolled = false, isPastHero = false, onCollapse }: { project: ExperimentProject; isFullscreen?: boolean; isScrolled?: boolean; isPastHero?: boolean; onCollapse?: () => void }) {
+  return (
+    <ExperimentSiteEmbed
+      project={project}
+      siteHref={DESIGN_MEETUP_HREF}
+      siteLabel="designmeetup.info"
+      isFullscreen={isFullscreen}
+      isScrolled={isScrolled}
+      isPastHero={isPastHero}
+      onCollapse={onCollapse}
+      headerActions={
+        <>
+          <SiteIconLink href={DESIGN_MEETUP_HREF} label="designmeetup.info" />
+          {project.xLink ? <ViewOnXButton href={project.xLink} /> : null}
+        </>
+      }
+      compactActions={
+        <>
+          {project.xLink ? <ViewOnXButton href={project.xLink} /> : null}
+          <SiteTextLink href={DESIGN_MEETUP_HREF} label="designmeetup.info" />
+        </>
+      }
+    />
+  );
+}
+
+function DesignMeetupMobileEmbed({ project }: { project: ExperimentProject }) {
+  return (
+    <ExperimentSiteMobileEmbed
+      project={project}
+      siteHref={DESIGN_MEETUP_HREF}
+      siteLabel="designmeetup.info"
+      footerActions={
+        <>
+          <SiteTextLink href={DESIGN_MEETUP_HREF} label="designmeetup.info" />
           {project.xLink ? (
             <ViewOnXButton href={project.xLink} className="relative self-start" />
           ) : null}
@@ -479,25 +460,9 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
         return <SundaysEmbed project={project} isFullscreen={isFullscreen} isScrolled={isScrolled} isPastHero={isPastHero} onCollapse={handleCollapse} />;
       case 'design-meetup':
         if (isMobile && !isFullscreen) {
-          return (
-            <ExperimentSiteMobileEmbed
-              project={project}
-              siteHref={siteEmbedHref(projectId, project)}
-              siteLabel="Visit Site"
-            />
-          );
+          return <DesignMeetupMobileEmbed project={project} />;
         }
-        return (
-          <ExperimentSiteEmbed
-            project={project}
-            siteHref={siteEmbedHref(projectId, project)}
-            siteLabel="Visit Site"
-            isFullscreen={isFullscreen}
-            isScrolled={isScrolled}
-            isPastHero={isPastHero}
-            onCollapse={handleCollapse}
-          />
-        );
+        return <DesignMeetupEmbed project={project} isFullscreen={isFullscreen} isScrolled={isScrolled} isPastHero={isPastHero} onCollapse={handleCollapse} />;
       default:
         return <GenericExperimentEmbed project={project} />;
     }
@@ -557,7 +522,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
                   className="cursor-pointer transition-colors duration-200 hover:bg-zinc-100 text-[#a1a1aa] rounded-sm p-1"
                   aria-label="Expand to full page"
                 >
-                  <ExpandIcon />
+                  <Expand size="18px" />
                 </button>
               </Tooltip>
             </div>
@@ -585,7 +550,7 @@ export default function ExperimentModal({ projectId, project, onClose, onExpandT
                   aria-label="Project info"
                   data-info-button
                 >
-                  <InfoIcon />
+                  <Info size="20px" />
                 </button>
               </Tooltip>
 
@@ -713,32 +678,9 @@ function InfoPopover({ project, onClose, isMobile = false, isFullscreen = false 
             )}
           </div>
 
-          {/* View on X button */}
-          {project.xLink && (
-            <a
-              href={project.xLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={buttonClassName({
-                variant: "primary",
-                size: "sm",
-                className: "relative whitespace-nowrap",
-              })}
-            >
-              <span className="font-['Michelle',sans-serif] font-medium leading-normal relative shrink-0 text-sm text-white whitespace-nowrap">
-                View on
-              </span>
-              <svg
-                className="block w-[12px] h-[12px] fill-white"
-                viewBox="0 0 19 18"
-              >
-                <path d={xLogoPath} />
-              </svg>
-              <span className="text-white text-sm inline-flex items-center">
-                <ArrowUpRight size="12px" />
-              </span>
-            </a>
-          )}
+          {project.xLink ? (
+            <ViewOnXButton href={project.xLink} className="relative" />
+          ) : null}
         </div>
 
         {/* Tools Section */}
