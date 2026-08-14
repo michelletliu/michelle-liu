@@ -12,7 +12,7 @@ const DIRECTION_DEG: Record<ChevronDirection, number> = {
 export type ChevronProps = {
   className?: string;
   size?: string;
-  strokeWidth?: number;
+  strokeWidth?: number | string;
   direction?: ChevronDirection;
 };
 

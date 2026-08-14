@@ -1,7 +1,7 @@
 import { ICON_STROKE_WIDTH } from "../shared/iconSizes";
 
 /** Prefer `size={iconSize(...)}` from `iconSizes` over CSS `size-*`. */
-export function ArrowUpRight({ className = "", size, strokeWidth }: { className?: string; size?: string; strokeWidth?: number }) {
+export function ArrowUpRight({ className = "", size, strokeWidth }: { className?: string; size?: string; strokeWidth?: number | string }) {
   return (
     <svg
       width={size ?? "1em"}
