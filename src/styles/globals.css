@@ -41,6 +41,19 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  /* House stroke icons: 1.5px mobile, 2.5px desktop. */
+  --icon-stroke-width: 1.5px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --icon-stroke-width: 2.5px;
+  }
+}
+
+/* SVG presentation attributes often fail to resolve var(); CSS properties don't. */
+[stroke-width="var(--icon-stroke-width)"] {
+  stroke-width: var(--icon-stroke-width);
 }
 
 .dark {
