@@ -21,19 +21,6 @@ const specimenSource = readFileSync(
 
 test("uses large contact text and deeper intro fade on Work", () => {
   assert.match(homeSource, /isContactBadgeExpanded \? "opacity-20" : "opacity-100"/);
-  assert.match(homeSource, /isContactBadgeExpanded \? "opacity-10" : "opacity-100"/);
-  assert.match(
-    homeSource,
-    /maskImage: "linear-gradient\(to right, #000, rgba\(0, 0, 0, 0\.5\)\)"/,
-  );
-  assert.match(
-    homeSource,
-    /WebkitMaskImage: "linear-gradient\(to right, #000, rgba\(0, 0, 0, 0\.5\)\)"/,
-  );
-  assert.match(
-    homeSource,
-    /moments[\s\S]*?\{" "\}of delight & human connection\./,
-  );
   assert.match(
     homeSource,
     /<ContactBadge[\s\S]*?size="lg"[\s\S]*?onExpandedChange=\{setIsContactBadgeExpanded\}/,
@@ -44,6 +31,36 @@ test("uses large contact text and deeper intro fade on Work", () => {
   assert.match(cssSource, /\.contact-badge\.lg\.expanded/);
   assert.match(badgeSource, /touch\s+<\/a>!/);
   assert.doesNotMatch(badgeSource, /touch!\s+<\/a>/);
+});
+
+test("updates the work hero copy and links company names out", () => {
+  assert.match(homeSource, /Designing tools for human/);
+  assert.match(
+    homeSource,
+    /<span className="max-md:hidden">connection & <\/span>/,
+  );
+  assert.match(homeSource, /creativity\./);
+  assert.doesNotMatch(homeSource, /Designing to spark/);
+  assert.doesNotMatch(homeSource, /Designing products to spark/);
+  assert.match(homeSource, /Clients include /);
+  assert.match(homeSource, /Previously at /);
+  assert.match(
+    homeSource,
+    /Clients include [\s\S]*?Previously at /,
+  );
+  assert.match(homeSource, /<br aria-hidden="true" \/>[\s\S]*?Clients include /);
+  assert.match(homeSource, /APPLE_LOGO_PATH/);
+  assert.match(homeSource, /viewBox="0 0 814 1000"/);
+  assert.match(homeSource, /ariaLabel="Apple"/);
+  assert.match(homeSource, /apple: "https:\/\/www\.apple\.com"/);
+  assert.match(homeSource, /roblox: "https:\/\/about\.roblox\.com\/"/);
+  assert.match(homeSource, /nasa: "https:\/\/www\.jpl\.nasa\.gov\/"/);
+  assert.match(homeSource, /cognition: "https:\/\/cognition\.ai"/);
+  assert.match(homeSource, /luma: "https:\/\/luma\.com"/);
+  assert.match(homeSource, /pika: "https:\/\/pika\.art"/);
+  assert.match(homeSource, /target="_blank"/);
+  assert.match(homeSource, /rel="noopener noreferrer"/);
+  assert.match(homeSource, /INLINE_LINK_CLASS/);
 });
 
 test("fades the pulse ring out instead of snapping it off", () => {
