@@ -34,12 +34,7 @@ test("uses large contact text and deeper intro fade on Work", () => {
 });
 
 test("updates the work hero copy and links company names out", () => {
-  assert.match(homeSource, /Designing tools for human/);
-  assert.match(
-    homeSource,
-    /<span className="max-md:hidden">connection & <\/span>/,
-  );
-  assert.match(homeSource, /creativity\./);
+  assert.match(homeSource, /Designing tools for human connection & creativity\./);
   assert.doesNotMatch(homeSource, /Designing to spark/);
   assert.doesNotMatch(homeSource, /Designing products to spark/);
   assert.match(homeSource, /Clients include /);

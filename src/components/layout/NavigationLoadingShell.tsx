@@ -95,7 +95,7 @@ export default function NavigationLoadingShell({
         {/* Hero band */}
         <div className="relative shrink-0 w-full" style={{ zIndex: 2 }}>
           <div className="size-full">
-            <div className="content-stretch flex flex-col gap-4 items-start pb-6 pt-14 px-16 max-md:px-6 max-md:pt-20 max-md:pb-2 relative w-full max-md:min-h-[210px] md:min-h-[176px]">
+            <div className="content-stretch flex flex-col gap-4 items-start pt-14 px-16 max-md:px-6 max-md:pt-20 relative w-full max-md:min-h-[210px] md:min-h-[176px]">
               <div className="h-10 w-48 animate-pulse rounded-lg bg-zinc-100" />
               <div className="flex flex-col gap-2 w-full max-w-md">
                 <div className="h-4 w-full animate-pulse rounded bg-zinc-50" />
