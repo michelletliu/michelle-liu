@@ -306,8 +306,8 @@ const SHIMMER_PROGRESS_TAU_MS = 11_000;
 /**
  * Synthetic progress for a generation that started `elapsedMs` ago.
  *
- * Reve's remix endpoint is one blocking request with no streaming and no
- * progress reporting, so there is nothing real to read. An asymptotic curve is
+ * Generation is one request with no streaming and no progress reporting, so
+ * there is nothing real to read. An asymptotic curve is
  * what makes modelling it honest: a linear ramp against a guessed duration
  * either saturates early and then sits frozen — looking stalled, the exact
  * opposite of the intent — or crawls. This always keeps deepening slightly and

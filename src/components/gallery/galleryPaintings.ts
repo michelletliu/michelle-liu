@@ -17,7 +17,7 @@ export type GalleryPainting = {
   /**
    * Optional hang aperture in world units. When set, layout and camera framing
    * use this instead of the portrait/landscape presets — for real artworks
-   * whose aspect does not match Reve's 3:4 / 3:2 generate ratios.
+   * whose aspect does not match the 3:4 / 3:2 generate ratios.
    */
   size?: { width: number; height: number };
   /**
@@ -129,7 +129,7 @@ export function hangOffset(
 }
 
 /**
- * World size of the paint aperture. Matched exactly to Reve's `3:4` / `3:2`
+ * World size of the paint aperture. Matched exactly to the `3:4` / `3:2`
  * generate ratios so hung textures cover the plane without residual
  * letterboxing from a 1–1.5% aspect mismatch.
  */
