@@ -1221,39 +1221,13 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
       <PageHeader variant="work" heroAnimationPlayed={heroAnimationPlayed}>
         <>
           <div>
-                <span className="max-md:hidden">
-                  <span
-                    className={clsx(
-                      "transition-opacity duration-200",
-                      isContactBadgeExpanded ? "opacity-20" : "opacity-100",
-                    )}
-                  >
-                    Designing to spark{" "}
-                    <span
-                      className="inline-block"
-                      style={
-                        isContactBadgeExpanded
-                          ? {
-                              maskImage: "linear-gradient(to right, #000, rgba(0, 0, 0, 0.5))",
-                              WebkitMaskImage: "linear-gradient(to right, #000, rgba(0, 0, 0, 0.5))",
-                            }
-                          : undefined
-                      }
-                    >
-                      moments
-                    </span>
-                  </span>
-                  <span
-                    className={clsx(
-                      "transition-opacity duration-200",
-                      isContactBadgeExpanded ? "opacity-10" : "opacity-100",
-                    )}
-                  >
-                    {" "}of delight & human connection.
-                  </span>
-                </span>
-                <span className="md:hidden">
-                  Designing to spark human connection & creativity.
+                <span
+                  className={clsx(
+                    "transition-opacity duration-200 max-md:opacity-100",
+                    isContactBadgeExpanded ? "opacity-20" : "opacity-100",
+                  )}
+                >
+                  Designing tools for human connection & creativity.
                 </span>
                 <span
                   className={clsx(
@@ -1268,7 +1242,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                   <HeroCompanyLink href={HERO_COMPANY_HREFS.luma}>Luma</HeroCompanyLink>
                   <span>{`, & `}</span>
                   <HeroCompanyLink href={HERO_COMPANY_HREFS.pika}>Pika</HeroCompanyLink>
-                  <span>{`. Previously in-house at `}</span>
+                  <span>{`. Prev. in-house at `}</span>
                   <span style={{ fontVariationSettings: "'wdth' 100" }}>
                     <HeroCompanyLink href={HERO_COMPANY_HREFS.apple} ariaLabel="Apple">
                       <svg

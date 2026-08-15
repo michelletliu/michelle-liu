@@ -21,19 +21,6 @@ const specimenSource = readFileSync(
 
 test("uses large contact text and deeper intro fade on Work", () => {
   assert.match(homeSource, /isContactBadgeExpanded \? "opacity-20" : "opacity-100"/);
-  assert.match(homeSource, /isContactBadgeExpanded \? "opacity-10" : "opacity-100"/);
-  assert.match(
-    homeSource,
-    /maskImage: "linear-gradient\(to right, #000, rgba\(0, 0, 0, 0\.5\)\)"/,
-  );
-  assert.match(
-    homeSource,
-    /WebkitMaskImage: "linear-gradient\(to right, #000, rgba\(0, 0, 0, 0\.5\)\)"/,
-  );
-  assert.match(
-    homeSource,
-    /moments[\s\S]*?\{" "\}of delight & human connection\./,
-  );
   assert.match(
     homeSource,
     /<ContactBadge[\s\S]*?size="lg"[\s\S]*?onExpandedChange=\{setIsContactBadgeExpanded\}/,
@@ -47,18 +34,14 @@ test("uses large contact text and deeper intro fade on Work", () => {
 });
 
 test("updates the work hero copy and links company names out", () => {
-  assert.match(homeSource, /Designing to spark/);
+  assert.match(homeSource, /Designing tools for human connection & creativity\./);
+  assert.doesNotMatch(homeSource, /Designing to spark/);
   assert.doesNotMatch(homeSource, /Designing products to spark/);
   assert.match(homeSource, /Clients include /);
-  assert.match(homeSource, /Previously in-house at /);
+  assert.match(homeSource, /Prev\. in-house at /);
   assert.match(
     homeSource,
-    /Clients include [\s\S]*?Previously in-house at /,
-  );
-  assert.match(homeSource, /<span className="max-md:hidden">[\s\S]*?Designing to spark/);
-  assert.match(
-    homeSource,
-    /className="md:hidden"[\s\S]*?Designing to spark human connection & creativity\./,
+    /Clients include [\s\S]*?Prev\. in-house at /,
   );
   assert.match(homeSource, /<br aria-hidden="true" \/>[\s\S]*?Clients include /);
   assert.match(homeSource, /APPLE_LOGO_PATH/);
