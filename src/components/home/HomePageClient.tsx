@@ -1227,7 +1227,9 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                     isContactBadgeExpanded ? "opacity-20" : "opacity-100",
                   )}
                 >
-                  Designing tools for human connection & creativity.
+                  Designing tools for human{" "}
+                  <span className="max-md:hidden">connection & </span>
+                  creativity.
                 </span>
                 <span
                   className={clsx(
