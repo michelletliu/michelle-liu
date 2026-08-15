@@ -180,6 +180,7 @@ export default function GalleryActionBar({
 
   const barId = useId();
   const pickerId = useId();
+  const errorId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const morphRef = useRef<HTMLDivElement>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
@@ -682,7 +683,7 @@ export default function GalleryActionBar({
       cancelAnimationFrame(armId);
       ro.disconnect();
     };
-  }, [activePanel, canDownload, error, inspiration, isGenerating, prompt, promptMultiline]);
+  }, [activePanel, canDownload, inspiration, isGenerating, prompt, promptMultiline]);
 
   // When the active panel flips, drop settled in the same render pass so the
   // first painted frame never applies caret-safe `transition: none` to the
@@ -1029,6 +1030,7 @@ export default function GalleryActionBar({
                       onWheel={(e) => e.stopPropagation()}
                       placeholder="Describe your artwork…"
                       disabled={isGenerating}
+                      aria-describedby={error ? errorId : undefined}
                       // No inner focus ring — the outer composer pill is the
                       // surface. Single-row with + / Generate until content wraps;
                       // resizePromptField grows height only then. Enter submits.
@@ -1075,11 +1077,6 @@ export default function GalleryActionBar({
               <p aria-live="polite" className="sr-only">
                 {isGenerating ? "Generating your image…" : ""}
               </p>
-              {error && (
-                <p className="px-3 pb-2 text-base text-red-600" role="alert">
-                  {error}
-                </p>
-              )}
             </form>
           </ComposerMorphPanel>
 
@@ -1133,6 +1130,16 @@ export default function GalleryActionBar({
           </ComposerMorphPanel>
         </div>
       </div>
+      {/* Outside the morph shell — in-form alerts were measured into its height. */}
+      {expanded && error ? (
+        <p
+          id={errorId}
+          role="alert"
+          className="pointer-events-none absolute inset-x-0 top-full z-10 mt-2 px-5 text-center text-pretty text-base leading-snug text-red-600"
+        >
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
