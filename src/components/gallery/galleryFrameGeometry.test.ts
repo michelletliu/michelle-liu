@@ -22,7 +22,7 @@ const closeTo = (actual: number, expected: number, label: string) => {
   );
 };
 
-test("paint apertures match Reve 3:4 and 3:2 generate ratios", () => {
+test("paint apertures match 3:4 and 3:2 generate ratios", () => {
   const portrait = paintingSize("portrait");
   const landscape = paintingSize("landscape");
   closeTo(portrait.width / portrait.height, 3 / 4, "portrait aspect");

@@ -13,115 +13,16 @@ import { MetApiError, fetchMetObject } from "@/lib/met/metClient";
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
-const REVE_CREATE_URL = "https://api.reve.com/v1/image/create/";
-/** Takes `reference_images`; `create` does not. */
-const REVE_REMIX_URL = "https://api.reve.com/v1/image/remix/";
+const PIKA_API_BASE = "https://api.dev.pika.art";
 /**
- * Cap for a single style-reference download. Reve allows up to 40MB per image;
- * Met masters are usually well under this. Prefer failing over to the small
- * derivative rather than sending a giant body.
+ * Nano Banana 2 (Gemini 3.1 Flash Image): exact 3:4 / 3:2 hang ratios,
+ * text-to-image and style-reference image-to-image on the same model.
  */
-const MAX_REFERENCE_BYTES = 25 * 1024 * 1024;
-
-/**
- * Remix and create both use `latest`. Remix also exposes `latest-fast`
- * (~8s / 5 credits vs ~18s / 30), but the fast tier softens fine brushwork
- * enough that wall hangs look blurry — quality wins over that latency cut.
- * Create ignores `latest-fast` anyway (maps back to the same create model).
- */
-const REVE_CREATE_VERSION = "latest";
-const REVE_REMIX_VERSION = "latest";
-
-/**
- * Ask Reve for WebP bytes instead of the default JSON+PNG base64 payload.
- * Generation time is unchanged; the response drops from ~2–3MB PNG-in-JSON to
- * ~70–160KB WebP (larger with 2× upscale, still far under PNG). Decode-to-texture
- * quality at native Reve resolution is fine; softness came from skipping
- * `test_time_scaling`, not WebP. Share upload stores the WebP as-is (PNG
- * re-encode of 2× frames balloons to ~4–5MB and hangs the hang POST).
- */
-const REVE_ACCEPT = "image/webp";
-
-/**
- * Reve's quality dial. Default is 1; higher spends more credits for better
- * images without slowing the request. Docs: values above 5 only occasionally
- * help, so 5 is the practical ceiling for wall hangs.
- */
-const REVE_TEST_TIME_SCALING = 5;
-
-/**
- * Post-generation upscale. 2× is sharp enough on the wall without the huge
- * payloads (and credit burn) of 3×/4×.
- */
-const REVE_POSTPROCESSING = [{ process: "upscale", upscale_factor: 2 }] as const;
-
-/**
- * The artwork's Open Access image, base64-encoded for Reve's `reference_images`.
- *
- * Prefer the full `primaryImage` master over `primaryImageSmall`: the small
- * derivative is fine for UI tiles but softens brushwork that remix needs to
- * copy. Falls back to small when the master is missing or over the byte cap.
- *
- * Text alone could not carry style: prompts describing impasto and broken
- * colour still came back as smooth digital illustration. Conditioning on the
- * image itself is the only lever that moves it. Legal footing is checked before
- * this runs — only `isPublicDomain` Open Access records get here — and the
- * prompt directs the model to take handling from the reference while depicting
- * the user's subject, so the output stays an original picture.
- *
- * Returns `null` on any failure: a missing reference downgrades to a text-only
- * generation rather than failing the request.
- */
-async function fetchReferenceImage(artwork: MetArtwork): Promise<string | null> {
-  // Every downgrade is logged: a text-only generation looks exactly like a
-  // style failure from the outside, and silently swallowing the cause once cost
-  // several rounds of chasing the prompt instead of the transport.
-  const downgrade = (why: string) => {
-    console.warn(
-      `[gallery/generate] no style reference for objectID=${artwork.objectID} (${why}); falling back to text-only create`,
-    );
-    return null;
-  };
-
-  const candidates = [
-    artwork.primaryImage,
-    artwork.primaryImageSmall,
-  ].filter((url): url is string => Boolean(url));
-  if (candidates.length === 0) {
-    return downgrade("record has no Open Access image");
-  }
-
-  for (const url of candidates) {
-    try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
-      if (!res.ok) {
-        console.warn(
-          `[gallery/generate] style reference fetch ${res.status} for ${url}`,
-        );
-        continue;
-      }
-
-      const bytes = await res.arrayBuffer();
-      if (bytes.byteLength === 0) continue;
-      if (bytes.byteLength > MAX_REFERENCE_BYTES) {
-        console.warn(
-          `[gallery/generate] style reference is ${bytes.byteLength} bytes (cap ${MAX_REFERENCE_BYTES}); trying next candidate`,
-        );
-        continue;
-      }
-      // Raw base64, no data: prefix — Reve rejects URLs and prefixed payloads.
-      return Buffer.from(bytes).toString("base64");
-    } catch (err) {
-      console.warn(
-        `[gallery/generate] style reference fetch failed for ${url}: ${
-          err instanceof Error ? err.message : "unknown"
-        }`,
-      );
-    }
-  }
-
-  return downgrade("all Open Access image candidates failed or were too large");
-}
+const PIKA_TEXT_TO_IMAGE = `${PIKA_API_BASE}/v1/media/google/gemini-3.1-flash-image/text-to-image`;
+const PIKA_IMAGE_TO_IMAGE = `${PIKA_API_BASE}/v1/media/google/gemini-3.1-flash-image/image-to-image`;
+const PIKA_RESOLUTION = "2K";
+const POLL_INTERVAL_MS = 1_500;
+const POLL_TIMEOUT_MS = 105_000;
 
 type GenerateBody = {
   prompt?: string;
@@ -134,32 +35,154 @@ type GenerateBody = {
   inspirationObjectID?: number;
 };
 
+type PikaJob = {
+  id?: string;
+  status?: "queued" | "running" | "completed" | "failed";
+  output?: {
+    images?: { url?: string; content_type?: string }[];
+  };
+  error?: { code?: string; message?: string };
+  message?: string;
+};
+
 /**
- * Reve aspect for the hang. Aperture sizes in `paintingSize` are exact 3:4 and
- * 3:2 so generate output matches the paint rect. Portrait used to ask for 2:3
- * (11% too narrow); the scene now cover-fills and crops baked keylines, but
- * matching ratios still avoids needless UV crop.
+ * Pika aspect for the hang. Aperture sizes in `paintingSize` are exact 3:4 and
+ * 3:2 so generate output matches the paint rect. Matching ratios still avoids
+ * needless UV crop.
  */
 function aspectForPainting(painting: GalleryPainting): "3:4" | "3:2" {
   return painting.aspect === "portrait" ? "3:4" : "3:2";
 }
 
-function reveErrorMessage(raw: string, status: number): string {
-  let message = `Reve error (${status})`;
-  try {
-    const err = JSON.parse(raw) as { message?: string; error?: string };
-    message = err.message || err.error || message;
-  } catch {
-    /* keep default */
+function pikaHeaders(apiKey: string, extra?: Record<string, string>) {
+  return {
+    "X-API-Key": apiKey,
+    "Content-Type": "application/json",
+    ...extra,
+  };
+}
+
+function pikaErrorMessage(job: PikaJob, status: number): {
+  error: string;
+  status: number;
+} {
+  const code = job.error?.code;
+  const message = job.error?.message || job.message;
+
+  if (code === "content_moderation") {
+    return { error: "Prompt was blocked by content policy", status: 400 };
   }
-  return message;
+  if (code === "rate_limited") {
+    return { error: "Too many generations right now. Try again in a moment.", status: 429 };
+  }
+  if (code === "insufficient_balance" || code === "cycle_limit_exceeded") {
+    return { error: "Generation is temporarily unavailable", status: 502 };
+  }
+  if (code === "invalid_input") {
+    return { error: message || "Could not generate that image", status: 400 };
+  }
+  if (status === 401) {
+    return { error: "Generation is not configured", status: 502 };
+  }
+  return {
+    error: message || `Generation failed (${status})`,
+    status: status === 401 ? 502 : status >= 400 ? status : 502,
+  };
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function pollJob(apiKey: string, jobId: string): Promise<PikaJob> {
+  const deadline = Date.now() + POLL_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    const res = await fetch(`${PIKA_API_BASE}/v1/media/jobs/${jobId}`, {
+      headers: pikaHeaders(apiKey),
+    });
+    const job = (await res.json()) as PikaJob;
+    if (!res.ok) {
+      throw Object.assign(new Error("poll failed"), { job, status: res.status });
+    }
+    if (job.status === "completed" || job.status === "failed") {
+      return job;
+    }
+    await sleep(POLL_INTERVAL_MS);
+  }
+  throw Object.assign(new Error("timed out"), {
+    job: { error: { code: "timed_out", message: "Generation timed out" } } satisfies PikaJob,
+    status: 504,
+  });
+}
+
+function isWebp(bytes: Buffer): boolean {
+  return (
+    bytes.byteLength >= 12 &&
+    bytes.subarray(0, 4).toString("ascii") === "RIFF" &&
+    bytes.subarray(8, 12).toString("ascii") === "WEBP"
+  );
+}
+
+function isPng(bytes: Buffer): boolean {
+  return (
+    bytes.byteLength >= 8 &&
+    bytes[0] === 0x89 &&
+    bytes.subarray(1, 4).toString("ascii") === "PNG"
+  );
+}
+
+/**
+ * Return a WebP data URL so share upload stays small. PNG 2K frames used to
+ * balloon the hang POST; WebP at native resolution is sharp enough on the wall.
+ */
+async function toImageDataUrl(bytes: Buffer): Promise<string | null> {
+  if (isWebp(bytes)) {
+    return `data:image/webp;base64,${bytes.toString("base64")}`;
+  }
+
+  try {
+    const sharp = (await import("sharp")).default;
+    const webp = await sharp(bytes).webp({ quality: 88 }).toBuffer();
+    return `data:image/webp;base64,${webp.toString("base64")}`;
+  } catch (err) {
+    console.warn(
+      `[gallery/generate] webp encode failed: ${
+        err instanceof Error ? err.message : "unknown"
+      }`,
+    );
+  }
+
+  if (isPng(bytes)) {
+    return `data:image/png;base64,${bytes.toString("base64")}`;
+  }
+  return null;
+}
+
+/**
+ * The artwork's Open Access image URL, passed to Pika as `image_urls`.
+ * Public Met CDN URLs need no Pika upload.
+ *
+ * Text alone could not carry style: prompts describing impasto and broken
+ * colour still came back as smooth digital illustration. Conditioning on the
+ * image itself is the only lever that moves it. Legal footing is checked before
+ * this runs — only `isPublicDomain` Open Access records get here.
+ */
+function styleReferenceUrl(artwork: MetArtwork): string | null {
+  const url = artwork.primaryImage || artwork.primaryImageSmall;
+  if (!url) {
+    console.warn(
+      `[gallery/generate] no style reference for objectID=${artwork.objectID} (record has no Open Access image); falling back to text-only create`,
+    );
+    return null;
+  }
+  return url;
 }
 
 export async function POST(req: NextRequest) {
-  const token = process.env.REVE_API_TOKEN;
-  if (!token) {
+  const apiKey = process.env.PIKA_API_KEY?.trim();
+  if (!apiKey) {
     return NextResponse.json(
-      { error: "REVE_API_TOKEN is not configured" },
+      { error: "PIKA_API_KEY is not configured" },
       { status: 500 },
     );
   }
@@ -223,133 +246,129 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const referenceImage = inspiration
-    ? await fetchReferenceImage(inspiration)
-    : null;
-
+  const referenceUrl = inspiration ? styleReferenceUrl(inspiration) : null;
   const composed = composeInspiredPrompt(prompt, inspiration, {
-    referenceImage: referenceImage !== null,
+    referenceImage: referenceUrl !== null,
   });
   const aspect_ratio = aspectForPainting(painting);
-  const usingRemix = referenceImage !== null;
-  const version = usingRemix ? REVE_REMIX_VERSION : REVE_CREATE_VERSION;
+  const usingRemix = referenceUrl !== null;
+  const endpoint = usingRemix ? PIKA_IMAGE_TO_IMAGE : PIKA_TEXT_TO_IMAGE;
 
-  /*
-   * Reve rejects unknown fields with a 400 rather than ignoring them.
-   * `test_time_scaling` is the quality dial (default 1 is soft); `postprocessing`
-   * 2× upscale sharpens wall hangs. There is still no strength or negative-prompt
-   * parameter — the frame tag and the prompt wording remain the style dial.
-   *
-   * Exactly one reference is sent, which is what keeps the frame index at 0.
-   */
   const payload = {
     prompt: composed.prompt,
+    num_images: 1,
     aspect_ratio,
-    version,
-    test_time_scaling: REVE_TEST_TIME_SCALING,
-    postprocessing: [...REVE_POSTPROCESSING],
-    ...(referenceImage ? { reference_images: [referenceImage] } : {}),
+    output_format: "png",
+    resolution: PIKA_RESOLUTION,
+    ...(referenceUrl ? { image_urls: [referenceUrl] } : {}),
   };
 
   console.info(
     `[gallery/generate] painting=${painting.id} inspiration=${
       composed.inspiredByObjectID ?? "none"
-    } endpoint=${usingRemix ? "remix" : "create"} version=${version} aspect=${aspect_ratio} tts=${REVE_TEST_TIME_SCALING} upscale=2\n` +
+    } endpoint=${usingRemix ? "image-to-image" : "text-to-image"} model=google/gemini-3.1-flash-image aspect=${aspect_ratio} resolution=${PIKA_RESOLUTION}\n` +
       `[gallery/generate] prompt: ${composed.prompt}`,
   );
 
-  let reveRes: Response;
+  let submitRes: Response;
   try {
-    reveRes = await fetch(usingRemix ? REVE_REMIX_URL : REVE_CREATE_URL, {
+    submitRes = await fetch(endpoint, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        Accept: REVE_ACCEPT,
+        ...pikaHeaders(apiKey),
+        "Idempotency-Key": crypto.randomUUID(),
       },
       body: JSON.stringify(payload),
     });
   } catch {
     return NextResponse.json(
-      { error: "Failed to reach Reve API" },
+      { error: "Failed to reach generation API" },
       { status: 502 },
     );
   }
 
-  // Reve support cannot look up a request without this id.
+  let job: PikaJob;
+  try {
+    job = (await submitRes.json()) as PikaJob;
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid generation response" },
+      { status: 502 },
+    );
+  }
+
   console.info(
-    `[gallery/generate] reve status=${reveRes.status} request-id=${
-      reveRes.headers.get("x-reve-request-id") ?? "none"
-    } version=${reveRes.headers.get("x-reve-version") ?? "none"} credits=${
-      reveRes.headers.get("x-reve-credits-used") ?? "none"
-    }`,
+    `[gallery/generate] pika submit status=${submitRes.status} job=${job.id ?? "none"} job-status=${job.status ?? "none"}`,
   );
 
-  if (!reveRes.ok) {
-    const raw = await reveRes.text();
-    return NextResponse.json(
-      { error: reveErrorMessage(raw, reveRes.status) },
-      { status: reveRes.status === 401 ? 502 : reveRes.status },
-    );
+  if (!submitRes.ok || job.status === "failed" || !job.id) {
+    const mapped = pikaErrorMessage(job, submitRes.status);
+    return NextResponse.json({ error: mapped.error }, { status: mapped.status });
   }
 
-  if (reveRes.headers.get("x-reve-content-violation") === "true") {
-    return NextResponse.json(
-      { error: "Prompt was blocked by content policy" },
-      { status: 400 },
-    );
+  try {
+    job = await pollJob(apiKey, job.id);
+  } catch (err) {
+    const failed = err as { job?: PikaJob; status?: number };
+    const mapped = pikaErrorMessage(failed.job ?? {}, failed.status ?? 504);
+    return NextResponse.json({ error: mapped.error }, { status: mapped.status });
   }
 
-  const bytes = Buffer.from(await reveRes.arrayBuffer());
-  if (bytes.byteLength === 0) {
+  console.info(
+    `[gallery/generate] pika job=${job.id} status=${job.status ?? "none"} error=${job.error?.code ?? "none"}`,
+  );
+
+  if (job.status !== "completed") {
+    const mapped = pikaErrorMessage(job, 502);
+    return NextResponse.json({ error: mapped.error }, { status: mapped.status });
+  }
+
+  const imageUrl = job.output?.images?.[0]?.url;
+  if (!imageUrl) {
     return NextResponse.json(
-      { error: "Reve returned no image" },
+      { error: "Generation returned no image" },
       { status: 502 },
     );
   }
 
-  // WebP RIFF magic — guard against an unexpected JSON body slipping through
-  // with a 200 (Reve still returns JSON for some policy/error shapes).
-  if (
-    bytes.byteLength < 12 ||
-    bytes.subarray(0, 4).toString("ascii") !== "RIFF" ||
-    bytes.subarray(8, 12).toString("ascii") !== "WEBP"
-  ) {
-    const asText = bytes.toString("utf8");
-    try {
-      const data = JSON.parse(asText) as {
-        image?: string;
-        content_violation?: boolean;
-        message?: string;
-      };
-      if (data.content_violation) {
-        return NextResponse.json(
-          { error: "Prompt was blocked by content policy" },
-          { status: 400 },
-        );
-      }
-      if (data.image) {
-        // Fallback: older JSON+PNG shape if Accept was ignored.
-        return NextResponse.json({
-          imageUrl: `data:image/png;base64,${data.image}`,
-          paintingId: painting.id,
-          inspiredByObjectID: composed.inspiredByObjectID,
-        });
-      }
-      return NextResponse.json(
-        { error: data.message || "Reve returned no image" },
-        { status: 502 },
-      );
-    } catch {
-      return NextResponse.json(
-        { error: "Invalid Reve response" },
-        { status: 502 },
-      );
-    }
+  let imageRes: Response;
+  try {
+    imageRes = await fetch(imageUrl, {
+      headers: { "X-API-Key": apiKey },
+      signal: AbortSignal.timeout(20_000),
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to download generated image" },
+      { status: 502 },
+    );
+  }
+
+  if (!imageRes.ok) {
+    return NextResponse.json(
+      { error: "Failed to download generated image" },
+      { status: 502 },
+    );
+  }
+
+  const bytes = Buffer.from(await imageRes.arrayBuffer());
+  if (bytes.byteLength === 0) {
+    return NextResponse.json(
+      { error: "Generation returned no image" },
+      { status: 502 },
+    );
+  }
+
+  const dataUrl = await toImageDataUrl(bytes);
+  if (!dataUrl) {
+    return NextResponse.json(
+      { error: "Invalid generation response" },
+      { status: 502 },
+    );
   }
 
   return NextResponse.json({
-    imageUrl: `data:image/webp;base64,${bytes.toString("base64")}`,
+    imageUrl: dataUrl,
     paintingId: painting.id,
     inspiredByObjectID: composed.inspiredByObjectID,
   });
