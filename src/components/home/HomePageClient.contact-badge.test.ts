@@ -68,7 +68,7 @@ test("updates the work hero copy and links company names out", () => {
   assert.match(homeSource, /roblox: "https:\/\/www\.roblox\.com"/);
   assert.match(homeSource, /nasa: "https:\/\/www\.nasa\.gov"/);
   assert.match(homeSource, /cognition: "https:\/\/cognition\.ai"/);
-  assert.match(homeSource, /luma: "https:\/\/lumalabs\.ai"/);
+  assert.match(homeSource, /luma: "https:\/\/luma\.com"/);
   assert.match(homeSource, /pika: "https:\/\/pika\.art"/);
   assert.match(homeSource, /target="_blank"/);
   assert.match(homeSource, /rel="noopener noreferrer"/);
