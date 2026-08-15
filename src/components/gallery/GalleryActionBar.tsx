@@ -27,6 +27,7 @@ import {
   RotatingLoadingText,
 } from "@/components/RotatingLoadingText";
 import Tooltip from "@/components/shared/Tooltip";
+import { INLINE_LINK_CLASS } from "@/components/shared/inlineLink";
 import { PlusIcon, SquarePenIcon } from "@/components/library/icons";
 import { ICON_STROKE_WIDTH } from "@/components/shared/iconSizes";
 import MetArtworkPicker from "./MetArtworkPicker";
@@ -180,6 +181,7 @@ export default function GalleryActionBar({
 
   const barId = useId();
   const pickerId = useId();
+  const errorId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const morphRef = useRef<HTMLDivElement>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
@@ -682,7 +684,7 @@ export default function GalleryActionBar({
       cancelAnimationFrame(armId);
       ro.disconnect();
     };
-  }, [activePanel, canDownload, error, inspiration, isGenerating, prompt, promptMultiline]);
+  }, [activePanel, canDownload, inspiration, isGenerating, prompt, promptMultiline]);
 
   // When the active panel flips, drop settled in the same render pass so the
   // first painted frame never applies caret-safe `transition: none` to the
@@ -1029,6 +1031,7 @@ export default function GalleryActionBar({
                       onWheel={(e) => e.stopPropagation()}
                       placeholder="Describe your artwork…"
                       disabled={isGenerating}
+                      aria-describedby={error ? errorId : undefined}
                       // No inner focus ring — the outer composer pill is the
                       // surface. Single-row with + / Generate until content wraps;
                       // resizePromptField grows height only then. Enter submits.
@@ -1075,11 +1078,6 @@ export default function GalleryActionBar({
               <p aria-live="polite" className="sr-only">
                 {isGenerating ? "Generating your image…" : ""}
               </p>
-              {error && (
-                <p className="px-3 pb-2 text-base text-red-600" role="alert">
-                  {error}
-                </p>
-              )}
             </form>
           </ComposerMorphPanel>
 
@@ -1133,7 +1131,45 @@ export default function GalleryActionBar({
           </ComposerMorphPanel>
         </div>
       </div>
+      {/* Outside the morph shell — in-form alerts were measured into its height. */}
+      {expanded && error ? (
+        <GenerateErrorAlert id={errorId} message={error} />
+      ) : null}
     </div>
+  );
+}
+
+const STUDIO_EMAIL = "studio@liumichelle.com";
+
+function isUserFixableGenerateError(message: string) {
+  return (
+    message === "Prompt was blocked by content policy" ||
+    message === "Too many generations right now. Try again in a moment." ||
+    message === "Prompt is too long"
+  );
+}
+
+function GenerateErrorAlert({ id, message }: { id: string; message: string }) {
+  return (
+    <p
+      id={id}
+      role="alert"
+      className="absolute inset-x-0 top-full z-10 mt-2 px-5 text-center text-pretty text-base leading-snug text-red-600"
+    >
+      {isUserFixableGenerateError(message) ? (
+        message
+      ) : (
+        <>
+          Couldn't generate that right now. Email{" "}
+          <a
+            href={`mailto:${STUDIO_EMAIL}`}
+            className={`${INLINE_LINK_CLASS} ${GALLERY_FOCUS_RING} font-medium underline underline-offset-2`}
+          >
+            {STUDIO_EMAIL}
+          </a>
+        </>
+      )}
+    </p>
   );
 }
 

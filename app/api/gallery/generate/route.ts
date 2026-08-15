@@ -67,7 +67,6 @@ function pikaErrorMessage(job: PikaJob, status: number): {
   status: number;
 } {
   const code = job.error?.code;
-  const message = job.error?.message || job.message;
 
   if (code === "content_moderation") {
     return { error: "Prompt was blocked by content policy", status: 400 };
@@ -79,13 +78,13 @@ function pikaErrorMessage(job: PikaJob, status: number): {
     return { error: "Generation is temporarily unavailable", status: 502 };
   }
   if (code === "invalid_input") {
-    return { error: message || "Could not generate that image", status: 400 };
+    return { error: "Could not generate that image", status: 400 };
   }
   if (status === 401) {
     return { error: "Generation is not configured", status: 502 };
   }
   return {
-    error: message || `Generation failed (${status})`,
+    error: "Generation failed",
     status: status === 401 ? 502 : status >= 400 ? status : 502,
   };
 }
@@ -298,7 +297,7 @@ export async function POST(req: NextRequest) {
   }
 
   console.info(
-    `[gallery/generate] pika submit status=${submitRes.status} job=${job.id ?? "none"} job-status=${job.status ?? "none"}`,
+    `[gallery/generate] pika submit status=${submitRes.status} job=${job.id ?? "none"} job-status=${job.status ?? "none"} error=${job.error?.code ?? "none"} ${job.error?.message ?? job.message ?? ""}`.trimEnd(),
   );
 
   if (!submitRes.ok || job.status === "failed" || !job.id) {
