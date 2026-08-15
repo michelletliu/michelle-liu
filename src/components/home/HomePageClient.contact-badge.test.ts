@@ -65,7 +65,7 @@ test("updates the work hero copy and links company names out", () => {
   assert.match(homeSource, /viewBox="0 0 814 1000"/);
   assert.match(homeSource, /ariaLabel="Apple"/);
   assert.match(homeSource, /apple: "https:\/\/www\.apple\.com"/);
-  assert.match(homeSource, /roblox: "https:\/\/www\.roblox\.com"/);
+  assert.match(homeSource, /roblox: "https:\/\/about\.roblox\.com\/"/);
   assert.match(homeSource, /nasa: "https:\/\/www\.nasa\.gov"/);
   assert.match(homeSource, /cognition: "https:\/\/cognition\.ai"/);
   assert.match(homeSource, /luma: "https:\/\/luma\.com"/);
