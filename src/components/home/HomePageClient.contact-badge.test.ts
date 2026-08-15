@@ -38,10 +38,10 @@ test("updates the work hero copy and links company names out", () => {
   assert.doesNotMatch(homeSource, /Designing to spark/);
   assert.doesNotMatch(homeSource, /Designing products to spark/);
   assert.match(homeSource, /Clients include /);
-  assert.match(homeSource, /Prev\. in-house at /);
+  assert.match(homeSource, /Previously at /);
   assert.match(
     homeSource,
-    /Clients include [\s\S]*?Prev\. in-house at /,
+    /Clients include [\s\S]*?Previously at /,
   );
   assert.match(homeSource, /<br aria-hidden="true" \/>[\s\S]*?Clients include /);
   assert.match(homeSource, /APPLE_LOGO_PATH/);

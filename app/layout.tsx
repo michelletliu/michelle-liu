@@ -5,7 +5,7 @@ import "@/index.css";
 import "@/styles/globals.css";
 
 const siteDescription =
-  "Designing tools for human connection & creativity. Clients include Cognition, Luma, & Pika. Prev. in-house at Apple, Roblox, & NASA.";
+  "Designing tools for human connection & creativity. Clients include Cognition, Luma, & Pika. Previously at Apple, Roblox, & NASA.";
 
 const siteOgImage = {
   url: "https://www.liumichelle.com/og-image.jpg?v=6",
