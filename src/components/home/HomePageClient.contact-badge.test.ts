@@ -56,7 +56,11 @@ test("updates the work hero copy and links company names out", () => {
     /Clients include [\s\S]*?Previously in-house at /,
   );
   assert.match(homeSource, /<span className="max-md:hidden">[\s\S]*?Designing to spark/);
-  assert.match(homeSource, /<span className="max-md:hidden">[\s\S]*?<br aria-hidden="true" \/>/);
+  assert.match(
+    homeSource,
+    /className="md:hidden"[\s\S]*?Designing to spark human connection & creativity\./,
+  );
+  assert.match(homeSource, /<br aria-hidden="true" \/>[\s\S]*?Clients include /);
   assert.match(homeSource, /APPLE_LOGO_PATH/);
   assert.match(homeSource, /viewBox="0 0 814 1000"/);
   assert.match(homeSource, /ariaLabel="Apple"/);

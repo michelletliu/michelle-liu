@@ -1252,15 +1252,16 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                     {" "}of delight & human connection.
                   </span>
                 </span>
+                <span className="md:hidden">
+                  Designing to spark human connection & creativity.
+                </span>
                 <span
                   className={clsx(
                     "transition-opacity duration-200 max-md:opacity-100",
                     isContactBadgeExpanded ? "opacity-20" : "opacity-100",
                   )}
                 >
-                  <span className="max-md:hidden">
-                    <br aria-hidden="true" />
-                  </span>
+                  <br aria-hidden="true" />
                   {`Clients include `}
                   <HeroCompanyLink href={HERO_COMPANY_HREFS.cognition}>Cognition</HeroCompanyLink>
                   <span>{`, `}</span>
