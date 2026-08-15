@@ -1261,7 +1261,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                   <span className="max-md:hidden">
                     <br aria-hidden="true" />
                   </span>
-                  {`In-house at `}
+                  {`Previously in-house at `}
                   <span style={{ fontVariationSettings: "'wdth' 100" }}>
                     <HeroCompanyLink href={HERO_COMPANY_HREFS.apple} ariaLabel="Apple">
                       <svg

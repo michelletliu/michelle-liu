@@ -5,7 +5,7 @@ import "@/index.css";
 import "@/styles/globals.css";
 
 const siteDescription =
-  "Designing to spark moments of delight & human connection. In-house at Apple, Roblox, & NASA. Clients include Cognition, Luma, & Pika.";
+  "Designing to spark moments of delight & human connection. Previously in-house at Apple, Roblox, & NASA. Clients include Cognition, Luma, & Pika.";
 
 const siteOgImage = {
   url: "https://www.liumichelle.com/og-image.jpg?v=6",
