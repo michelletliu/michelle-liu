@@ -145,14 +145,17 @@ function aspectForPainting(painting: GalleryPainting): "3:4" | "3:2" {
 }
 
 function reveErrorMessage(raw: string, status: number): string {
-  let message = `Reve error (${status})`;
   try {
     const err = JSON.parse(raw) as { message?: string; error?: string };
-    message = err.message || err.error || message;
+    console.warn(
+      `[gallery/generate] reve error (${status}): ${err.message || err.error || raw}`,
+    );
   } catch {
-    /* keep default */
+    console.warn(
+      `[gallery/generate] reve error (${status}): ${raw.slice(0, 200)}`,
+    );
   }
-  return message;
+  return "Generation failed";
 }
 
 export async function POST(req: NextRequest) {
@@ -320,7 +323,6 @@ export async function POST(req: NextRequest) {
       const data = JSON.parse(asText) as {
         image?: string;
         content_violation?: boolean;
-        message?: string;
       };
       if (data.content_violation) {
         return NextResponse.json(
@@ -337,7 +339,7 @@ export async function POST(req: NextRequest) {
         });
       }
       return NextResponse.json(
-        { error: data.message || "Reve returned no image" },
+        { error: "Reve returned no image" },
         { status: 502 },
       );
     } catch {

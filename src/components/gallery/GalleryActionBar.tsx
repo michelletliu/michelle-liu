@@ -27,6 +27,7 @@ import {
   RotatingLoadingText,
 } from "@/components/RotatingLoadingText";
 import Tooltip from "@/components/shared/Tooltip";
+import { INLINE_LINK_CLASS } from "@/components/shared/inlineLink";
 import { PlusIcon, SquarePenIcon } from "@/components/library/icons";
 import { ICON_STROKE_WIDTH } from "@/components/shared/iconSizes";
 import MetArtworkPicker from "./MetArtworkPicker";
@@ -1132,15 +1133,43 @@ export default function GalleryActionBar({
       </div>
       {/* Outside the morph shell — in-form alerts were measured into its height. */}
       {expanded && error ? (
-        <p
-          id={errorId}
-          role="alert"
-          className="pointer-events-none absolute inset-x-0 top-full z-10 mt-2 px-5 text-center text-pretty text-base leading-snug text-red-600"
-        >
-          {error}
-        </p>
+        <GenerateErrorAlert id={errorId} message={error} />
       ) : null}
     </div>
+  );
+}
+
+const STUDIO_EMAIL = "studio@liumichelle.com";
+
+function isUserFixableGenerateError(message: string) {
+  return (
+    message === "Prompt was blocked by content policy" ||
+    message === "Too many generations right now. Try again in a moment." ||
+    message === "Prompt is too long"
+  );
+}
+
+function GenerateErrorAlert({ id, message }: { id: string; message: string }) {
+  return (
+    <p
+      id={id}
+      role="alert"
+      className="absolute inset-x-0 top-full z-10 mt-2 px-5 text-center text-pretty text-base leading-snug text-red-600"
+    >
+      {isUserFixableGenerateError(message) ? (
+        message
+      ) : (
+        <>
+          Couldn't generate that right now. Email{" "}
+          <a
+            href={`mailto:${STUDIO_EMAIL}`}
+            className={`${INLINE_LINK_CLASS} ${GALLERY_FOCUS_RING} font-medium underline underline-offset-2`}
+          >
+            {STUDIO_EMAIL}
+          </a>
+        </>
+      )}
+    </p>
   );
 }
 
