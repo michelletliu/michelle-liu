@@ -1261,7 +1261,13 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                   <span className="max-md:hidden">
                     <br aria-hidden="true" />
                   </span>
-                  {`Previously in-house at `}
+                  {`Clients include `}
+                  <HeroCompanyLink href={HERO_COMPANY_HREFS.cognition}>Cognition</HeroCompanyLink>
+                  <span>{`, `}</span>
+                  <HeroCompanyLink href={HERO_COMPANY_HREFS.luma}>Luma</HeroCompanyLink>
+                  <span>{`, & `}</span>
+                  <HeroCompanyLink href={HERO_COMPANY_HREFS.pika}>Pika</HeroCompanyLink>
+                  <span>{`. Previously in-house at `}</span>
                   <span style={{ fontVariationSettings: "'wdth' 100" }}>
                     <HeroCompanyLink href={HERO_COMPANY_HREFS.apple} ariaLabel="Apple">
                       <svg
@@ -1279,12 +1285,6 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                   <HeroCompanyLink href={HERO_COMPANY_HREFS.roblox}>Roblox</HeroCompanyLink>
                   <span>{`, & `}</span>
                   <HeroCompanyLink href={HERO_COMPANY_HREFS.nasa}>NASA</HeroCompanyLink>
-                  <span>{`. Clients include `}</span>
-                  <HeroCompanyLink href={HERO_COMPANY_HREFS.cognition}>Cognition</HeroCompanyLink>
-                  <span>{`, `}</span>
-                  <HeroCompanyLink href={HERO_COMPANY_HREFS.luma}>Luma</HeroCompanyLink>
-                  <span>{`, & `}</span>
-                  <HeroCompanyLink href={HERO_COMPANY_HREFS.pika}>Pika</HeroCompanyLink>
                   <span>.</span>
                 </span>
                 <ContactBadge

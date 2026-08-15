@@ -49,8 +49,12 @@ test("uses large contact text and deeper intro fade on Work", () => {
 test("updates the work hero copy and links company names out", () => {
   assert.match(homeSource, /Designing to spark/);
   assert.doesNotMatch(homeSource, /Designing products to spark/);
-  assert.match(homeSource, /Previously in-house at /);
   assert.match(homeSource, /Clients include /);
+  assert.match(homeSource, /Previously in-house at /);
+  assert.match(
+    homeSource,
+    /Clients include [\s\S]*?Previously in-house at /,
+  );
   assert.match(homeSource, /<span className="max-md:hidden">[\s\S]*?Designing to spark/);
   assert.match(homeSource, /<span className="max-md:hidden">[\s\S]*?<br aria-hidden="true" \/>/);
   assert.match(homeSource, /APPLE_LOGO_PATH/);
