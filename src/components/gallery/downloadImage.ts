@@ -2,8 +2,8 @@
  * Saving a generated canvas to disk.
  *
  * The generate route hands back a `data:` URL today, but that is an
- * implementation detail of the Reve response, so the download path also handles
- * a remote http(s) URL by pulling it into a blob first.
+ * implementation detail of the generation response, so the download path also
+ * handles a remote http(s) URL by pulling it into a blob first.
  */
 
 const DEFAULT_EXTENSION = "png";

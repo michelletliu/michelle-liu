@@ -289,12 +289,12 @@ export default function GalleryInfoButton({
                     <br className="hidden md:block" />
                     Thanks to my friends at{" "}
                     <a
-                      href="https://www.reve.com"
+                      href="https://pika.art"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-medium text-zinc-600 no-underline transition-colors hover:text-blue-500"
                     >
-                      Reve
+                      Pika
                     </a>{" "}
                     for asking me to experiment with this!
                   </p>

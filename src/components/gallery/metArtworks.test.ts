@@ -371,10 +371,10 @@ test("artwork context is never silently dropped from the composed prompt", () =>
   assert.equal(inspired.inspiredByObjectID, 436524);
 });
 
-test("a reference image is bound with Reve's frame tag", () => {
+test("a reference image is bound by name in the prompt", () => {
   // Regression guard for the bug that made style transfer fail outright: with
-  // no <frame>0</frame> tag, Reve reads the reference as content to compose
-  // from rather than technique to follow, and the source painting's own subject
+  // no named reference, the model reads the image as content to compose from
+  // rather than technique to follow, and the source painting's own subject
   // leaks into the result while its brushwork does not.
   const withImage = composeInspiredPrompt("a butterfly", artwork(), {
     referenceImage: true,
@@ -387,7 +387,7 @@ test("a reference image is bound with Reve's frame tag", () => {
 
   const withoutImage = composeInspiredPrompt("a butterfly", artwork());
   assert.equal(withoutImage.usesReferenceImage, false);
-  // No reference is sent, so a tag would point at nothing.
+  // No reference is sent, so a label would point at nothing.
   assert.ok(!withoutImage.prompt.includes(REFERENCE_FRAME_TAG));
 });
 
@@ -409,8 +409,8 @@ test("the frame tag only ever appears in sentences about technique", () => {
     );
   }
 
-  // Index 0 only: exactly one reference image is ever sent.
-  assert.ok(!prompt.includes("<frame>1</frame>"), prompt);
+  // Exactly one reference image is ever sent.
+  assert.ok(!prompt.includes("second reference"), prompt);
 });
 
 test("the reference image, not the prompt text, is the palette authority", () => {

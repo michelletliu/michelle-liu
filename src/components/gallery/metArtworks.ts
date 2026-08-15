@@ -448,7 +448,7 @@ export function strokeIdiom(artwork: MetArtwork): string | null {
 /**
  * Steers away from the specific failure mode observed in testing: every early
  * generation came back as a glossy, smoothly shaded digital illustration
- * regardless of the medium asked for. Reve's create/remix endpoints expose no
+ * regardless of the medium asked for. The generation API exposes no
  * negative-prompt parameter, so the exclusions have to live in the prompt body.
  */
 export const STYLE_COUNTER_GUIDANCE =
@@ -463,17 +463,17 @@ export const BARE_ARTISTIC_GUIDANCE =
   "A museum-quality hand-made painting or drawing: beautiful, tasteful, and refined. Thoughtful composition with intentional negative space and harmonious colour. Visible hand of the artist — brush marks or drawn marks, uneven pigment, physical surface — never flat digital fill.";
 
 /**
- * How Reve binds a prompt to an entry in `reference_images`, 0-based. Exactly
- * one reference is ever sent, so the index is always zero.
+ * How the prompt names the single image sent as `image_urls[0]`. Exactly one
+ * reference is ever sent.
  *
- * Omitting this tag is what made every early attempt fail. An untagged
+ * Omitting this label is what made every early attempt fail. An unnamed
  * reference is treated as content to compose from rather than technique to
  * follow, which is why a Cézanne still life produced apples in a picture that
  * had asked for butterflies: the reference was consumed, its subject leaked in,
- * and its brushwork did not. Any sentence about style has to name the frame,
- * and prose that merely talks about "the reference image" binds to nothing.
+ * and its brushwork did not. Any sentence about style has to name the
+ * reference.
  */
-export const REFERENCE_FRAME_TAG = "<frame>0</frame>";
+export const REFERENCE_FRAME_TAG = "the first reference image";
 
 export type PromptComposition = {
   prompt: string;
@@ -486,7 +486,7 @@ export type PromptComposition = {
 export type PromptOptions = {
   /**
    * Set when the artwork's Open Access image is sent alongside the prompt as a
-   * Reve remix reference, which changes how the style is described: the image
+   * style reference, which changes how the style is described: the image
    * carries the palette and brushwork, so the text points at it instead of
    * trying to describe colour in words.
    */
@@ -494,7 +494,7 @@ export type PromptOptions = {
 };
 
 /**
- * Final Reve prompt. Composed server-side so the client can never smuggle in
+ * Final generation prompt. Composed server-side so the client can never smuggle in
  * "reproduce this painting" instructions around the guardrails.
  *
  * Style leads and the subject follows. Leading with the subject is what the
@@ -557,7 +557,7 @@ export function composeInspiredPrompt(
      *
      * Naming the failure was the problem — "close-up" is the composition the
      * model then reached for. So this asks positively for what is wanted and
-     * never says the word. Avoid "inside the frame" too: Reve treats that as a
+     * never says the word. Avoid "inside the frame" too: that reads as a
      * request to draw a black keyline / picture-frame pad around the paint.
      */
     `The painting depicts: ${cleanSubject}, clearly recognisable. Show the whole subject complete and uncropped, with clear space around it on every side.`,
