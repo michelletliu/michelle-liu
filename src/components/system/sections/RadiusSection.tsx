@@ -7,6 +7,7 @@ import { SubLabel, Grid, TokenCard } from "../primitives";
 import { ghostIconButtonClass } from "../../shared/ghostIconButton";
 import { iconSize } from "../../shared/iconSizes";
 import { GridIcon } from "../../library/icons";
+import Tooltip from "../../shared/Tooltip";
 
 /** viewBox 137.55; 1.575 inset keeps the stroke inside the box. */
 const VIEWBOX = 137.55;
@@ -42,13 +43,17 @@ const SQUIRCLE_PATH = squirclePath(RADIUS);
 
 /** blue-600 — same hue, different opacities, so the overlay reads as a key. */
 const COMPARE_BLUE = "37 99 235";
+/** Shared overlay weight so round doesn’t read as a hairline against squircle. */
+const COMPARE_STROKE = 2;
 
 /**
- * Half of (specimen width + column gap).
- * Base: (112 + 32) / 2 = 72. sm: (168 + 64) / 2 = 116.
+ * Half of (own width + column gap) — 50% of the specimen plus half the gap.
+ * gap-8 → 1rem, sm:gap-16 → 2rem.
  */
-const MEET_RIGHT = "translate-x-[72px] sm:translate-x-[116px]";
-const MEET_LEFT = "-translate-x-[72px] sm:-translate-x-[116px]";
+const MEET_RIGHT =
+  "translate-x-[calc(50%+1rem)] sm:translate-x-[calc(50%+2rem)]";
+const MEET_LEFT =
+  "-translate-x-[calc(50%+1rem)] sm:-translate-x-[calc(50%+2rem)]";
 
 const CORNER_SPECIMENS = [
   {
@@ -57,7 +62,6 @@ const CORNER_SPECIMENS = [
     meetClass: MEET_RIGHT,
     strokeAlpha: 0.38,
     labelAlpha: 0.5,
-    gridStrokeWidth: 1.35,
   },
   {
     label: "Squircle",
@@ -65,7 +69,6 @@ const CORNER_SPECIMENS = [
     meetClass: MEET_LEFT,
     strokeAlpha: 0.95,
     labelAlpha: 0.95,
-    gridStrokeWidth: 2,
   },
 ] as const;
 
@@ -79,18 +82,18 @@ const GRID_STYLE = {
   clipPath: "inset(1px)",
 } as const;
 
-const MOVE =
-  "transition-[transform,filter] duration-300 ease-out motion-reduce:transition-none";
-const FADE =
-  "transition-opacity duration-300 ease-out motion-reduce:transition-none";
-const COLOR =
-  "transition-[fill,stroke,stroke-width,color] duration-300 ease-out motion-reduce:transition-none";
+/** Same curve as modalSlideIn — compositor-only so the slide stays at 60fps. */
+const SLIDE =
+  "duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none";
+const MOVE = `transform-gpu transition-transform ${SLIDE}`;
+const FADE = `transition-opacity ${SLIDE}`;
+const COLOR = `transition-[fill,stroke,color] ${SLIDE}`;
 
 /* ─────────────────────────────────────────────────────────
  * ANIMATION STORYBOARD
  *
- *    0ms   grid toggle
- *    0–300  shapes translate to center, fills clear, strokes go blue
+ *    0ms    grid toggle; drop-shadow snaps off (not interpolated)
+ *    0–500  shapes translate on the compositor; fills/strokes tint
  *           labels tint to matching blue; shared grid fades in
  *    off    reverse — shapes travel back out, gray stroke + white fill
  * ───────────────────────────────────────────────────────── */
@@ -105,21 +108,29 @@ export default function RadiusBlock() {
       <SubLabel>Radius</SubLabel>
       <div className="mb-10">
         <div className="relative overflow-hidden rounded-2xl bg-zinc-50 px-4 py-8 sm:px-6 sm:py-12">
-          <button
-            type="button"
-            aria-pressed={showGrid}
-            aria-label={showGrid ? "Hide grid" : "Show grid"}
-            onClick={() => setShowGrid((v) => !v)}
-            className={clsx(
-              // Solid zinc-50 fill so card grid never shows through the circle
-              ghostIconButtonClass("sm", "absolute right-3 top-3 z-[3] bg-zinc-50 text-zinc-300"),
-              "hover:bg-zinc-100 hover:text-zinc-400",
-              "active:bg-zinc-100",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
-            )}
-          >
-            <GridIcon size={iconSize("sm")} filled={showGrid} />
-          </button>
+          <div className="absolute right-3 top-3 z-[3]">
+            <Tooltip
+              label={showGrid ? "Hide grid" : "Show grid"}
+              position="bottom"
+              portal
+            >
+              <button
+                type="button"
+                aria-pressed={showGrid}
+                aria-label={showGrid ? "Hide grid" : "Show grid"}
+                onClick={() => setShowGrid((v) => !v)}
+                className={clsx(
+                  // Solid zinc-50 fill so card grid never shows through the circle
+                  ghostIconButtonClass("sm", "bg-zinc-50 text-zinc-300"),
+                  "hover:bg-zinc-100 hover:text-zinc-400",
+                  "active:bg-zinc-100",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300/60",
+                )}
+              >
+                <GridIcon size={iconSize("sm")} filled={showGrid} />
+              </button>
+            </Tooltip>
+          </div>
 
           <div className="relative flex justify-center gap-8 sm:gap-16">
             <div
@@ -133,7 +144,7 @@ export default function RadiusBlock() {
             />
 
             {CORNER_SPECIMENS.map(
-              ({ label, d, meetClass, strokeAlpha, labelAlpha, gridStrokeWidth }) => (
+              ({ label, d, meetClass, strokeAlpha, labelAlpha }) => (
                 <div
                   key={label}
                   className="flex w-[112px] flex-col items-center sm:w-[168px]"
@@ -142,9 +153,9 @@ export default function RadiusBlock() {
                     className={clsx(
                       "relative z-[2] size-[112px] sm:size-[168px]",
                       MOVE,
-                      showGrid
-                        ? `${meetClass} drop-shadow-none`
-                        : "translate-x-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.08)]",
+                      showGrid ? meetClass : "translate-x-0",
+                      !showGrid &&
+                        "drop-shadow-[0_2px_6px_rgba(0,0,0,0.08)]",
                     )}
                   >
                     <svg
@@ -161,7 +172,7 @@ export default function RadiusBlock() {
                           stroke: showGrid
                             ? `rgb(${COMPARE_BLUE} / ${strokeAlpha})`
                             : "rgb(159 159 169 / 0.3)",
-                          strokeWidth: showGrid ? gridStrokeWidth : 2.4,
+                          strokeWidth: showGrid ? COMPARE_STROKE : 2.4,
                         }}
                         strokeLinecap="round"
                         strokeLinejoin="round"

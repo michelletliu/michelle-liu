@@ -52,8 +52,16 @@ test("round and squircle specimens meet in the center with blue strokes when the
     "utf8",
   );
 
-  assert.match(section, /translate-x-\[72px\] sm:translate-x-\[116px\]/);
-  assert.match(section, /-translate-x-\[72px\] sm:-translate-x-\[116px\]/);
+  assert.match(
+    section,
+    /translate-x-\[calc\(50%\+1rem\)\] sm:translate-x-\[calc\(50%\+2rem\)\]/,
+  );
+  assert.match(
+    section,
+    /-translate-x-\[calc\(50%\+1rem\)\] sm:-translate-x-\[calc\(50%\+2rem\)\]/,
+  );
+  assert.match(section, /transition-transform/);
+  assert.doesNotMatch(section, /transition-\[transform,filter\]/);
   assert.match(section, /37 99 235/);
   assert.match(section, /strokeAlpha: 0\.95/);
   assert.match(section, /strokeAlpha: 0\.38/);
@@ -61,8 +69,8 @@ test("round and squircle specimens meet in the center with blue strokes when the
   assert.match(section, /backgroundSize: "10% 10%"/);
   assert.match(section, /strokeAlpha: 0\.38/);
   assert.match(section, /strokeAlpha: 0\.95/);
-  assert.match(section, /gridStrokeWidth: 1\.35,/);
-  assert.match(section, /gridStrokeWidth: 2,/);
+  assert.match(section, /const COMPARE_STROKE = 2/);
+  assert.doesNotMatch(section, /gridStrokeWidth/);
   assert.doesNotMatch(section, /overlayCorners/);
 });
 
