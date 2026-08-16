@@ -46,7 +46,7 @@ test("the radius page contains no experimental radius group", () => {
   assert.doesNotMatch(section, /Experiment radii|oddRadii/);
 });
 
-test("round and squircle specimens overlay each other's corner segments", () => {
+test("round and squircle specimens meet in the center with blue strokes when the grid is on", () => {
   const section = readFileSync(
     new URL("./sections/RadiusSection.tsx", import.meta.url),
     "utf8",
@@ -54,14 +54,24 @@ test("round and squircle specimens overlay each other's corner segments", () => 
 
   assert.match(
     section,
-    /\{ label: "Round", d: ROUND_PATH, overlayCorners: SQUIRCLE_CORNERS \}/,
+    /translate-x-\[calc\(50%\+1rem\)\] sm:translate-x-\[calc\(50%\+2rem\)\]/,
   );
   assert.match(
     section,
-    /\{ label: "Squircle", d: SQUIRCLE_PATH, overlayCorners: ROUND_CORNERS \}/,
+    /-translate-x-\[calc\(50%\+1rem\)\] sm:-translate-x-\[calc\(50%\+2rem\)\]/,
   );
-  assert.match(section, /strokeOpacity=\{showGrid \? 0\.15 : 0\.3\}/);
-  assert.match(section, /filled=\{showGrid\}/);
+  assert.match(section, /transition-transform/);
+  assert.doesNotMatch(section, /transition-\[transform,filter\]/);
+  assert.match(section, /37 99 235/);
+  assert.match(section, /strokeAlpha: 0\.95/);
+  assert.match(section, /strokeAlpha: 0\.38/);
+  assert.match(section, /const RADIUS = 56/);
+  assert.match(section, /backgroundSize: "10% 10%"/);
+  assert.match(section, /strokeAlpha: 0\.38/);
+  assert.match(section, /strokeAlpha: 0\.95/);
+  assert.match(section, /const COMPARE_STROKE = 2/);
+  assert.doesNotMatch(section, /gridStrokeWidth/);
+  assert.doesNotMatch(section, /overlayCorners/);
 });
 
 test("token card title and usage use gap-0 with a medium-weight title", () => {
