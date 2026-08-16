@@ -8,30 +8,92 @@ import { ghostIconButtonClass } from "../../shared/ghostIconButton";
 import { iconSize } from "../../shared/iconSizes";
 import { GridIcon } from "../../library/icons";
 
-/** Radius 40 so round vs squircle reads clearly. viewBox 137.55. */
-const ROUND_PATH =
-  "M41.575 1.575H95.975A40 40 0 0 1 135.975 41.575V95.975A40 40 0 0 1 95.975 135.975H41.575A40 40 0 0 1 1.575 95.975V41.575A40 40 0 0 1 41.575 1.575Z";
-const SQUIRCLE_PATH =
-  "M41.575 1.575H95.975C123.375 1.575 135.975 14.055 135.975 41.575V95.975C135.975 123.375 123.495 135.975 95.975 135.975H41.575C14.175 135.975 1.575 123.495 1.575 95.975V41.575C1.575 14.175 14.055 1.575 41.575 1.575Z";
+/** viewBox 137.55; 1.575 inset keeps the stroke inside the box. */
+const VIEWBOX = 137.55;
+const PAD = 1.575;
+/** Large enough that round vs squircle diverges clearly at the corners. */
+const RADIUS = 56;
+/** Handle ratios from the original r=40 Figma squircle export. */
+const SQUIRCLE_H = 27.4 / 40;
+const SQUIRCLE_H2 = 27.52 / 40;
 
-/** Corner arcs only — same geometry as the closed paths above. */
-const ROUND_CORNERS = [
-  "M95.975 1.575A40 40 0 0 1 135.975 41.575",
-  "M135.975 95.975A40 40 0 0 1 95.975 135.975",
-  "M41.575 135.975A40 40 0 0 1 1.575 95.975",
-  "M1.575 41.575A40 40 0 0 1 41.575 1.575",
-] as const;
-const SQUIRCLE_CORNERS = [
-  "M95.975 1.575C123.375 1.575 135.975 14.055 135.975 41.575",
-  "M135.975 95.975C135.975 123.375 123.495 135.975 95.975 135.975",
-  "M41.575 135.975C14.175 135.975 1.575 123.495 1.575 95.975",
-  "M1.575 41.575C1.575 14.175 14.055 1.575 41.575 1.575",
-] as const;
+const fmt = (n: number) => String(Number(n.toFixed(3)));
+
+function roundPath(r: number): string {
+  const min = PAD;
+  const max = VIEWBOX - PAD;
+  const a = min + r;
+  const b = max - r;
+  return `M${fmt(a)} ${fmt(min)}H${fmt(b)}A${fmt(r)} ${fmt(r)} 0 0 1 ${fmt(max)} ${fmt(a)}V${fmt(b)}A${fmt(r)} ${fmt(r)} 0 0 1 ${fmt(b)} ${fmt(max)}H${fmt(a)}A${fmt(r)} ${fmt(r)} 0 0 1 ${fmt(min)} ${fmt(b)}V${fmt(a)}A${fmt(r)} ${fmt(r)} 0 0 1 ${fmt(a)} ${fmt(min)}Z`;
+}
+
+function squirclePath(r: number): string {
+  const min = PAD;
+  const max = VIEWBOX - PAD;
+  const a = min + r;
+  const b = max - r;
+  const h = r * SQUIRCLE_H;
+  const h2 = r * SQUIRCLE_H2;
+  return `M${fmt(a)} ${fmt(min)}H${fmt(b)}C${fmt(b + h)} ${fmt(min)} ${fmt(max)} ${fmt(a - h2)} ${fmt(max)} ${fmt(a)}V${fmt(b)}C${fmt(max)} ${fmt(b + h)} ${fmt(b + h2)} ${fmt(max)} ${fmt(b)} ${fmt(max)}H${fmt(a)}C${fmt(a - h)} ${fmt(max)} ${fmt(min)} ${fmt(b + h2)} ${fmt(min)} ${fmt(b)}V${fmt(a)}C${fmt(min)} ${fmt(a - h)} ${fmt(a - h2)} ${fmt(min)} ${fmt(a)} ${fmt(min)}Z`;
+}
+
+const ROUND_PATH = roundPath(RADIUS);
+const SQUIRCLE_PATH = squirclePath(RADIUS);
+
+/** blue-600 — same hue, different opacities, so the overlay reads as a key. */
+const COMPARE_BLUE = "37 99 235";
+
+/**
+ * Half of (specimen width + column gap).
+ * Base: (112 + 32) / 2 = 72. sm: (168 + 64) / 2 = 116.
+ */
+const MEET_RIGHT = "translate-x-[72px] sm:translate-x-[116px]";
+const MEET_LEFT = "-translate-x-[72px] sm:-translate-x-[116px]";
 
 const CORNER_SPECIMENS = [
-  { label: "Round", d: ROUND_PATH, overlayCorners: SQUIRCLE_CORNERS },
-  { label: "Squircle", d: SQUIRCLE_PATH, overlayCorners: ROUND_CORNERS },
+  {
+    label: "Round",
+    d: ROUND_PATH,
+    meetClass: MEET_RIGHT,
+    strokeAlpha: 0.38,
+    labelAlpha: 0.5,
+    gridStrokeWidth: 1.35,
+  },
+  {
+    label: "Squircle",
+    d: SQUIRCLE_PATH,
+    meetClass: MEET_LEFT,
+    strokeAlpha: 0.95,
+    labelAlpha: 0.95,
+    gridStrokeWidth: 2,
+  },
 ] as const;
+
+const GRID_STYLE = {
+  backgroundImage: `
+    linear-gradient(to right, transparent calc(100% - 1px), rgb(147 197 253 / 0.32) 1px),
+    linear-gradient(to bottom, transparent calc(100% - 1px), rgb(147 197 253 / 0.32) 1px)
+  `,
+  backgroundSize: "10% 10%",
+  backgroundPosition: "0 0",
+  clipPath: "inset(1px)",
+} as const;
+
+const MOVE =
+  "transition-[transform,filter] duration-300 ease-out motion-reduce:transition-none";
+const FADE =
+  "transition-opacity duration-300 ease-out motion-reduce:transition-none";
+const COLOR =
+  "transition-[fill,stroke,stroke-width,color] duration-300 ease-out motion-reduce:transition-none";
+
+/* ─────────────────────────────────────────────────────────
+ * ANIMATION STORYBOARD
+ *
+ *    0ms   grid toggle
+ *    0–300  shapes translate to center, fills clear, strokes go blue
+ *           labels tint to matching blue; shared grid fades in
+ *    off    reverse — shapes travel back out, gray stroke + white fill
+ * ───────────────────────────────────────────────────────── */
 
 /** Radius diagram + scale — first subhead under Borders. */
 export default function RadiusBlock() {
@@ -60,69 +122,68 @@ export default function RadiusBlock() {
           </button>
 
           <div className="relative flex justify-center gap-8 sm:gap-16">
-            {CORNER_SPECIMENS.map(({ label, d, overlayCorners }) => (
-              <div
-                key={label}
-                className="flex w-[112px] flex-col items-center sm:w-[168px]"
-              >
-                <div className="relative size-[112px] drop-shadow-[0_2px_6px_rgba(0,0,0,0.08)] sm:size-[168px]">
-                  <svg
-                    viewBox="0 0 137.55 137.55"
-                    className="absolute inset-[10%] overflow-visible"
-                    fill="none"
-                    aria-hidden
+            <div
+              aria-hidden
+              className={clsx(
+                "pointer-events-none absolute left-1/2 top-0 z-[1] size-[112px] -translate-x-1/2 sm:size-[168px]",
+                FADE,
+                showGrid ? "opacity-100" : "opacity-0",
+              )}
+              style={GRID_STYLE}
+            />
+
+            {CORNER_SPECIMENS.map(
+              ({ label, d, meetClass, strokeAlpha, labelAlpha, gridStrokeWidth }) => (
+                <div
+                  key={label}
+                  className="flex w-[112px] flex-col items-center sm:w-[168px]"
+                >
+                  <div
+                    className={clsx(
+                      "relative z-[2] size-[112px] sm:size-[168px]",
+                      MOVE,
+                      showGrid
+                        ? `${meetClass} drop-shadow-none`
+                        : "translate-x-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.08)]",
+                    )}
                   >
-                    <path
-                      d={d}
-                      fill="white"
-                      stroke="#9F9FA9"
-                      strokeOpacity={showGrid ? 0.15 : 0.3}
-                      strokeWidth={showGrid ? 1 : 3.15}
-                      vectorEffect={showGrid ? "non-scaling-stroke" : undefined}
-                    />
-                  </svg>
-                  {showGrid && (
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute inset-0 z-[1]"
-                      style={{
-                        // 5% cells → shape (inset 10%) spans 16 cells with 2 cells outside each edge.
-                        // Line at end of each cell; clip outer 1px so no perimeter on any side.
-                        backgroundImage: `
-                          linear-gradient(to right, transparent calc(100% - 1px), rgb(161 161 170 / 0.18) 1px),
-                          linear-gradient(to bottom, transparent calc(100% - 1px), rgb(161 161 170 / 0.18) 1px)
-                        `,
-                        backgroundSize: "5% 5%",
-                        backgroundPosition: "0 0",
-                        clipPath: "inset(1px)",
-                      }}
-                    />
-                  )}
-                  {showGrid && (
                     <svg
                       viewBox="0 0 137.55 137.55"
-                      className="pointer-events-none absolute inset-[10%] z-[2] overflow-visible"
+                      className="absolute inset-[10%] overflow-visible"
                       fill="none"
                       aria-hidden
                     >
-                      {overlayCorners.map((corner) => (
-                        <path
-                          key={corner}
-                          d={corner}
-                          fill="none"
-                          stroke="#60a5fa"
-                          strokeOpacity="0.55"
-                          strokeWidth="1"
-                          strokeLinecap="round"
-                          vectorEffect="non-scaling-stroke"
-                        />
-                      ))}
+                      <path
+                        d={d}
+                        className={COLOR}
+                        style={{
+                          fill: showGrid ? "rgb(255 255 255 / 0)" : "rgb(255 255 255)",
+                          stroke: showGrid
+                            ? `rgb(${COMPARE_BLUE} / ${strokeAlpha})`
+                            : "rgb(159 159 169 / 0.3)",
+                          strokeWidth: showGrid ? gridStrokeWidth : 2.4,
+                        }}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
-                  )}
+                  </div>
+                  <p
+                    className={clsx(
+                      "relative z-[2] mt-2 text-center text-sm",
+                      COLOR,
+                    )}
+                    style={{
+                      color: showGrid
+                        ? `rgb(${COMPARE_BLUE} / ${labelAlpha})`
+                        : "rgb(113 113 122)",
+                    }}
+                  >
+                    {label}
+                  </p>
                 </div>
-                <p className="mt-2 text-center text-sm text-zinc-500">{label}</p>
-              </div>
-            ))}
+              ),
+            )}
           </div>
         </div>
         <p className="mt-3 max-w-3xl text-base leading-relaxed text-zinc-500 text-pretty">
