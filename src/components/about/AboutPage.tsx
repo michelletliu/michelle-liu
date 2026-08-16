@@ -840,14 +840,14 @@ export default function AboutPage() {
                   <p>
                     I love art, business, technology, & the ways that they can work together to
                     create extraordinary products for people. I obsess over crafting beautiful
-                    tools for human creation and communication.
+                    tools for creation & human connection.
                   </p>
                   <p>
                     I view myself as an artist at heart, designing where beauty meets tactile utility. I like to think of it as my <a href="https://en.wikipedia.org/wiki/Ikigai" target="_blank" rel="noopener noreferrer" className="text-zinc-600 font-semibold no-underline hover:text-blue-600 transition-colors">ikigai</a>: the
                     constant pursuit of an intersection between passion, profession, & personal mission.
                   </p>
                   <p>
-                    3 words to describe me: Golden Retriever Energy (even on the bad days.)
+                    3 words to describe me: Golden Retriever Energy (even on the bad days)
                   </p>
                 </div>
               </ScrollReveal>

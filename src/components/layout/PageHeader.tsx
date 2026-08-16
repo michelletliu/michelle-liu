@@ -50,7 +50,7 @@ export default function PageHeader({
       {/* Hero Text */}
       <div className="relative shrink-0 w-full" style={{ zIndex: 2 }}>
         <div className="size-full">
-          <div className="content-stretch flex flex-col gap-4 items-start pb-6 pt-14 px-16 max-md:px-6 max-md:pt-20 max-md:pb-2 relative w-full max-md:min-h-[210px] md:min-h-[176px]">
+          <div className="content-stretch flex flex-col gap-4 items-start pt-14 px-16 max-md:px-6 max-md:pt-20 relative w-full max-md:min-h-[210px] md:min-h-[176px]">
             <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
               <ScrollReveal variant="fade" rootMargin="0px" disabled>
                 {nameAddon ? (
@@ -69,7 +69,7 @@ export default function PageHeader({
               {children && (
                 <div
                   key={variant}
-                  className="font-['Michelle',sans-serif] font-normal tracking-wide leading-normal text-[#a1a1aa] text-lg max-md:text-base w-full max-md:max-w-86 whitespace-pre-wrap mt-1 max-md:mt-1"
+                  className="font-['Michelle',sans-serif] font-normal tracking-wide leading-normal text-[#a1a1aa] text-lg max-md:text-base w-full whitespace-pre-wrap mt-1 max-md:mt-1"
                   style={{
                     animation:
                       "projectCardEnter 360ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",

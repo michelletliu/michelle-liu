@@ -46,7 +46,7 @@ test("route loading shells align to production geometry without spinners", () =>
   );
   assertSharedGeometry(
     pageHeaderSource,
-    "content-stretch flex flex-col gap-4 items-start pb-6 pt-14 px-16 max-md:px-6 max-md:pt-20 max-md:pb-2 relative w-full max-md:min-h-[210px] md:min-h-[176px]",
+    "content-stretch flex flex-col gap-4 items-start pt-14 px-16 max-md:px-6 max-md:pt-20 relative w-full max-md:min-h-[210px] md:min-h-[176px]",
   );
   assertSharedGeometry(
     navigationTabsSource,
