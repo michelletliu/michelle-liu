@@ -1242,7 +1242,9 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                   <HeroCompanyLink href={HERO_COMPANY_HREFS.luma}>Luma</HeroCompanyLink>
                   <span>{`, & `}</span>
                   <HeroCompanyLink href={HERO_COMPANY_HREFS.pika}>Pika</HeroCompanyLink>
-                  <span>{`. Previously at `}</span>
+                  <span>{`. `}</span>
+                  <br className="md:hidden" aria-hidden="true" />
+                  <span>{`Previously at `}</span>
                   <span style={{ fontVariationSettings: "'wdth' 100" }}>
                     <HeroCompanyLink href={HERO_COMPANY_HREFS.apple} ariaLabel="Apple">
                       <svg
