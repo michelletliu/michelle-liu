@@ -5,6 +5,8 @@ import {
   ART_FRAME_LIP_WIDTH,
   ART_MAT_WIDTH,
   CANVAS_CORNER_RADIUS,
+  CANVAS_LIP_HEIGHT,
+  CANVAS_WRAP_RADIUS,
   FRAME_LIP_WIDTH,
   MAT_WIDTH,
   coverUvTransform,
@@ -241,5 +243,29 @@ test("openFrontRoundedBoxGeometry keeps a side shell with soft corners", () => {
   assert.ok(minC < 0.9, `fold crease should darken corners (min=${minC})`);
   assert.ok(maxC >= 1, `fold ridge highlight present (max=${maxC})`);
 
+  geo.dispose();
+});
+
+test("canvas stretcher sides stop short of the front so the wrap can turn", () => {
+  const depth = 0.052;
+  const geo = openFrontRoundedBoxGeometry(
+    1.15,
+    1.55,
+    depth,
+    CANVAS_CORNER_RADIUS,
+    { openBack: true },
+  );
+  const pos = geo.getAttribute("position");
+  let maxZ = -Infinity;
+  for (let i = 0; i < pos.count; i++) {
+    maxZ = Math.max(maxZ, pos.getZ(i));
+  }
+  const hd = depth / 2;
+  const trim = CANVAS_WRAP_RADIUS - CANVAS_LIP_HEIGHT;
+  assert.ok(
+    maxZ < hd - trim * 0.6,
+    `front ring pulled back for wrap (maxZ=${maxZ}, hd=${hd})`,
+  );
+  assert.ok(maxZ > hd - trim * 1.4, `not pulled back past the wrap join`);
   geo.dispose();
 });

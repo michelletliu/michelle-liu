@@ -30,9 +30,17 @@ import {
   ART_CORNER_RADIUS,
   ART_CORNER_RADIUS_LIGHT,
   artPlaneGeometry,
+  canvasArtGeometry,
 } from "./artPlaneGeometry";
 import {
   CANVAS_CORNER_RADIUS,
+  CANVAS_LIP_HEIGHT,
+  CANVAS_LIP_WIDTH,
+  CANVAS_WRAP_RADIUS,
+  CANVAS_WRAP_SWELL,
+  CANVAS_WRAP_ANGLE,
+  CANVAS_PAINT_INSET,
+  CANVAS_SIDE_OVERLAP,
   coverUvTransform,
   coverUvWithLetterbox,
   frameBandsForStyle,
@@ -190,6 +198,19 @@ const ART_REVEAL_DURATION_S = 0.4;
  * complementary by construction — albedo fades out as emissive fades in — so no
  * value of `lit` double-exposes the texture.
  */
+function enableCanvasEdgeShade(material: THREE.MeshStandardMaterial) {
+  material.vertexColors = true;
+  material.onBeforeCompile = (shader) => {
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <emissivemap_fragment>",
+      `#include <emissivemap_fragment>
+#if defined( USE_COLOR ) || defined( USE_COLOR_ALPHA )
+       totalEmissiveRadiance *= vColor.rgb;
+#endif`,
+    );
+  };
+}
+
 function setArtLighting(material: THREE.MeshStandardMaterial, lit: number) {
   material.emissiveIntensity =
     ART_UNFOCUSED_SOURCE_WASH +
@@ -364,11 +385,14 @@ function setFrameTexture(
 
 
   const previousMatteGeometry = entry.matte.geometry;
-  // Canvas paper is a sharp rect behind rounded paint so corner crescents stay
-  // white paper (not wall/AO). Framed modes keep a rectangular mat ridge.
+  // Canvas paper sits inside the wrap so it cannot cut the bullnose. Framed
+  // modes keep a rectangular mat ridge.
+  const paperInset = entry.openFront
+    ? (CANVAS_WRAP_RADIUS + CANVAS_LIP_WIDTH) * 2
+    : 0;
   entry.matte.geometry = new THREE.PlaneGeometry(
-    geometry.matte.width,
-    geometry.matte.height,
+    Math.max(0.05, geometry.matte.width - paperInset),
+    Math.max(0.05, geometry.matte.height - paperInset),
   );
   previousMatteGeometry.dispose();
 
@@ -855,9 +879,9 @@ function buildFrames(
   const frameFrontZ = frameCenterZ + boxDepth / 2;
   // Canvas: paper backing just behind paint (no solid box front). Framed: mat
   // ridge sits between lip front and art.
-  const matteZ = frameFrontZ + (isCanvas ? 0.001 : 0.002);
-  const underlayZ = frameFrontZ + (isCanvas ? 0.0015 : 0.003);
-  const artZ = frameFrontZ + (isCanvas ? 0.002 : 0.004);
+  const artZ = frameFrontZ + (isCanvas ? 0 : 0.004);
+  const underlayZ = artZ - (isCanvas ? 0.0005 : 0.001);
+  const matteZ = isCanvas ? artZ - 0.001 : frameFrontZ + 0.002;
 
   for (const painting of paintings) {
     const layout = paintingLayout(painting);
@@ -883,6 +907,11 @@ function buildFrames(
       roughness: isCanvas ? 0.92 : isLight ? 0.62 : 0.45,
       metalness: isWhiteBody ? 0 : 0.08,
       vertexColors: isCanvas,
+      // Push the white shell behind the paint wrap so the front cut cannot
+      // flash as a hairline rim.
+      ...(isCanvas
+        ? { polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 }
+        : {}),
       // Relief only on dark frames — woodgrain reads muddy on near-white.
       ...(woodgrain && !isWhiteBody ? { normalMap: woodgrain } : {}),
       ...(isCanvas && canvasWeave
@@ -1023,8 +1052,14 @@ function buildFrames(
 
     // Always a sharp rect. Canvas: fills rounded-paint corner crescents with
     // paper so the open stretcher never shows wall as a rim. Framed: mat ridge.
+    const paperInset = isCanvas
+      ? (CANVAS_WRAP_RADIUS + CANVAS_LIP_WIDTH) * 2
+      : 0;
     const matte = new THREE.Mesh(
-      new THREE.PlaneGeometry(geometry.matte.width, geometry.matte.height),
+      new THREE.PlaneGeometry(
+        Math.max(0.05, geometry.matte.width - paperInset),
+        Math.max(0.05, geometry.matte.height - paperInset),
+      ),
       new THREE.MeshStandardMaterial({
         // Flat paper mat / canvas face — slightly higher roughness than the lip.
         color: FRAME,
@@ -1042,22 +1077,41 @@ function buildFrames(
       color: new THREE.Color().setScalar(BLANK_UNFOCUSED_ALBEDO),
       roughness: 0.9,
       metalness: 0,
+      vertexColors: isCanvas,
     });
     const artMaterial = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       emissive: 0xffffff,
       roughness: 0.94,
       metalness: 0,
+      vertexColors: isCanvas,
       // Keeps the focused, emissive-only state at exactly its source values if a
       // tone curve is ever switched on at the renderer.
       toneMapped: false,
     });
+    if (isCanvas) {
+      enableCanvasEdgeShade(blankMaterial);
+      enableCanvasEdgeShade(artMaterial);
+    }
     setArtLighting(artMaterial, 0);
-    const artGeometry = artPlaneGeometry(
-      layout.width,
-      layout.height,
-      isWhiteBody ? ART_CORNER_RADIUS_LIGHT : ART_CORNER_RADIUS,
-    );
+    const artGeometry = isCanvas
+      ? canvasArtGeometry(
+          layout.width,
+          layout.height,
+          CANVAS_CORNER_RADIUS,
+          CANVAS_WRAP_RADIUS,
+          CANVAS_LIP_WIDTH,
+          CANVAS_LIP_HEIGHT,
+          CANVAS_WRAP_SWELL,
+          CANVAS_WRAP_ANGLE,
+          CANVAS_PAINT_INSET,
+          CANVAS_SIDE_OVERLAP,
+        )
+      : artPlaneGeometry(
+          layout.width,
+          layout.height,
+          isLight ? ART_CORNER_RADIUS_LIGHT : ART_CORNER_RADIUS,
+        );
     const underlay = new THREE.Mesh(artGeometry.clone(), blankMaterial);
     // Just behind the art plane so a transparent dissolve reads the underlay.
     underlay.position.z = underlayZ;
