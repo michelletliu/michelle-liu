@@ -32,6 +32,29 @@ export const CANVAS_BOX_DEPTH = 0.052;
  * matched to Fine Art's softer paint corner (`ART_CORNER_RADIUS_LIGHT`).
  */
 export const CANVAS_CORNER_RADIUS = 0.018;
+/**
+ * Long-edge wrap radius — canvas pulled over the stretcher's outer bar.
+ * Larger than physical cloth thickness so the bullnose reads at standing
+ * distance without looking like a knife-cut box.
+ */
+export const CANVAS_WRAP_RADIUS = 0.016;
+/**
+ * Raised stretcher-bar lip, just inward of the wrap. Fabric sits slightly
+ * proud before it turns the corner — tall enough to catch a highlight.
+ */
+export const CANVAS_LIP_WIDTH = 0.024;
+export const CANVAS_LIP_HEIGHT = 0.0044;
+/** Extra Z swell on the wrap peak — taut cloth over the bar edge. */
+export const CANVAS_WRAP_SWELL = 0.0016;
+/**
+ * Paint turns a full 90° so it covers the stretcher's front cut — a shorter
+ * wrap left a hairline white rim between pigment and the grey side.
+ */
+export const CANVAS_WRAP_ANGLE = Math.PI / 2;
+/** No inset: paint must meet the stretcher silhouette or a white rim shows. */
+export const CANVAS_PAINT_INSET = 0;
+/** Extra paint down the side so the white stretcher cut cannot peek through. */
+export const CANVAS_SIDE_OVERLAP = 0.007;
 
 type Size = {
   width: number;
@@ -110,20 +133,27 @@ export function openFrontBoxGeometry(
  * corners — fabric over a blunt bar, not a sharp 90° box.
  *
  * Built as an extruded rounded rect with ±Z caps stripped so the paint plane
- * stays full-bleed (no front-face rim). Vertex colours bake a soft diagonal
- * tuck at each corner; a slight outward loft near the front ring reads as
- * pillowy wrap without a fake mat.
+ * stays full-bleed (no front-face rim). The shell stops a wrap-radius short of
+ * the front so the art mesh's bullnose can turn the long edges without the
+ * white sides poking through as a knife corner. Vertex colours bake a soft
+ * diagonal tuck at each corner plus a contact shade under the wrap.
  */
 export function openFrontRoundedBoxGeometry(
   width: number,
   height: number,
   depth: number,
   cornerRadius: number = CANVAS_CORNER_RADIUS,
-  options: { openBack?: boolean } = {},
+  options: { openBack?: boolean; wrapRadius?: number } = {},
 ): THREE.BufferGeometry {
   const hw = width / 2;
   const hh = height / 2;
   const r = Math.min(cornerRadius, hw * 0.45, hh * 0.45);
+  const wrap = Math.min(
+    options.wrapRadius ?? CANVAS_WRAP_RADIUS,
+    depth * 0.35,
+  );
+  // Stop the white shell where the art bullnose reaches the side (wrap minus lip).
+  const sideTrim = Math.max(0, wrap - CANVAS_LIP_HEIGHT);
 
   const shape = new THREE.Shape();
   shape.moveTo(-hw + r, -hh);
@@ -136,18 +166,20 @@ export function openFrontRoundedBoxGeometry(
   shape.lineTo(-hw, -hh + r);
   shape.absarc(-hw + r, -hh + r, r, Math.PI, Math.PI * 1.5, false);
 
+  // Pull the front ring back by the wrap radius so sides meet the art bullnose.
+  const sideDepth = Math.max(depth * 0.55, depth - sideTrim);
   const geo = new THREE.ExtrudeGeometry(shape, {
-    depth,
+    depth: sideDepth,
     bevelEnabled: false,
     curveSegments: 8,
-    steps: 2,
+    steps: 4,
   });
-  // Extrude builds z∈[0, depth]; center like BoxGeometry.
+  // Extrude builds z∈[0, sideDepth]; center on the full stretcher depth.
   geo.translate(0, 0, -depth / 2);
 
   stripExtrudeCaps(geo, options.openBack ? "both" : "front");
   loftStretcherCorners(geo, width, height, depth, r);
-  bakeCanvasFoldVertexColors(geo, width, height, depth, r);
+  bakeCanvasFoldVertexColors(geo, width, height, depth, r, wrap);
   remapStretcherSideUvs(geo, width, height, depth);
   geo.computeVertexNormals();
   return geo;
@@ -279,6 +311,7 @@ function bakeCanvasFoldVertexColors(
   height: number,
   depth: number,
   cornerRadius: number,
+  wrapRadius: number = CANVAS_WRAP_RADIUS,
 ): void {
   const pos = geo.getAttribute("position");
   if (!(pos instanceof THREE.BufferAttribute)) return;
@@ -288,6 +321,8 @@ function bakeCanvasFoldVertexColors(
   const colors = new Float32Array(pos.count * 3);
   const creaseSigma = Math.max(0.0055, depth * 0.11);
   const foldReach = cornerRadius * Math.PI * 0.5 + depth * 0.35;
+  const wrapFrontZ = hd - Math.max(0, wrapRadius - CANVAS_LIP_HEIGHT);
+  const wrapJoinSigma = Math.max(0.004, depth * 0.07);
 
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i);
@@ -324,6 +359,15 @@ function bakeCanvasFoldVertexColors(
         const hi = Math.exp(-(hiDist * hiDist) / ((creaseSigma * 0.85) ** 2));
         shade *= 1 + 0.08 * hi * alongFade;
       }
+    }
+
+    // Contact shade where the white side meets the paint wrap.
+    const joinDist = z - wrapFrontZ;
+    if (joinDist > -wrapJoinSigma * 3) {
+      const join = Math.exp(
+        -(joinDist * joinDist) / (wrapJoinSigma * wrapJoinSigma),
+      );
+      shade *= 1 - 0.22 * join;
     }
 
     const c = THREE.MathUtils.clamp(shade, 0.72, 1.1);
