@@ -11,18 +11,17 @@
 /**
  * House stroke for UI stroke icons (Chevron, Close, Arrow, ArrowUpRight,
  * Expand, Link, Code, Plus, …). Paired with `vectorEffect="non-scaling-stroke"`
- * so weight is CSS px, not viewBox units.
- *
- * Mobile stays 1.5px so 12–16px Visit Site marks don't blob. Desktop (768px+)
- * is 2.5px: 2px still reads as a hairline on the ~14px ↗ in Visit Site.
+ * so weight is CSS px, not viewBox units — one optical weight at every size
+ * and breakpoint, matching 1px hairline borders without blobbing 12–16px marks.
  *
  * Pass `ICON_STROKE_WIDTH` to SVG `strokeWidth`. globals.css also sets
  * `stroke-width` as a CSS property so the var paints even when SVG
- * presentation attributes fail to resolve `var()`. Numeric px are MOBILE /
- * DESKTOP for tests. Social brand marks are filled, not this stroke.
+ * presentation attributes fail to resolve `var()`. Social brand marks are
+ * filled, not this stroke.
  */
-export const ICON_STROKE_WIDTH_MOBILE = 1.5;
-export const ICON_STROKE_WIDTH_DESKTOP = 2.5;
+export const ICON_STROKE_WIDTH_PX = 1.5;
+export const ICON_STROKE_WIDTH_MOBILE = ICON_STROKE_WIDTH_PX;
+export const ICON_STROKE_WIDTH_DESKTOP = ICON_STROKE_WIDTH_PX;
 export const ICON_STROKE_WIDTH: number | string = "var(--icon-stroke-width)";
 
 export const iconSizes = {

@@ -1,21 +1,23 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { iconSize, iconSizes, ICON_STROKE_WIDTH, ICON_STROKE_WIDTH_DESKTOP, ICON_STROKE_WIDTH_MOBILE } from "./iconSizes.ts";
+import { iconSize, iconSizes, ICON_STROKE_WIDTH, ICON_STROKE_WIDTH_DESKTOP, ICON_STROKE_WIDTH_MOBILE, ICON_STROKE_WIDTH_PX } from "./iconSizes.ts";
 
 const globalsCss = readFileSync(
   new URL("../../styles/globals.css", import.meta.url),
   "utf8",
 );
 
-test("house stroke is 1.5px on mobile and 2.5px on desktop", () => {
+test("house stroke is 1.5px at every breakpoint", () => {
+  assert.equal(ICON_STROKE_WIDTH_PX, 1.5);
   assert.equal(ICON_STROKE_WIDTH_MOBILE, 1.5);
-  assert.equal(ICON_STROKE_WIDTH_DESKTOP, 2.5);
+  assert.equal(ICON_STROKE_WIDTH_DESKTOP, 1.5);
   assert.equal(ICON_STROKE_WIDTH, "var(--icon-stroke-width)");
   assert.match(globalsCss, /--icon-stroke-width:\s*1\.5px;/);
-  assert.match(
+  assert.doesNotMatch(globalsCss, /--icon-stroke-width:\s*2\.5px/);
+  assert.doesNotMatch(
     globalsCss,
-    /@media \(min-width: 768px\) \{[\s\S]*?--icon-stroke-width:\s*2\.5px;/,
+    /@media \(min-width: 768px\) \{[\s\S]*?--icon-stroke-width:/,
   );
   assert.match(
     globalsCss,
