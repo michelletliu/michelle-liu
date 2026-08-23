@@ -562,7 +562,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
                 {...(experimentLink!.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
                 {experimentLink!.external ? (
-                  <LinkIcon className="text-zinc-500" />
+                  <LinkIcon />
                 ) : (
                   <TouchIcon />
                 )}
@@ -604,7 +604,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onProjectClick, f
             aria-label={experimentLink!.label}
           >
             {experimentLink!.external ? (
-              <LinkIcon className="text-zinc-500 md:text-inherit" />
+              <LinkIcon />
             ) : (
               <TouchIcon />
             )}
