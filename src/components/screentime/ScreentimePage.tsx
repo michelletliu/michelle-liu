@@ -1472,38 +1472,49 @@ export default function ScreentimePage() {
   };
 
   return (
-    <>
-      {/* Logo - fixed outside transitioning container, animates in smoothly */}
-      <button
-        onClick={handleBackToHome}
-        className={`fixed top-8 left-6 md:left-16 z-40 cursor-pointer transition-all duration-300 ease-out hover:opacity-80 ${
-          isEntering ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+    <div
+      className="screentime-page-container relative flex h-full min-h-screen w-full flex-col"
+      style={{ backgroundColor: projectInfo.backgroundColor || '#f4f4f5' }}
+    >
+      {/* Overlay chrome: sticky in the page/modal scrollport so the seal and
+          info stay put on the fullscreen receipt. Negative margin keeps generate
+          vertically centered as if the bar weren't in flow. */}
+      <div
+        className={`pointer-events-none sticky top-0 z-40 flex h-20 w-full shrink-0 -mb-20 items-start justify-between pl-6 pr-8 pt-8 md:px-16 transition-opacity duration-300 ease-out ${
+          isEntering ? 'opacity-0' : 'opacity-100'
         }`}
-        aria-label="Go back to home"
       >
-        <img 
-          src={imgLogo} 
-          alt="Michelle Liu Logo" 
-          className="w-8 h-8 md:w-[44px] md:h-[44px] object-contain"
-        />
-      </button>
+        <button
+          onClick={handleBackToHome}
+          className="pointer-events-auto cursor-pointer hover:opacity-80"
+          aria-label="Go back to home"
+        >
+          <img
+            src={imgLogo}
+            alt="Michelle Liu Logo"
+            className="size-8 object-contain md:size-[44px]"
+          />
+        </button>
+        <div className="pointer-events-auto">
+          <InfoButton
+            project={projectInfo}
+            className="relative z-50 flex h-8 items-center md:h-11"
+          />
+        </div>
+      </div>
 
-      {/* Info Button - fixed top right */}
-      <InfoButton project={projectInfo} />
-
-      <div 
-        className={`screentime-page-container relative w-full h-full min-h-screen overflow-hidden px-4 flex flex-col items-center transition-all ${
+      <div
+        className={`relative flex min-h-full w-full flex-col items-center px-4 transition-all ${
           screen === 'generate' ? 'justify-center' : 'justify-start'
         } ${
-          isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100 scale-100'
+          isExiting ? 'opacity-0 scale-[0.985]' : isEntering ? 'opacity-0 scale-[1.01]' : 'opacity-100'
         }`}
-        style={{ 
-          backgroundColor: projectInfo.backgroundColor || '#f4f4f5',
+        style={{
           transitionDuration: isExiting ? '280ms' : '300ms',
-          transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out'
+          transitionTimingFunction: isExiting ? 'cubic-bezier(0.4, 0, 0.2, 1)' : 'ease-out',
         }}
       >
-        <div className="relative w-full max-w-[402px] mx-auto bg-zinc-100">
+        <div className="screentime-phone-frame relative mx-auto w-full max-w-[402px] bg-zinc-100">
           {/* Hide status bar on mobile - users already have their real one */}
           <div className="hidden md:block">
             <StatusBar />
@@ -1539,12 +1550,8 @@ export default function ScreentimePage() {
 
       {/* Custom styles */}
       <style>{`
-        .screentime-page-container {
-          overflow-y: auto;
-        }
-        
-        .screentime-page-container,
-        .screentime-page-container * {
+        .screentime-phone-frame,
+        .screentime-phone-frame * {
           font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
         }
         
@@ -1572,6 +1579,6 @@ export default function ScreentimePage() {
           animation: fadeIn 0.2s ease-out;
         }
       `}</style>
-    </>
+    </div>
   );
 }
