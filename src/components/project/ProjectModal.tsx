@@ -1456,7 +1456,7 @@ export default function ProjectModal({
               </div>
 
               {/* Dynamic Content Sections.
-                  TOC / header bars keep a full-bleed bg; everything else stays in the 800px column. */}
+                  TOC / header bars keep a full-bleed bg; TOC cards stay in the 800px column. */}
               {visibleSections.map((section, index) => {
                   const sectionNumber =
                     section._type === "sectionTitleSection" ? section.number : undefined;
@@ -3189,12 +3189,13 @@ function ContentBlock({
         return (
           <div
             ref={tocRef}
-            className="content-stretch flex flex-col items-start gap-6 md:gap-12 px-8 md:px-[8%] xl:px-[175px] py-10 md:py-16 relative shrink-0 w-full"
+            className="relative shrink-0 w-full py-8 md:py-12"
             style={{ backgroundColor: tocBgColor }}
           >
+            <div className="mx-auto flex w-full max-w-[800px] flex-col items-start gap-6 px-8">
             {/* Only render header wrapper if there's content */}
             {hasHeaderContent && (
-              <div className="w-full mx-auto gap-2 flex flex-col items-start">
+              <div className="w-full gap-2 flex flex-col items-start">
                 {/* Header: Number + Title + Subtitle */}
                 {(section.sectionNumber || section.sectionTitle || section.subtitle) && (
                   <div className="flex flex-wrap items-center gap-2 md:gap-4">
@@ -3269,7 +3270,7 @@ function ContentBlock({
                       }
                     }
                       }}
-                      className="flex flex-col items-start gap-3 p-6 md:p-8 md:py-12 bg-white rounded-2xl md:rounded-3xl shadow-default shadow-default-hover hover:scale-[1.005] transition-all duration-200 cursor-pointer text-left group"
+                      className="flex flex-col items-start gap-3 px-4.5 py-5 md:px-5.5 md:py-6 bg-white rounded-2xl md:rounded-3xl shadow-default shadow-default-hover hover:scale-[1.005] transition-all duration-200 cursor-pointer text-left group"
                     >
                       {/* Image/Icon */}
                       {itemImageSrc && (
@@ -3300,6 +3301,7 @@ function ContentBlock({
                 })}
               </div>
             )}
+            </div>
           </div>
         );
 
