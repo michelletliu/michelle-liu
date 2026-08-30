@@ -9,8 +9,16 @@ export default defineType({
       name: 'city',
       title: 'City',
       type: 'string',
-      description: 'Current city name (e.g. "Los Angeles")',
+      description:
+        'City name only is fine (the iOS Shortcut sends this). The site appends the state, e.g. "Saratoga" → "Saratoga, CA".',
       validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'state',
+      title: 'State',
+      type: 'string',
+      description:
+        'Optional. The iOS Shortcut does not have to send this — the site infers it from the city.',
     }),
     defineField({
       name: 'timezone',
