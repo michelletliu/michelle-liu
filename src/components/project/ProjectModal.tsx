@@ -1456,7 +1456,8 @@ export default function ProjectModal({
               </div>
 
               {/* Dynamic Content Sections.
-                  TOC / header bars keep a full-bleed bg; everything else stays in the 800px column. */}
+                  TOC, header bars, and feature bands keep a full-bleed bg;
+                  their inner content stays in the 800px column. */}
               {visibleSections.map((section, index) => {
                   const sectionNumber =
                     section._type === "sectionTitleSection" ? section.number : undefined;
@@ -1467,7 +1468,8 @@ export default function ProjectModal({
                       : undefined;
                   const fullBleed =
                     section._type === "tableOfContentsSection" ||
-                    section._type === "sectionHeaderBar";
+                    section._type === "sectionHeaderBar" ||
+                    section._type === "featureSection";
 
                   return (
                   // Testimonials have interactive expand/collapse - skip ScrollReveal
@@ -1788,6 +1790,9 @@ function TestimonialBlock({
   );
 }
 
+/** Shared inset for case-study cards (TOC + highlight / “By the numbers”). */
+const CASE_STUDY_CARD_PADDING = "px-4.5 py-5 md:px-5.5 md:py-6";
+
 // Content section renderer component
 function ContentBlock({ 
   section, 
@@ -1992,12 +1997,11 @@ function ContentBlock({
         
         // Stacked layout - text above (two-col format), media below (full width)
         return (
-          <div className="flex flex-col">
-            <div
-              className="content-stretch flex flex-col items-start px-8 relative shrink-0 w-full"
-              style={{ backgroundColor: section.backgroundColor || '#fafafa' }}
-            >
-              <div className={clsx("content-stretch flex flex-col justify-between relative shrink-0 w-full", verticalPadding)}>
+          <div
+            className="w-full"
+            style={{ backgroundColor: section.backgroundColor || '#fafafa' }}
+          >
+            <div className={clsx("mx-auto flex w-full max-w-[800px] flex-col px-8 relative shrink-0", verticalPadding)}>
                 {/* Text content in two-column grid - only render if there's text */}
                 {hasTextContent && (
                   <div className="flex flex-row items-start gap-20 w-full max-md:flex max-md:flex-col max-md:gap-8 mb-8">
@@ -2071,7 +2075,6 @@ function ContentBlock({
                   )}
                 </div>
               </div>
-            </div>
           </div>
         );
       }
@@ -2084,13 +2087,12 @@ function ContentBlock({
       const verticalAlignClass = section.verticalAlignment === 'top' ? 'items-start' : 'items-center';
       
       return (
-        <div className="flex flex-col">
         <div
-          className="content-stretch flex flex-col items-start px-8 relative shrink-0 w-full"
+          className="w-full"
           style={{ backgroundColor: section.backgroundColor || '#fafafa' }}
         >
           <div className={clsx(
-            "content-stretch flex flex-col gap-14 relative shrink-0 w-full md:flex-row md:gap-20",
+            "mx-auto flex w-full max-w-[800px] flex-col gap-14 px-8 relative shrink-0 md:flex-row md:gap-20",
             verticalAlignClass,
             mediaOnLeft && "md:flex-row-reverse",
             verticalPadding,
@@ -2170,7 +2172,6 @@ function ContentBlock({
             </div>
           
           </div>
-        </div>
         </div>
       );
 
@@ -2994,7 +2995,7 @@ function ContentBlock({
                       <div
                         key={card._key}
                         className={clsx(
-                          "flex gap-6 p-12 py-16 items-start",
+                          "flex h-full gap-3 items-start px-4.5 py-8 md:px-5.5",
                           imageOnLeft ? "flex-col" : "flex-col-reverse",
                           "max-md:flex-col",
                           cardStyle,
@@ -3189,12 +3190,13 @@ function ContentBlock({
         return (
           <div
             ref={tocRef}
-            className="content-stretch flex flex-col items-start gap-6 md:gap-12 px-8 md:px-[8%] xl:px-[175px] py-10 md:py-16 relative shrink-0 w-full"
+            className="relative shrink-0 w-full py-8 md:py-12"
             style={{ backgroundColor: tocBgColor }}
           >
+            <div className="mx-auto flex w-full max-w-[800px] flex-col items-start gap-6 px-8">
             {/* Only render header wrapper if there's content */}
             {hasHeaderContent && (
-              <div className="w-full mx-auto gap-2 flex flex-col items-start">
+              <div className="w-full gap-2 flex flex-col items-start">
                 {/* Header: Number + Title + Subtitle */}
                 {(section.sectionNumber || section.sectionTitle || section.subtitle) && (
                   <div className="flex flex-wrap items-center gap-2 md:gap-4">
@@ -3269,7 +3271,10 @@ function ContentBlock({
                       }
                     }
                       }}
-                      className="flex flex-col items-start gap-3 p-6 md:p-8 md:py-12 bg-white rounded-2xl md:rounded-3xl shadow-default shadow-default-hover hover:scale-[1.005] transition-all duration-200 cursor-pointer text-left group"
+                      className={clsx(
+                        "flex flex-col items-start gap-3 bg-white rounded-2xl md:rounded-3xl shadow-default shadow-default-hover hover:scale-[1.005] transition-all duration-200 cursor-pointer text-left group",
+                        CASE_STUDY_CARD_PADDING,
+                      )}
                     >
                       {/* Image/Icon */}
                       {itemImageSrc && (
@@ -3300,6 +3305,7 @@ function ContentBlock({
                 })}
               </div>
             )}
+            </div>
           </div>
         );
 

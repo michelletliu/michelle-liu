@@ -604,6 +604,7 @@ export interface Startup {
 export interface OwnerLocation {
   city: string;
   timezone: string;
+  state?: string | null;
 }
 
 // ============================================

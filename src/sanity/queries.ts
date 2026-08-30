@@ -434,6 +434,7 @@ export const EXPERIMENT_PROJECT_BY_ID_QUERY = `
 export const OWNER_LOCATION_QUERY = `
   *[_type == "ownerLocation"][0]{
     city,
-    timezone
+    timezone,
+    state
   }
 `;

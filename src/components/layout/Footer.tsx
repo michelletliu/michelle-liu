@@ -3,9 +3,6 @@ import imgFinalSealLogo1 from "../../assets/logo.png";
 import { ScrollReveal } from "../shared/ScrollReveal";
 import { ArrowUpRight } from "../icons/ArrowUpRight";
 import BlueprintLogo from "../shared/BlueprintLogo";
-import { client } from "../../sanity/client";
-import { OWNER_LOCATION_QUERY } from "../../sanity/queries";
-import type { OwnerLocation } from "../../sanity/types";
 import TextScramble from "../shared/TextScramble";
 import { LinksBackgroundImageAndText, SocialIconLinks } from "../SocialLinks";
 import { Coffee } from "../icons/Coffee";
@@ -84,7 +81,7 @@ function useLatestCommitDate() {
   return commitDate;
 }
 
-const DEFAULT_CITY = "Los Angeles";
+const DEFAULT_CITY = "Los Angeles, CA";
 const DEFAULT_TIMEZONE = "America/Los_Angeles";
 
 function useOwnerLocation() {
@@ -94,14 +91,20 @@ function useOwnerLocation() {
   });
 
   useEffect(() => {
-    client
-      .fetch<OwnerLocation | null>(OWNER_LOCATION_QUERY)
-      .then((data) => {
-        if (data?.city && data?.timezone) {
+    const ac = new AbortController();
+    fetch("/api/owner-location", { cache: "no-store", signal: ac.signal })
+      .then(async (res) => {
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          city?: string;
+          timezone?: string;
+        };
+        if (data.city && data.timezone && !ac.signal.aborted) {
           setLocation({ city: data.city, timezone: data.timezone });
         }
       })
       .catch(() => {});
+    return () => ac.abort();
   }, []);
 
   return location;
@@ -164,7 +167,8 @@ function BlinkingTime({ time, h24, city }: { time: string; h24: number; city: st
     ? <SunIcon className="inline-block w-[11px] h-[11px] -mt-[2px] mr-1" />
     : <MoonIcon className="inline-block w-[11px] h-[11px] -mt-[2px] mr-1" />;
   const colonIndex = time.indexOf(":");
-  if (colonIndex === -1) return <>{icon}{time}, {city}</>;
+  const cityLabel = <>{"\u00a0\u00a0"}{city}</>;
+  if (colonIndex === -1) return <>{icon}{time}{cityLabel}</>;
   const before = time.slice(0, colonIndex);
   const after = time.slice(colonIndex + 1);
   return (
@@ -172,7 +176,8 @@ function BlinkingTime({ time, h24, city }: { time: string; h24: number; city: st
       {icon}
       {before}
       <span className="animate-[blink_1.2s_ease-in-out_infinite]">:</span>
-      {after}, {city}
+      {after}
+      {cityLabel}
     </>
   );
 }
