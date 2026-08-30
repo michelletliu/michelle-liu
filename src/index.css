@@ -574,8 +574,6 @@ video {
   overflow: visible !important;
   height: auto !important;
   min-height: 100%;
-  justify-content: flex-start !important;
-  align-items: center !important;
 }
 
 /* Hide the logo/back button and info button that come FROM the embedded experiment pages (not the modal's own buttons) */
