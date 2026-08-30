@@ -22,7 +22,11 @@ test("table of contents background is full-bleed with 800px inner content", () =
 test("table of contents cards use compact padding", () => {
   assert.match(
     source,
-    /px-4\.5 py-5 md:px-5\.5 md:py-6 bg-white rounded-2xl/,
+    /CASE_STUDY_CARD_PADDING = "px-4\.5 py-5 md:px-5\.5 md:py-6"/,
+  );
+  assert.match(
+    source,
+    /bg-white rounded-2xl[\s\S]*?CASE_STUDY_CARD_PADDING/,
   );
   assert.doesNotMatch(
     source,
@@ -30,9 +34,31 @@ test("table of contents cards use compact padding", () => {
   );
 });
 
+test("highlight cards use TOC horizontal padding with py-8", () => {
+  assert.match(
+    source,
+    /flex h-full gap-3 items-start px-4\.5 py-8 md:px-5\.5/,
+  );
+  assert.doesNotMatch(
+    source,
+    /p-12 py-16 items-start/,
+  );
+});
+
 test("header bars stay full-bleed", () => {
   assert.match(
     source,
     /section\._type === "sectionHeaderBar"/,
+  );
+});
+
+test("feature sections are full-bleed with 800px inner content", () => {
+  assert.match(
+    source,
+    /fullBleed =\s*[\s\S]*?featureSection/,
+  );
+  assert.match(
+    source,
+    /case "featureSection"[\s\S]*?max-w-\[800px\][\s\S]*?md:flex-row/,
   );
 });
