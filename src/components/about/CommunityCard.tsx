@@ -31,6 +31,8 @@ export type CommunityCardData = {
   title: string;
   /** Short name for the sidebar navigation */
   sidebarName?: string;
+  /** Archived communities sit under Archive in the About nav */
+  isArchived?: boolean;
   /** Description text */
   description?: string;
   /** Instagram URL for the community/organization */
@@ -389,30 +391,32 @@ export default function CommunityCard({ className, data }: CommunityCardProps) {
               <Close size="12px" />
             </button>
 
-            {/* Expanded photo container */}
+            {/* Hug the photo only — empty space around it closes the lightbox */}
             <div
-              className={`relative z-10 flex max-h-[85vh] max-w-[90vw] flex-col items-center transition-all duration-200 ease-out ${isClosingPhoto ? 'opacity-0 scale-95' : 'animate-[scaleIn_300ms_ease-out]'}`}
-              onClick={(e) => e.stopPropagation()}
+              className={`relative z-10 flex w-fit max-h-[85vh] max-w-[90vw] flex-col items-center transition-[opacity,transform] duration-200 ease-out ${isClosingPhoto ? 'opacity-0 scale-95' : 'animate-[scaleIn_300ms_ease-out]'}`}
             >
-              {/* Photo card - polaroid style */}
-              <div className="relative flex flex-col items-center gap-1">
-                <div className="relative">
+              <div
+                className="relative flex w-fit flex-col items-center"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="relative w-fit">
                   <div className="absolute -inset-3 rounded-sm border border-zinc-100 bg-white shadow-elevated" />
                   <ShimmerImage
                     src={expandedPhoto.imageSrc}
                     alt={expandedPhoto.caption || "Community photo"}
                     className={clsx(
-                      "object-contain rounded-sm",
+                      "block h-auto w-auto object-contain rounded-sm",
                       expandedPhoto.orientation === "vertical"
-                        ? "max-h-[65vh] w-auto"
+                        ? "max-h-[65vh] max-w-[90vw]"
                         : "max-h-[55vh] max-w-[80vw]"
                     )}
                     rounded="rounded-sm"
+                    wrapperClassName="w-fit"
                   />
                 </div>
                 {expandedPhoto.caption && (
                   <p
-                    className={`mt-6 max-w-[600px] text-center font-['Michelle',sans-serif] text-base tracking-[0.005em] font-normal leading-relaxed text-zinc-600 ${isClosingPhoto ? '' : 'animate-[fadeSlideUp_300ms_ease-out_100ms_both]'}`}
+                    className={`mt-6 max-w-[min(100%,600px)] text-center font-['Michelle',sans-serif] text-base tracking-[0.005em] font-normal leading-relaxed text-zinc-600 ${isClosingPhoto ? '' : 'animate-[fadeSlideUp_300ms_ease-out_100ms_both]'}`}
                     style={{ fontVariationSettings: "'opsz' 9" }}
                   >
                     {expandedPhoto.caption}

@@ -533,6 +533,7 @@ export interface Community {
   _id: string;
   title: string;
   sidebarName?: string;
+  isArchived?: boolean;
   logo?: SanityImage;
   description?: string;
   instagramUrl?: string;

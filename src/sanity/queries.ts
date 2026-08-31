@@ -249,6 +249,7 @@ export const COMMUNITIES_QUERY = `
     _id,
     title,
     sidebarName,
+    isArchived,
     logo,
     description,
     instagramUrl,

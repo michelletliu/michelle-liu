@@ -20,10 +20,20 @@ import StartupCard from "./StartupCard";
 import AboutSidebar from "./AboutSidebar";
 import Footer from "../layout/Footer";
 import { ArrowUpRight } from "../icons/ArrowUpRight";
+import { Chevron } from "../icons/Chevron";
+import { iconSize } from "../shared/iconSizes";
 import ContactBadge from "../shared/ContactBadge";
 import NavigationTabs from "../layout/NavigationTabs";
 
-import type { AboutCategory, ShelfSubcategory, CommunitySidebarItem } from "./AboutSidebar";
+import type { AboutCategory, ShelfSubcategory } from "./AboutSidebar";
+import {
+  ABOUT_SCROLL_THRESHOLD_PX,
+  resolveAboutCategory,
+} from "./aboutScrollSpy";
+import {
+  orderCommunitiesForDisplay,
+  splitCommunityNav,
+} from "./communityNav";
 
 // Assets
 import profilePic from "../../assets/Website Profile Pic.png";
@@ -258,6 +268,7 @@ function transformCommunities(data: Community[]): CommunityCardData[] {
     logoSrc: community.logo ? urlFor(community.logo).width(200).url() : undefined,
     title: community.title,
     sidebarName: community.sidebarName,
+    isArchived: Boolean(community.isArchived),
     description: community.description,
     instagramUrl: community.instagramUrl,
     photos: community.photos?.map((photo): CommunityPhotoType => ({
@@ -398,6 +409,7 @@ export default function AboutPage() {
   
   // Individual community card refs (for scrolling to specific communities)
   const communityRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const archivePanelRef = useRef<HTMLDivElement>(null);
   
   // Shelf subcategory refs
   const booksRef = useRef<HTMLDivElement>(null);
@@ -406,6 +418,9 @@ export default function AboutPage() {
   
   // Active community ID state (will be set to first community when data loads)
   const [activeCommunityId, setActiveCommunityId] = useState<string | undefined>();
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const archiveNavHoldUntilRef = useRef(0);
+  const syncNavFromScrollRef = useRef<() => void>(() => {});
   
   // Active shelf subcategory state
   const [activeShelfSubcategory, setActiveShelfSubcategory] = useState<ShelfSubcategory>("books");
@@ -539,12 +554,25 @@ export default function AboutPage() {
     return () => clearTimeout(timeout);
   }, [shelfItems]);
 
+  const { active: activeCommunities, archived: archivedCommunities } =
+    splitCommunityNav(communities);
+  const activeCommunityCards = communities.filter((c) => !c.isArchived);
+  const archivedCommunityCards = communities.filter((c) => Boolean(c.isArchived));
+  const communityNavItems = [...activeCommunities, ...archivedCommunities];
+  const communitySidebarItems = communityNavItems.map((c) => ({
+    id: c.id,
+    sidebarName: c.sidebarName,
+    isArchived: c.isArchived,
+  }));
+
   // Set first community as active when communities load
   useEffect(() => {
     if (communities.length > 0 && !activeCommunityId) {
-      const firstWithSidebarName = communities.find(c => c.sidebarName);
-      if (firstWithSidebarName) {
-        setActiveCommunityId(firstWithSidebarName.id);
+      const firstNav =
+        communities.find((c) => c.sidebarName && !c.isArchived) ??
+        communities.find((c) => c.sidebarName);
+      if (firstNav) {
+        setActiveCommunityId(firstNav.id);
       }
     }
   }, [communities, activeCommunityId]);
@@ -566,17 +594,69 @@ export default function AboutPage() {
     }
   };
 
-  // Handle community click - scroll to specific community card
-  const handleCommunityClick = (communityId: string) => {
-    setActiveCommunityId(communityId);
-    // Scroll to the specific community card
+  const scrollToCommunity = (communityId: string) => {
     const communityElement = communityRefs.current[communityId];
     if (communityElement) {
       communityElement.scrollIntoView({ behavior: "smooth", block: "start" });
     } else if (communityRef?.current) {
-      // Fallback to section scroll if specific ref not found
       communityRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+  };
+
+  const handleCommunityClick = (communityId: string) => {
+    const target = communities.find((c) => c.id === communityId);
+    const willOpenArchive = Boolean(target?.isArchived) && !archiveOpen;
+    if (willOpenArchive) setArchiveOpen(true);
+    setActiveCommunityId(communityId);
+    if (willOpenArchive) {
+      window.setTimeout(() => scrollToCommunity(communityId), 200);
+    } else {
+      scrollToCommunity(communityId);
+    }
+  };
+
+  const handleArchiveToggle = () => {
+    const next = !archiveOpen;
+    archiveNavHoldUntilRef.current = Date.now() + 300;
+    setArchiveOpen(next);
+    setActiveCategory("community");
+
+    if (next) {
+      const firstArchived = communities.find(
+        (community) => community.sidebarName && community.isArchived,
+      );
+      if (firstArchived) setActiveCommunityId(firstArchived.id);
+      window.setTimeout(() => {
+        const panel = archivePanelRef.current;
+        if (!panel) {
+          archiveNavHoldUntilRef.current = 0;
+          syncNavFromScrollRef.current();
+          return;
+        }
+        const rect = panel.getBoundingClientRect();
+        if (rect.top < 0 || rect.bottom > window.innerHeight) {
+          panel.scrollIntoView({ behavior: "smooth", block: "start" });
+          archiveNavHoldUntilRef.current = Date.now() + 700;
+          window.setTimeout(() => {
+            archiveNavHoldUntilRef.current = 0;
+            syncNavFromScrollRef.current();
+          }, 700);
+          return;
+        }
+        archiveNavHoldUntilRef.current = 0;
+        syncNavFromScrollRef.current();
+      }, 220);
+      return;
+    }
+
+    const lastLive = [...communities]
+      .reverse()
+      .find((community) => community.sidebarName && !community.isArchived);
+    if (lastLive) setActiveCommunityId(lastLive.id);
+    window.setTimeout(() => {
+      archiveNavHoldUntilRef.current = 0;
+      syncNavFromScrollRef.current();
+    }, 220);
   };
 
   // Handle shelf subcategory click - scroll to specific shelf section
@@ -605,30 +685,24 @@ export default function AboutPage() {
         { id: "lore" as AboutCategory, ref: loreRef },
       ];
 
-      const viewportThreshold = 250;
-      let activeSection: AboutCategory | null = null;
+      const sectionRects = sections.flatMap((section) => {
+        if (!section.ref.current) return [];
+        const rect = section.ref.current.getBoundingClientRect();
+        return [{ id: section.id, top: rect.top, bottom: rect.bottom }];
+      });
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = sections[i];
-        if (section.ref.current) {
-          const rect = section.ref.current.getBoundingClientRect();
-          if (rect.top <= viewportThreshold) {
-            activeSection = section.id;
-            break;
-          }
-        }
-      }
+      const archiveBox = archivePanelRef.current?.getBoundingClientRect();
+      const activeSection = resolveAboutCategory(
+        sectionRects,
+        ABOUT_SCROLL_THRESHOLD_PX,
+        window.innerHeight,
+        archiveBox
+          ? { top: archiveBox.top, bottom: archiveBox.bottom }
+          : null,
+      );
 
-      if (!activeSection) {
-        for (const section of sections) {
-          if (section.ref.current) {
-            const rect = section.ref.current.getBoundingClientRect();
-            if (rect.top < window.innerHeight && rect.bottom > 0) {
-              activeSection = section.id;
-              break;
-            }
-          }
-        }
+      if (Date.now() < archiveNavHoldUntilRef.current) {
+        return;
       }
 
       if (activeSection) {
@@ -636,16 +710,19 @@ export default function AboutPage() {
         
         // If community is active, also track which community is in view
         if (activeSection === "community") {
-          const visibleCommunities = communities.filter(c => c.sidebarName);
+          const named = communities.filter((c) => c.sidebarName);
+          const navCommunities = archiveOpen
+            ? orderCommunitiesForDisplay(named)
+            : named.filter((c) => !c.isArchived);
           let activeCommunity: string | null = null;
           
           // Check from bottom to top to find the one that's scrolled past the threshold
-          for (let i = visibleCommunities.length - 1; i >= 0; i--) {
-            const community = visibleCommunities[i];
+          for (let i = navCommunities.length - 1; i >= 0; i--) {
+            const community = navCommunities[i];
             const element = communityRefs.current[community.id];
             if (element) {
               const rect = element.getBoundingClientRect();
-              if (rect.top <= viewportThreshold) {
+              if (rect.top <= ABOUT_SCROLL_THRESHOLD_PX) {
                 activeCommunity = community.id;
                 break;
               }
@@ -654,7 +731,7 @@ export default function AboutPage() {
           
           // Fallback: find first one in viewport
           if (!activeCommunity) {
-            for (const community of visibleCommunities) {
+            for (const community of navCommunities) {
               const element = communityRefs.current[community.id];
               if (element) {
                 const rect = element.getBoundingClientRect();
@@ -685,7 +762,7 @@ export default function AboutPage() {
             const subsection = shelfSubsections[i];
             if (subsection.ref.current) {
               const rect = subsection.ref.current.getBoundingClientRect();
-              if (rect.top <= viewportThreshold) {
+              if (rect.top <= ABOUT_SCROLL_THRESHOLD_PX) {
                 activeSubcategory = subsection.id;
                 break;
               }
@@ -711,10 +788,11 @@ export default function AboutPage() {
       }
     };
 
+    syncNavFromScrollRef.current = handleScroll;
     window.addEventListener("scroll", handleScroll);
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [communities]);
+  }, [communities, archiveOpen]);
 
   // Filter shelf items by media type
   const bookItems = shelfItems.filter((item) => item.type === "Book");
@@ -770,11 +848,11 @@ export default function AboutPage() {
           <AboutSidebar
             activeCategory={activeCategory}
             onCategoryClick={handleCategoryClick}
-            communityItems={communities
-              .filter(c => c.sidebarName)
-              .map(c => ({ id: c.id, sidebarName: c.sidebarName! }))}
+            communityItems={communitySidebarItems}
             activeCommunityId={activeCommunityId}
             onCommunityClick={handleCommunityClick}
+            archiveOpen={archiveOpen}
+            onArchiveToggle={handleArchiveToggle}
             activeShelfSubcategory={activeShelfSubcategory}
             onShelfSubcategoryClick={handleShelfSubcategoryClick}
             shelfCounts={{
@@ -919,11 +997,24 @@ export default function AboutPage() {
                 </p>
               </div>
             </ScrollReveal>
+            {!isLoading && communityNavItems.length > 0 && (
+              <AboutSidebar
+                variant="communities"
+                className="lg:hidden w-full min-w-0 [&_button]:min-h-8"
+                activeCategory={activeCategory}
+                onCategoryClick={handleCategoryClick}
+                communityItems={communitySidebarItems}
+                activeCommunityId={activeCommunityId}
+                onCommunityClick={handleCommunityClick}
+                archiveOpen={archiveOpen}
+                onArchiveToggle={handleArchiveToggle}
+              />
+            )}
             {isLoading ? (
               <LoadingSpinner label="Loading..." className="py-4" />
-            ) : communities.length > 0 ? (
+            ) : activeCommunityCards.length > 0 || archivedCommunityCards.length > 0 ? (
               <div className="flex flex-col gap-12 pt-4">
-                {communities.map((community, index) => (
+                {activeCommunityCards.map((community, index) => (
                   <div
                     key={community.id}
                     ref={(el) => {
@@ -933,13 +1024,65 @@ export default function AboutPage() {
                   >
                     <ScrollReveal delay={index * 100}>
                       <CommunityCard data={community} />
-                      {/* Horizontal divider between communities */}
-                      {index < communities.length - 1 && (
+                      {index < activeCommunityCards.length - 1 && (
                         <div className="mt-12 h-px w-full bg-zinc-100" />
                       )}
                     </ScrollReveal>
                   </div>
                 ))}
+
+                {archivedCommunityCards.length > 0 && (
+                  <div ref={archivePanelRef} className="scroll-mt-8">
+                    <button
+                      type="button"
+                      aria-expanded={archiveOpen}
+                      aria-controls="community-archive-content"
+                      onClick={handleArchiveToggle}
+                      className="flex min-h-8 items-center gap-1.5 px-0.5 py-0 cursor-pointer"
+                    >
+                      <span className="text-lg font-medium tracking-wide text-zinc-400 transition-colors hover:text-zinc-500">
+                        Archive
+                      </span>
+                      <Chevron
+                        size={iconSize("sm")}
+                        className={clsx(
+                          "translate-y-px text-zinc-300 transition-transform duration-200 ease-out",
+                          archiveOpen && "rotate-90",
+                        )}
+                      />
+                    </button>
+                    <div id="community-archive-content">
+                      <div
+                        className={clsx(
+                          "grid w-full min-w-0 transition-[grid-template-rows,opacity] duration-200 ease-out",
+                          archiveOpen
+                            ? "grid-rows-[1fr] opacity-100"
+                            : "pointer-events-none grid-rows-[0fr] opacity-0",
+                        )}
+                        aria-hidden={!archiveOpen}
+                      >
+                        <div className="min-h-0 overflow-hidden">
+                          <div className="flex flex-col gap-12 pt-8">
+                            {archivedCommunityCards.map((community, index) => (
+                              <div
+                                key={community.id}
+                                ref={(el) => {
+                                  communityRefs.current[community.id] = el;
+                                }}
+                                className="scroll-mt-8"
+                              >
+                                <CommunityCard data={community} />
+                                {index < archivedCommunityCards.length - 1 && (
+                                  <div className="mt-12 h-px w-full bg-zinc-100" />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-zinc-400 text-sm py-4">Add community items in Sanity Studio.</p>
