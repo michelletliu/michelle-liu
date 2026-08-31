@@ -1038,15 +1038,15 @@ export default function AboutPage() {
                       aria-expanded={archiveOpen}
                       aria-controls="community-archive-content"
                       onClick={handleArchiveToggle}
-                      className="flex min-h-8 items-center gap-1.5 px-0.5 py-0 cursor-pointer"
+                      className="group flex min-h-8 items-center gap-1.5 px-0.5 py-0 cursor-pointer"
                     >
-                      <span className="text-lg font-medium tracking-wide text-zinc-400 transition-colors hover:text-zinc-500">
+                      <span className="text-lg font-medium tracking-wide text-zinc-300 transition-colors group-hover:text-zinc-400">
                         Archive
                       </span>
                       <Chevron
                         size={iconSize("sm")}
                         className={clsx(
-                          "translate-y-px text-zinc-300 transition-transform duration-200 ease-out",
+                          "translate-y-px text-zinc-300 transition-[color,transform] duration-200 ease-out group-hover:text-zinc-400",
                           archiveOpen && "rotate-90",
                         )}
                       />

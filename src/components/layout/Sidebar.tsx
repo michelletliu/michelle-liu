@@ -100,17 +100,17 @@ function Leaf({
           aria-controls={panelId}
           onClick={() => onSelect(leaf.id)}
           className={clsx(
-            "flex min-h-8 items-center gap-1 px-0.5 py-0 rounded-full cursor-pointer lg:min-h-0",
+            "group flex min-h-8 items-center gap-1 px-0.5 py-0 rounded-full cursor-pointer lg:min-h-0",
             INDENT[indent],
           )}
         >
-          <span className={clsx(LEAF_TEXT, "text-zinc-400 hover:text-zinc-500")}>
+          <span className={clsx(LEAF_TEXT, "text-zinc-300 group-hover:text-zinc-400")}>
             {leaf.label}
           </span>
           <Chevron
             size={iconSize("xs")}
             className={clsx(
-              "translate-y-px text-zinc-300 transition-transform duration-200 ease-out",
+              "translate-y-px text-zinc-300 transition-[color,transform] duration-200 ease-out group-hover:text-zinc-400",
               leaf.nested.expanded && "rotate-90",
             )}
           />
