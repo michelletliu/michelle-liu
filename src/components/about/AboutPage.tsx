@@ -878,7 +878,7 @@ export default function AboutPage() {
                     <ScrollReveal>
                       <div className="flex flex-col">
                         <p className="pl-0.5 whitespace-nowrap text-base md:text-lg font-medium text-zinc-700 tracking-[0.005em]">
-                          Freelance Designer<span className="text-zinc-400 font-normal">, 2023 - Present</span>
+                          Independent Designer<span className="text-zinc-400 font-normal">, 2023 - Present</span>
                         </p>
                       </div>
                     </ScrollReveal>

@@ -4,12 +4,12 @@ import test from "node:test";
 
 const source = readFileSync(new URL("./AboutPage.tsx", import.meta.url), "utf8");
 
-test("renders the freelance designer date inline and left aligned", () => {
+test("renders the independent designer date inline and left aligned", () => {
   assert.match(
     source,
-    /<div className="flex flex-col items-start gap-8 mb-4 md:mb-2">[\s\S]*<p className="[^"]*text-base md:text-lg[^"]*">\s*Freelance Designer<span className="text-zinc-400 font-normal">, 2023 - Present<\/span>\s*<\/p>/,
+    /<div className="flex flex-col items-start gap-8 mb-4 md:mb-2">[\s\S]*<p className="[^"]*text-base md:text-lg[^"]*">\s*Independent Designer<span className="text-zinc-400 font-normal">, 2023 - Present<\/span>\s*<\/p>/,
   );
-  assert.doesNotMatch(source, />\s*Freelance<span/);
+  assert.doesNotMatch(source, />\s*Independent<span/);
   assert.doesNotMatch(source, /Design Contracts/);
 });
 
