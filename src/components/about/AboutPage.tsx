@@ -564,6 +564,9 @@ export default function AboutPage() {
     sidebarName: c.sidebarName,
     isArchived: c.isArchived,
   }));
+  const archiveTone = archiveOpen
+    ? "text-zinc-400 group-hover:text-zinc-500"
+    : "text-zinc-350 group-hover:text-zinc-400";
 
   // Set first community as active when communities load
   useEffect(() => {
@@ -1042,8 +1045,8 @@ export default function AboutPage() {
                     >
                       <span
                         className={clsx(
-                          "text-lg font-medium tracking-wide transition-colors group-hover:text-zinc-400",
-                          archiveOpen ? "text-zinc-350" : "text-zinc-300",
+                          "text-lg font-medium tracking-wide transition-colors",
+                          archiveTone,
                         )}
                       >
                         Archive
@@ -1051,7 +1054,8 @@ export default function AboutPage() {
                       <Chevron
                         size={iconSize("sm")}
                         className={clsx(
-                          "translate-y-px text-zinc-300 transition-[color,transform] duration-200 ease-out group-hover:text-zinc-400",
+                          "translate-y-px transition-[color,transform] duration-200 ease-out",
+                          archiveTone,
                           archiveOpen && "rotate-90",
                         )}
                       />

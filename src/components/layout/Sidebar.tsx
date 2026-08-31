@@ -92,6 +92,9 @@ function Leaf({
 }) {
   if (leaf.nested) {
     const panelId = `${leaf.id}-panel`;
+    const tone = leaf.nested.expanded
+      ? "text-zinc-400 group-hover:text-zinc-500"
+      : "text-zinc-350 group-hover:text-zinc-400";
     return (
       <div className="flex w-full min-w-0 flex-col items-start">
         <button
@@ -104,19 +107,12 @@ function Leaf({
             INDENT[indent],
           )}
         >
-          <span
-            className={clsx(
-              LEAF_TEXT,
-              "group-hover:text-zinc-400",
-              leaf.nested.expanded ? "text-zinc-350" : "text-zinc-300",
-            )}
-          >
-            {leaf.label}
-          </span>
+          <span className={clsx(LEAF_TEXT, tone)}>{leaf.label}</span>
           <Chevron
             size={iconSize("xs")}
             className={clsx(
-              "translate-y-px text-zinc-300 transition-[color,transform] duration-200 ease-out group-hover:text-zinc-400",
+              "translate-y-px transition-[color,transform] duration-200 ease-out",
+              tone,
               leaf.nested.expanded && "rotate-90",
             )}
           />
