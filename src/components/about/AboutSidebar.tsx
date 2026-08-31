@@ -1,4 +1,9 @@
 import Sidebar, { type SidebarNode } from "../layout/Sidebar";
+import {
+  COMMUNITY_ARCHIVE_ID,
+  communitySidebarLeaves,
+  splitCommunityNav,
+} from "./communityNav";
 
 // Sidebar navigation categories
 export type AboutCategory = "hi" | "experience" | "community" | "philosophy" | "shelf" | "lore";
@@ -17,6 +22,7 @@ const SHELF_SUBCATEGORIES: { id: ShelfSubcategory; label: string }[] = [
 export type CommunitySidebarItem = {
   id: string;
   sidebarName: string;
+  isArchived?: boolean;
 };
 
 export type AboutSidebarProps = {
@@ -28,12 +34,22 @@ export type AboutSidebarProps = {
   activeCommunityId?: string;
   /** Callback when a specific community is clicked */
   onCommunityClick?: (communityId: string) => void;
+  /** Whether the Archive disclosure is expanded */
+  archiveOpen?: boolean;
+  /** Toggle the Archive disclosure */
+  onArchiveToggle?: () => void;
   /** Active shelf subcategory (when shelf category is active) */
   activeShelfSubcategory?: ShelfSubcategory;
   /** Callback when a specific shelf subcategory is clicked */
   onShelfSubcategoryClick?: (subcategory: ShelfSubcategory) => void;
   /** Counts for each shelf subcategory */
   shelfCounts?: Partial<Record<ShelfSubcategory, number>>;
+  /**
+   * `full` — About sections (desktop rail).
+   * `communities` — community names + Archive only (mobile jump list).
+   */
+  variant?: "full" | "communities";
+  className?: string;
 };
 
 export default function AboutSidebar({
@@ -42,15 +58,72 @@ export default function AboutSidebar({
   communityItems = [],
   activeCommunityId,
   onCommunityClick,
+  archiveOpen = false,
+  onArchiveToggle,
   activeShelfSubcategory,
   onShelfSubcategoryClick,
   shelfCounts,
+  variant = "full",
+  className,
 }: AboutSidebarProps) {
   const isCommunityActive = activeCategory === "community";
   const isShelfActive = activeCategory === "shelf";
 
-  // Only communities with a sidebar name are shown.
-  const visibleCommunities = communityItems.filter((c) => c.sidebarName);
+  const { active: activeCommunities, archived: archivedCommunities } =
+    splitCommunityNav(communityItems);
+  const communityLeaves = communitySidebarLeaves({
+    active: activeCommunities,
+    archived: archivedCommunities,
+    archiveOpen,
+  });
+  const firstCommunityId =
+    activeCommunities[0]?.id ?? archivedCommunities[0]?.id;
+
+  const handleSelect = (id: string) => {
+    if (id === COMMUNITY_ARCHIVE_ID) {
+      onArchiveToggle?.();
+      return;
+    }
+
+    switch (id) {
+      case "hi":
+      case "experience":
+      case "philosophy":
+      case "lore":
+        onCategoryClick(id as AboutCategory);
+        break;
+      case "community":
+        onCategoryClick("community");
+        if (firstCommunityId) onCommunityClick?.(firstCommunityId);
+        break;
+      case "shelf":
+        onCategoryClick("shelf");
+        onShelfSubcategoryClick?.("books");
+        break;
+      case "books":
+      case "music":
+      case "movies":
+        onCategoryClick("shelf");
+        onShelfSubcategoryClick?.(id as ShelfSubcategory);
+        break;
+      default:
+        onCategoryClick("community");
+        onCommunityClick?.(id);
+    }
+  };
+
+  if (variant === "communities") {
+    if (communityLeaves.length === 0) return null;
+    return (
+      <Sidebar
+        className={className}
+        nodes={communityLeaves.map((leaf) => ({ kind: "item" as const, ...leaf }))}
+        activeId={activeCommunityId}
+        onSelect={handleSelect}
+        aria-label="Communities"
+      />
+    );
+  }
 
   const nodes: SidebarNode[] = [
     { kind: "item", id: "hi", label: "Hi!" },
@@ -60,8 +133,8 @@ export default function AboutSidebar({
       id: "community",
       label: "Community",
       active: isCommunityActive,
-      expanded: isCommunityActive && visibleCommunities.length > 0,
-      children: visibleCommunities.map((c) => ({ id: c.id, label: c.sidebarName })),
+      expanded: (isCommunityActive || archiveOpen) && communityLeaves.length > 0,
+      children: communityLeaves,
     },
     { kind: "item", id: "philosophy", label: "Philosophy" },
     {
@@ -84,34 +157,12 @@ export default function AboutSidebar({
   if (isCommunityActive && activeCommunityId) activeId = activeCommunityId;
   if (isShelfActive && activeShelfSubcategory) activeId = activeShelfSubcategory;
 
-  const handleSelect = (id: string) => {
-    switch (id) {
-      case "hi":
-      case "experience":
-      case "philosophy":
-      case "lore":
-        onCategoryClick(id as AboutCategory);
-        break;
-      case "community":
-        onCategoryClick("community");
-        if (visibleCommunities.length > 0) onCommunityClick?.(visibleCommunities[0].id);
-        break;
-      case "shelf":
-        onCategoryClick("shelf");
-        onShelfSubcategoryClick?.("books");
-        break;
-      case "books":
-      case "music":
-      case "movies":
-        onCategoryClick("shelf");
-        onShelfSubcategoryClick?.(id as ShelfSubcategory);
-        break;
-      default:
-        // Community child (Sanity id)
-        onCategoryClick("community");
-        onCommunityClick?.(id);
-    }
-  };
-
-  return <Sidebar nodes={nodes} activeId={activeId} onSelect={handleSelect} />;
+  return (
+    <Sidebar
+      className={className}
+      nodes={nodes}
+      activeId={activeId}
+      onSelect={handleSelect}
+    />
+  );
 }

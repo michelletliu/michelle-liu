@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef, type ImgHTMLAttributes, forwardRef } from "react";
 import clsx from "clsx";
 import { detectWhiteImageBorder } from "../../lib/detectWhiteImageBorder";
+import { extractSanityDimensions } from "../../lib/sanityImageDimensions";
 
 type ShimmerImageProps = ImgHTMLAttributes<HTMLImageElement> & {
   /** Extra classes for the outer wrapper div */
@@ -15,22 +16,6 @@ type ShimmerImageProps = ImgHTMLAttributes<HTMLImageElement> & {
 
 const hasPositionClass = (cls?: string) =>
   !!cls && /\b(absolute|fixed|sticky)\b/.test(cls);
-
-/**
- * Sanity image URLs encode the source dimensions in the asset filename
- * (e.g. `<hash>-1920x1080.webp`). Extract them so we can set `width` /
- * `height` on the underlying `<img>` and have the browser reserve aspect-ratio
- * space before bytes arrive — without this, lazy-loaded images render with
- * zero intrinsic height and the shimmer wrapper collapses to 0px.
- */
-const extractSanityDimensions = (
-  src: unknown,
-): { width?: number; height?: number } => {
-  if (typeof src !== "string") return {};
-  const match = src.match(/-(\d+)x(\d+)\.[a-z]+(?:\?|$)/i);
-  if (!match) return {};
-  return { width: Number(match[1]), height: Number(match[2]) };
-};
 
 const ShimmerImage = forwardRef<HTMLImageElement, ShimmerImageProps>(
   function ShimmerImage({ wrapperClassName, rounded, className, onLoad, detectWhiteBorder, ...props }, ref) {
@@ -91,8 +76,10 @@ const ShimmerImage = forwardRef<HTMLImageElement, ShimmerImageProps>(
     // the common gallery / featureSection shape where the image is
     // `w-full h-auto`, give the wrapper the same width and reserve
     // aspect-ratio height inline so the shimmer shows before the lazy-loaded
-    // bytes arrive. Other shapes (`w-auto`, `h-full`, fixed `size-*`) are
-    // sized by their container or intrinsic dimensions and don't need this.
+    // bytes arrive. Drop the reservation after load so the frame hugs the
+    // painted image even if filename dimensions don't match a crop.
+    // Other shapes (`w-auto`, `h-full`, fixed `size-*`) are sized by their
+    // container or intrinsic dimensions and don't need this.
     const imgFillsWidth =
       !!className && /\bw-full\b/.test(className) && /\bh-auto\b/.test(className);
     const reserveAspectRatio =
@@ -100,9 +87,10 @@ const ShimmerImage = forwardRef<HTMLImageElement, ShimmerImageProps>(
       imgFillsWidth &&
       dims.width !== undefined &&
       dims.height !== undefined;
-    const wrapperStyle = reserveAspectRatio
-      ? { aspectRatio: `${dims.width} / ${dims.height}` }
-      : undefined;
+    const wrapperStyle =
+      reserveAspectRatio && !loaded
+        ? { aspectRatio: `${dims.width} / ${dims.height}` }
+        : undefined;
 
     return (
       <div

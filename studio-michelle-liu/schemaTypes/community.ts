@@ -167,16 +167,25 @@ export const community = defineType({
       type: 'boolean',
       initialValue: true,
     }),
+    defineField({
+      name: 'isArchived',
+      title: 'Archived',
+      type: 'boolean',
+      description:
+        'Archived communities appear under Archive in the About page sidebar instead of the main list.',
+      initialValue: false,
+    }),
   ],
   preview: {
     select: {
       title: 'title',
       media: 'logo',
+      isArchived: 'isArchived',
     },
-    prepare({title, media}) {
+    prepare({title, media, isArchived}) {
       return {
         title,
-        subtitle: 'Community',
+        subtitle: isArchived ? 'Archived' : 'Community',
         media,
       }
     },

@@ -1,4 +1,7 @@
+import type { ReactNode } from "react";
 import clsx from "clsx";
+import { Chevron } from "../icons/Chevron";
+import { iconSize } from "../shared/iconSizes";
 
 /**
  * Shared left-nav sidebar used across About, Art, and the /system page.
@@ -11,11 +14,22 @@ import clsx from "clsx";
  * their section is active; active leaves render blue.
  */
 
+const INDENT = ["", "pl-3", "pl-6"] as const;
+
 export type SidebarLeaf = {
   id: string;
   label: string;
   /** Optional trailing count, e.g. "Books 12". Hidden when undefined or 0. */
   count?: number;
+  /**
+   * Nested disclosure (e.g. Archive under Community). Clicking the row calls
+   * `onSelect(id)` so the parent can toggle `expanded`; nested children are
+   * not themselves nested.
+   */
+  nested?: {
+    expanded: boolean;
+    children: SidebarLeaf[];
+  };
 };
 
 export type SidebarNode =
@@ -43,30 +57,98 @@ export type SidebarProps = {
 const LEAF_TEXT =
   "text-base font-medium tracking-wide leading-normal text-left transition-colors";
 
+function Expandable({
+  expanded,
+  children,
+}: {
+  expanded: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={clsx(
+        "grid w-full min-w-0 transition-[grid-template-rows,opacity] duration-200 ease-out",
+        expanded
+          ? "grid-rows-[1fr] opacity-100"
+          : "pointer-events-none grid-rows-[0fr] opacity-0",
+      )}
+      aria-hidden={!expanded}
+    >
+      <div className="min-h-0 overflow-hidden">{children}</div>
+    </div>
+  );
+}
+
 function Leaf({
   leaf,
-  active,
-  indented,
+  activeId,
+  indent = 0,
   onSelect,
 }: {
   leaf: SidebarLeaf;
-  active: boolean;
-  indented?: boolean;
+  activeId?: string;
+  indent?: 0 | 1 | 2;
   onSelect: (id: string) => void;
 }) {
+  if (leaf.nested) {
+    const panelId = `${leaf.id}-panel`;
+    return (
+      <div className="flex w-full min-w-0 flex-col items-start">
+        <button
+          type="button"
+          aria-expanded={leaf.nested.expanded}
+          aria-controls={panelId}
+          onClick={() => onSelect(leaf.id)}
+          className={clsx(
+            "flex min-h-8 items-center gap-1 px-0.5 py-0 rounded-full cursor-pointer lg:min-h-0",
+            INDENT[indent],
+          )}
+        >
+          <span className={clsx(LEAF_TEXT, "text-zinc-400 hover:text-zinc-500")}>
+            {leaf.label}
+          </span>
+          <Chevron
+            size={iconSize("xs")}
+            className={clsx(
+              "translate-y-px text-zinc-300 transition-transform duration-200 ease-out",
+              leaf.nested.expanded && "rotate-90",
+            )}
+          />
+        </button>
+        <div id={panelId} className="w-full min-w-0">
+          <Expandable expanded={leaf.nested.expanded}>
+            <div className="flex flex-col items-start gap-2 pt-2">
+              {leaf.nested.children.map((child) => (
+                <Leaf
+                  key={child.id}
+                  leaf={child}
+                  activeId={activeId}
+                  indent={Math.min(indent + 1, 2) as 0 | 1 | 2}
+                  onSelect={onSelect}
+                />
+              ))}
+            </div>
+          </Expandable>
+        </div>
+      </div>
+    );
+  }
+
   const showCount = leaf.count !== undefined && leaf.count > 0;
+  const active = activeId === leaf.id;
   return (
     <button
+      type="button"
       onClick={() => onSelect(leaf.id)}
       className={clsx(
         "flex items-center px-0.5 py-0 rounded-full cursor-pointer transition-colors",
-        indented && "pl-3"
+        INDENT[indent],
       )}
     >
       <span
         className={clsx(
           LEAF_TEXT,
-          active ? "text-blue-500" : "text-zinc-400 hover:text-zinc-500"
+          active ? "text-blue-500" : "text-zinc-400 hover:text-zinc-500",
         )}
       >
         {leaf.label}
@@ -91,23 +173,24 @@ export default function Sidebar({
             <Leaf
               key={node.id}
               leaf={node}
-              active={activeId === node.id}
+              activeId={activeId}
               onSelect={onSelect}
             />
           );
         }
 
         return (
-          <div key={node.id} className="flex flex-col items-start">
+          <div key={node.id} className="flex w-full min-w-0 flex-col items-start">
             {/* Group header — clickable, darker when its section is active. */}
             <button
+              type="button"
               onClick={() => onSelect(node.id)}
               className="flex items-center px-0.5 py-0 cursor-pointer"
             >
               <span
                 className={clsx(
                   "text-base font-medium tracking-wide leading-normal transition-colors",
-                  node.active ? "text-zinc-500" : "text-zinc-400 hover:text-zinc-500"
+                  node.active ? "text-zinc-500" : "text-zinc-400 hover:text-zinc-500",
                 )}
               >
                 {node.label}
@@ -118,29 +201,19 @@ export default function Sidebar({
               Expand via grid-rows 0fr→1fr (not max-height). Spacing lives inside
               the clipped row so collapsed groups don't leave a residual gap.
             */}
-            <div
-              className={clsx(
-                "grid w-full transition-[grid-template-rows,opacity] duration-200 ease-out",
-                node.expanded
-                  ? "grid-rows-[1fr] opacity-100"
-                  : "pointer-events-none grid-rows-[0fr] opacity-0"
-              )}
-              aria-hidden={!node.expanded}
-            >
-              <div className="min-h-0 overflow-hidden">
-                <div className="flex flex-col items-start gap-2 pt-2">
-                  {node.children.map((child) => (
-                    <Leaf
-                      key={child.id}
-                      leaf={child}
-                      active={activeId === child.id}
-                      indented
-                      onSelect={onSelect}
-                    />
-                  ))}
-                </div>
+            <Expandable expanded={node.expanded}>
+              <div className="flex flex-col items-start gap-2 pt-2">
+                {node.children.map((child) => (
+                  <Leaf
+                    key={child.id}
+                    leaf={child}
+                    activeId={activeId}
+                    indent={1}
+                    onSelect={onSelect}
+                  />
+                ))}
               </div>
-            </div>
+            </Expandable>
           </div>
         );
       })}
