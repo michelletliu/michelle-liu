@@ -1040,7 +1040,12 @@ export default function AboutPage() {
                       onClick={handleArchiveToggle}
                       className="group flex min-h-8 items-center gap-1.5 px-0.5 py-0 cursor-pointer"
                     >
-                      <span className="text-lg font-medium tracking-wide text-zinc-300 transition-colors group-hover:text-zinc-400">
+                      <span
+                        className={clsx(
+                          "text-lg font-medium tracking-wide transition-colors group-hover:text-zinc-400",
+                          archiveOpen ? "text-zinc-350" : "text-zinc-300",
+                        )}
+                      >
                         Archive
                       </span>
                       <Chevron

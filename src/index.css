@@ -104,6 +104,9 @@
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
 
+  /* Halfway between zinc-300 and zinc-400, for the open Archive disclosure. */
+  --color-zinc-350: oklch(0.788 0.0105 286.18);
+
   --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-default: 0px 4px 16px 0px rgba(212, 212, 216, 0.65);
   --shadow-media: 0 4px 12px rgba(0, 0, 0, 0.1);

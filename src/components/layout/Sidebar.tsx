@@ -104,7 +104,13 @@ function Leaf({
             INDENT[indent],
           )}
         >
-          <span className={clsx(LEAF_TEXT, "text-zinc-300 group-hover:text-zinc-400")}>
+          <span
+            className={clsx(
+              LEAF_TEXT,
+              "group-hover:text-zinc-400",
+              leaf.nested.expanded ? "text-zinc-350" : "text-zinc-300",
+            )}
+          >
             {leaf.label}
           </span>
           <Chevron
