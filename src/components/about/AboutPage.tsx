@@ -564,6 +564,9 @@ export default function AboutPage() {
     sidebarName: c.sidebarName,
     isArchived: c.isArchived,
   }));
+  const archiveTone = archiveOpen
+    ? "text-zinc-400 group-hover:text-zinc-500"
+    : "text-zinc-350 group-hover:text-zinc-400";
 
   // Set first community as active when communities load
   useEffect(() => {
@@ -1038,15 +1041,21 @@ export default function AboutPage() {
                       aria-expanded={archiveOpen}
                       aria-controls="community-archive-content"
                       onClick={handleArchiveToggle}
-                      className="flex min-h-8 items-center gap-1.5 px-0.5 py-0 cursor-pointer"
+                      className="group flex min-h-8 items-center gap-1.5 px-0.5 py-0 cursor-pointer"
                     >
-                      <span className="text-lg font-medium tracking-wide text-zinc-400 transition-colors hover:text-zinc-500">
+                      <span
+                        className={clsx(
+                          "text-lg font-medium tracking-wide transition-colors",
+                          archiveTone,
+                        )}
+                      >
                         Archive
                       </span>
                       <Chevron
                         size={iconSize("sm")}
                         className={clsx(
-                          "translate-y-px text-zinc-300 transition-transform duration-200 ease-out",
+                          "translate-y-px transition-[color,transform] duration-200 ease-out",
+                          archiveTone,
                           archiveOpen && "rotate-90",
                         )}
                       />

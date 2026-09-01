@@ -92,6 +92,9 @@ function Leaf({
 }) {
   if (leaf.nested) {
     const panelId = `${leaf.id}-panel`;
+    const tone = leaf.nested.expanded
+      ? "text-zinc-400 group-hover:text-zinc-500"
+      : "text-zinc-350 group-hover:text-zinc-400";
     return (
       <div className="flex w-full min-w-0 flex-col items-start">
         <button
@@ -100,17 +103,16 @@ function Leaf({
           aria-controls={panelId}
           onClick={() => onSelect(leaf.id)}
           className={clsx(
-            "flex min-h-8 items-center gap-1 px-0.5 py-0 rounded-full cursor-pointer lg:min-h-0",
+            "group flex min-h-8 items-center gap-1 px-0.5 py-0 rounded-full cursor-pointer lg:min-h-0",
             INDENT[indent],
           )}
         >
-          <span className={clsx(LEAF_TEXT, "text-zinc-400 hover:text-zinc-500")}>
-            {leaf.label}
-          </span>
+          <span className={clsx(LEAF_TEXT, tone)}>{leaf.label}</span>
           <Chevron
             size={iconSize("xs")}
             className={clsx(
-              "translate-y-px text-zinc-300 transition-transform duration-200 ease-out",
+              "translate-y-px transition-[color,transform] duration-200 ease-out",
+              tone,
               leaf.nested.expanded && "rotate-90",
             )}
           />
