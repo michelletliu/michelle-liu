@@ -903,7 +903,7 @@ export default function AboutPage() {
                 <div className="flex flex-wrap gap-2 md:gap-6 text-base tracking-[0.005em] text-zinc-400">
                   <div className="flex items-center gap-2">
                     <img src={mapPinIcon} alt="" className="w-4 h-4" />
-                    <span className="text-zinc-400">LA&nbsp;&nbsp;/&nbsp;&nbsp;NYC</span>
+                    <span className="text-zinc-400">NYC</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <img src={academicCapIcon} alt="" className="w-4 h-4" />
