@@ -44,11 +44,6 @@ export type AboutSidebarProps = {
   onShelfSubcategoryClick?: (subcategory: ShelfSubcategory) => void;
   /** Counts for each shelf subcategory */
   shelfCounts?: Partial<Record<ShelfSubcategory, number>>;
-  /**
-   * `full` — About sections (desktop rail).
-   * `communities` — community names + Archive only (mobile jump list).
-   */
-  variant?: "full" | "communities";
   className?: string;
 };
 
@@ -63,7 +58,6 @@ export default function AboutSidebar({
   activeShelfSubcategory,
   onShelfSubcategoryClick,
   shelfCounts,
-  variant = "full",
   className,
 }: AboutSidebarProps) {
   const isCommunityActive = activeCategory === "community";
@@ -111,19 +105,6 @@ export default function AboutSidebar({
         onCommunityClick?.(id);
     }
   };
-
-  if (variant === "communities") {
-    if (communityLeaves.length === 0) return null;
-    return (
-      <Sidebar
-        className={className}
-        nodes={communityLeaves.map((leaf) => ({ kind: "item" as const, ...leaf }))}
-        activeId={activeCommunityId}
-        onSelect={handleSelect}
-        aria-label="Communities"
-      />
-    );
-  }
 
   const nodes: SidebarNode[] = [
     { kind: "item", id: "hi", label: "Hi!" },
