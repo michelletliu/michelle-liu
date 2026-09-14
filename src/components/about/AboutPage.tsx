@@ -997,19 +997,6 @@ export default function AboutPage() {
                 </p>
               </div>
             </ScrollReveal>
-            {!isLoading && communityNavItems.length > 0 && (
-              <AboutSidebar
-                variant="communities"
-                className="lg:hidden w-full min-w-0 [&_button]:min-h-8"
-                activeCategory={activeCategory}
-                onCategoryClick={handleCategoryClick}
-                communityItems={communitySidebarItems}
-                activeCommunityId={activeCommunityId}
-                onCommunityClick={handleCommunityClick}
-                archiveOpen={archiveOpen}
-                onArchiveToggle={handleArchiveToggle}
-              />
-            )}
             {isLoading ? (
               <LoadingSpinner label="Loading..." className="py-4" />
             ) : activeCommunityCards.length > 0 || archivedCommunityCards.length > 0 ? (

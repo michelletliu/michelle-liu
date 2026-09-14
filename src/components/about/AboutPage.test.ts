@@ -26,9 +26,9 @@ test("waits for every startup logo before revealing experiences", () => {
   assert.match(source, /disabled=\{!experiencesCanReveal\}/);
 });
 
-test("shows archived communities behind an Archive toggle on desktop and mobile", () => {
-  assert.match(source, /variant="communities"/);
-  assert.match(source, /className="lg:hidden w-full min-w-0/);
+test("shows archived communities behind an Archive toggle, without a mobile jump list", () => {
+  assert.doesNotMatch(source, /variant="communities"/);
+  assert.doesNotMatch(source, /className="lg:hidden w-full min-w-0/);
   assert.match(source, /archiveOpen=\{archiveOpen\}/);
   assert.match(source, /onArchiveToggle=\{handleArchiveToggle\}/);
   assert.match(source, /aria-controls="community-archive-content"/);
