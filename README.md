@@ -56,7 +56,7 @@ Create `.env.local` for local development. Most pages render without every integ
 | `SANITY_TOKEN` | Optional | Local content maintenance scripts that write to Sanity. |
 | `NOTION_TOKEN` | Optional locally, required for production film data | Runtime Notion access for film photos. |
 | `NOTION_FILM_DATABASE_ID` | Production | Notion database ID for film photos. Development has a fallback database ID. |
-| `PIKA_API_KEY` | Optional | Image generation in the gallery API. |
+| `GEMINI_API_KEY` | Optional | Image generation in the gallery API (Gemini 3.1 Flash Image). |
 | `NEXT_PUBLIC_POSTHOG_KEY` | Optional | Enables PostHog analytics. |
 | `NEXT_PUBLIC_POSTHOG_HOST` | Optional | Overrides the PostHog host. |
 | `GOODREADS_USER_ID` | Optional | Goodreads sync scripts. |
