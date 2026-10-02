@@ -9,20 +9,26 @@ import {
   type MetArtwork,
 } from "@/components/gallery/metArtworks";
 import { MetApiError, fetchMetObject } from "@/lib/met/metClient";
+import {
+  GEMINI_IMAGE_MODEL,
+  GEMINI_IMAGE_SIZE,
+  GEMINI_INTERACTIONS_URL,
+  geminiGenerateBody,
+  geminiHeaders,
+  geminiHttpError,
+  geminiImageBase64,
+  geminiInteractionId,
+  geminiInteractionStatus,
+  geminiNeedsPoll,
+  type GeminiInlineImage,
+} from "@/lib/gemini/galleryImage";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
-const PIKA_API_BASE = "https://api.dev.pika.art";
-/**
- * Nano Banana 2 (Gemini 3.1 Flash Image): exact 3:4 / 3:2 hang ratios,
- * text-to-image and style-reference image-to-image on the same model.
- */
-const PIKA_TEXT_TO_IMAGE = `${PIKA_API_BASE}/v1/media/google/gemini-3.1-flash-image/text-to-image`;
-const PIKA_IMAGE_TO_IMAGE = `${PIKA_API_BASE}/v1/media/google/gemini-3.1-flash-image/image-to-image`;
-const PIKA_RESOLUTION = "2K";
 const POLL_INTERVAL_MS = 1_500;
 const POLL_TIMEOUT_MS = 105_000;
+const REFERENCE_MAX_EDGE = 1536;
 
 type GenerateBody = {
   prompt?: string;
@@ -35,83 +41,16 @@ type GenerateBody = {
   inspirationObjectID?: number;
 };
 
-type PikaJob = {
-  id?: string;
-  status?: "queued" | "running" | "completed" | "failed";
-  output?: {
-    images?: { url?: string; content_type?: string }[];
-  };
-  error?: { code?: string; message?: string };
-  message?: string;
-};
-
 /**
- * Pika aspect for the hang. Aperture sizes in `paintingSize` are exact 3:4 and
- * 3:2 so generate output matches the paint rect. Matching ratios still avoids
- * needless UV crop.
+ * Hang aspect. Aperture sizes in `paintingSize` are exact 3:4 and 3:2 so
+ * generate output matches the paint rect.
  */
 function aspectForPainting(painting: GalleryPainting): "3:4" | "3:2" {
   return painting.aspect === "portrait" ? "3:4" : "3:2";
 }
 
-function pikaHeaders(apiKey: string, extra?: Record<string, string>) {
-  return {
-    "X-API-Key": apiKey,
-    "Content-Type": "application/json",
-    ...extra,
-  };
-}
-
-function pikaErrorMessage(job: PikaJob, status: number): {
-  error: string;
-  status: number;
-} {
-  const code = job.error?.code;
-
-  if (code === "content_moderation") {
-    return { error: "Prompt was blocked by content policy", status: 400 };
-  }
-  if (code === "rate_limited") {
-    return { error: "Too many generations right now. Try again in a moment.", status: 429 };
-  }
-  if (code === "insufficient_balance" || code === "cycle_limit_exceeded") {
-    return { error: "Generation is temporarily unavailable", status: 502 };
-  }
-  if (code === "invalid_input") {
-    return { error: "Could not generate that image", status: 400 };
-  }
-  if (status === 401) {
-    return { error: "Generation is not configured", status: 502 };
-  }
-  return {
-    error: "Generation failed",
-    status: status === 401 ? 502 : status >= 400 ? status : 502,
-  };
-}
-
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function pollJob(apiKey: string, jobId: string): Promise<PikaJob> {
-  const deadline = Date.now() + POLL_TIMEOUT_MS;
-  while (Date.now() < deadline) {
-    const res = await fetch(`${PIKA_API_BASE}/v1/media/jobs/${jobId}`, {
-      headers: pikaHeaders(apiKey),
-    });
-    const job = (await res.json()) as PikaJob;
-    if (!res.ok) {
-      throw Object.assign(new Error("poll failed"), { job, status: res.status });
-    }
-    if (job.status === "completed" || job.status === "failed") {
-      return job;
-    }
-    await sleep(POLL_INTERVAL_MS);
-  }
-  throw Object.assign(new Error("timed out"), {
-    job: { error: { code: "timed_out", message: "Generation timed out" } } satisfies PikaJob,
-    status: 504,
-  });
 }
 
 function isWebp(bytes: Buffer): boolean {
@@ -128,6 +67,10 @@ function isPng(bytes: Buffer): boolean {
     bytes[0] === 0x89 &&
     bytes.subarray(1, 4).toString("ascii") === "PNG"
   );
+}
+
+function isJpeg(bytes: Buffer): boolean {
+  return bytes.byteLength >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
 }
 
 /**
@@ -154,12 +97,15 @@ async function toImageDataUrl(bytes: Buffer): Promise<string | null> {
   if (isPng(bytes)) {
     return `data:image/png;base64,${bytes.toString("base64")}`;
   }
+  if (isJpeg(bytes)) {
+    return `data:image/jpeg;base64,${bytes.toString("base64")}`;
+  }
   return null;
 }
 
 /**
- * The artwork's Open Access image URL, passed to Pika as `image_urls`.
- * Public Met CDN URLs need no Pika upload.
+ * The artwork's Open Access image, sent to Gemini as inline image bytes.
+ * Public Met CDN URLs are fetched here so the client never supplies the pixels.
  *
  * Text alone could not carry style: prompts describing impasto and broken
  * colour still came back as smooth digital illustration. Conditioning on the
@@ -177,11 +123,98 @@ function styleReferenceUrl(artwork: MetArtwork): string | null {
   return url;
 }
 
+function mimeFor(bytes: Buffer): string | null {
+  if (isJpeg(bytes)) return "image/jpeg";
+  if (isPng(bytes)) return "image/png";
+  if (isWebp(bytes)) return "image/webp";
+  return null;
+}
+
+async function referenceInline(url: string): Promise<GeminiInlineImage | null> {
+  let res: Response;
+  try {
+    res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+  } catch (err) {
+    console.warn(
+      `[gallery/generate] style reference fetch failed: ${
+        err instanceof Error ? err.message : "unknown"
+      }`,
+    );
+    return null;
+  }
+  if (!res.ok) {
+    console.warn(`[gallery/generate] style reference HTTP ${res.status}`);
+    return null;
+  }
+
+  const bytes = Buffer.from(await res.arrayBuffer());
+  if (bytes.byteLength === 0) return null;
+
+  try {
+    const sharp = (await import("sharp")).default;
+    const jpeg = await sharp(bytes)
+      .rotate()
+      .resize({
+        width: REFERENCE_MAX_EDGE,
+        height: REFERENCE_MAX_EDGE,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .jpeg({ quality: 82 })
+      .toBuffer();
+    return { mimeType: "image/jpeg", data: jpeg.toString("base64") };
+  } catch (err) {
+    console.warn(
+      `[gallery/generate] style reference encode failed: ${
+        err instanceof Error ? err.message : "unknown"
+      }`,
+    );
+  }
+
+  const mimeType = mimeFor(bytes);
+  if (!mimeType || bytes.byteLength > 6_000_000) return null;
+  return { mimeType, data: bytes.toString("base64") };
+}
+
+async function geminiFetch(apiKey: string, url: string, init?: RequestInit): Promise<Response> {
+  return fetch(url, {
+    ...init,
+    headers: {
+      ...geminiHeaders(apiKey),
+      ...(init?.headers ?? {}),
+    },
+    signal: init?.signal ?? AbortSignal.timeout(POLL_TIMEOUT_MS),
+  });
+}
+
+async function readInteraction(res: Response): Promise<unknown> {
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function pollInteraction(apiKey: string, id: string, deadline: number): Promise<unknown> {
+  let latest: unknown = null;
+  while (Date.now() < deadline) {
+    await sleep(POLL_INTERVAL_MS);
+    const remaining = Math.max(1_000, deadline - Date.now());
+    const res = await geminiFetch(apiKey, `${GEMINI_INTERACTIONS_URL}/${encodeURIComponent(id)}`, {
+      method: "GET",
+      signal: AbortSignal.timeout(remaining),
+    });
+    latest = await readInteraction(res);
+    if (!res.ok || !geminiNeedsPoll(latest)) return latest;
+  }
+  return latest;
+}
+
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.PIKA_API_KEY?.trim();
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) {
     return NextResponse.json(
-      { error: "PIKA_API_KEY is not configured" },
+      { error: "GEMINI_API_KEY is not configured" },
       { status: 500 },
     );
   }
@@ -246,38 +279,31 @@ export async function POST(req: NextRequest) {
   }
 
   const referenceUrl = inspiration ? styleReferenceUrl(inspiration) : null;
+  const reference = referenceUrl ? await referenceInline(referenceUrl) : null;
   const composed = composeInspiredPrompt(prompt, inspiration, {
-    referenceImage: referenceUrl !== null,
+    referenceImage: reference !== null,
   });
-  const aspect_ratio = aspectForPainting(painting);
-  const usingRemix = referenceUrl !== null;
-  const endpoint = usingRemix ? PIKA_IMAGE_TO_IMAGE : PIKA_TEXT_TO_IMAGE;
-
-  const payload = {
-    prompt: composed.prompt,
-    num_images: 1,
-    aspect_ratio,
-    output_format: "png",
-    resolution: PIKA_RESOLUTION,
-    ...(referenceUrl ? { image_urls: [referenceUrl] } : {}),
-  };
+  const aspectRatio = aspectForPainting(painting);
 
   console.info(
     `[gallery/generate] painting=${painting.id} inspiration=${
       composed.inspiredByObjectID ?? "none"
-    } endpoint=${usingRemix ? "image-to-image" : "text-to-image"} model=google/gemini-3.1-flash-image aspect=${aspect_ratio} resolution=${PIKA_RESOLUTION}\n` +
+    } endpoint=${reference ? "image-to-image" : "text-to-image"} model=${GEMINI_IMAGE_MODEL} aspect=${aspectRatio} resolution=${GEMINI_IMAGE_SIZE}\n` +
       `[gallery/generate] prompt: ${composed.prompt}`,
   );
 
+  const deadline = Date.now() + POLL_TIMEOUT_MS;
   let submitRes: Response;
   try {
-    submitRes = await fetch(endpoint, {
+    submitRes = await geminiFetch(apiKey, GEMINI_INTERACTIONS_URL, {
       method: "POST",
-      headers: {
-        ...pikaHeaders(apiKey),
-        "Idempotency-Key": crypto.randomUUID(),
-      },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(
+        geminiGenerateBody({
+          prompt: composed.prompt,
+          aspectRatio,
+          reference,
+        }),
+      ),
     });
   } catch {
     return NextResponse.json(
@@ -286,71 +312,60 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let job: PikaJob;
+  let interaction = await readInteraction(submitRes);
+  console.info(
+    `[gallery/generate] gemini submit status=${submitRes.status} id=${
+      geminiInteractionId(interaction) ?? "none"
+    } job-status=${geminiInteractionStatus(interaction) ?? "none"}`,
+  );
+
+  if (!submitRes.ok) {
+    const mapped = geminiHttpError(submitRes.status, interaction);
+    return NextResponse.json({ error: mapped.error }, { status: mapped.status });
+  }
+
+  if (geminiNeedsPoll(interaction)) {
+    const id = geminiInteractionId(interaction);
+    if (!id) {
+      return NextResponse.json({ error: "Generation failed" }, { status: 502 });
+    }
+    try {
+      interaction = await pollInteraction(apiKey, id, deadline);
+    } catch {
+      return NextResponse.json(
+        { error: "Failed to reach generation API" },
+        { status: 502 },
+      );
+    }
+    console.info(
+      `[gallery/generate] gemini job=${id} status=${geminiInteractionStatus(interaction) ?? "none"}`,
+    );
+  }
+
+  const status = geminiInteractionStatus(interaction);
+  if (status && status !== "completed") {
+    const mapped = geminiHttpError(502, interaction);
+    return NextResponse.json({ error: mapped.error }, { status: mapped.status });
+  }
+
+  const imageBase64 = geminiImageBase64(interaction);
+  if (!imageBase64) {
+    const mapped = geminiHttpError(502, interaction);
+    return NextResponse.json(
+      { error: mapped.error === "Generation failed" ? "Generation returned no image" : mapped.error },
+      { status: mapped.status === 502 ? 502 : mapped.status },
+    );
+  }
+
+  let bytes: Buffer;
   try {
-    job = (await submitRes.json()) as PikaJob;
+    bytes = Buffer.from(imageBase64, "base64");
   } catch {
     return NextResponse.json(
       { error: "Invalid generation response" },
       { status: 502 },
     );
   }
-
-  console.info(
-    `[gallery/generate] pika submit status=${submitRes.status} job=${job.id ?? "none"} job-status=${job.status ?? "none"} error=${job.error?.code ?? "none"} ${job.error?.message ?? job.message ?? ""}`.trimEnd(),
-  );
-
-  if (!submitRes.ok || job.status === "failed" || !job.id) {
-    const mapped = pikaErrorMessage(job, submitRes.status);
-    return NextResponse.json({ error: mapped.error }, { status: mapped.status });
-  }
-
-  try {
-    job = await pollJob(apiKey, job.id);
-  } catch (err) {
-    const failed = err as { job?: PikaJob; status?: number };
-    const mapped = pikaErrorMessage(failed.job ?? {}, failed.status ?? 504);
-    return NextResponse.json({ error: mapped.error }, { status: mapped.status });
-  }
-
-  console.info(
-    `[gallery/generate] pika job=${job.id} status=${job.status ?? "none"} error=${job.error?.code ?? "none"}`,
-  );
-
-  if (job.status !== "completed") {
-    const mapped = pikaErrorMessage(job, 502);
-    return NextResponse.json({ error: mapped.error }, { status: mapped.status });
-  }
-
-  const imageUrl = job.output?.images?.[0]?.url;
-  if (!imageUrl) {
-    return NextResponse.json(
-      { error: "Generation returned no image" },
-      { status: 502 },
-    );
-  }
-
-  let imageRes: Response;
-  try {
-    imageRes = await fetch(imageUrl, {
-      headers: { "X-API-Key": apiKey },
-      signal: AbortSignal.timeout(20_000),
-    });
-  } catch {
-    return NextResponse.json(
-      { error: "Failed to download generated image" },
-      { status: 502 },
-    );
-  }
-
-  if (!imageRes.ok) {
-    return NextResponse.json(
-      { error: "Failed to download generated image" },
-      { status: 502 },
-    );
-  }
-
-  const bytes = Buffer.from(await imageRes.arrayBuffer());
   if (bytes.byteLength === 0) {
     return NextResponse.json(
       { error: "Generation returned no image" },
