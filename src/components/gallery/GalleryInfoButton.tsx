@@ -83,7 +83,7 @@ const GALLERY_CONTROLS_TEXT =
 const GALLERY_STACK_METADATA = [
   { label: "Interface", tools: ["Next.js", "React"] },
   { label: "Scene", tools: ["Three.js"] },
-  { label: "Data", tools: ["The Met API"] },
+  { label: "Data", tools: ["The Met API", "Gemini API"] },
   { label: "Motion", tools: ["Framer Motion"] },
 ];
 
@@ -289,12 +289,12 @@ export default function GalleryInfoButton({
                     <br className="hidden md:block" />
                     Thanks to my friends at{" "}
                     <a
-                      href="https://pika.art"
+                      href="http://reve.com/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-medium text-zinc-600 no-underline transition-colors hover:text-blue-500"
                     >
-                      Pika
+                      Reve
                     </a>{" "}
                     for asking me to experiment with this!
                   </p>
