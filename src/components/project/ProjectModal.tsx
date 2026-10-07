@@ -50,7 +50,7 @@ import { useScrollLock } from "../../utils/useScrollLock";
 import lockIcon from "../../assets/lock.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
 import { posthog, posthogEnabled } from "../../lib/posthog";
-import { galleryTileAspectRatio } from "../../lib/galleryTileAspectRatio";
+import { galleryImageCoversTile, galleryTileAspectRatio } from "../../lib/galleryTileAspectRatio";
 import { FieldInput, FieldShell, fieldIconSlotClassName } from "../shared/FieldInput";
 import { Chevron } from "../icons/Chevron";
 import { Close } from "../icons/Close";
@@ -2247,7 +2247,13 @@ function ContentBlock({
                 >
                   <ShimmerImage
                     wrapperClassName={tileAspectRatio ? "size-full" : undefined}
-                    className={tileAspectRatio ? "size-full object-cover" : "w-full h-auto object-contain"}
+                    className={
+                      !tileAspectRatio
+                        ? "w-full h-auto object-contain"
+                        : galleryImageCoversTile(gallerySrcs[index], tileAspectRatio)
+                          ? "size-full object-cover"
+                          : "size-full object-contain"
+                    }
                     alt={image.alt || ""}
                     src={gallerySrcs[index]}
                   />
