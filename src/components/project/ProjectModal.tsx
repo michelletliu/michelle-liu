@@ -50,6 +50,7 @@ import { useScrollLock } from "../../utils/useScrollLock";
 import lockIcon from "../../assets/lock.svg";
 import quoteGraphic from "../../assets/quote gray 200.png";
 import { posthog, posthogEnabled } from "../../lib/posthog";
+import { galleryImageCoversTile, galleryTileAspectRatio } from "../../lib/galleryTileAspectRatio";
 import { FieldInput, FieldShell, fieldIconSlotClassName } from "../shared/FieldInput";
 import { Chevron } from "../icons/Chevron";
 import { Close } from "../icons/Close";
@@ -2220,6 +2221,10 @@ function ContentBlock({
       // Default grid layouts
       const imageCount = section.images?.length || 0;
       const isOddCount = imageCount % 2 === 1;
+      const gallerySrcs = (section.images ?? []).map((image) =>
+        urlFor(image).width(1200).quality(85).url()
+      );
+      const tileAspectRatio = galleryTileAspectRatio(gallerySrcs);
       
       return (
         <div className="content-stretch flex flex-col gap-4 px-8 py-10 relative shrink-0 w-full">
@@ -2238,11 +2243,19 @@ function ContentBlock({
                     "content-stretch flex flex-col items-start min-h-px min-w-px overflow-hidden relative rounded-[26px] shadow-soft shrink-0",
                     shouldCenterOnMobile && "max-md:col-span-2 max-md:justify-self-center max-md:w-1/2"
                   )}
+                  style={tileAspectRatio ? { aspectRatio: tileAspectRatio } : undefined}
                 >
                   <ShimmerImage
-                    className="w-full h-auto object-contain"
+                    wrapperClassName={tileAspectRatio ? "size-full" : undefined}
+                    className={
+                      !tileAspectRatio
+                        ? "w-full h-auto object-contain"
+                        : galleryImageCoversTile(gallerySrcs[index], tileAspectRatio)
+                          ? "size-full object-cover"
+                          : "size-full object-contain"
+                    }
                     alt={image.alt || ""}
-                    src={urlFor(image).width(1200).quality(85).url()}
+                    src={gallerySrcs[index]}
                   />
                 </div>
               );
