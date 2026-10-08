@@ -42,7 +42,7 @@ import { client, urlFor } from "../../sanity/client";
 import { PROJECTS_QUERY, EXPERIMENT_PROJECTS_QUERY } from "../../sanity/queries";
 import type { SanityImage } from "../../sanity/types";
 import { useScrollLock } from "../../utils/useScrollLock";
-import ContactBadge from "../shared/ContactBadge";
+import ContactBadge, { SHOW_CONTACT_BADGE } from "../shared/ContactBadge";
 import { INLINE_LINK_CLASS } from "../shared/inlineLink";
 import NavigationTabs from "../layout/NavigationTabs";
 import { HorizontalLine } from "../shared/HorizontalLine";
@@ -1264,12 +1264,14 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                   <HeroCompanyLink href={HERO_COMPANY_HREFS.nasa}>NASA</HeroCompanyLink>
                   <span>.</span>
                 </span>
-                <ContactBadge
-                  hoverMode
-                  size="lg"
-                  className="max-md:hidden"
-                  onExpandedChange={setIsContactBadgeExpanded}
-                />
+                {SHOW_CONTACT_BADGE && (
+                  <ContactBadge
+                    hoverMode
+                    size="lg"
+                    className="max-md:hidden"
+                    onExpandedChange={setIsContactBadgeExpanded}
+                  />
+                )}
           </div>
         </>
       </PageHeader>

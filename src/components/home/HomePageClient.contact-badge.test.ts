@@ -88,6 +88,14 @@ test("keeps the contact link clickable above the hover buffer", () => {
   assert.match(cssSource, /\.contact-badge-text\s*\{[^}]*z-index:\s*10/s);
 });
 
+test("hides the badge on Work and About while keeping it in the design system", () => {
+  const aboutSource = readFileSync(new URL("../about/AboutPage.tsx", import.meta.url), "utf8");
+  assert.match(badgeSource, /export const SHOW_CONTACT_BADGE = false;/);
+  assert.match(homeSource, /\{SHOW_CONTACT_BADGE && \(\s*<ContactBadge/);
+  assert.match(aboutSource, /\{SHOW_CONTACT_BADGE && \([\s\S]*?<ContactBadge scrollExpandMode/);
+  assert.doesNotMatch(specimenSource, /SHOW_CONTACT_BADGE/);
+});
+
 test("shows the header badge at its large size in the design system", () => {
   assert.match(specimenSource, /<ContactBadge size="lg" \/>/);
   assert.match(specimenSource, /lg · Header/);
