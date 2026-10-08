@@ -4,6 +4,9 @@ import { posthog, posthogEnabled } from "../../lib/posthog";
 
 export type ContactBadgeSize = "sm" | "md" | "lg";
 
+/** Toggles the badge on the Work and About pages (design-system specimens always render). */
+export const SHOW_CONTACT_BADGE = false;
+
 type ContactBadgeProps = {
   /** Whether to show the badge in expanded state initially (for hover behavior on Work page) */
   hoverMode?: boolean;

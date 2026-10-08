@@ -22,7 +22,7 @@ import Footer from "../layout/Footer";
 import { ArrowUpRight } from "../icons/ArrowUpRight";
 import { Chevron } from "../icons/Chevron";
 import { iconSize } from "../shared/iconSizes";
-import ContactBadge from "../shared/ContactBadge";
+import ContactBadge, { SHOW_CONTACT_BADGE } from "../shared/ContactBadge";
 import NavigationTabs from "../layout/NavigationTabs";
 
 import type { AboutCategory, ShelfSubcategory } from "./AboutSidebar";
@@ -931,9 +931,11 @@ export default function AboutPage() {
               </ScrollReveal>
 
               {/* CTA Badge - Animates from dot to full on scroll */}
-              <ScrollReveal variant="fade" delay={300}>
-                <ContactBadge scrollExpandMode className="mt-2" />
-              </ScrollReveal>
+              {SHOW_CONTACT_BADGE && (
+                <ScrollReveal variant="fade" delay={300}>
+                  <ContactBadge scrollExpandMode className="mt-2" />
+                </ScrollReveal>
+              )}
             </div>
           </section>
 
