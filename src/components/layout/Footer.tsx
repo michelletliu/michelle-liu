@@ -226,7 +226,7 @@ export default function Footer({
               {/* Column 4: Contact + Social */}
               <div className="[grid-area:1_/_4] content-stretch flex flex-col gap-4 items-start relative shrink-0">
                 <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start relative shrink-0 text-zinc-400 w-full">
-                  <p className="leading-normal min-w-full relative shrink-0 text-base w-[min-content]">Let's work together!</p>
+                  <p className="leading-normal min-w-full relative shrink-0 text-base w-[min-content]">Let's chat!</p>
                   <p className="leading-normal relative shrink-0 text-base break-all">
                     <a href="mailto:studio@liumichelle.com" className="group/email inline-flex items-center hover:text-blue-500 text-zinc-600 font-medium transition-colors duration-200">
                       <span>{`studio@liumichelle.com`}</span>
@@ -258,7 +258,7 @@ export default function Footer({
               <div className="content-stretch flex flex-col gap-10 items-start relative shrink-0">
                 <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0">
                   <div className="content-stretch flex flex-col font-['Michelle',sans-serif] font-normal items-start relative shrink-0 text-zinc-400 w-[326px]">
-                    <p className="leading-normal relative shrink-0 text-base w-full">Let's work together!</p>
+                    <p className="leading-normal relative shrink-0 text-base w-full">Let's chat!</p>
                     <p className="leading-normal relative shrink-0 text-base w-full break-all">
                       <a href="mailto:studio@liumichelle.com" className="group/email inline-flex items-center hover:text-blue-500 text-zinc-600 font-medium transition-colors duration-200">
                         <span>{`studio@liumichelle.com`}</span>
