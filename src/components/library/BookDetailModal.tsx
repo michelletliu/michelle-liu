@@ -259,21 +259,21 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                 >
                   Shelf
                 </span>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {book.isFavorite && (
-                    <span className="bg-zinc-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-base text-zinc-600" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <span className="bg-zinc-100 px-2 py-0.5 rounded font-['SF_Pro:Regular',sans-serif] text-sm text-zinc-500" style={{ fontVariationSettings: "'wdth' 100" }}>
                       favorites
                     </span>
                   )}
                   {book.year && (
-                    <span className="bg-zinc-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-base text-zinc-600" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <span className="bg-zinc-100 px-2 py-0.5 rounded font-['SF_Pro:Regular',sans-serif] text-sm text-zinc-500" style={{ fontVariationSettings: "'wdth' 100" }}>
                       {book.year}
                     </span>
                   )}
                 </div>
               </div>
             )}
-            
+
             {/* Dates Read */}
             {(() => {
               const finished = book.dateFinished || book.dateRead;
@@ -281,7 +281,7 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
               if (!book.dateStarted && !finished) return null;
               return (
                 <div className="flex items-start">
-                  <span 
+                  <span
                     className="font-['SF_Pro:Medium',sans-serif] font-medium text-base text-zinc-400 w-[100px] shrink-0"
                     style={{ fontVariationSettings: "'wdth' 100" }}
                   >
@@ -378,14 +378,14 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                   >
                     Shelf
                   </span>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {book.isFavorite && (
-                      <span className="bg-zinc-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-base text-zinc-600" style={{ fontVariationSettings: "'wdth' 100" }}>
+                      <span className="bg-zinc-100 px-2 py-0.5 rounded font-['SF_Pro:Regular',sans-serif] text-sm text-zinc-500" style={{ fontVariationSettings: "'wdth' 100" }}>
                         favorites
                       </span>
                     )}
                     {book.year && (
-                      <span className="bg-zinc-100 px-3 py-1 rounded-full font-medium font-['SF_Pro:Regular',sans-serif] text-base text-zinc-600" style={{ fontVariationSettings: "'wdth' 100" }}>
+                      <span className="bg-zinc-100 px-2 py-0.5 rounded font-['SF_Pro:Regular',sans-serif] text-sm text-zinc-500" style={{ fontVariationSettings: "'wdth' 100" }}>
                         {book.year}
                       </span>
                     )}
