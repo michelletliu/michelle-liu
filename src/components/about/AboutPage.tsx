@@ -1048,7 +1048,7 @@ export default function AboutPage() {
                         )}
                         aria-hidden={!archiveOpen}
                       >
-                        <div className="min-h-0 overflow-hidden">
+                        <div className={clsx("min-h-0", !archiveOpen && "overflow-hidden")}>
                           <div className="flex flex-col gap-12 pt-8">
                             {archivedCommunityCards.map((community, index) => (
                               <div
