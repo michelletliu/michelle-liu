@@ -26,7 +26,7 @@ export default function HeaderBreakpoint({
     >
       <p
         className={clsx(
-          "ml-2 flex-1 font-normal leading-normal tracking-wide text-base whitespace-pre-wrap",
+          "ml-3.5 flex-1 font-normal leading-normal tracking-wide text-base whitespace-pre-wrap",
           active ? "text-zinc-600" : "text-zinc-400",
         )}
       >
