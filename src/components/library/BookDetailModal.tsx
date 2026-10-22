@@ -261,12 +261,12 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {book.isFavorite && (
-                    <span className="bg-zinc-100 px-2 py-0.5 rounded font-['SF_Pro:Regular',sans-serif] text-sm text-zinc-500" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <span className="bg-zinc-100 px-2 py-0.5 rounded-md font-medium font-['SF_Pro:Regular',sans-serif] text-sm text-zinc-500" style={{ fontVariationSettings: "'wdth' 100" }}>
                       favorites
                     </span>
                   )}
                   {book.year && (
-                    <span className="bg-zinc-100 px-2 py-0.5 rounded font-['SF_Pro:Regular',sans-serif] text-sm text-zinc-500" style={{ fontVariationSettings: "'wdth' 100" }}>
+                    <span className="bg-zinc-100 px-2 py-0.5 rounded-md font-medium font-['SF_Pro:Regular',sans-serif] text-sm text-zinc-500" style={{ fontVariationSettings: "'wdth' 100" }}>
                       {book.year}
                     </span>
                   )}
@@ -380,12 +380,12 @@ export function BookDetailModal({ book, onClose, isPopupMode = false }: BookDeta
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {book.isFavorite && (
-                      <span className="bg-zinc-100 px-2 py-0.5 rounded font-['SF_Pro:Regular',sans-serif] text-sm text-zinc-500" style={{ fontVariationSettings: "'wdth' 100" }}>
+                      <span className="bg-zinc-100 px-2 py-0.5 rounded-md font-medium font-['SF_Pro:Regular',sans-serif] text-sm text-zinc-500" style={{ fontVariationSettings: "'wdth' 100" }}>
                         favorites
                       </span>
                     )}
                     {book.year && (
-                      <span className="bg-zinc-100 px-2 py-0.5 rounded font-['SF_Pro:Regular',sans-serif] text-sm text-zinc-500" style={{ fontVariationSettings: "'wdth' 100" }}>
+                      <span className="bg-zinc-100 px-2 py-0.5 rounded-md font-medium font-['SF_Pro:Regular',sans-serif] text-sm text-zinc-500" style={{ fontVariationSettings: "'wdth' 100" }}>
                         {book.year}
                       </span>
                     )}
