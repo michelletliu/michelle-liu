@@ -425,14 +425,13 @@ export default function ArtPage() {
         <>
           {/* Desktop */}
           <div className="hidden md:block">
-            <p className="mb-0">Currently based in Los Angeles, CA.</p>
-            <p>Also in between San Francisco &amp; New York City.</p>
+            <p className="mb-0">Currently based in New York City.</p>
+            <p>Occasionally, San Francisco.</p>
           </div>
           {/* Mobile */}
           <div className="md:hidden">
-            <p className="mb-0">Currently based in Los Angeles, CA.</p>
-            <p className="mb-0">Also in between San Francisco</p>
-            <p>&amp; New York City.</p>
+            <p className="mb-0">Currently based in New York City.</p>
+            <p>Occasionally, San Francisco.</p>
           </div>
         </>
       </PageHeader>
