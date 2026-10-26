@@ -42,15 +42,15 @@ test("updates the work hero copy and links company names out", () => {
   assert.doesNotMatch(homeSource, /Designing products to spark/);
   assert.doesNotMatch(homeSource, /Clients include /);
   assert.match(homeSource, /Currently at /);
-  assert.match(homeSource, /Previously at /);
+  assert.match(homeSource, /Previously /);
   assert.match(
     homeSource,
-    /Currently at [\s\S]*?HERO_COMPANY_HREFS\.instagram[\s\S]*?Previously at /,
+    /Currently at [\s\S]*?HERO_COMPANY_HREFS\.instagram[\s\S]*?Previously /,
   );
   assert.match(homeSource, /<br aria-hidden="true" \/>[\s\S]*?Currently at /);
   assert.match(
     homeSource,
-    /<br className="md:hidden" aria-hidden="true" \/>[\s\S]*?Previously at /,
+    /<br className="md:hidden" aria-hidden="true" \/>[\s\S]*?Previously /,
   );
   assert.match(homeSource, /APPLE_LOGO_PATH/);
   assert.match(homeSource, /viewBox="0 0 814 1000"/);

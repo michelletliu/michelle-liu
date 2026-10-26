@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { Fragment, useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../utils/useScrollLock";
@@ -16,7 +16,6 @@ import LoadingSpinner from "../shared/LoadingSpinner";
 // Above-the-fold About chrome stays eager; heavier sections load as separate
 // chunks so Work → About isn't blocked on Community/Shelf/Lore JS.
 import ExperienceCard from "./ExperienceCard";
-import StartupCard from "./StartupCard";
 import AboutSidebar from "./AboutSidebar";
 import Footer from "../layout/Footer";
 import { ArrowUpRight } from "../icons/ArrowUpRight";
@@ -40,6 +39,7 @@ import profilePic from "../../assets/Website Profile Pic.png";
 import mapPinIcon from "../../assets/map-pin.svg";
 import academicCapIcon from "../../assets/academic-cap.svg";
 import heartIcon from "../../assets/HeartFill.svg";
+import studioLogo from "../../assets/studio-michelle-liu-logo.png";
 
 // Sanity
 import { client, urlFor } from "../../sanity/client";
@@ -81,74 +81,6 @@ const MediaCard = dynamic(() => import("./MediaCard"));
 
 // fadeUpStyles imported from shared animations
 
-function StartupLogosRow({
-  startups,
-  startDelay = 0,
-  onRevealComplete,
-}: {
-  startups: StartupCardData[];
-  startDelay?: number;
-  onRevealComplete?: () => void;
-}) {
-  const rowRef = useRef<HTMLDivElement>(null);
-  const [revealed, setRevealed] = useState(false);
-
-  useEffect(() => {
-    const el = rowRef.current;
-    if (!el) return;
-
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setRevealed(true);
-      onRevealComplete?.();
-      return;
-    }
-
-    let revealTimeout: ReturnType<typeof setTimeout> | undefined;
-    let completionTimeout: ReturnType<typeof setTimeout> | undefined;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          revealTimeout = setTimeout(() => setRevealed(true), startDelay);
-          completionTimeout = setTimeout(
-            () => onRevealComplete?.(),
-            startDelay + Math.max(0, startups.length - 1) * 40 + 400,
-          );
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1, rootMargin: "0px 0px -20px 0px" }
-    );
-    observer.observe(el);
-    return () => {
-      observer.disconnect();
-      if (revealTimeout) clearTimeout(revealTimeout);
-      if (completionTimeout) clearTimeout(completionTimeout);
-    };
-  }, [onRevealComplete, startDelay, startups.length]);
-
-  return (
-    <div
-      ref={rowRef}
-      className="mx-auto flex w-full max-w-[26rem] flex-wrap justify-between gap-y-6 px-3 md:mx-0 md:max-w-lg md:px-0"
-    >
-      {startups.map((startup, i) => (
-        <div
-          key={startup.id}
-          className="w-14 md:w-auto"
-          style={{
-            opacity: revealed ? 1 : 0,
-            transform: revealed ? 'translateY(0)' : 'translateY(6px)',
-            transition: 'opacity 400ms cubic-bezier(0.4,0,0.2,1), transform 300ms cubic-bezier(0.25,0.1,0.25,1)',
-            transitionDelay: revealed ? `${i * 40}ms` : '0ms',
-            willChange: revealed ? 'auto' : 'opacity, transform',
-          }}
-        >
-          <StartupCard data={startup} />
-        </div>
-      ))}
-    </div>
-  );
-}
 
 // Profile photo component with expandable modal
 function ProfilePhoto({ imageSrc, caption }: { imageSrc?: string; caption?: React.ReactNode }) {
@@ -445,13 +377,7 @@ export default function AboutPage() {
   const [startups, setStartups] = useState<StartupCardData[]>(
     () => cachedInitial?.startups ?? [],
   );
-  const [startupsRevealed, setStartupsRevealed] = useState(false);
   const [isLoading, setIsLoading] = useState(() => cachedInitial === null);
-  const handleStartupsRevealComplete = useCallback(
-    () => setStartupsRevealed(true),
-    [],
-  );
-  const experiencesCanReveal = startups.length === 0 || startupsRevealed;
 
   // Shelf year filter state (for books, music, and movies)
   const [activeBooksYear, setActiveBooksYear] = useState<string | undefined>();
@@ -952,31 +878,55 @@ export default function AboutPage() {
               <LoadingSpinner label="Loading..." className="py-4" />
             ) : experiences.length > 0 ? (
               <div className="flex flex-col gap-10 md:gap-12 md:pt-1.5 md:w-1/2 md:shrink-0">
-                {/* Startups Section */}
+                {/* Instagram (pinned first) */}
+                {experiences.filter(e => e.company === "Instagram").map((exp, index) => (
+                  <ScrollReveal key={exp.id} delay={index * 80}>
+                    <ExperienceCard data={exp} />
+                  </ScrollReveal>
+                ))}
+
+                {/* Studio Michelle Liu — synthesized from startups */}
                 {startups.length > 0 && (
-                  <div className="flex flex-col items-start gap-8 mb-4 md:mb-2">
-                    <ScrollReveal>
-                      <div className="flex flex-col">
-                        <p className="pl-0.5 whitespace-nowrap text-base md:text-lg font-medium text-zinc-700 tracking-[0.005em]">
-                          Independent Designer<span className="text-zinc-400 font-normal">, 2023 - Present</span>
-                        </p>
-                      </div>
-                    </ScrollReveal>
-                    <StartupLogosRow
-                      startups={startups}
-                      startDelay={200}
-                      onRevealComplete={handleStartupsRevealComplete}
+                  <ScrollReveal delay={80}>
+                    <ExperienceCard
+                      data={{
+                        id: "studio-michelle-liu",
+                        logoSrc: studioLogo,
+                        company: "Studio Michelle Liu",
+                        role: "Founder",
+                        subtitle: (
+                          <>
+                            Clients include{" "}
+                            <br className="md:hidden" />
+                            {startups.map((s, i) => (
+                              <Fragment key={s.id}>
+                                {i > 0 && (i === startups.length - 1 ? ", & " : ", ")}
+                                {s.link ? (
+                                  <a
+                                    href={s.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-zinc-500 transition-colors duration-200 hover:text-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 rounded-sm"
+                                  >
+                                    {s.name}
+                                  </a>
+                                ) : (
+                                  <span className="text-zinc-500">{s.name}</span>
+                                )}
+                              </Fragment>
+                            ))}
+                            .
+                          </>
+                        ),
+                        period: "2023 - 26",
+                      }}
                     />
-                  </div>
+                  </ScrollReveal>
                 )}
 
-                {experiences.map((exp, index) => (
-                  <ScrollReveal
-                    key={exp.id}
-                    className={clsx(!experiencesCanReveal && "invisible")}
-                    delay={(index + (startups.length > 0 ? 1 : 0)) * 80}
-                    disabled={!experiencesCanReveal}
-                  >
+                {/* All other experiences */}
+                {experiences.filter(e => e.company !== "Instagram").map((exp, index) => (
+                  <ScrollReveal key={exp.id} delay={(index + 2) * 80}>
                     <ExperienceCard data={exp} />
                   </ScrollReveal>
                 ))}

@@ -4,26 +4,16 @@ import test from "node:test";
 
 const source = readFileSync(new URL("./AboutPage.tsx", import.meta.url), "utf8");
 
-test("renders the independent designer date inline and left aligned", () => {
-  assert.match(
-    source,
-    /<div className="flex flex-col items-start gap-8 mb-4 md:mb-2">[\s\S]*<p className="[^"]*text-base md:text-lg[^"]*">\s*Independent Designer<span className="text-zinc-400 font-normal">, 2023 - Present<\/span>\s*<\/p>/,
-  );
-  assert.doesNotMatch(source, />\s*Independent<span/);
-  assert.doesNotMatch(source, /Design Contracts/);
-});
-
-test("waits for every startup logo before revealing experiences", () => {
-  assert.match(source, /onRevealComplete\?: \(\) => void/);
-  assert.match(
-    source,
-    /startDelay \+ Math\.max\(0, startups\.length - 1\) \* 40 \+ 400/,
-  );
-  assert.match(
-    source,
-    /<StartupLogosRow[\s\S]*onRevealComplete=\{handleStartupsRevealComplete\}/,
-  );
-  assert.match(source, /disabled=\{!experiencesCanReveal\}/);
+test("pins Instagram first, then Studio Michelle Liu with startup clients", () => {
+  const instagramIdx = source.indexOf('e.company === "Instagram"');
+  const studioIdx = source.indexOf('company: "Studio Michelle Liu"');
+  const othersIdx = source.indexOf('e.company !== "Instagram"');
+  assert.ok(instagramIdx > -1 && studioIdx > instagramIdx && othersIdx > studioIdx);
+  assert.match(source, /Clients include\{" "\}/);
+  assert.match(source, /href=\{s\.link\}[\s\S]*?className="text-zinc-500/);
+  assert.match(source, /logoSrc: studioLogo,/);
+  assert.doesNotMatch(source, /Independent Designer/);
+  assert.doesNotMatch(source, /StartupLogosRow/);
 });
 
 test("shows archived communities behind an Archive toggle, without a mobile jump list", () => {
