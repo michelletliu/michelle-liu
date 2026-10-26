@@ -1240,29 +1240,7 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                   <br aria-hidden="true" />
                   {`Currently at `}
                   <HeroCompanyLink href={HERO_COMPANY_HREFS.instagram}>Instagram</HeroCompanyLink>
-                  <span>{`. `}</span>
-                  <br className="md:hidden" aria-hidden="true" />
-                  <span>{`Previously at `}</span>
-                  <span style={{ fontVariationSettings: "'wdth' 100" }}>
-                    <HeroCompanyLink href={HERO_COMPANY_HREFS.apple} ariaLabel="Apple">
-                      <svg
-                        className="inline w-[0.9em] h-[0.9em]"
-                        style={{ verticalAlign: "-0.075em" }}
-                        viewBox="0 0 814 1000"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path d={APPLE_LOGO_PATH} />
-                      </svg>
-                    </HeroCompanyLink>
-                  </span>
-                  <span>{`, `}</span>
-                  <HeroCompanyLink href={HERO_COMPANY_HREFS.roblox}>Roblox</HeroCompanyLink>
-                  <span className="whitespace-nowrap">
-                    {`, & `}
-                    <HeroCompanyLink href={HERO_COMPANY_HREFS.nasa}>NASA</HeroCompanyLink>
-                    <span>.</span>
-                  </span>
+                  <span>.</span>
                 </span>
                 {SHOW_CONTACT_BADGE && (
                   <ContactBadge
