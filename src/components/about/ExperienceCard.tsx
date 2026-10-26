@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import type { ReactNode } from "react";
 
 export type ExperienceCardData = {
   id: string;
@@ -11,7 +12,7 @@ export type ExperienceCardData = {
   /** Time period (e.g., "2024-Present") */
   period?: string;
   /** Optional secondary subtitle (e.g., client list) */
-  subtitle?: string;
+  subtitle?: ReactNode;
 };
 
 type ExperienceCardProps = {
@@ -44,24 +45,23 @@ export default function ExperienceCard({ className, data }: ExperienceCardProps)
         )}
       </div>
 
-      {/* Company + subtitle */}
-      <div className="flex flex-1 flex-col items-start min-w-0">
-        <p className="whitespace-pre-wrap tracking-[0.005em] text-base md:text-lg font-medium leading-snug text-zinc-700">
-          {data.company}
-        </p>
+      <div className="flex flex-1 flex-col min-w-0">
+        <div className="flex items-baseline justify-between gap-4">
+          <p className="whitespace-pre-wrap tracking-[0.005em] text-base md:text-lg font-medium leading-snug text-zinc-700">
+            {data.company}
+          </p>
+          {data.period && (
+            <span className="shrink-0 text-sm md:text-base tracking-[0.005em] font-normal text-zinc-400 whitespace-nowrap">
+              {data.period}
+            </span>
+          )}
+        </div>
         {data.subtitle && (
           <p className="text-sm md:text-base tracking-[0.005em] font-normal leading-snug text-zinc-400">
             {data.subtitle}
           </p>
         )}
       </div>
-
-      {/* Period */}
-      {data.period && (
-        <span className="shrink-0 text-sm md:text-base tracking-[0.005em] font-normal text-zinc-400 whitespace-nowrap">
-          {data.period}
-        </span>
-      )}
     </div>
   );
 }

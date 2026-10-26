@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { Fragment, useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../utils/useScrollLock";
@@ -894,7 +894,29 @@ export default function AboutPage() {
                         logoSrc: studioLogo,
                         company: "Studio Michelle Liu",
                         role: "Founder",
-                        subtitle: `Select clients: ${startups.map(s => s.name).join(", ")}`,
+                        subtitle: (
+                          <>
+                            Clients include{" "}
+                            <br className="md:hidden" />
+                            {startups.map((s, i) => (
+                              <Fragment key={s.id}>
+                                {i > 0 && (i === startups.length - 1 ? ", & " : ", ")}
+                                {s.link ? (
+                                  <a
+                                    href={s.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-zinc-600 transition-colors duration-200 hover:text-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 rounded-sm"
+                                  >
+                                    {s.name}
+                                  </a>
+                                ) : (
+                                  <span className="text-zinc-600">{s.name}</span>
+                                )}
+                              </Fragment>
+                            ))}
+                          </>
+                        ),
                         period: "2023 - 26",
                       }}
                     />
