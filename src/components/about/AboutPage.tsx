@@ -906,12 +906,12 @@ export default function AboutPage() {
                                     href={s.link}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-zinc-600 transition-colors duration-200 hover:text-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 rounded-sm"
+                                    className="text-zinc-500 transition-colors duration-200 hover:text-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 rounded-sm"
                                   >
                                     {s.name}
                                   </a>
                                 ) : (
-                                  <span className="text-zinc-600">{s.name}</span>
+                                  <span className="text-zinc-500">{s.name}</span>
                                 )}
                               </Fragment>
                             ))}

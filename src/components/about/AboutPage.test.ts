@@ -10,7 +10,7 @@ test("pins Instagram first, then Studio Michelle Liu with startup clients", () =
   const othersIdx = source.indexOf('e.company !== "Instagram"');
   assert.ok(instagramIdx > -1 && studioIdx > instagramIdx && othersIdx > studioIdx);
   assert.match(source, /Clients include\{" "\}/);
-  assert.match(source, /href=\{s\.link\}[\s\S]*?className="text-zinc-600/);
+  assert.match(source, /href=\{s\.link\}[\s\S]*?className="text-zinc-500/);
   assert.match(source, /logoSrc: studioLogo,/);
   assert.doesNotMatch(source, /Independent Designer/);
   assert.doesNotMatch(source, /StartupLogosRow/);
