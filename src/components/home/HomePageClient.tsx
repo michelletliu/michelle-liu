@@ -937,6 +937,7 @@ const HERO_COMPANY_HREFS = {
   cognition: "https://cognition.ai",
   luma: "https://luma.com",
   pika: "https://pika.art",
+  instagram: "https://www.instagram.com",
 } as const;
 
 const APPLE_LOGO_PATH =
@@ -1227,7 +1228,8 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                     isContactBadgeExpanded ? "opacity-20" : "opacity-100",
                   )}
                 >
-                  Designing tools for human connection & creativity.
+                  Designing tools for human connection{" "}
+                  <span className="whitespace-nowrap">& creativity.</span>
                 </span>
                 <span
                   className={clsx(
@@ -1236,12 +1238,8 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                   )}
                 >
                   <br aria-hidden="true" />
-                  {`Clients include `}
-                  <HeroCompanyLink href={HERO_COMPANY_HREFS.cognition}>Cognition</HeroCompanyLink>
-                  <span>{`, `}</span>
-                  <HeroCompanyLink href={HERO_COMPANY_HREFS.luma}>Luma</HeroCompanyLink>
-                  <span>{`, & `}</span>
-                  <HeroCompanyLink href={HERO_COMPANY_HREFS.pika}>Pika</HeroCompanyLink>
+                  {`Currently at `}
+                  <HeroCompanyLink href={HERO_COMPANY_HREFS.instagram}>Instagram</HeroCompanyLink>
                   <span>{`. `}</span>
                   <br className="md:hidden" aria-hidden="true" />
                   <span>{`Previously at `}</span>
@@ -1260,9 +1258,11 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                   </span>
                   <span>{`, `}</span>
                   <HeroCompanyLink href={HERO_COMPANY_HREFS.roblox}>Roblox</HeroCompanyLink>
-                  <span>{`, & `}</span>
-                  <HeroCompanyLink href={HERO_COMPANY_HREFS.nasa}>NASA</HeroCompanyLink>
-                  <span>.</span>
+                  <span className="whitespace-nowrap">
+                    {`, & `}
+                    <HeroCompanyLink href={HERO_COMPANY_HREFS.nasa}>NASA</HeroCompanyLink>
+                    <span>.</span>
+                  </span>
                 </span>
                 {SHOW_CONTACT_BADGE && (
                   <ContactBadge
