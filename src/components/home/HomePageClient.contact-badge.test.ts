@@ -34,16 +34,20 @@ test("uses large contact text and deeper intro fade on Work", () => {
 });
 
 test("updates the work hero copy and links company names out", () => {
-  assert.match(homeSource, /Designing tools for human connection & creativity\./);
+  assert.match(
+    homeSource,
+    /Designing tools for human connection\{" "\}\s*<span className="whitespace-nowrap">& creativity\.<\/span>/,
+  );
   assert.doesNotMatch(homeSource, /Designing to spark/);
   assert.doesNotMatch(homeSource, /Designing products to spark/);
-  assert.match(homeSource, /Clients include /);
+  assert.doesNotMatch(homeSource, /Clients include /);
+  assert.match(homeSource, /Currently at /);
   assert.match(homeSource, /Previously at /);
   assert.match(
     homeSource,
-    /Clients include [\s\S]*?Previously at /,
+    /Currently at [\s\S]*?HERO_COMPANY_HREFS\.instagram[\s\S]*?Previously at /,
   );
-  assert.match(homeSource, /<br aria-hidden="true" \/>[\s\S]*?Clients include /);
+  assert.match(homeSource, /<br aria-hidden="true" \/>[\s\S]*?Currently at /);
   assert.match(
     homeSource,
     /<br className="md:hidden" aria-hidden="true" \/>[\s\S]*?Previously at /,
@@ -54,9 +58,7 @@ test("updates the work hero copy and links company names out", () => {
   assert.match(homeSource, /apple: "https:\/\/www\.apple\.com"/);
   assert.match(homeSource, /roblox: "https:\/\/about\.roblox\.com\/"/);
   assert.match(homeSource, /nasa: "https:\/\/www\.jpl\.nasa\.gov\/"/);
-  assert.match(homeSource, /cognition: "https:\/\/cognition\.ai"/);
-  assert.match(homeSource, /luma: "https:\/\/luma\.com"/);
-  assert.match(homeSource, /pika: "https:\/\/pika\.art"/);
+  assert.match(homeSource, /instagram: "https:\/\/www\.instagram\.com"/);
   assert.match(homeSource, /target="_blank"/);
   assert.match(homeSource, /rel="noopener noreferrer"/);
   assert.match(homeSource, /INLINE_LINK_CLASS/);
