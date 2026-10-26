@@ -952,13 +952,25 @@ export default function AboutPage() {
               <LoadingSpinner label="Loading..." className="py-4" />
             ) : experiences.length > 0 ? (
               <div className="flex flex-col gap-10 md:gap-12 md:pt-1.5 md:w-1/2 md:shrink-0">
+                {/* Instagram Experience (pinned above startups) */}
+                {experiences.filter(e => e.company === "Instagram").map((exp, index) => (
+                  <ScrollReveal
+                    key={exp.id}
+                    className={clsx(!experiencesCanReveal && "invisible")}
+                    delay={index * 80}
+                    disabled={!experiencesCanReveal}
+                  >
+                    <ExperienceCard data={exp} />
+                  </ScrollReveal>
+                ))}
+
                 {/* Startups Section */}
                 {startups.length > 0 && (
                   <div className="flex flex-col items-start gap-8 mb-4 md:mb-2">
                     <ScrollReveal>
                       <div className="flex flex-col">
                         <p className="pl-0.5 whitespace-nowrap text-base md:text-lg font-medium text-zinc-700 tracking-[0.005em]">
-                          Independent Designer<span className="text-zinc-400 font-normal">, 2023 - Present</span>
+                          Independent Designer<span className="text-zinc-400 font-normal">, 2023 - 2026</span>
                         </p>
                       </div>
                     </ScrollReveal>
@@ -970,7 +982,7 @@ export default function AboutPage() {
                   </div>
                 )}
 
-                {experiences.map((exp, index) => (
+                {experiences.filter(e => e.company !== "Instagram").map((exp, index) => (
                   <ScrollReveal
                     key={exp.id}
                     className={clsx(!experiencesCanReveal && "invisible")}
