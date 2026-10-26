@@ -10,6 +10,8 @@ export type ExperienceCardData = {
   role: string;
   /** Time period (e.g., "2024-Present") */
   period?: string;
+  /** Optional secondary subtitle (e.g., client list) */
+  subtitle?: string;
 };
 
 type ExperienceCardProps = {
@@ -38,25 +40,28 @@ export default function ExperienceCard({ className, data }: ExperienceCardProps)
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="h-full w-full bg-zinc-200" />
+          <div className="h-full w-full bg-zinc-100" />
         )}
       </div>
 
-      {/* Text content */}
-      <div className="flex flex-1 flex-col items-start">
+      {/* Company + subtitle */}
+      <div className="flex flex-1 flex-col items-start min-w-0">
         <p className="whitespace-pre-wrap tracking-[0.005em] text-base md:text-lg font-medium leading-snug text-zinc-700">
           {data.company}
         </p>
-        <div className="flex flex-wrap items-baseline gap-1 text-base tracking-[0.005em] font-normal leading-snug">
-          <span className="text-zinc-500">
-            {data.role}
-            {data.period && <span className="text-zinc-400">,</span>}
-          </span>
-          {data.period && (
-            <span className="text-zinc-400 whitespace-nowrap">{data.period}</span>
-          )}
-        </div>
+        {data.subtitle && (
+          <p className="text-sm md:text-base tracking-[0.005em] font-normal leading-snug text-zinc-400">
+            {data.subtitle}
+          </p>
+        )}
       </div>
+
+      {/* Period */}
+      {data.period && (
+        <span className="shrink-0 text-sm md:text-base tracking-[0.005em] font-normal text-zinc-400 whitespace-nowrap">
+          {data.period}
+        </span>
+      )}
     </div>
   );
 }
