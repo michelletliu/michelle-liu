@@ -915,6 +915,7 @@ export default function AboutPage() {
                                 )}
                               </Fragment>
                             ))}
+                            .
                           </>
                         ),
                         period: "2023 - 26",
