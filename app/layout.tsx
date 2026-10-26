@@ -5,7 +5,7 @@ import "@/index.css";
 import "@/styles/globals.css";
 
 const siteDescription =
-  "Designing tools for human connection & creativity. Clients include Cognition, Luma, & Pika. Previously at Apple, Roblox, & NASA.";
+  "Designing tools for human connection & creativity. Currently at Instagram. Previously at Apple, Roblox, & NASA.";
 
 const siteOgImage = {
   url: "https://www.liumichelle.com/og-image.jpg?v=6",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "michelle liu",
   description: siteDescription,
   keywords:
-    "Michelle Liu, Product Designer, UX Designer, UI Designer, Apple Designer, Roblox Designer, NASA Designer, Cognition, Luma, Pika, Design Portfolio",
+    "Michelle Liu, Product Designer, UX Designer, UI Designer, Instagram Designer, Apple Designer, Roblox Designer, NASA Designer, Design Portfolio",
   authors: [{ name: "Michelle Liu" }],
   openGraph: {
     title: "michelle liu",

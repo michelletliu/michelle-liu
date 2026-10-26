@@ -934,9 +934,6 @@ const HERO_COMPANY_HREFS = {
   apple: "https://www.apple.com",
   roblox: "https://about.roblox.com/",
   nasa: "https://www.jpl.nasa.gov/",
-  cognition: "https://cognition.ai",
-  luma: "https://luma.com",
-  pika: "https://pika.art",
   instagram: "https://www.instagram.com",
 } as const;
 
