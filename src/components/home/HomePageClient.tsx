@@ -1228,7 +1228,8 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                     isContactBadgeExpanded ? "opacity-20" : "opacity-100",
                   )}
                 >
-                  Designing tools for human connection & creativity.
+                  Designing tools for human connection{" "}
+                  <span className="whitespace-nowrap">& creativity.</span>
                 </span>
                 <span
                   className={clsx(
@@ -1257,9 +1258,11 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                   </span>
                   <span>{`, `}</span>
                   <HeroCompanyLink href={HERO_COMPANY_HREFS.roblox}>Roblox</HeroCompanyLink>
-                  <span>{`, & `}</span>
-                  <HeroCompanyLink href={HERO_COMPANY_HREFS.nasa}>NASA</HeroCompanyLink>
-                  <span>.</span>
+                  <span className="whitespace-nowrap">
+                    {`, & `}
+                    <HeroCompanyLink href={HERO_COMPANY_HREFS.nasa}>NASA</HeroCompanyLink>
+                    <span>.</span>
+                  </span>
                 </span>
                 {SHOW_CONTACT_BADGE && (
                   <ContactBadge
