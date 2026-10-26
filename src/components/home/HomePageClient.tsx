@@ -937,6 +937,7 @@ const HERO_COMPANY_HREFS = {
   cognition: "https://cognition.ai",
   luma: "https://luma.com",
   pika: "https://pika.art",
+  instagram: "https://www.instagram.com",
 } as const;
 
 const APPLE_LOGO_PATH =
@@ -1236,12 +1237,8 @@ export default function HomePageClient({ slug, mode, bookSlug }: HomePageClientP
                   )}
                 >
                   <br aria-hidden="true" />
-                  {`Clients include `}
-                  <HeroCompanyLink href={HERO_COMPANY_HREFS.cognition}>Cognition</HeroCompanyLink>
-                  <span>{`, `}</span>
-                  <HeroCompanyLink href={HERO_COMPANY_HREFS.luma}>Luma</HeroCompanyLink>
-                  <span>{`, & `}</span>
-                  <HeroCompanyLink href={HERO_COMPANY_HREFS.pika}>Pika</HeroCompanyLink>
+                  {`Currently at `}
+                  <HeroCompanyLink href={HERO_COMPANY_HREFS.instagram}>Instagram</HeroCompanyLink>
                   <span>{`. `}</span>
                   <br className="md:hidden" aria-hidden="true" />
                   <span>{`Previously at `}</span>
