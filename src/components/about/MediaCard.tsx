@@ -263,7 +263,7 @@ export default function MediaCard({
     // Aspect ratio: Music/square albums vs portrait books/movies (210:271 from Figma)
     isSquare ? "aspect-square" : "aspect-[210/310]",
     // Border radius based on variant
-    variant === "default" && "rounded-lg md:rounded",
+    variant === "default" && "rounded-xl md:rounded-lg",
     variant === "expanded" && "rounded-md md:rounded",
     // Placeholder background when no image, or when the cover failed to load
     (!hasImage || imageError) && "bg-zinc-300",

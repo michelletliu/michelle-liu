@@ -963,9 +963,6 @@ export default function AboutPage() {
                   >
                     <ScrollReveal delay={index * 100}>
                       <CommunityCard data={community} />
-                      {index < activeCommunityCards.length - 1 && (
-                        <div className="mt-12 h-px w-full bg-zinc-100" />
-                      )}
                     </ScrollReveal>
                   </div>
                 ))}
@@ -1011,9 +1008,6 @@ export default function AboutPage() {
                                 className="scroll-mt-8"
                               >
                                 <CommunityCard data={community} />
-                                {index < archivedCommunityCards.length - 1 && (
-                                  <div className="mt-12 h-px w-full bg-zinc-100" />
-                                )}
                               </div>
                             ))}
                           </div>
